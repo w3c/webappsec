@@ -1,0 +1,1603 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN' 'http://www.w3.org/TR/html4/loose.dtd'>
+<html lang="en" dir="ltr">
+<head>
+    <title>Content Security Policy</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <!--
+      === NOTA BENE ===
+      For the three scripts below, if your spec resides on dev.w3 you can check them
+      out in the same tree and use relative links so that they'll work offline,
+     -->
+    
+    
+  <style type="text/css">
+/*****************************************************************
+ * ReSpec CSS
+ * Robin Berjon (robin at berjon dot com)
+ * v0.05 - 2009-07-31
+ *****************************************************************/
+
+
+/* --- INLINES --- */
+em.rfc2119 { 
+    text-transform:     lowercase;
+    font-variant:       small-caps;
+    font-style:         normal;
+    color:              #900;
+}
+
+h1 acronym, h2 acronym, h3 acronym, h4 acronym, h5 acronym, h6 acronym, a acronym,
+h1 abbr, h2 abbr, h3 abbr, h4 abbr, h5 abbr, h6 abbr, a abbr {
+    border: none;
+}
+
+dfn {
+    font-weight:    bold;
+}
+
+a.internalDFN {
+    color:  inherit;
+    border-bottom:  medium solid #99c;
+    text-decoration:    none;
+}
+
+a.externalDFN {
+    color:  inherit;
+    border-bottom:  medium dotted #ccc;
+    text-decoration:    none;
+}
+
+a.bibref {
+    text-decoration:    none;
+}
+
+code {
+    color:  #ff4500;
+}
+
+
+/* --- WEB IDL --- */
+pre.idl {
+    border-top: 1px solid #90b8de;
+    border-bottom: 1px solid #90b8de;
+    padding:    1em;
+    line-height:    120%;
+}
+
+pre.idl::before {
+    content:    "WebIDL";
+    display:    block;
+    width:      150px;
+    background: #90b8de;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+.idlType {
+    color:  #ff4500;
+    font-weight:    bold;
+    text-decoration:    none;
+}
+
+/*.idlModule*/
+/*.idlModuleID*/
+/*.idlInterface*/
+.idlInterfaceID {
+    font-weight:    bold;
+    color:  #005a9c;
+}
+
+.idlSuperclass {
+    font-style: italic;
+    color:  #005a9c;
+}
+
+/*.idlAttribute*/
+.idlAttrType, .idlFieldType {
+    color:  #005a9c;
+}
+.idlAttrName, .idlFieldName {
+    color:  #ff4500;
+}
+.idlAttrName a, .idlFieldName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlMethod*/
+.idlMethType {
+    color:  #005a9c;
+}
+.idlMethName {
+    color:  #ff4500;
+}
+.idlMethName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlParam*/
+.idlParamType {
+    color:  #005a9c;
+}
+.idlParamName {
+    font-style: italic;
+}
+
+.extAttr {
+    color:  #666;
+}
+
+/*.idlConst*/
+.idlConstType {
+    color:  #005a9c;
+}
+.idlConstName {
+    color:  #ff4500;
+}
+.idlConstName a {
+    color:  #ff4500;
+    border-bottom:  1px dotted #ff4500;
+    text-decoration: none;
+}
+
+/*.idlException*/
+.idlExceptionID {
+    font-weight:    bold;
+    color:  #c00;
+}
+
+.idlTypedefID, .idlTypedefType {
+    color:  #005a9c;
+}
+
+.idlRaises, .idlRaises a.idlType, .idlRaises a.idlType code, .excName a, .excName a code {
+    color:  #c00;
+    font-weight:    normal;
+}
+
+.excName a {
+    font-family:    monospace;
+}
+
+.idlRaises a.idlType, .excName a.idlType {
+    border-bottom:  1px dotted #c00;
+}
+
+.excGetSetTrue, .excGetSetFalse, .prmNullTrue, .prmNullFalse, .prmOptTrue, .prmOptFalse {
+    width:  45px;
+    text-align: center;
+}
+.excGetSetTrue, .prmNullTrue, .prmOptTrue { color:  #0c0; }
+.excGetSetFalse, .prmNullFalse, .prmOptFalse { color:  #c00; }
+
+.idlImplements a {
+    font-weight:    bold;
+}
+
+dl.attributes, dl.methods, dl.constants, dl.fields {
+    margin-left:    2em;
+}
+
+.attributes dt, .methods dt, .constants dt, .fields dt {
+    font-weight:    normal;
+}
+
+.attributes dt code, .methods dt code, .constants dt code, .fields dt code {
+    font-weight:    bold;
+    color:  #000;
+    font-family:    monospace;
+}
+
+.attributes dt code, .fields dt code {
+    background:  #ffffd2;
+}
+
+.attributes dt .idlAttrType code, .fields dt .idlFieldType code {
+    color:  #005a9c;
+    background:  transparent;
+    font-family:    inherit;
+    font-weight:    normal;
+    font-style: italic;
+}
+
+.methods dt code {
+    background:  #d9e6f8;
+}
+
+.constants dt code {
+    background:  #ddffd2;
+}
+
+.attributes dd, .methods dd, .constants dd, .fields dd {
+    margin-bottom:  1em;
+}
+
+table.parameters, table.exceptions {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    margin: 0.5em 0;
+    width:  100%;
+}
+table.parameters { border-bottom:  1px solid #90b8de; }
+table.exceptions { border-bottom:  1px solid #deb890; }
+
+.parameters th, .exceptions th {
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+    font-family:    initial;
+    font-weight:    normal;
+    text-shadow:    #666 1px 1px 0;
+}
+.parameters th { background: #90b8de; }
+.exceptions th { background: #deb890; }
+
+.parameters td, .exceptions td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+    vertical-align: top;
+}
+
+.parameters tr:first-child td, .exceptions tr:first-child td {
+    border-top: none;
+}
+
+.parameters td.prmName, .exceptions td.excName, .exceptions td.excCodeName {
+    width:  100px;
+}
+
+.parameters td.prmType {
+    width:  120px;
+}
+
+table.exceptions table {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    width:  100%;
+}
+
+/* --- TOC --- */
+.toc a {
+    text-decoration:    none;
+}
+
+a .secno {
+    color:  #000;
+}
+
+/* --- TABLE --- */
+table.simple {
+    border-spacing: 0;
+    border-collapse:    collapse;
+    border-bottom:  3px solid #005a9c;
+}
+
+.simple th {
+    background: #005a9c;
+    color:  #fff;
+    padding:    3px 5px;
+    text-align: left;
+}
+
+.simple th[scope="row"] {
+    background: inherit;
+    color:  inherit;
+    border-top: 1px solid #ddd;
+}
+
+.simple td {
+    padding:    3px 10px;
+    border-top: 1px solid #ddd;
+}
+
+.simple tr:nth-child(even) {
+    background: #f0f6ff;
+}
+
+/* --- DL --- */
+.section dd > p:first-child {
+    margin-top: 0;
+}
+
+.section dd > p:last-child {
+    margin-bottom: 0;
+}
+
+.section dd {
+    margin-bottom:  1em;
+}
+
+.section dl.attrs dd, .section dl.eldef dd {
+    margin-bottom:  0;
+}
+
+/* --- EXAMPLES --- */
+pre.example {
+    border-top: 1px solid #ff4500;
+    border-bottom: 1px solid #ff4500;
+    padding:    1em;
+    margin-top: 1em;
+}
+
+pre.example::before {
+    content:    "Example";
+    display:    block;
+    width:      150px;
+    background: #ff4500;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+/* --- EDITORIAL NOTES --- */
+.issue {
+    padding:    1em;
+    margin: 1em 0em 0em;
+    border: 1px solid #f00;
+    background: #ffc;
+}
+
+.issue::before {
+    content:    "Issue";
+    display:    block;
+    width:  150px;
+    margin: -1.5em 0 0.5em 0;
+    font-weight:    bold;
+    border: 1px solid #f00;
+    background: #fff;
+    padding:    3px 1em;
+}
+
+.note {
+    margin: 1em 0em 0em;
+    padding:    1em;
+    border: 2px solid #cff6d9;
+    background: #e2fff0;
+}
+
+.note::before {
+    content:    "Note";
+    display:    block;
+    width:  150px;
+    margin: -1.5em 0 0.5em 0;
+    font-weight:    bold;
+    border: 1px solid #cff6d9;
+    background: #fff;
+    padding:    3px 1em;
+}
+
+/* --- Best Practices --- */
+div.practice {
+    border: solid #bebebe 1px;
+    margin: 2em 1em 1em 2em;
+}
+
+span.practicelab {
+    margin: 1.5em 0.5em 1em 1em;
+    font-weight: bold;
+    font-style: italic;
+}
+
+span.practicelab   { background: #dfffff; }
+
+span.practicelab {
+    position: relative;
+    padding: 0 0.5em;
+    top: -1.5em;
+}
+
+p.practicedesc {
+    margin: 1.5em 0.5em 1em 1em;
+}
+
+@media screen {
+    p.practicedesc {
+        position: relative;
+        top: -2em;
+        padding: 0;
+        margin: 1.5em 0.5em -1em 1em;
+}
+
+/* --- SYNTAX HIGHLIGHTING --- */
+pre.sh_sourceCode {
+  background-color: white;
+  color: black;
+  font-style: normal;
+  font-weight: normal;
+}
+
+pre.sh_sourceCode .sh_keyword { color: #005a9c; font-weight: bold; }           /* language keywords */
+pre.sh_sourceCode .sh_type { color: #666; }                            /* basic types */
+pre.sh_sourceCode .sh_usertype { color: teal; }                             /* user defined types */
+pre.sh_sourceCode .sh_string { color: red; font-family: monospace; }        /* strings and chars */
+pre.sh_sourceCode .sh_regexp { color: orange; font-family: monospace; }     /* regular expressions */
+pre.sh_sourceCode .sh_specialchar { color: 	#ffc0cb; font-family: monospace; }  /* e.g., \n, \t, \\ */
+pre.sh_sourceCode .sh_comment { color: #A52A2A; font-style: italic; }         /* comments */
+pre.sh_sourceCode .sh_number { color: purple; }                             /* literal numbers */
+pre.sh_sourceCode .sh_preproc { color: #00008B; font-weight: bold; }       /* e.g., #include, import */
+pre.sh_sourceCode .sh_symbol { color: blue; }                            /* e.g., *, + */
+pre.sh_sourceCode .sh_function { color: black; font-weight: bold; }         /* function calls and declarations */
+pre.sh_sourceCode .sh_cbracket { color: red; }                              /* block brackets (e.g., {, }) */
+pre.sh_sourceCode .sh_todo { font-weight: bold; background-color: #00FFFF; }   /* TODO and FIXME */
+
+/* Predefined variables and functions (for instance glsl) */
+pre.sh_sourceCode .sh_predef_var { color: #00008B; }
+pre.sh_sourceCode .sh_predef_func { color: #00008B; font-weight: bold; }
+
+/* for OOP */
+pre.sh_sourceCode .sh_classname { color: teal; }
+
+/* line numbers (not yet implemented) */
+pre.sh_sourceCode .sh_linenum { display: none; }
+
+/* Internet related */
+pre.sh_sourceCode .sh_url { color: blue; text-decoration: underline; font-family: monospace; }
+
+/* for ChangeLog and Log files */
+pre.sh_sourceCode .sh_date { color: blue; font-weight: bold; }
+pre.sh_sourceCode .sh_time, pre.sh_sourceCode .sh_file { color: #00008B; font-weight: bold; }
+pre.sh_sourceCode .sh_ip, pre.sh_sourceCode .sh_name { color: #006400; }
+
+/* for Prolog, Perl... */
+pre.sh_sourceCode .sh_variable { color: #006400; }
+
+/* for LaTeX */
+pre.sh_sourceCode .sh_italics { color: #006400; font-style: italic; }
+pre.sh_sourceCode .sh_bold { color: #006400; font-weight: bold; }
+pre.sh_sourceCode .sh_underline { color: #006400; text-decoration: underline; }
+pre.sh_sourceCode .sh_fixed { color: green; font-family: monospace; }
+pre.sh_sourceCode .sh_argument { color: #006400; }
+pre.sh_sourceCode .sh_optionalargument { color: purple; }
+pre.sh_sourceCode .sh_math { color: orange; }
+pre.sh_sourceCode .sh_bibtex { color: blue; }
+
+/* for diffs */
+pre.sh_sourceCode .sh_oldfile { color: orange; }
+pre.sh_sourceCode .sh_newfile { color: #006400; }
+pre.sh_sourceCode .sh_difflines { color: blue; }
+
+/* for css */
+pre.sh_sourceCode .sh_selector { color: purple; }
+pre.sh_sourceCode .sh_property { color: blue; }
+pre.sh_sourceCode .sh_value { color: #006400; font-style: italic; }
+
+/* other */
+pre.sh_sourceCode .sh_section { color: black; font-weight: bold; }
+pre.sh_sourceCode .sh_paren { color: red; }
+pre.sh_sourceCode .sh_attribute { color: #006400; }
+
+</style><link charset="utf-8" type="text/css" rel="stylesheet" href="http://www.w3.org/StyleSheets/TR/w3c-unofficial"></head>
+  <body style="display: inherit;"><div class="head"><p></p><h1 class="title" id="title">Content Security Policy</h1><h2 id="unofficial-draft-03-march-2011">Unofficial Draft 03 March 2011</h2><dl><dt>Editor:</dt><dd><a href="mailto:bsterne@mozilla.com">Brandon Sterne</a>, <a href="http://www.mozilla.com/">Mozilla Corporation</a></dd>
+</dl><p class="copyright">This document is licensed under a <a class="subfoot" href="http://creativecommons.org/licenses/by/3.0/" rel="license">Creative Commons Attribution 3.0 License</a>.</p><hr></div>
+    <div class="introductory section" id="abstract"><h2>Abstract</h2>
+      <p>This document defines a policy language used to declare a set of content restrictions for a
+      web resource, and a mechanism for transmitting the policy from a server to a client where the
+      policy is enforced.</p>
+    </div><div id="sotd" class="introductory section"><h2>Status of This Document</h2><p>This document is merely a public working draft of a potential specification. It has no official standing of any kind and does not represent the support or consensus of any standards organisation.</p></div><div class="section" id="toc"><h2 class="introductory">Table of Contents</h2><ul class="toc"><li class="tocline"><a class="tocxref" href="#introduction"><span class="secno">1. </span>Introduction</a></li><li class="tocline"><a class="tocxref" href="#conformance-criteria"><span class="secno">2. </span>Conformance Criteria</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#terminology"><span class="secno">2.1 </span>Terminology</a></li></ul></li><li class="tocline"><a class="tocxref" href="#syntax"><span class="secno">3. </span>Syntax</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#policy-delivery"><span class="secno">3.1 </span>Policy Delivery</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#x-content-security-policy-response-header"><span class="secno">3.1.1 </span><code>X-Content-Security-Policy</code> Response Header</a></li><li class="tocline"><a class="tocxref" href="#meta-http-equiv--x-content-security-policy---html-element"><span class="secno">3.1.2 </span><code>&lt;meta http-equiv="X-Content-Security-Policy"&gt;</code> HTML Element</a></li><li class="tocline"><a class="tocxref" href="#delivery-mechanism-precedence"><span class="secno">3.1.3 </span>Delivery Mechanism Precedence</a></li></ul></li><li class="tocline"><a class="tocxref" href="#directives"><span class="secno">3.2 </span>Directives</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#default-src"><span class="secno">3.2.1 </span><code>default-src</code></a></li><li class="tocline"><a class="tocxref" href="#script-src"><span class="secno">3.2.2 </span><code>script-src</code></a></li><li class="tocline"><a class="tocxref" href="#object-src"><span class="secno">3.2.3 </span><code>object-src</code></a></li><li class="tocline"><a class="tocxref" href="#img-src"><span class="secno">3.2.4 </span><code>img-src</code></a></li><li class="tocline"><a class="tocxref" href="#media-src"><span class="secno">3.2.5 </span><code>media-src</code></a></li><li class="tocline"><a class="tocxref" href="#style-src"><span class="secno">3.2.6 </span><code>style-src</code></a></li><li class="tocline"><a class="tocxref" href="#frame-src"><span class="secno">3.2.7 </span><code>frame-src</code></a></li><li class="tocline"><a class="tocxref" href="#font-src"><span class="secno">3.2.8 </span><code>font-src</code></a></li><li class="tocline"><a class="tocxref" href="#xhr-src"><span class="secno">3.2.9 </span><code>xhr-src</code></a></li><li class="tocline"><a class="tocxref" href="#frame-ancestors"><span class="secno">3.2.10 </span><code>frame-ancestors</code></a></li><li class="tocline"><a class="tocxref" href="#report-uri"><span class="secno">3.2.11 </span><code>report-uri</code></a></li><li class="tocline"><a class="tocxref" href="#policy-uri"><span class="secno">3.2.12 </span><code>policy-uri</code></a></li><li class="tocline"><a class="tocxref" href="#options"><span class="secno">3.2.13 </span><code>options</code></a></li></ul></li><li class="tocline"><a class="tocxref" href="#proposed-directives"><span class="secno">3.3 </span>Proposed Directives</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#script-nonce"><span class="secno">3.3.1 </span><code>script-nonce</code></a></li><li class="tocline"><a class="tocxref" href="#sandbox"><span class="secno">3.3.2 </span><code>sandbox</code></a></li></ul></li><li class="tocline"><a class="tocxref" href="#source-expressions"><span class="secno">3.4 </span>Source Expressions</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#host-less-schemes"><span class="secno">3.4.1 </span>Host-less Schemes</a></li><li class="tocline"><a class="tocxref" href="#hostname-wildcards"><span class="secno">3.4.2 </span>Hostname Wildcards</a></li><li class="tocline"><a class="tocxref" href="#port-wildcards"><span class="secno">3.4.3 </span>Port Wildcards</a></li><li class="tocline"><a class="tocxref" href="#source-expression-keywords"><span class="secno">3.4.4 </span>Source Expression Keywords</a></li></ul></li><li class="tocline"><a class="tocxref" href="#formal-policy-grammar"><span class="secno">3.5 </span>Formal Policy Grammar</a></li><li class="tocline"><a class="tocxref" href="#sample-policy-definitions"><span class="secno">3.6 </span>Sample Policy Definitions</a></li><li class="tocline"><a class="tocxref" href="#violation-report-syntax"><span class="secno">3.7 </span>Violation Report Syntax</a></li></ul></li><li class="tocline"><a class="tocxref" href="#user-agent-behavior"><span class="secno">4. </span>User-Agent Behavior</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#base-restrictions"><span class="secno">4.1 </span>Base Restrictions</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#inline-scripts-must-not-execute"><span class="secno">4.1.1 </span>Inline scripts <em title="must not" class="rfc2119">must not</em> execute</a></li><li class="tocline"><a class="tocxref" href="#code-must-not-be-created-from-strings"><span class="secno">4.1.2 </span>Code <em title="must not" class="rfc2119">must not</em> be created from strings</a></li><li class="tocline"><a class="tocxref" href="#data--uris-must-not-be-permitted"><span class="secno">4.1.3 </span>data: URIs <em title="must not" class="rfc2119">must not</em> be permitted</a></li><li class="tocline"><a class="tocxref" href="#css-ecmascript-bindings-must-come-from-chrome--or-resource--uris"><span class="secno">4.1.4 </span>CSS-ECMAScript bindings <em title="must" class="rfc2119">must</em> come from chrome: or resource: URIs</a></li></ul></li><li class="tocline"><a class="tocxref" href="#interpreting-multiple-policies"><span class="secno">4.2 </span>Interpreting Multiple Policies</a></li><li class="tocline"><a class="tocxref" href="#handling-policy-parsing-errors"><span class="secno">4.3 </span>Handling Policy Parsing Errors</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#unrecognized-directive"><span class="secno">4.3.1 </span>Unrecognized Directive</a></li><li class="tocline"><a class="tocxref" href="#unrecognized-options-token"><span class="secno">4.3.2 </span>Unrecognized <code>options</code> Token</a></li><li class="tocline"><a class="tocxref" href="#directive-syntax-error"><span class="secno">4.3.3 </span>Directive Syntax Error</a></li><li class="tocline"><a class="tocxref" href="#no-recognized-directives"><span class="secno">4.3.4 </span>No Recognized Directives</a></li><li class="tocline"><a class="tocxref" href="#other-parsing-errors"><span class="secno">4.3.5 </span>Other Parsing Errors</a></li></ul></li><li class="tocline"><a class="tocxref" href="#report-only-mode"><span class="secno">4.4 </span>Report-Only Mode</a></li><li class="tocline"><a class="tocxref" href="#other-user-agent-considerations"><span class="secno">4.5 </span>Other User-Agent Considerations</a></li></ul></li><li class="tocline"><a class="tocxref" href="#http-server-behavior"><span class="secno">5. </span>HTTP Server Behavior</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#http-header-placement"><span class="secno">5.1 </span>HTTP Header Placement</a></li></ul></li><li class="tocline"><a class="tocxref" href="#references"><span class="secno">A. </span>References</a><ul class="toc"><li class="tocline"><a class="tocxref" href="#normative-references"><span class="secno">A.1 </span>Normative references</a></li><li class="tocline"><a class="tocxref" href="#informative-references"><span class="secno">A.2 </span>Informative references</a></li></ul></li></ul></div>
+
+    <div id="introduction" class="informative section">
+      <!--OddPage--><h2><span class="secno">1. </span>Introduction</h2><p><em>This section is non-normative.</em></p>
+      <p>The purpose of this specification is to provide a method for web applications to broadly
+      address a large class of vulnerabilities known as <strong>content injection</strong> which is
+      the primary focus of Content Security Policy.  Other threats, such as cross-site request
+      forgery, are not a focus of this specification.</p>
+
+      <p>Content Security Policy is a declarative policy framework that enables web authors and
+      server administrators to specify the permitted sources of content in their web applications
+      and to restrict the capabilities of that content.  Content Security Policy mitigates and
+      detects content injection attacks such as cross-site scripting (XSS).</p>
+
+      <p>Content Security Policy is not intended to be a fool-proof security system, but it is
+      intended to provide an effective layer of security that will dovetail with any site's existing
+      web application security program.</p>
+
+      <p>Content Security Policy is an opt-in mechanism which requires that servers explicitly
+      declare a security policy in order to receive any of the protection described in this
+      document.  Content Security Policies are applied by the user-agent on a per resource basis, so
+      servers must emit a security policy with each resource that the server wants protected.</p>
+    </div>
+
+    <div class="section" id="conformance-criteria">
+      <!--OddPage--><h2><span class="secno">2. </span>Conformance Criteria</h2>
+      <p>This specification is written for resource authors and user-agents.  All examples, and
+      notes in this specification are non-normative, as are all sections explicitly marked
+      non-normative. Everything else in this specification is normative.</p>
+
+      <p>The key words "<em title="must" class="rfc2119">must</em>", "<em title="must not" class="rfc2119">must not</em>", "<em title="required" class="rfc2119">required</em>", "<em title="should" class="rfc2119">should</em>", "<em title="should not" class="rfc2119">should not</em>", "<em title="recommended" class="rfc2119">recommended</em>", "<em title="may" class="rfc2119">may</em>",
+      and "<em title="optional" class="rfc2119">optional</em>" in the normative parts of this document are to be interpreted as described in
+      RFC2119. [<cite><a href="#bib-RFC2119" rel="biblioentry" class="bibref">RFC2119</a></cite>]</p>
+
+      <p>A conformant user-agent is one that implements all the requirements listed in this
+      specification that are applicable to user-agents.</p>
+
+      <p>A conformant server is one that implements all the requirements listed in this
+      specification that are applicable to servers.</p>
+
+      <div class="section" id="terminology">
+        <h3><span class="secno">2.1 </span>Terminology</h3>
+        <p>This section defines several terms used throughout the document.</p>
+
+        <p>The term <dfn id="dfn-generated" title="">security policy</dfn>, or simply <dfn id="dfn-generated-1" title="">policy</dfn>, for
+        the purposes of this specification refers to either:
+          </p><ol>
+            <li>A set of security preferences for restricting the behavior of content within a
+            document or resource</li>
+            <li>A fragment of text that codifies these preferences</li>
+          </ol>
+        <p></p>
+
+        <p>A server transmits their security policy for a particular resource as a composition
+        of <dfn id="dfn-generated-2" title="">directives</dfn>, such as <code>default-src 'self'</code>, each of which
+        controls a specific set of content capabilities within a document rendered by a user-agent.
+        Directives may also be used to specify the locations of resources needed by user-agents to
+        process and enforce security policies.  More details are provided in
+        the <a href="#directives">directives</a> section.</p>
+
+        <p>A directive is composed of a <dfn id="dfn-generated-3" title="">directive name</dfn>, which indicates the
+        class of content that is to be restricted by the user-agent, and a <dfn id="dfn-generated-4" title="">directive
+        value</dfn>, which specifies the range of permitted behavior for that content class.</p>
+
+        <p>Most of the policy directives defined in this document take a list
+        of <dfn id="dfn-generated-5" title="">sources</dfn> as the directive value.  A source is a location, such as a
+        network host, that is permitted to serve content of a particular type.  Sources can be
+        specified according to scheme, host and port.</p>
+
+        <p>Content Security Policies are applied by a user-agent on a <strong>per-resource
+        basis</strong>.  This means that when a server emits a Content Security Policy in a
+        response, the user-agent applies the stated policy to the document returned <strong>in that
+        response only</strong> for the lifetime of the document.  That document is often referred to
+        in this specification as the <dfn id="dfn-generated-6" title="">protected document</dfn>
+        or <dfn id="dfn-generated-7" title="">protected resource</dfn>.</p>
+
+        <p>When Content Security Policy is enabled by a server,
+        several <a href="#base-restrictions">base restrictions</a> are applied in the user-agent
+        processing model.  These base restrictions provide support for the primary threat model.</p>
+
+        <p>The term <code>origin</code> is used per its definition in the Origin specification.
+          [<em><a href="http://tools.ietf.org/html/draft-abarth-origin-09">ORIGIN</a></em>]</p>
+
+        <p>The term <code>URI</code> is defined in the URI specification.  [<cite><a href="#bib-URI" rel="biblioentry" class="bibref">URI</a></cite>]</p>
+
+        <p>The <code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>,
+        <code>&lt;applet&gt;</code>, <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>,
+        <code>&lt;audio&gt;</code>, <code>&lt;link&gt;</code>, <code>&lt;frame&gt;</code>
+        and <code>&lt;iframe&gt;</code> elements are defined in the HTML 5 standard. [<cite><a href="#bib-HTML5" rel="biblioentry" class="bibref">HTML5</a></cite>].</p>
+
+        <p>The <code>&lt;applet&gt;</code> element is defined in the HTML 4.01 standard. [<cite><a href="#bib-HTML401" rel="biblioentry" class="bibref">HTML401</a></cite>].</p>
+
+        <p>The <code>@font-face</code> CSS rule is defined in the CSS Fonts Module Level 3 standard.
+        [<cite><a href="#bib-CSS3FONT" rel="biblioentry" class="bibref">CSS3FONT</a></cite>]</p>
+
+        <p>The <code>XMLHttpRequest</code> object is defined in the <code>XMLHttpRequest</code>
+        standard. [<cite><a href="#bib-XMLHTTPREQUEST" rel="biblioentry" class="bibref">XMLHTTPREQUEST</a></cite>]</p>
+      </div>
+
+    </div>
+
+    <div class="section" id="syntax">
+      <!--OddPage--><h2><span class="secno">3. </span>Syntax</h2>
+      <p>This section defines the syntax and semantics of the policy directives and policy delivery
+      mechanisms introduced by this specification.</p>
+
+      <div class="section" id="policy-delivery">
+        <h3><span class="secno">3.1 </span>Policy Delivery</h3>
+          <p>The policy can be delivered from the server to the client via an HTTP response header
+          or an HTML <code>meta</code> element.  Both mechanisms indicates that a resource <em title="must" class="rfc2119">must</em> have
+          the set of restrictions specified in the policy applied to it by the user-agent while
+          rendering the content.</p>
+
+          <div class="section" id="x-content-security-policy-response-header">
+            <h4><span class="secno">3.1.1 </span><code>X-Content-Security-Policy</code> Response Header</h4>
+            <p>The policy is transmitted as the HTTP header value and is parsed by the client before
+            it receives the response body.</p>
+
+            <p>The syntax of the HTTP header will be defined in a future specification of the
+            IETF <a href="http://tools.ietf.org/wg/websec/">Web Security Working Group</a>.  This
+            document assumes a header structure as defined by the following simple Backus-Naur Form
+            (BNF) notation:</p>
+            <pre>&lt;content-security-policy&gt; ::= "X-Content-Security-Policy: "&lt;directive-list&gt;</pre>
+
+            <p>Content Security Policy can be deployed in <a href="#report-only-mode">report-only
+            mode</a> by sending the HTTP response
+            header <code>X-Content-Security-Policy-Report-Only</code>.</p>
+          </div>
+
+          <div class="section" id="meta-http-equiv--x-content-security-policy---html-element">
+            <h4><span class="secno">3.1.2 </span><code>&lt;meta http-equiv="X-Content-Security-Policy"&gt;</code> HTML Element</h4>
+            <p>The policy is transmitted as the <code>content</code> attribute of the element.</p>
+
+            <p>The Content Security Policy element <em title="must" class="rfc2119">must</em> be placed in the <code>&lt;head&gt;</code>
+            element of the document and <em title="must" class="rfc2119">must</em> precede all other <code>&lt;meta&gt;</code> elements in
+            order to be treated as valid policy.</p>
+
+            <p class="issue">There probably need to be additional restrictions placed on what other
+            elements cannot precede the policy element due to their parsing causing side effects
+            that the policy won't have an opportunity to prevent.</p>
+
+            <p>Content Security Policy can be deployed in <a href="#report-only-mode">report-only
+            mode</a> by placing a <code>&lt;meta
+            http-equiv="X-Content-Security-Policy-Report-Only"&gt;</code> HTML element in
+            the <code>&lt;head&gt;</code> section of a document.</p>
+
+            <p>The semantics of the <code>&lt;meta&gt;</code> and <code>&lt;head&gt;</code> elements
+            are defined in the HTML 5 standard. [<cite><a href="#bib-HTML5" rel="biblioentry" class="bibref">HTML5</a></cite>]</p>
+          </div>
+
+          <div class="section" id="delivery-mechanism-precedence">
+            <h4><span class="secno">3.1.3 </span>Delivery Mechanism Precedence</h4>
+            <p>Policies expressed in <code>X-Content-Security-Policy</code> response headers take
+            precedence over policies expressed via <code>meta</code> elements.  If
+            no <code>X-Content-Security-Policy</code> response headers are present, then the first
+            Content Security Policy <code>meta</code> element found in the
+            document <code>head</code> takes precedence.</p>
+          </div>
+
+      </div><!-- Policy Delivery -->
+
+      <div class="section" id="directives">
+        <h3><span class="secno">3.2 </span>Directives</h3>
+        <p>This section describes the policy directives introduced by this specification.</p>
+
+        <p>None of the policy directives listed below are required for a policy to be treated as
+        valid, though user-agents <em title="should" class="rfc2119">should</em> consider a policy containing no directives as a processing
+        error from the server and <em title="should" class="rfc2119">should</em> fail closed by enforcing a policy of <code>default-src
+        'none'</code>.</p>
+
+        <p class="issue">Should an empty policy be treated as <code>default-src 'none'</code>
+        or <code>default-src *</code>?</p>
+
+        <div class="section" id="default-src">
+          <h4><span class="secno">3.2.1 </span><code>default-src</code></h4>
+          <p>The <code>default-src</code> directive defines the default policy for all types of
+          content which are not explicitly restricted by any of the other directives specified in a
+          policy.  The directive value represents the default list of sources that are permitted to
+          load content of types not specified elsewhere in the policy.</p>
+
+          <p>An exception to the <code>default-src</code> directive value being used as the default
+          policy exists in the case of
+          the <a href="#frame-ancestors"><code>frame-ancestors</code></a> directive, which <em title="must" class="rfc2119">must</em> be
+          enforced as <code>*</code> (all sources) when not explicitly declared.</p>
+
+          <p>User-agents <em title="must" class="rfc2119">must</em> enforce the <code>default-src</code> directive for any content request
+          which would be restricted by one of the following more specific directives when that
+          specific directive is not present in the policy.</p>
+        </div>
+
+        <div class="section" id="script-src">
+          <h4><span class="secno">3.2.2 </span><code>script-src</code></h4>
+          <p>The <code>script-src</code> directive defines the list of sources that are permitted to
+          load external <code>&lt;script&gt;</code> elements.</p>
+
+          <p>The <code>origin</code> portion of the <code>src</code> attribute of an
+          external <code>&lt;script&gt;</code> element <em title="must" class="rfc2119">must</em> be present in the source list defined by
+          the <code>script-src</code> directive in order for the script resource to be
+          requested.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> request script resources from non-approved sources.</p>
+
+          <p>If the <code>script-src</code> directive is not present in a policy and
+          the <a href="#default-src"><code>default-src</code></a> directive is present in the
+          policy, user-agents <em title="must" class="rfc2119">must</em> subject requests for script resources to
+          the <a href="#default-src"><code>default-src</code></a> directive.</p>
+        </div>
+
+        <div class="section" id="object-src">
+          <h4><span class="secno">3.2.3 </span><code>object-src</code></h4>
+          <p>The <code>object-src</code> directive defines the list of sources that are permitted to
+          load <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>
+          and <code>&lt;applet&gt;</code> elements.</p>
+
+          <p>The <code>origin</code> portion of the element attribute containing the URI location of
+          the embedded content <em title="must" class="rfc2119">must</em> be present in the source list defined by
+          the <code>object-src</code> directive in order for the embedded content to be
+          requested.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> request <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>
+          or <code>&lt;applet&gt;</code> resources from non-approved sources.</p>
+
+          <p>If the <code>object-src</code> directive is not present in a policy and
+          the <a href="#default-src"><code>default-src</code></a> directive is present in the
+          policy, user-agents <em title="must" class="rfc2119">must</em> subject requests for <code>&lt;object&gt;</code>,
+          <code>&lt;embed&gt;</code> and <code>&lt;applet&gt;</code> resources to the
+          <a href="#default-src"><code>default-src</code></a> directive.</p>
+
+          <p class="note">In order to achieve comprehensive XSS protection, sites must include both
+          a <code>script-src</code> directive and a <code>object-src</code> in their policy, or
+          a <code>default-src</code> directive, which covers both cases, due to some plugins having
+          scripting capability.</p>
+
+          <p class="issue">Some plug-ins, e.g. Google Gears, do not load via URLs.  How
+            does <code>object-src</code> interact with these kinds of plug-ins?</p>
+        </div>
+
+        <div class="section" id="img-src">
+          <h4><span class="secno">3.2.4 </span><code>img-src</code></h4>
+          <p>The <code>img-src</code> directive defines the list of sources that are permitted to
+          load <code>&lt;img&gt;</code> elements and shortcut icons, or favicons.</p>
+
+          <p>The <code>origin</code> portion of the <code>src</code> attribute of
+          an <code>&lt;img&gt;</code> element <em title="must" class="rfc2119">must</em> be present in the source list defined by
+          the <code>img-src</code> directive in order for the image resource to be requested.</p>
+
+          <p>The <code>origin</code> portion of the <code>href</code> attribute of a <code>&lt;link
+          rel="icon"&gt;</code> or <code>&lt;link rel="shortcut icon"&gt;</code> element <em title="must" class="rfc2119">must</em> be
+          present in the source list defined by the <code>img-src</code> directive in order for the
+          shortcut icon, or favicon, to be requested.</p>
+
+        <p>User-agents <em title="must not" class="rfc2119">must not</em> request image resources from non-approved sources.</p>
+
+        <p>If the <code>img-src</code> directive is not present in a policy and
+        the <a href="#default-src"><code>default-src</code></a> directive is present in the policy,
+        user-agents <em title="must" class="rfc2119">must</em> subject requests for image resources to
+        the <a href="#default-src"><code>default-src</code></a> directive.</p>
+        </div>
+
+        <div class="section" id="media-src">
+          <h4><span class="secno">3.2.5 </span><code>media-src</code></h4>
+          <p>The <code>media-src</code> directive defines the list of sources that are permitted to
+          load <code>&lt;video&gt;</code> elements and <code>&lt;audio&gt;</code> elements.</p>
+
+          <p>The <code>origin</code> portion of the <code>src</code> attribute of
+          a <code>&lt;video&gt;</code> element or <code>&lt;audio&gt;</code> element <em title="must" class="rfc2119">must</em> be present
+          in the source list defined by the <code>media-src</code> directive in order for the media
+          resource to be requested.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> request <code>&lt;video&gt;</code> or <code>&lt;audio&gt;</code>
+          resources from non-approved sources.</p>
+
+          <p>If the <code>media-src</code> directive is not present in a policy and
+          the <a href="#default-src"><code>default-src</code></a> directive is present in the
+          policy, user-agents <em title="must" class="rfc2119">must</em> subject requests for <code>&lt;video&gt;</code>
+          and <code>&lt;audio&gt;</code> resources to
+          the <a href="#default-src"><code>default-src</code></a> directive.</p>
+        </div>
+
+        <div class="section" id="style-src">
+          <h4><span class="secno">3.2.6 </span><code>style-src</code></h4>
+          <p>The <code>style-src</code> directive defines the list of sources that are permitted to
+          load <code>&lt;link rel="stylesheet"&gt;</code> elements, or external stylesheets.</p>
+
+          <p>The <code>origin</code> portion of the <code>href</code> attribute of a <code>&lt;link
+          rel="stylesheet"&gt;</code> element <em title="must" class="rfc2119">must</em> be present in the source list defined by
+          the <code>style-src</code> directive in order for the external stylesheet to be
+          requested.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> request external stylesheets from non-approved sources.</p>
+
+          <p>If the <code>style-src</code> directive is not present in a policy and
+          the <a href="#default-src"><code>default-src</code></a> directive is present in the
+          policy, user-agents <em title="must" class="rfc2119">must</em> subject requests for external stylesheets to
+          the <a href="#default-src"><code>default-src</code></a> directive.</p>
+        </div>
+
+        <div class="section" id="frame-src">
+          <h4><span class="secno">3.2.7 </span><code>frame-src</code></h4>
+          <p>The <code>frame-src</code> directive defines the list of sources that are permitted to
+          load <code>&lt;iframe&gt;</code> elements.</p>
+
+          <p>The <code>origin</code> portion of the <code>src</code> attribute of
+          an <code>&lt;iframe&gt;</code> element <em title="must" class="rfc2119">must</em> be present in the source list defined by
+          the <code>frame-src</code> directive in order for the script resource to be requested.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> request <code>&lt;iframe&gt;</code> resources from non-approved
+          sources.</p>
+
+          <p>If the <code>frame-src</code> directive is not present in a policy and
+          the <a href="#default-src"><code>default-src</code></a> directive is present in the
+          policy, user-agents <em title="must" class="rfc2119">must</em> subject requests for <code>&lt;iframe&gt;</code> resources to
+          the <a href="#default-src"><code>default-src</code></a> directive.</p>
+        </div>
+
+        <div class="section" id="font-src">
+          <h4><span class="secno">3.2.8 </span><code>font-src</code></h4>
+          <p>The <code>font-src</code> directive defines the list of sources that are permitted to
+          load downloadable fonts using the <code>@font-face</code> CSS rule.</p>
+
+          <p>The <code>origin</code> portion of the <code>url</code> value of the <code>src</code>
+          descriptor of a <code>@font-face</code> CSS rule <em title="must" class="rfc2119">must</em> be present in the source list
+          defined by the <code>font-src</code> directive in order for the downloadable font resource
+          to be requested.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> request downloadable font resources from non-approved sources.</p>
+
+          <p>If the <code>font-src</code> directive is not present in a policy and
+          the <a href="#default-src"><code>default-src</code></a> directive is present in the
+          policy, user-agents <em title="must" class="rfc2119">must</em> subject requests for downloadable font resources to
+          the <a href="#default-src"><code>default-src</code></a> directive.</p>
+        </div>
+
+        <div class="section" id="xhr-src">
+          <h4><span class="secno">3.2.9 </span><code>xhr-src</code></h4>
+          <p>The <code>xhr-src</code> directive defines the list of sources that are permitted to be
+          connected to via <code>XMLHttpRequest</code> objects.</p>
+
+          <p>The <code>origin</code> portion of the <code>url</code> argument passed to
+          the <code>open()</code> method of an <code>XMLHttpRequest</code> object <em title="must" class="rfc2119">must</em> be present in
+          the source list defined by the <code>xhr-src</code> directive in order for the connection
+          to be opened.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> open <code>XMLHttpRequest</code> connections to non-approved
+          sources.</p>
+
+          <p>If the <code>xhr-src</code> directive is not present in a policy and
+          the <a href="#default-src"><code>default-src</code></a> directive is present in the
+          policy, user-agents <em title="must" class="rfc2119">must</em> subject <code>XMLHttpRequest</code> connections to
+          the <a href="#default-src"><code>default-src</code></a> directive.</p>
+        </div>
+
+        <div class="section" id="frame-ancestors">
+          <h4><span class="secno">3.2.10 </span><code>frame-ancestors</code></h4>
+          <p>The <code>frame-ancestors</code> directive defines the list of sources that are
+          permitted to embed the protected resource as
+          an <code>&lt;iframe&gt;</code>, <code>&lt;frame&gt;</code> or <code>&lt;object&gt;</code>
+          element.</p>
+
+          <p>If the <code>frame-ancestors</code> directive is present in a policy
+          the <code>origin</code> portion of the <code>location.href</code> of
+          every <code>window</code> in the protected document's window parent chain <em title="must" class="rfc2119">must</em> be present
+          in the source list defined by the <code>frame-ancestors</code> directive in order for the
+          protected document to be used in the embedded browsing context.</p>
+
+          <p>If the <code>frame-ancestors</code> directive is not present in a policy its value <em title="must" class="rfc2119">must</em>
+          be assumed to be <code>*</code>, or all sources.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> use a protected document in an embedded browsing context if
+          any <code>window</code> in the protected document's window parent chain has
+          a <code>location.href</code> representing a non-approved source.</p>
+        </div>
+
+        <div class="section" id="report-uri">
+          <h4><span class="secno">3.2.11 </span><code>report-uri</code></h4>
+          <p>The <code>report-uri</code> directive defines one or more URIs to which
+          a <a href="#violation-report-syntax">violation report</a> is sent when a policy violation
+          occurs.</p>
+
+          <p>If the <code>report-uri</code> directive is present in a policy the user-agent <em title="must" class="rfc2119">must</em>
+          send a violation report to each valid URI specified in the directive value.</p>
+
+          <p>The violation report <em title="must" class="rfc2119">must</em> be sent via an HTTP POST request whose body is comprised of a
+          JSON object containing violation information, and the request <em title="must" class="rfc2119">must</em> have a Content-Type
+          of <code>application/json</code>.</p>
+
+          <p>The URIs specified in the <code>report-uri</code> directive value <em title="must" class="rfc2119">must</em> have the same
+          scheme and port as the protected document and <em title="must" class="rfc2119">must</em> share the
+          same <em><a href="http://publicsuffix.org/">public suffix</a> +1 DNS label</em> as the
+          protected document in order to be treated as valid.</p>
+
+          <p class="note">Examples of public suffixes include <code>.com</code>, <code>.net</code>
+          and <code>.co.uk</code>.  Examples of <em>"public suffix +1 DNS label"</em>
+          include <code>example.com</code>, <code>example.net</code> and <code>example.co.uk</code>.
+          Therefore a protected document whose host is <code>www.example.com</code> could have
+          a <code>report-uri</code> hosted on <code>reports.example.com</code>
+          but <b>not</b> <code>reports.example.net</code>.</p>
+
+          <p>User-agents <em title="must" class="rfc2119">must</em> send <a href="#violation-report-syntax">violation reports</a> to all valid
+          URIs listed in the <code>report-uri</code> directive value.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> send violation reports to any invalid URIs listed in
+          the <code>report-uri</code> directive value.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> follow HTTP 3xx redirect responses when sending violation
+          reports.</p>
+
+          <p>User-agents <em title="should" class="rfc2119">should</em> log policy violations on the error console when they occur.</p>
+
+          <p class="issue">This section is very HTTP-centric regarding report sending.  Is it proper
+          to require HTTP POST, for instance, if the <code>report-uri</code> uses the ftp: scheme?
+          Should non-HTTP schemes be allowed for reports?</p>
+        </div>
+
+        <div class="section" id="policy-uri">
+          <h4><span class="secno">3.2.12 </span><code>policy-uri</code></h4>
+          <p>The <code>policy-uri</code> directive defines the location of a file containing the
+          policy for a protected resource.  The contents of the file comprise the complete policy
+          for the protected resource.</p>
+
+          <p>The <code>policy-uri</code> directive <em title="must" class="rfc2119">must</em> only be declared in the absence of all other
+          policy directives.</p>
+
+          <p>If the <code>policy-uri</code> directive is present in a policy and no other policy
+          directives are declared the user-agent <em title="must" class="rfc2119">must</em> fetch the URI defined in
+          the <code>policy-uri</code> directive value and parse the content returned as the complete
+          security policy for the protected resource.</p>
+
+          <p>If the <code>policy-uri</code> directive is present in a policy and any other policy
+          directive is also declared the user-agent <em title="must" class="rfc2119">must</em> enforce the policy <code>default-src
+          'none'</code>.</p>
+
+          <p>The URI specified in the <code>policy-uri</code> directive value <em title="must" class="rfc2119">must</em> have the
+          same <code>origin</code> as the protected document in order to be treated as valid.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> fetch an invalid <code>policy-uri</code> and when one is
+          encountered the user-agent <em title="must" class="rfc2119">must</em> enforce the policy <code>default-src 'none'</code>.</p>
+
+          <p>The response to a <code>policy-uri</code> request <em title="must" class="rfc2119">must</em> include a Content-Type
+          of <code>text/x-content-security-policy</code> in order for the response to be treated as
+          valid policy for the protected resource.  User-agents <em title="must not" class="rfc2119">must not</em> enforce a policy retrieved
+          from a <code>policy-uri</code> that does not have the required Content-Type and <em title="must" class="rfc2119">must</em>
+          enforce the policy <code>default-src 'none'</code> when such a response is
+          received.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> follow HTTP 3xx redirect responses when fetching
+          a <code>policy-uri</code>.</p>
+
+          <p>User-agents <em title="should" class="rfc2119">should</em> resolve a relative <code>policy-uri</code> using the same scheme,
+          host and port as the protected resource.</p>
+        </div>
+
+        <div class="section" id="options">
+          <h4><span class="secno">3.2.13 </span><code>options</code></h4>
+          <p>The <code>options</code> directive defines a set of modifications to the Content
+          Security Policy base restrictions.</p>
+
+          <p>The <code>options</code> directive value is comprised of a space-separated LDH tokens,
+          each specifying a modification to the default Content Security Policy processing
+          model.</p>
+
+          <p>The <code>options</code> token <code>disable-xss-protection</code> enables inline
+          scripts and javascript: URIs to execute in the protected resource.</p>
+
+          <p>The <code>options</code> token <code>eval-script</code> enables in the protected
+          resource the ECMAScript APIs that compile strings into executable
+          code:</p> 
+          <ul>
+            <li><code>eval()</code></li>
+            <li><code>new Function()</code> constructor</li>
+            <li><code>setTimeout()</code> called with a String argument</li>
+            <li><code>setInterval()</code> called with a String argument.</li>
+          </ul>
+
+          <p>User-agents <em title="must" class="rfc2119">must</em> ignore any unrecognized <code>options</code> tokens and when an
+          unrecognized <code>options</code> token is encountered, user-agents <em title="should" class="rfc2119">should</em> log the event
+          on the error console.</p>
+        </div>
+
+      </div><!-- Directives -->
+
+      <div id="proposed-directives" class="informative section">
+        <h3><span class="secno">3.3 </span>Proposed Directives</h3><p><em>This section is non-normative.</em></p>
+        <p>This section describes policy directives that have been proposed for inclusion in this
+        specification but have not yet been accepted.</p>
+
+        <div class="section" id="script-nonce">
+          <h4><span class="secno">3.3.1 </span><code>script-nonce</code></h4>
+          <p>The <code>script-nonce</code> directive defines a token that when included as
+          the <code>nonce</code> attribute of a <code>&lt;script&gt;</code> element permits
+          the <code>&lt;script&gt;</code> element to execute.</p>
+
+          <p>The <code>script-nonce</code> directive provides a way for a server to relax the base
+          restriction that <a href="#inline-scripts-must-not-execute">no inline scripts are
+          permitted to execute</a>.</p>
+
+          <p>The <code>script-nonce</code> directive value <em title="must" class="rfc2119">must</em> exactly match the <code>nonce</code>
+          attribute of a <code>&lt;script&gt;</code> element in order for that <code>&lt;script&gt;</code>
+          element to be executed.</p>
+
+          <p>User-agents <em title="must not" class="rfc2119">must not</em> execute any <code>&lt;script&gt;</code> element
+          whose <code>nonce</code> attribute does not match the <code>script-nonce</code> declared
+          in the protected resource's policy.</p>
+
+          <p class="note">It is important that servers declaring <code>script-nonce</code> return a
+          cryptographically secure token as the value and to also rotate the token so that it is
+          only valid for a single response.  If a server fails to do the former, attackers will be
+          able to mount brute-force attacks on the token and potentially bypass this security
+          measure.  If a server fails to do the latter, then attackers will be able to mount replay
+          attacks on the token and can use a valid token from one response to run their injected
+          script in a subsequent response.</p>
+        </div>
+
+        <div class="section" id="sandbox">
+          <h4><span class="secno">3.3.2 </span><code>sandbox</code></h4>
+          <p>The <code>sandbox</code> directive defines a sandbox policy for the protected resource
+          using the same syntax and semantics as the <code>&lt;iframe sandbox&gt;</code> attribute
+          defined in HTML. [<cite><a href="#bib-HTML5" rel="biblioentry" class="bibref">HTML5</a></cite>]</p>
+
+          <p>The user-agent <em title="must" class="rfc2119">must</em> apply the security restrictions declared in
+          the <code>sandbox</code> directive to the protected document as if the document were
+          contained in an <code>&lt;iframe&gt;</code> with the identical <code>sandbox</code> attribute
+          value specified.</p>
+        </div>
+        
+      </div><!-- Proposed Directives -->
+
+      <div id="source-expressions" class="informative section">
+        <h3><span class="secno">3.4 </span>Source Expressions</h3><p><em>This section is non-normative.</em></p>
+        <p>This section describes the structure of the directive values that restrict the loading of
+        content into a protected document.</p>
+
+        <p>A source expression represents a combination of a scheme, a set of hosts, and a network
+        port from which content may be loaded.  Source expressions may contain a
+        wildcard, <code>*</code>, used to match a set of hosts or a set of ports.</p>
+
+        <p>A source expression may specify a set of hosts represented by any number of DNS labels
+        and an optional leading <a href="#hostname-wildcards">hostname wildcard</a> which matches 0
+        or more leading DNS labels.  If 0 DNS labels are specified in the source expression, a
+        wildcard represents the set of all hosts.</p>
+
+        <p class="note">Examples of host-only source expressions are <code>example.net</code>
+        and <code>*.example.com</code>.</p>
+
+        <p>Source expressions may specify a scheme and/or port from which content is limited to
+        loading from.  Content loading may be restricted to a single scheme by declaring the scheme
+        at the beginning of a source expression.  Content loading may also be restricted to a
+        particular port by declaring the port number at the end of a source expression.
+        A <a href="#port-wildcards">port wildcard</a> <code>*</code> may also be used in place of a
+        single port number to permit content from any port.</p>
+
+        <p>If a scheme is not specified as part of the source expression, a user-agent <em title="must" class="rfc2119">must</em> use the
+        same scheme as the protected document.  If a port number is not specified as part of the
+        source expression, a user-agent <em title="must" class="rfc2119">must</em> use the default port for the source's scheme, whether
+        the scheme was explicitly stated in the source expression or was inherited from the
+        protected document.</p>
+
+        <p class="note">An example of a source expression specifying a scheme restriction
+        is <code>https://example.com</code>.  An example of a source expression specifying scheme
+        and port restrictions is <code>https://*.example.org:443</code>.</p>
+
+        <p>A source expression may consist entirely of a scheme.  In this case, user-agents <em title="must" class="rfc2119">must</em>
+        only restrict content to be loaded from the specified scheme and <em title="must not" class="rfc2119">must not</em> apply any host or
+        port restrictions.  This allows <a href="#host-less-schemes">host-less schemes</a> to be
+        used as sources in security policies.</p>
+
+        <p>User-agents <em title="must" class="rfc2119">must</em> treat all invalid source expressions encountered in a directive value as
+        empty.</p>
+
+        <p>Servers <em title="must" class="rfc2119">must</em> specify internationalized domain names in security policies according to
+        their punycode
+        representations. [<em><a href="http://tools.ietf.org/html/rfc3492">RFC-3492</a></em>]</p>
+
+        <div class="section" id="host-less-schemes">
+          <h4><span class="secno">3.4.1 </span>Host-less Schemes</h4>
+          <p>All source expressions do not require a hostname.  Schemes like <code>data:</code> can
+          be used to load inline content and do not require a hostname or port number.</p>
+
+          <p class="note"><code>data:</code> is an example of a complete and valid source expression
+          that specifies neither hostname nor port number and which permits data URIs to be used for
+          content loading.</p>
+        </div><!-- Host-less Schemes -->
+
+        <div class="section" id="hostname-wildcards">
+          <h4><span class="secno">3.4.2 </span>Hostname Wildcards</h4>
+          <p>A source expression <em title="may" class="rfc2119">may</em> contain a single wildcard character, <code>*</code>, in the
+          hostname portion and it <em title="must" class="rfc2119">must</em> be used in place of the left-most, or most specific, DNS
+          label.  The wildcard character matches zero or more DNS labels.</p>
+
+          <p class="note">Examples of <strong>valid</strong> source expressions using hostname
+          wildcards include <code>*.example.com</code>, <code>*.org</code> and <code>*</code></p>
+
+          <p class="note">Examples of <strong>invalid</strong> hostname wildcards use
+          include <code>www.*.com</code>, <code>*.example.*</code> and <code>example.*</code></p>
+        </div><!-- Hostname Wildcards -->
+
+        <div class="section" id="port-wildcards">
+          <h4><span class="secno">3.4.3 </span>Port Wildcards</h4>
+          <p>A source expression <em title="may" class="rfc2119">may</em> contain a single wildcard character, <code>*</code>, in place
+          of the port number.  The wildcard character indicates that any port may be used to load
+          content.</p>
+
+          <p class="note">Examples of valid source expressions using the port wildcard
+          include <code>example.com:*</code> and <code>http://example.net:*</code>.</p>
+
+          <p>User-agents <em title="may" class="rfc2119">may</em> prevent content from being loaded via specific ports, even when the
+          port wildcard is used, due to security reasons.</p>
+        </div><!-- Port Wildcards -->
+
+        <div class="section" id="source-expression-keywords">
+          <h4><span class="secno">3.4.4 </span>Source Expression Keywords</h4>
+          <p>A source expression <em title="may" class="rfc2119">may</em> make use of one of the following keywords which serve as a
+          shorthand replacement for a set of hosts.</p>
+
+          <p>Source expression keywords begin and end with a single-quote character in order to
+          differentiate them from network hosts of the same name.</p>
+
+          <p>The <code>'none'</code> keyword represents the empty set of hosts.  If used, no hosts
+          are permitted for that directive.</p>
+
+          <p>The <code>'self'</code> keyword represents the source serving the protected resource.
+          When used, content may be loaded from the scheme, host and port that the protected
+          resource was served from.</p>
+
+          <p>User-agents <em title="must" class="rfc2119">must</em> ignore any unrecognized source expression keywords.</p>
+        </div><!-- Source Expression Keywords -->
+      </div><!-- Source Expressions -->
+
+      <div class="section" id="formal-policy-grammar">
+        <h3><span class="secno">3.5 </span>Formal Policy Grammar</h3>
+        <p>This section describes the formal grammar of Content Security Policy using a simple
+        Backus-Naur Form (BNF) notation.  Each rule in the grammar defines one symbol in the
+        form:</p>
+
+        <pre>&lt;symbol&gt; ::= expression</pre>
+
+        <p>The expression on the right-hand side of a rule consists of one or more sequences of
+        symbols.  A complete sequence represents a possible substitution for the symbol on the
+        left-hand side of the rule.  A choice between sequences is indicated by a vertical bar "|".
+        Expression symbols that do not appear on the left-hand side of any rule are terminal
+        symbols.</p>
+
+        <h4 id="content-security-policy-grammar">Content Security Policy Grammar:</h4>
+        <pre>&lt;policy&gt;            ::= &lt;directive-list&gt;
+
+&lt;directive-list&gt;    ::= &lt;empty&gt; | &lt;directive&gt;";"&lt;directive-list&gt;
+
+&lt;directive&gt;         ::= &lt;src-directive&gt;" "&lt;src-dir-value&gt;
+                      | "options "&lt;options-dir-value&gt;
+                      | "report-uri "&lt;uri-list&gt;
+                      | "policy-uri "&lt;URI (RFC 2396)&gt;
+                      | &lt;future-directive&gt;" "&lt;future-value&gt;
+
+&lt;future-directive&gt;  ::= &lt;ldh-str&gt;
+
+&lt;future-value&gt;      ::= &lt;empty&gt;
+                      | &lt;future-value&gt;&lt;fv-char&gt;
+
+&lt;options-dir-value&gt; ::= &lt;empty&gt;
+                      | "eval-script" &lt;options-dir-value&gt;
+                      | "inline-script" &lt;options-dir-value&gt;
+                      | &lt;(unrecognized)ldh-str&gt; &lt;options-dir-value&gt;
+
+&lt;src-directive&gt;     ::= "default-src"
+                      | "img-src"
+                      | "media-src"
+                      | "style-src"
+                      | "object-src"
+                      | "frame-src"
+                      | "font-src"
+                      | "script-src"
+                      | "xhr-src"
+                      | "frame-ancestors"
+
+&lt;src-dir-value&gt;     ::= &lt;source-list&gt;
+                      | "'none'"
+
+&lt;source-list&gt;       ::= &lt;source&gt;
+                      | &lt;source-list&gt;" "&lt;source&gt;
+
+&lt;uri-list&gt;          ::= &lt;empty&gt; | &lt;URI (RFC 2396)&gt;" "&lt;uri-list&gt;
+
+&lt;source&gt;            ::= "'self'"
+                      | &lt;scheme&gt;&lt;host&gt;&lt;port&gt;
+
+&lt;scheme&gt;            ::= &lt;empty&gt;
+                      | &lt;scheme-name&gt;":"
+                      | &lt;scheme-name&gt;":/"
+                      | &lt;scheme-name&gt;"://"
+
+&lt;scheme-name&gt;       ::= &lt;alpha&gt;&lt;scheme-suffix&gt;
+
+&lt;host&gt;              ::= &lt;empty&gt;
+                      | &lt;host-name&gt;
+
+&lt;host-name&gt;         ::= "*"
+                      | &lt;ldh-str&gt;
+                      | &lt;host-name&gt;"."&lt;ldh-str&gt;
+
+&lt;port&gt;              ::= &lt;empty&gt;
+                      | ":*"
+                      | ":"&lt;integer&gt;
+
+&lt;scheme-suffix&gt;     ::= &lt;scheme-chr&gt;
+                      | &lt;scheme-suffix&gt;&lt;scheme-chr&gt;
+
+&lt;ldh-str&gt;           ::= &lt;let-dig-hyp&gt;
+                      | &lt;ldh-str&gt;&lt;let-dig-hyp&gt;
+
+&lt;let-dig-hyp&gt;       ::= &lt;letter&gt; | &lt;digit&gt; | "-"
+
+&lt;scheme-chr&gt;        ::= &lt;letter&gt; | &lt;digit&gt; | "+" | "." | "-"
+
+&lt;fv-char&gt;           ::= &lt;letter&gt; | &lt;digit&gt;
+                      | " " | "+" | "." | "-" | "_"
+                      | "'" | """ | "[" | "]" | "\" | "|"
+                      | "/" | "?" | "{" | "}" | "=" | "+"
+                      | "`" | "~" | "!" | "@" | "#" | "$"
+                      | "%" | "^" | "&amp;" | "*" | "(" | ")"
+
+&lt;letter&gt;            ::= "a"|"b"|"c"|"d"|"e"|"f"|"g"|"h"|"i"
+                      |"j"|"k"|"l"|"m"|"n"|"o"|"p"|"q"|"r"
+                      |"s"|"t"|"u"|"v"|"w"|"x"|"y"|"z"
+                      |"A"|"B"|"C"|"D"|"E"|"F"|"G"|"H"|"I"
+                      |"J"|"K"|"L"|"M"|"N"|"O"|"P"|"Q"|"R"
+                      |"S"|"T"|"U"|"V"|"W"|"X"|"Y"|"Z"
+
+&lt;integer&gt;           ::= &lt;digit&gt; | &lt;integer&gt;&lt;digit&gt;
+
+&lt;digit&gt;             ::= "1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"0"
+
+&lt;empty&gt;             ::= ""
+</pre>
+      </div><!-- Formal Policy Grammar -->
+
+      <div id="sample-policy-definitions" class="informative section">
+        <h3><span class="secno">3.6 </span>Sample Policy Definitions</h3><p><em>This section is non-normative.</em></p>
+        <p>This section provides some sample use cases and accompanying security policies.</p>
+
+        <p><strong>Example 1:</strong> A server wants all content to come from its own domain:</p>
+        <pre>X-Content-Security-Policy: default-src 'self'</pre>
+
+        <p><strong>Example 2:</strong> An auction site wants to allow images from anywhere, plugin
+        content from a list of trusted media providers including a content distribution network, and
+        scripts only from a server under its control hosting sanitized ECMAScript:</p>
+        <pre>X-Content-Security-Policy: default-src 'self'; img-src *; \
+                           object-src media1.example.com media2.example.com *.cdn.example.com; \
+                           script-src trustedscripts.example.com</pre>
+
+        <p><strong>Example 3:</strong> A site operations group wants to globally deny all
+        third-party scripts in the site, and a particular project team wants to also disallow
+        third-party media in their section of the site.  Site operations sends the first header
+        while the project team sends the second header, and the user-agent takes the intersection of
+        the two headers to form the complete interpreted policy:</p>
+        <pre>X-Content-Security-Policy: default-src *; script-src 'self'
+X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</pre>
+
+        <p><strong>Example 4:</strong> Online banking site wants to ensure that all of the content
+        in its pages is loaded over TLS to prevent attackers from eavesdropping on insecure content
+        requests:</p>
+        <pre>X-Content-Security-Policy: default-src https://*:443</pre>
+      </div><!-- Sample Policy Definitions -->
+
+      <div class="section" id="violation-report-syntax">
+        <h3><span class="secno">3.7 </span>Violation Report Syntax</h3>
+        <p>This section defines the structure of the violation report sent by a user-agent when a
+        protected resource's security policy is violated.</p>
+
+        <p>A user-agent <em title="must" class="rfc2119">must</em> send a violation report in the following two cases:</p>
+        <ol>
+          <li>Whenever ANY policy violation occurs, a user-agent <em title="must" class="rfc2119">must</em> dispatch
+          a <code>SecurityViolation</code> event which does not bubble and is not cancelable at
+          the <code>Document</code> object of the protected resource.</li>
+          <li>Whenever a policy violation occurs and the server's policy contains
+          a <code>report-uri</code>, a user-agent <em title="must" class="rfc2119">must</em> send a violation report to all valid report
+          URIs declared in the policy via an HTTP POST request bearing the
+          Content-Type <code>application/json</code>.</li>
+        </ol>
+
+        <p>The <code>SecurityViolation</code> DOM event and the violation report sent by a
+        user-agent convey the same information about the policy violation and are intended to be
+        utilized by the server for monitoring and logging.</p>
+
+        <p>The <code>SecurityViolation</code> event uses the <code>CustomEvent</code> interface
+        defined in the DOM Level 3 Events specification. [<cite><a href="#bib-DOM-LEVEL-3-EVENTS" rel="biblioentry" class="bibref">DOM-LEVEL-3-EVENTS</a></cite>].</p>
+
+        <p>The report structure defined below is a JSON object used for both the <code>detail</code>
+        argument to the <code>SecurityViolation</code> event constructor and the request body of the
+        violation report.</p>
+
+        <p>The <code>SecurityViolation</code> event <code>detail</code> and the report body sent by
+        the user-agent <em title="must" class="rfc2119">must</em> be comprised of a JSON object having the following properties:</p>
+
+        <ul>
+          <li><strong><code>request</code></strong>: HTTP request line of the protected resource
+          whose policy was violated including method, URI and HTTP version</li>
+          <li><strong><code>request-headers</code></strong>: HTTP request headers sent with the
+          request for the protected resource whose policy was violated</li>
+          <li><strong><code>blocked-uri</code></strong>: URI of the resource that was prevented from
+          loading due to the policy violation</li>
+          <li><strong><code>violated-directive</code></strong>: The policy directive that was
+          violated</li>
+          <li><strong><code>original-policy</code></strong>: The original policy as received by the
+          user-agent.  If the policy was received via more than one Content Security Policy response
+          header, this field <em title="must" class="rfc2119">must</em> contain a comma separated list of original policies.</li>
+        </ul>
+
+        <p>In the case where a protected resource is not rendered because
+        its <code>frame-ancestors</code> directive is violated, user-agents <em title="must not" class="rfc2119">must not</em>
+        send <code>blocked-uri</code> in the report as it is assumed to have the same value
+        as <code>request</code>.</p>
+
+        <h4 id="sample-policy-violation-report">Sample Policy Violation Report</h4>
+        <p>In the following example a page located at <code>http://example.org/page.html</code> was
+        requested and returned with its response a policy of <code>default-src 'self'; policy-uri
+        http://example.org/csp-report.cgi</code>.  The policy was violated by an image element
+        from <code>evil.example.com</code> which had been embedded in the page.</p>
+
+        <pre>{
+  "csp-report": {
+    "request": "GET http://example.org/page.html HTTP/1.1",
+    "request-headers": "Host: example.org
+                        User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0b12pre) Gecko/20110222 Firefox/4.0b12pre
+                        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+                        Accept-Language: en-us,en;q=0.5
+                        Accept-Encoding: gzip, deflate
+                        Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7
+                        Keep-Alive: 115
+                        Proxy-Connection: keep-alive
+                        Cache-Control: max-age=0",
+    "blocked-uri": "http://evil.example.com/image.png",
+    "violated-directive": "default-src http://example.org"
+  }
+}</pre>
+
+        <p class="note">In the above sample report the <code>violated-directive</code> field was
+        sent in the way it was interpreted by the user-agent.  The directive was made explicit by
+        replacing the keyword <code>'self'</code> with the explicit host name of the protected
+        resource.  This is recommended behavior for user-agents as it reduces ambiguity, making
+        policy violations easier to trace by server admins.</p>
+      </div><!-- Violation Report Syntax -->
+
+    </div><!-- Syntax -->
+
+    <div class="section" id="user-agent-behavior">
+      <!--OddPage--><h2><span class="secno">4. </span>User-Agent Behavior</h2>
+      <p>This section describes required behavior for conformant user-agents when processing a
+      Content Security Policy and applying restrictions to a protected resource.</p>
+
+      <div class="section" id="base-restrictions">
+        <h3><span class="secno">4.1 </span>Base Restrictions</h3>
+        <p>The following restrictions <em title="must" class="rfc2119">must</em> be applied by a user-agent rendering a protected resource
+        which has declared a Content Security Policy unless the policy includes directives which
+        disable or modify the restrictions.</p>
+
+        <div class="section" id="inline-scripts-must-not-execute">
+          <h4><span class="secno">4.1.1 </span>Inline scripts <em title="must not" class="rfc2119">must not</em> execute</h4>
+          <p>User-agents <em title="must" class="rfc2119">must</em> prevent inline scripts from executing.  These include:</p>
+          <ul>
+            <li>Contents of internal &lt;script&gt; nodes</li>
+            <li>javascript: URIs</li>
+            <li>Event-handling HTML attributes</li>
+          </ul>
+
+          <p class="note">The <code>disable-xss-protection</code> <a href="#options">options</a>
+          directive may be used to disable this base restriction, though it is not recommended to do
+          so as all cross-site scripting protection provided by Content Security Policy will be
+          effectively disabled.</p>
+
+          <p>The supported method for executing ECMAScript in a protected document is to include
+          &lt;script&gt; elements in the document whose sources are permitted by the protected
+          document's policy.  User-agents <em title="must" class="rfc2119">must</em> execute all external scripts whose <code>src</code>
+          attribute refers to a permitted source and which are served with a Content-Type
+          of <code>application/javascript</code> or <code>application/json</code>.</p>
+
+          <p class="issue">Do further Content-Types need to be permitted for ECMAScript?</p>
+
+          <p>If a protected resource's policy declares
+          a <a href="#report-uri"><code>report-uri</code></a> and this base restriction is violated,
+          user-agents <em title="must" class="rfc2119">must</em> generate a <a href="#violation-report">violation report</a> with
+          the <code>violated-directive</code> field set to "Base Restriction Violation: no inline
+          scripts will execute" and <em title="must" class="rfc2119">must</em> send the report to the <code>report-uri</code> specified in
+          the policy.</p>
+        </div><!-- Inline scripts MUST NOT execute -->
+
+        <div class="section" id="code-must-not-be-created-from-strings">
+          <h4><span class="secno">4.1.2 </span>Code <em title="must not" class="rfc2119">must not</em> be created from strings</h4>
+          <p>User-agents <em title="must" class="rfc2119">must</em> prevent strings from being converted to ECMAScript code, including
+          calls to:</p>
+          <ul>
+            <li><code>eval()</code></li>
+            <li><code>new Function()</code> constructor</li>
+            <li><code>setTimeout()</code> called with a String argument</li>
+            <li><code>setInterval()</code> called with a String argument</li>
+          </ul>
+
+          <p class="note">The <code>eval-script</code> <a href="#options">options</a> directive may
+          be used to disable this base restriction, though it is not recommended to do so as the
+          risk of DOM-based cross-site scripting will be greatly increased.</p>
+
+          <p>If a protected resource's policy declares
+          a <a href="#report-uri"><code>report-uri</code></a> and this base restriction is violated,
+          user-agents <em title="must" class="rfc2119">must</em> generate a <a href="#violation-report">violation report</a> with
+          the <code>violated-directive</code> field set to "Base Restriction Violation: no code will
+          be created from strings" and <em title="must" class="rfc2119">must</em> send the report to the <code>report-uri</code> specified
+          in the policy.</p>
+        </div><!-- Code MUST NOT be created from strings -->
+
+        <div class="section" id="data--uris-must-not-be-permitted">
+          <h4><span class="secno">4.1.3 </span>data: URIs <em title="must not" class="rfc2119">must not</em> be permitted</h4>
+          <p>User-agents <em title="must" class="rfc2119">must</em> prevent data: URIs from being used to load inline content unless the
+          protected document's policy explicitly permits the data: protocol for that type of
+          content.</p>
+
+          <p>If a protected resource's policy declares
+          a <a href="#report-uri"><code>report-uri</code></a> and this base restriction is violated,
+          user-agents <em title="must" class="rfc2119">must</em> generate a <a href="#violation-report">violation report</a> with fields
+          set appropriately to describe the violation and <em title="must" class="rfc2119">must</em> send the report to
+          the <code>report-uri</code> specified in the policy.</p>
+        </div><!-- data: URIs MUST NOT be permitted -->
+
+        <div class="section" id="css-ecmascript-bindings-must-come-from-chrome--or-resource--uris">
+          <h4><span class="secno">4.1.4 </span>CSS-ECMAScript bindings <em title="must" class="rfc2119">must</em> come from chrome: or resource: URIs</h4>
+          <p>User-agents which allow external ECMAScript content to be bound to document elements
+          via CSS rules <em title="must" class="rfc2119">must</em> prevent such bindings unless the external content is served as a
+          chrome: or resource: URI.</p>
+
+          <p class="note">An example of such a CSS-ECMAScript binding technology is XBL.
+          [<cite><a href="#bib-XBL" rel="biblioentry" class="bibref">XBL</a></cite>]</p>
+
+          <p class="note">This restriction prevents untrusted remote content from being injected
+          into a document via a stylesheet because both the chrome: and resource: protocols serve
+          only local, trusted content.</p>
+
+          <p>If a protected resource's policy declares
+          a <a href="#report-uri"><code>report-uri</code></a> and this base restriction is violated,
+          user-agents <em title="must" class="rfc2119">must</em> generate a <a href="#violation-report">violation report</a> with fields
+          set appropriately to describe the violation and <em title="must" class="rfc2119">must</em> send the report to
+          the <code>report-uri</code> specified in the policy.</p>
+        </div><!-- ECMAScript bindings to CSS MUST come from chrome: or resource: URIs -->
+
+      </div><!-- Base Restrictions -->
+
+      <div class="section" id="interpreting-multiple-policies">
+        <h3><span class="secno">4.2 </span>Interpreting Multiple Policies</h3>
+        <p>When multiple instances of the Content Security Policy response header are present in a
+        single HTTP response, the user-agent <em title="must" class="rfc2119">must</em> enforce the most restrictive intersection of the
+        policies received.  This means that no action can be taken by the user-agent when rendering
+        the protected document unless every policy directive of every policy header received permits
+        such an action.  If an action taken by a user-agent will violate any of the policy
+        directives received in any response header, that action <em title="must not" class="rfc2119">must not</em> be taken by the
+        user-agent.</p>
+
+        <p class="issue">Is a description of a policy intersection algorithm necessary?</p>
+
+        <p>When differing <code>report-uri</code> values are received in multiple policy headers the
+        intersection of the policy values is NOT taken.  Rather, user-agents <em title="must" class="rfc2119">must</em> send a single
+        report to each valid URI specified in any <code>report-uri</code> directive received in a
+        policy header.</p>
+
+        <p>When multiple Content Security Policy <code>&lt;meta&gt;</code> elements are present in
+        the <code>head</code> section of a protected resource, the first <code>&lt;meta&gt;</code>
+        element <em title="must" class="rfc2119">must</em> be parsed as the document's security policy and enforced.  All subsequent
+        policy <code>&lt;meta&gt;</code> elements <em title="must" class="rfc2119">must</em> be ignored by the user-agent.</p>
+
+        <p class="issue">What should happen when multiple instances of the same directive but with
+        different values occur within a single policy header or meta element, i.e. should they be
+        combined or intersected as they are successively parsed?</p>
+      </div><!-- Interpreting Multiple Policies -->
+
+      <div class="section" id="handling-policy-parsing-errors">
+        <h3><span class="secno">4.3 </span>Handling Policy Parsing Errors</h3>
+        <p>This section describes how user-agents should handle various error conditions encountered
+        when parsing Content Security Policies.  The error conditions described in this section are
+        distinct from the policy violations described earlier in this document.  While policy
+        violations <em title="must" class="rfc2119">must</em> be reported to servers when a <code>policy-uri</code> has been declared,
+        policy parsing warnings <em title="should" class="rfc2119">should</em> be reported locally in the user-agent's error console, and
+        <em title="should not" class="rfc2119">should not</em> be reported to the remote server.</p>
+
+        <div class="section" id="unrecognized-directive">
+          <h4><span class="secno">4.3.1 </span>Unrecognized Directive</h4>
+          <p>When a user-agent receives a directive name that it does not recognize, the user-agent
+          <em title="must" class="rfc2119">must</em> not parse the directive name or value and <em title="must" class="rfc2119">must</em> skip ahead to the next directive name
+          present in the policy or to the end of the policy if no further directives are declared.
+          The user-agent <em title="should" class="rfc2119">should</em> report a warning message to the error console containing the
+          unrecognized directive name.</p>
+        </div><!-- Unrecognized Directive -->
+
+        <div class="section" id="unrecognized-options-token">
+          <h4><span class="secno">4.3.2 </span>Unrecognized <code>options</code> Token</h4>
+          <p>When a user-agent receives a token in an <code>options</code> directive that it does
+          not recognize, the user-agent <em title="must" class="rfc2119">must</em> skip over it.  User-agents <em title="should" class="rfc2119">should</em> report a warning
+          message to the error console containing the unrecognized token.</p>
+        </div><!-- Unrecognized options Token -->
+
+        <div class="section" id="directive-syntax-error">
+          <h4><span class="secno">4.3.3 </span>Directive Syntax Error</h4>
+          <p>When a user-agent receives a policy directive that
+          violates <a href="#formal-policy-grammar">Content Security Policy syntax</a>, the
+          user-agent <em title="must" class="rfc2119">must</em> discard the entire policy and enforce a policy of <code>default-src
+          'none'</code> on the protected resource.  User-agents <em title="should" class="rfc2119">should</em> report a warning message to
+          the error console communicating that an invalid policy was received.</p>
+        </div><!-- Directive Syntax Error -->
+
+        <div class="section" id="no-recognized-directives">
+          <h4><span class="secno">4.3.4 </span>No Recognized Directives</h4>
+          <p>When a user-agent receives a policy that contains no directives recognized by the
+          user-agent, the user-agent <em title="must" class="rfc2119">must</em> discard the entire policy and enforce a policy
+          of <code>default-src 'none'</code> on the protected resource.  User-agents <em title="should" class="rfc2119">should</em> report a
+          warning message to the error console communicating that an invalid policy was
+          received.</p>
+
+          <p class="issue">This issue was called out in the <a href="#directives">directives
+          section</a> and remains unresolved.  Should an empty policy result in the most restrictive
+          policy i.e. <code>default-src 'none'</code> or the most permissive policy
+          i.e. <code>default-src *; options disable-xss-protection eval-script</code> being
+          applied?</p>
+        </div><!-- No Recognized Directives -->
+
+        <div class="section" id="other-parsing-errors">
+          <h4><span class="secno">4.3.5 </span>Other Parsing Errors</h4>
+          <p>Any other parsing errors not described in the above sections <em title="must" class="rfc2119">must</em> result in the
+          user-agent enforcing a policy of <code>default-src 'none'</code> on the protected resource
+          and <em title="should" class="rfc2119">should</em> result in the user-agent reporting a warning message to the error console
+          describing the error.</p>
+        </div><!-- Other Parsing Errors -->
+
+      </div><!-- Handling Policy Parsing Errors -->
+
+      <div class="section" id="report-only-mode">
+        <h3><span class="secno">4.4 </span>Report-Only Mode</h3>
+        <p>This section describes a mode of operation for user-agents in which security policies are
+        parsed and violations are logged as they occur, but without blocking content from loading or
+        executing as the user-agent would under normal processing of Content Security Policy.</p>
+
+        <p>Content Security Policy can be deployed by servers in report-only mode by sending
+        a <code>X-Content-Security-Policy-Report-Only</code> <a href="#x-content-security-policy-response-header">response
+        header</a> or by placing a <code>&lt;meta
+        http-equiv="X-Content-Security-Policy-Report-Only"&gt;</code> <a href="#meta-http-equiv--x-content-security-policy---html-element">policy
+        element</a> in the <code>&lt;head&gt;</code> section of a document.</p>
+
+        <p>When report-only mode is enabled by a server, the user-agent <em title="must" class="rfc2119">must</em> log all policy
+        violations and policy parsing errors in the same manner that it would in normal blocking
+        mode, including sending <a href="#violation-reports">violation reports</a> to the server if
+        a <a href="#report-uri">report-uri</a> directive is present, as well as logging any
+        appropriate errors or warnings locally to the error console.  In report-only mode, the
+        user-agent <em title="must not" class="rfc2119">must not</em> prevent any content from loading or executing normally due to violations
+        of the protected document's stated security policy.</p>
+
+        <p class="note">This mode of operation is intended to ease deployment for servers that want
+        to experiment with a security policy but aren't ready to take the step of policy
+        enforcement.  Such sites can develop a security policy according to their knowledge and
+        assumptions about how the site functions and receive reports when content in the site
+        behaves in a manner contrary to the developed policy.  Report-only mode can also be used in
+        parallel with blocking mode as it is a useful test vehicle for a stricter policy.  The
+        stricter report-only policy can be deployed in production environments with no compatibility
+        risk and feedback can be collected from any violation reports received.  Once a site has
+        confidence that the policy is appropriate, they can promote the report-only policy to normal
+        blocking mode.</p>
+      </div><!-- Report-Only Mode -->
+
+      <div id="other-user-agent-considerations" class="informative section">
+        <h3><span class="secno">4.5 </span>Other User-Agent Considerations</h3><p><em>This section is non-normative.</em></p>
+        <p>This section contains miscellaneous items for consideration by user-agent
+        implementors</p>
+
+        <h4 id="user-scripts">User Scripts</h4>
+        <p>Content Security Policy should not interfere with the operation of user-supplied scripts
+        such as third-party user-agent add-ons and JavaScript bookmarklets.</p>
+
+        <h4 id="redirecting-content-loads">Redirecting Content Loads</h4>
+        <p>For any protected document, when a request for a sub-document resource is redirected to
+        another location, whether temporary or permanent, all locations in the resource's redirect
+        chain, including the initial location and all subsequent redirected locations, must be
+        permitted by the protected document's security policy in order for the sub-document resource
+        to be allowed to load.  If any step in the redirect process violates the protected
+        document's security policy, the request should be terminated immediately and the load
+        canceled.</p>
+
+        <h4 id="future-directives">Future Directives</h4>
+        <p>In order to support new policy directives in the future, user-agents must parse but
+        ignore unrecognized directives.  For this reason, this document specifies that user-agents
+        <em title="must" class="rfc2119">must</em> skip over unrecognized directives but <em title="should" class="rfc2119">should</em> report them on the error console.</p>
+      </div><!-- Other User-Agent Considerations -->
+
+    </div><!-- User-Agent Behavior -->
+
+    <div class="section" id="http-server-behavior">
+      <!--OddPage--><h2><span class="secno">5. </span>HTTP Server Behavior</h2>
+      <p>This section describes required behavior for conformant servers when emitting a Content
+      Security Policy.</p>
+
+      <div class="section" id="http-header-placement">
+        <h3><span class="secno">5.1 </span>HTTP Header Placement</h3>
+        <p>The <a href="#x-content-security-policy-response-header">Content Security Policy HTTP
+        response header</a> <em title="may" class="rfc2119">may</em> be present in the Message Headers section of a server's HTTP
+        response.</p>
+
+        <p>The <a href="#x-content-security-policy-response-header">Content Security Policy HTTP
+        response header</a> <em title="must not" class="rfc2119">must not</em> be present in the Trailer section of a server's HTTP response.
+        If a user-agent receives a Content Security Policy as an HTTP Trailer, it <em title="must not" class="rfc2119">must not</em> parse the
+        policy or attempt to enforce any restrictions on the rendered document.</p>
+
+        <p>HTTP Message Headers and Trailers are defined in the HTTP 1.1 standard. [<cite><a href="#bib-HTTP11" rel="biblioentry" class="bibref">HTTP11</a></cite>]</p>
+      </div><!-- HTTP Header Placement -->
+
+    </div><!-- HTTP Server Behavior -->
+
+  
+
+<div class="appendix section" id="references"><!--OddPage--><h2><span class="secno">A. </span>References</h2><div class="section" id="normative-references"><h3><span class="secno">A.1 </span>Normative references</h3><dl class="bibliography"><dt id="bib-CSS3FONT">[CSS3FONT]</dt><dd>Michel Suignard; Chris Lilley. <a href="http://www.w3.org/TR/2002/WD-css3-fonts-20020802"><cite>CSS3 module: Fonts.</cite></a> 2 August 2002. W3C Working Draft. (Work in progress.) URL: <a href="http://www.w3.org/TR/2002/WD-css3-fonts-20020802">http://www.w3.org/TR/2002/WD-css3-fonts-20020802</a> 
+</dd><dt id="bib-DOM-LEVEL-3-EVENTS">[DOM-LEVEL-3-EVENTS]</dt><dd>Björn Höhrmann; Tom Pixley; Philippe Le Hégaret. <a href="http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221"><cite>Document Object Model (DOM) Level 3 Events Specification.</cite></a> 21 December 2007. W3C Working Draft. (Work in progress.) URL: <a href="http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221">http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221</a> 
+</dd><dt id="bib-HTML401">[HTML401]</dt><dd>David Raggett; Ian Jacobs; Arnaud Le Hors. <a href="http://www.w3.org/TR/1999/REC-html401-19991224"><cite>HTML 4.01 Specification.</cite></a> 24 December 1999. W3C Recommendation. URL: <a href="http://www.w3.org/TR/1999/REC-html401-19991224">http://www.w3.org/TR/1999/REC-html401-19991224</a> 
+</dd><dt id="bib-HTML5">[HTML5]</dt><dd>Ian Hickson; David Hyatt. <a href="http://www.w3.org/TR/2010/WD-html5-20100304/"><cite>HTML 5.</cite></a> 4 March 2010. W3C Working Draft. (Work in progress.) URL: <a href="http://www.w3.org/TR/2010/WD-html5-20100304/">http://www.w3.org/TR/2010/WD-html5-20100304/</a> 
+</dd><dt id="bib-HTTP11">[HTTP11]</dt><dd>R. Fielding; et al. <a href="http://www.ietf.org/rfc/rfc2616.txt"><cite>Hypertext Transfer Protocol - HTTP/1.1.</cite></a> June 1999. Internet RFC 2616. URL: <a href="http://www.ietf.org/rfc/rfc2616.txt">http://www.ietf.org/rfc/rfc2616.txt</a> 
+</dd><dt id="bib-RFC2119">[RFC2119]</dt><dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt"><cite>Key words for use in RFCs to Indicate Requirement Levels.</cite></a> March 1997. Internet RFC 2119.  URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a> 
+</dd><dt id="bib-URI">[URI]</dt><dd>T. Berners-Lee; R. Fielding; L. Masinter. <a href="http://www.ietf.org/rfc/rfc3986.txt"><cite>Uniform Resource Identifiers (URI): generic syntax.</cite></a> January 2005. Internet RFC 3986. URL: <a href="http://www.ietf.org/rfc/rfc3986.txt">http://www.ietf.org/rfc/rfc3986.txt</a> 
+</dd><dt id="bib-XBL">[XBL]</dt><dd>Ian Hickson. <a href="http://www.w3.org/TR/2007/CR-xbl-20070316"><cite>XML Binding Language (XBL) 2.0.</cite></a> 16 March 2007. W3C Candidate Recommendation. (Work in progress.) URL: <a href="http://www.w3.org/TR/2007/CR-xbl-20070316">http://www.w3.org/TR/2007/CR-xbl-20070316</a> 
+</dd><dt id="bib-XMLHTTPREQUEST">[XMLHTTPREQUEST]</dt><dd>Anne van Kesteren. <a href="http://www.w3.org/TR/2008/WD-XMLHttpRequest-20080415"><cite>The XMLHttpRequest Object.</cite></a> 15 April 2008. W3C Working Draft. (Work in progress.) URL: <a href="http://www.w3.org/TR/2008/WD-XMLHttpRequest-20080415">http://www.w3.org/TR/2008/WD-XMLHttpRequest-20080415</a> 
+</dd></dl></div><div class="section" id="informative-references"><h3><span class="secno">A.2 </span>Informative references</h3><p>No informative references.</p></div></div></body></html>
