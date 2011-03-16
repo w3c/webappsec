@@ -115,7 +115,7 @@
 
       <p>The key words "MUST", "MUST NOT", "REQUIRED", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
       and "OPTIONAL" in the normative parts of this document are to be interpreted as described in
-      RFC2119. [[!RFC2119]]</p>
+      RFC 2119. [[!RFC2119]]</p>
 
       <p>A conformant user-agent is one that implements all the requirements listed in this
       specification that are applicable to user-agents.</p>
@@ -189,6 +189,9 @@
       <p>This section defines the syntax and semantics of the policy directives and policy delivery
       mechanisms introduced by this specification.</p>
 
+      <p>The Augmented Backus-Naur Form (ABNF) notation used in this document is specified in RFC
+      5234. [[!ABNF]]</p>
+
       <section>
         <h3>Policy Delivery</h3>
           <p>The policy can be delivered from the server to the client via an HTTP response header
@@ -203,9 +206,15 @@
 
             <p>The syntax of the HTTP header will be defined in a future specification of the
             IETF <a href="http://tools.ietf.org/wg/websec/">Web Security Working Group</a>.  This
-            document assumes a header structure as defined by the following simple Backus-Naur Form
-            (BNF) notation:</p>
-            <pre>&lt;content-security-policy> ::= "X-Content-Security-Policy: "&lt;directive-list></pre>
+            document assumes a header structure as defined by the following simple ABNF:</p>
+            <pre>content-security-policy = "X-Content-Security-Policy:" OWS [ policy ] OWS
+OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
+
+            <p>where <code>&lt;policy&gt;</code> is a sequence
+            of <a href="#directives">directives</a> defined later in this document.  The preceding
+            definition includes by reference the core rules <code>CRLF</code> and <code>WSP</code>,
+            as defined in [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF
+            Appendix B.1</a></em>]</p>
 
             <p>Content Security Policy can be deployed in <a href="#report-only-mode">report-only
             mode</a> by sending the HTTP response
@@ -317,29 +326,39 @@
           scripting capability.</p>
 
           <p class="issue">Some plug-ins, e.g. Google Gears, do not load via URLs.  How
-            does <code>object-src</code> interact with these kinds of plug-ins?</p>
+          does <code>object-src</code> interact with these kinds of plug-ins?</p>
         </section>
 
         <section>
           <h4><code>img-src</code></h4>
           <p>The <code>img-src</code> directive defines the list of sources that are permitted to
-          load <code>&lt;img&gt;</code> elements and shortcut icons, or favicons.</p>
+          load images via <code>&lt;img&gt;</code> elements, CSS properties and shortcut icons, or
+          favicons.</p>
 
           <p>The <code>origin</code> portion of the <code>src</code> attribute of
           an <code>&lt;img&gt;</code> element MUST be present in the source list defined by
           the <code>img-src</code> directive in order for the image resource to be requested.</p>
+
+          <p>The <code>origin</code> portion of the <code>url()</code> or <code>image()</code> value
+          of any CSS property that is capable of loading an image MUST be present in the source list
+          defined by the <code>img-src</code> directive in order for the image resource to be
+          requested.</p>
 
           <p>The <code>origin</code> portion of the <code>href</code> attribute of a <code>&lt;link
           rel="icon"&gt;</code> or <code>&lt;link rel="shortcut icon"&gt;</code> element MUST be
           present in the source list defined by the <code>img-src</code> directive in order for the
           shortcut icon, or favicon, to be requested.</p>
 
-        <p>User-agents MUST NOT request image resources from non-approved sources.</p>
+          <p>User-agents MUST NOT request image resources from non-approved sources.</p>
 
-        <p>If the <code>img-src</code> directive is not present in a policy and
-        the <a href="#default-src"><code>default-src</code></a> directive is present in the policy,
-        user-agents MUST subject requests for image resources to
-        the <a href="#default-src"><code>default-src</code></a> directive.</p>
+          <p>If the <code>img-src</code> directive is not present in a policy and
+          the <a href="#default-src"><code>default-src</code></a> directive is present in the
+          policy, user-agents MUST subject requests for image resources to
+          the <a href="#default-src"><code>default-src</code></a> directive.</p>
+
+          <p>The <code>url()</code> and <code>image()</code> notations are defined in the CSS Image
+          Values and Replaced Content Module Level 3
+          standard. [<em><a href="http://www.w3.org/TR/css3-images/">CSS3-Images</a></em>]</p>
         </section>
 
         <section>
@@ -549,7 +568,7 @@
 
           <p>The <code>options</code> token <code>eval-script</code> enables in the protected
           resource the ECMAScript APIs that compile strings into executable
-          code:</p> 
+          code:</p>
           <ul>
             <li><code>eval()</code></li>
             <li><code>new Function()</code> constructor</li>
@@ -607,7 +626,7 @@
           contained in an <code>&lt;iframe></code> with the identical <code>sandbox</code> attribute
           value specified.</p>
         </section>
-        
+
       </section><!-- Proposed Directives -->
 
       <section class="informative">
@@ -654,7 +673,7 @@
 
         <p>Servers MUST specify internationalized domain names in security policies according to
         their punycode
-        representations. [<em><a href="http://tools.ietf.org/html/rfc3492">RFC-3492</a></em>]</p>
+        representations. [<em><a href="http://tools.ietf.org/html/rfc3492">RFC 3492</a></em>]</p>
 
         <section>
           <h4>Host-less Schemes</h4>
@@ -713,110 +732,93 @@
 
       <section>
         <h3>Formal Policy Grammar</h3>
-        <p>This section describes the formal grammar of Content Security Policy using a simple
-        Backus-Naur Form (BNF) notation.  Each rule in the grammar defines one symbol in the
-        form:</p>
+        <p>This section describes the formal grammar of Content Security Policy using a simple ABNF
+        notation.  Each rule in the grammar defines one symbol in the form:</p>
 
-        <pre>&lt;symbol> ::= expression</pre>
+        <pre>symbol = expression</pre>
 
         <p>The expression on the right-hand side of a rule consists of one or more sequences of
         symbols.  A complete sequence represents a possible substitution for the symbol on the
-        left-hand side of the rule.  A choice between sequences is indicated by a vertical bar "|".
+        left-hand side of the rule.  A choice between sequences is indicated by a forward slash "/".
         Expression symbols that do not appear on the left-hand side of any rule are terminal
-        symbols.</p>
+        symbols.  Sequence groups are enclosed in parentheses "(...)" and are treated as a single,
+        ordered element.  Symbol repetitions are preceded by an asterisk "*".  If a minimum number
+        of repetitions is required, the asterisk is preceded by that number.</p>
 
-        <h4>Content Security Policy Grammar:</h4>
-        <pre>
-&lt;policy>            ::= &lt;directive-list>
+        <p>The following core rules are included by reference, as defined in
+        [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF Appendix B.1</a></em>]:
+        <code>ALPHA</code> (letters), <code>DIGIT</code> (decimal
+        0-9), <code>LWSP</code> (linear white space)
+        and <code>VCHAR</code> (printing characters).</p>
 
-&lt;directive-list>    ::= &lt;empty> | &lt;directive>";"&lt;directive-list>
+        <section>
+          <h4>Content Security Policy Grammar</h4>
+          <p>This section defines the general syntax of Content Security Policies as well as some
+          grammar symbols used in the <a href="#directive-definitions">directive syntax
+          definitions</a>.</p>
+          <pre>
+policy            = directive-list
 
-&lt;directive>         ::= &lt;src-directive>" "&lt;src-dir-value>
-                      | "options "&lt;options-dir-value>
-                      | "report-uri "&lt;uri-list>
-                      | "policy-uri "&lt;URI (RFC 2396)>
-                      | &lt;future-directive>" "&lt;future-value>
+directive-list    = [ directive *( ";" [ directive ] ) ]
 
-&lt;future-directive>  ::= &lt;ldh-str>
+directive         = *LWSP directive-name [ 1*LWSP directive-value ] *LWSP
 
-&lt;future-value>      ::= &lt;empty>
-                      | &lt;future-value>&lt;fv-char>
+directive-name    = 1*( ALPHA / DIGIT / "-" )
 
-&lt;options-dir-value> ::= &lt;empty>
-                      | "eval-script" &lt;options-dir-value>
-                      | "inline-script" &lt;options-dir-value>
-                      | &lt;(unrecognized)ldh-str> &lt;options-dir-value>
+directive-value   = *&lt;VCHAR except ";"&gt;
 
-&lt;src-directive>     ::= "default-src"
-                      | "img-src"
-                      | "media-src"
-                      | "style-src"
-                      | "object-src"
-                      | "frame-src"
-                      | "font-src"
-                      | "script-src"
-                      | "xhr-src"
-                      | "frame-ancestors"
+source-list       = ( *LWSP / source ) *( 1*LWSP source )
+                  / "'none'"
 
-&lt;src-dir-value>     ::= &lt;source-list>
-                      | "'none'"
+source            = scheme ":"
+                  / ( [ scheme "://" ] host [ port ] )
+                  / "'self'"
+                    ; &lt;scheme&gt; production from RFC 3986
 
-&lt;source-list>       ::= &lt;source>
-                      | &lt;source-list>" "&lt;source>
+host              = [ "*." ] 1*host-char *( "." 1*host-char )
+                  / "*"
 
-&lt;uri-list>          ::= &lt;empty> | &lt;URI (RFC 2396)>" "&lt;uri-list>
+host-char         = ALPHA / DIGIT / "-"
 
-&lt;source>            ::= "'self'"
-                      | &lt;scheme>&lt;host>&lt;port>
-
-&lt;scheme>            ::= &lt;empty>
-                      | &lt;scheme-name>":"
-                      | &lt;scheme-name>":/"
-                      | &lt;scheme-name>"://"
-
-&lt;scheme-name>       ::= &lt;alpha>&lt;scheme-suffix>
-
-&lt;host>              ::= &lt;empty>
-                      | &lt;host-name>
-
-&lt;host-name>         ::= "*"
-                      | &lt;ldh-str>
-                      | &lt;host-name>"."&lt;ldh-str>
-
-&lt;port>              ::= &lt;empty>
-                      | ":*"
-                      | ":"&lt;integer>
-
-&lt;scheme-suffix>     ::= &lt;scheme-chr>
-                      | &lt;scheme-suffix>&lt;scheme-chr>
-
-&lt;ldh-str>           ::= &lt;let-dig-hyp>
-                      | &lt;ldh-str>&lt;let-dig-hyp>
-
-&lt;let-dig-hyp>       ::= &lt;letter> | &lt;digit> | "-"
-
-&lt;scheme-chr>        ::= &lt;letter> | &lt;digit> | "+" | "." | "-"
-
-&lt;fv-char>           ::= &lt;letter> | &lt;digit>
-                      | " " | "+" | "." | "-" | "_"
-                      | "'" | "&quot;" | "[" | "]" | "\" | "|"
-                      | "/" | "?" | "{" | "}" | "=" | "+"
-                      | "`" | "~" | "!" | "@" | "#" | "$"
-                      | "%" | "^" | "&" | "*" | "(" | ")"
-
-&lt;letter>            ::= "a"|"b"|"c"|"d"|"e"|"f"|"g"|"h"|"i"
-                      |"j"|"k"|"l"|"m"|"n"|"o"|"p"|"q"|"r"
-                      |"s"|"t"|"u"|"v"|"w"|"x"|"y"|"z"
-                      |"A"|"B"|"C"|"D"|"E"|"F"|"G"|"H"|"I"
-                      |"J"|"K"|"L"|"M"|"N"|"O"|"P"|"Q"|"R"
-                      |"S"|"T"|"U"|"V"|"W"|"X"|"Y"|"Z"
-
-&lt;integer>           ::= &lt;digit> | &lt;integer>&lt;digit>
-
-&lt;digit>             ::= "1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"0"
-
-&lt;empty>             ::= ""
+port              = ":" ( 1*DIGIT / "*" )
 </pre>
+        </section><!-- Content Security Policy Grammar -->
+
+        <section>
+          <h4>Directive Definitions</h4>
+          <p>This section defines the syntax of each <code>directive</code> introduced by this
+          specification.</p>
+          <pre>
+default-src       = "default-src" [ 1*LWSP source-list ]
+
+script-src        = "script-src" [ 1*LWSP source-list ]
+
+object-src        = "object-src" [ 1*LWSP source-list ]
+
+img-src           = "img-src" [ 1*LWSP source-list ]
+
+media-src         = "media-src" [ 1*LWSP source-list ]
+
+style-src         = "style-src" [ 1*LWSP source-list ]
+
+frame-src         = "frame-src" [ 1*LWSP source-list ]
+
+font-src          = "font-src" [ 1*LWSP source-list ]
+
+xhr-src           = "xhr-src" [ 1*LWSP source-list ]
+
+frame-ancestors   = "frame-ancestors" [ 1*LWSP source-list ]
+
+report-uri        = "report-uri" [ 1*LWSP &lt;URI&gt; *( 1*LWSP &lt;URI&gt; ) ]
+                    ; &lt;URI&gt; production from RFC 2396
+
+policy-uri        = "policy-uri" 1*LWSP &lt;URI&gt;
+                    ; &lt;URI&gt; production from RFC 2396
+
+options           = "options" *( 1*LWSP 1*( ALPHA / DIGIT / "-" ) )
+</pre>
+
+        </section><!-- Directive Definitions -->
       </section><!-- Formal Policy Grammar -->
 
       <section class="informative">
@@ -1148,7 +1150,7 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
       <section class="informative">
         <h3>Other User-Agent Considerations</h3>
         <p>This section contains miscellaneous items for consideration by user-agent
-        implementors</p>
+        implementers.</p>
 
         <h4>User Scripts</h4>
         <p>Content Security Policy should not interfere with the operation of user-supplied scripts
