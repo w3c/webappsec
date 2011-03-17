@@ -748,8 +748,8 @@ OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
         <p>The following core rules are included by reference, as defined in
         [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF Appendix B.1</a></em>]:
         <code>ALPHA</code> (letters), <code>DIGIT</code> (decimal
-        0-9), <code>LWSP</code> (linear white space)
-        and <code>VCHAR</code> (printing characters).</p>
+        0-9), <code>WSP</code> (white space) and <code>VCHAR</code> (printing
+        characters).</p>
 
         <section>
           <h4>Content Security Policy Grammar</h4>
@@ -761,14 +761,14 @@ policy            = directive-list
 
 directive-list    = [ directive *( ";" [ directive ] ) ]
 
-directive         = *LWSP directive-name [ 1*LWSP directive-value ] *LWSP
+directive         = *WSP [ directive-name [ WSP directive-value ] ]
 
 directive-name    = 1*( ALPHA / DIGIT / "-" )
 
-directive-value   = *&lt;VCHAR except ";"&gt;
+directive-value   = *( WSP / &lt;VCHAR except ";"&gt; )
 
-source-list       = ( *LWSP / source ) *( 1*LWSP source )
-                  / "'none'"
+source-list       = *WSP [ source *( 1*WSP source ) *WSP ]
+                  / *WSP "'none'" *WSP
 
 source            = scheme ":"
                   / ( [ scheme "://" ] host [ port ] )
@@ -781,6 +781,8 @@ host              = [ "*." ] 1*host-char *( "." 1*host-char )
 host-char         = ALPHA / DIGIT / "-"
 
 port              = ":" ( 1*DIGIT / "*" )
+
+option-value      = 1*( ALPHA / DIGIT / "-" )
 </pre>
         </section><!-- Content Security Policy Grammar -->
 
@@ -789,33 +791,33 @@ port              = ":" ( 1*DIGIT / "*" )
           <p>This section defines the syntax of each <code>directive</code> introduced by this
           specification.</p>
           <pre>
-default-src       = "default-src" [ 1*LWSP source-list ]
+default-src       = "default-src" [ WSP source-list ]
 
-script-src        = "script-src" [ 1*LWSP source-list ]
+script-src        = "script-src" [ WSP source-list ]
 
-object-src        = "object-src" [ 1*LWSP source-list ]
+object-src        = "object-src" [ WSP source-list ]
 
-img-src           = "img-src" [ 1*LWSP source-list ]
+img-src           = "img-src" [ WSP source-list ]
 
-media-src         = "media-src" [ 1*LWSP source-list ]
+media-src         = "media-src" [ WSP source-list ]
 
-style-src         = "style-src" [ 1*LWSP source-list ]
+style-src         = "style-src" [ WSP source-list ]
 
-frame-src         = "frame-src" [ 1*LWSP source-list ]
+frame-src         = "frame-src" [ WSP source-list ]
 
-font-src          = "font-src" [ 1*LWSP source-list ]
+font-src          = "font-src" [ WSP source-list ]
 
-xhr-src           = "xhr-src" [ 1*LWSP source-list ]
+xhr-src           = "xhr-src" [ WSP source-list ]
 
-frame-ancestors   = "frame-ancestors" [ 1*LWSP source-list ]
+frame-ancestors   = "frame-ancestors" [ WSP source-list ]
 
-report-uri        = "report-uri" [ 1*LWSP &lt;URI&gt; *( 1*LWSP &lt;URI&gt; ) ]
+report-uri        = "report-uri" *( 1*WSP &lt;URI&gt; ) *WSP
                     ; &lt;URI&gt; production from RFC 2396
 
-policy-uri        = "policy-uri" 1*LWSP &lt;URI&gt;
+policy-uri        = "policy-uri" 1*WSP &lt;URI&gt; *WSP
                     ; &lt;URI&gt; production from RFC 2396
 
-options           = "options" *( 1*LWSP 1*( ALPHA / DIGIT / "-" ) )
+options           = "options" *( 1*WSP option-value ) *WSP
 </pre>
 
         </section><!-- Directive Definitions -->
