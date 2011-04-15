@@ -262,9 +262,6 @@ OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
         error from the server and SHOULD fail closed by enforcing a policy of <code>default-src
         'none'</code>.</p>
 
-        <p class="issue">Should an empty policy be treated as <code>default-src 'none'</code>
-        or <code>default-src *</code>?</p>
-
         <section>
           <h4><code>default-src</code></h4>
           <p>The <code>default-src</code> directive defines the default policy for all types of
@@ -563,19 +560,6 @@ OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
           each specifying a modification to the default Content Security Policy processing
           model.</p>
 
-          <p>The <code>options</code> token <code>disable-xss-protection</code> enables inline
-          scripts and javascript: URIs to execute in the protected resource.</p>
-
-          <p>The <code>options</code> token <code>eval-script</code> enables in the protected
-          resource the ECMAScript APIs that compile strings into executable
-          code:</p>
-          <ul>
-            <li><code>eval()</code></li>
-            <li><code>new Function()</code> constructor</li>
-            <li><code>setTimeout()</code> called with a String argument</li>
-            <li><code>setInterval()</code> called with a String argument.</li>
-          </ul>
-
           <p>User-agents MUST ignore any unrecognized <code>options</code> tokens and when an
           unrecognized <code>options</code> token is encountered, user-agents SHOULD log the event
           on the error console.</p>
@@ -713,8 +697,9 @@ OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
 
         <section>
           <h4>Source Expression Keywords</h4>
-          <p>A source expression MAY make use of one of the following keywords which serve as a
-          shorthand replacement for a set of hosts.</p>
+          <p>A source expression MAY make use of one of the following keywords which either serves
+          as a shorthand replacement for a set of hosts or modifies a default behavior for a
+          particular directive.</p>
 
           <p>Source expression keywords begin and end with a single-quote character in order to
           differentiate them from network hosts of the same name.</p>
@@ -725,6 +710,19 @@ OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
           <p>The <code>'self'</code> keyword represents the source serving the protected resource.
           When used, content may be loaded from the scheme, host and port that the protected
           resource was served from.</p>
+
+          <p>The <code>'unsafe-inline'</code> keyword may be used to enable a particular type of
+          content to be loaded inline, or from within the protected resource.  Only a subset of the
+          directives support this keyword.  When used, content of the type referenced by the
+          containing directive may be loaded inline.  More details regarding which directives
+          support this keyword are provided in the <a href="#directives">directives</a> section.</p>
+
+          <p>The <code>'unsafe-eval'</code> keyword may be used to enable a set of ECMAScript APIs
+          that turn strings into code which
+          are <a href="#code-must-not-be-created-from-strings">restricted by default</a> when
+          the <a href="#script-src"><code>script-src</code></a> directive is
+          specified. <a href="#script-src"><code>script-src</code></a> is the only directive that
+          supports this keyword.</p>
 
           <p>User-agents MUST ignore any unrecognized source expression keywords.</p>
         </section><!-- Source Expression Keywords -->
@@ -940,61 +938,8 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
       <section>
         <h3>Base Restrictions</h3>
         <p>The following restrictions MUST be applied by a user-agent rendering a protected resource
-        which has declared a Content Security Policy unless the policy includes directives which
-        disable or modify the restrictions.</p>
-
-        <section>
-          <h4>Inline scripts MUST NOT execute</h4>
-          <p>User-agents MUST prevent inline scripts from executing.  These include:</p>
-          <ul>
-            <li>Contents of internal &lt;script> nodes</li>
-            <li>javascript: URIs</li>
-            <li>Event-handling HTML attributes</li>
-          </ul>
-
-          <p class="note">The <code>disable-xss-protection</code> <a href="#options">options</a>
-          directive may be used to disable this base restriction, though it is not recommended to do
-          so as all cross-site scripting protection provided by Content Security Policy will be
-          effectively disabled.</p>
-
-          <p>The supported method for executing ECMAScript in a protected document is to include
-          &lt;script> elements in the document whose sources are permitted by the protected
-          document's policy.  User-agents MUST execute all external scripts whose <code>src</code>
-          attribute refers to a permitted source and which are served with a Content-Type
-          of <code>application/javascript</code> or <code>application/json</code>.</p>
-
-          <p class="issue">Do further Content-Types need to be permitted for ECMAScript?</p>
-
-          <p>If a protected resource's policy declares
-          a <a href="#report-uri"><code>report-uri</code></a> and this base restriction is violated,
-          user-agents MUST generate a <a href="#violation-report">violation report</a> with
-          the <code>violated-directive</code> field set to "Base Restriction Violation: no inline
-          scripts will execute" and MUST send the report to the <code>report-uri</code> specified in
-          the policy.</p>
-        </section><!-- Inline scripts MUST NOT execute -->
-
-        <section>
-          <h4>Code MUST NOT be created from strings</h4>
-          <p>User-agents MUST prevent strings from being converted to ECMAScript code, including
-          calls to:</p>
-          <ul>
-            <li><code>eval()</code></li>
-            <li><code>new Function()</code> constructor</li>
-            <li><code>setTimeout()</code> called with a String argument</li>
-            <li><code>setInterval()</code> called with a String argument</li>
-          </ul>
-
-          <p class="note">The <code>eval-script</code> <a href="#options">options</a> directive may
-          be used to disable this base restriction, though it is not recommended to do so as the
-          risk of DOM-based cross-site scripting will be greatly increased.</p>
-
-          <p>If a protected resource's policy declares
-          a <a href="#report-uri"><code>report-uri</code></a> and this base restriction is violated,
-          user-agents MUST generate a <a href="#violation-report">violation report</a> with
-          the <code>violated-directive</code> field set to "Base Restriction Violation: no code will
-          be created from strings" and MUST send the report to the <code>report-uri</code> specified
-          in the policy.</p>
-        </section><!-- Code MUST NOT be created from strings -->
+        which has declared a Content Security Policy containing at least one valid directive, except
+        in cases where the policy includes directives which disable or modify the restrictions.</p>
 
         <section>
           <h4>data: URIs MUST NOT be permitted</h4>
@@ -1007,6 +952,14 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
           user-agents MUST generate a <a href="#violation-report">violation report</a> with fields
           set appropriately to describe the violation and MUST send the report to
           the <code>report-uri</code> specified in the policy.</p>
+
+          <h5>Enabling data: URIs</h5>
+          <p>Inline content can be loaded via data: URIs by adding
+          the <a href="#host-less-schemes">data: source expression</a> to the directive that
+          restricts that particular type of content.</p>
+
+          <p class="note">For example, a site that wishes to load inline images via data: URIs would
+          add the directive <code>img-src data:</code> to their policy.</p>
         </section><!-- data: URIs MUST NOT be permitted -->
 
         <section>
@@ -1030,6 +983,120 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
         </section><!-- ECMAScript bindings to CSS MUST come from chrome: or resource: URIs -->
 
       </section><!-- Base Restrictions -->
+
+      <section>
+        <h3>Script Execution Restrictions</h3>
+        <p>This section describes required restrictions which MUST be applied by a user-agent
+        rendering a protected resource which has declared ANY directive which controls the loading
+        of ECMAScript content into the protected resource.  Such directives
+        include: <a href="#script-src"><code>script-src</code></a>
+        and <a href="#object-src"><code>object-src</code></a>, as well as an implied value for
+        either of these directives as indicated by
+        a <a href="#default-src"><code>default-src</code></a> directive.  If
+        a <code>script-src</code> directive has not been declared in the policy a user-agent MUST NOT
+        enforce the following restrictions.</p>
+
+        <p class="issue">It may be preferable to only activate these restrictions
+        when <code>script-src</code> is declared.</p>
+
+        <section>
+          <h4>Inline scripts MUST NOT execute</h4>
+          <p>User-agents MUST prevent inline scripts from executing.  These include:</p>
+          <ul>
+            <li>Contents of internal <code>&lt;script&gt;</code> elements</li>
+            <li>javascript: URIs</li>
+            <li>Event-handling HTML attributes</li>
+          </ul>
+
+          <p>The supported method for executing ECMAScript in a protected document is to include
+          <code>&lt;script&gt;</code> elements in the document whose sources are permitted by the
+          protected document's policy.  User-agents MUST execute all external scripts
+          whose <code>src</code> attribute refers to a permitted source and which are served with a
+          Content-Type of <code>application/javascript</code> or <code>application/json</code>.</p>
+
+          <p>If a protected resource's policy declares
+          a <a href="#report-uri"><code>report-uri</code></a> and this restriction is violated,
+          user-agents MUST generate a <a href="#violation-report">violation report</a> and MUST send
+          the report to the <code>report-uri</code> specified in the policy.</p>
+
+          <h5>Enabling inline scripts</h5>
+          <p>Inline script can be enabled by adding
+          the <code>'unsafe-inline'</code> <a href="#source-expression-keywords">source expression
+          keyword</a> to the <a href="#script-src"><code>script-src</code></a> directive.  It is not
+          recommended to do so, however, as all cross-site scripting protection provided by Content
+          Security Policy will be effectively disabled.</p>
+
+          <p class="issue">There is an
+          alternate <a href="http://lists.w3.org/Archives/Public/public-web-security/2011Apr/0033.html">proposal</a>
+          for enabling inline script by Collin Jackson which uses
+          an <code>'inline'</code> <a href="#source-expression-keywords">source expression
+          keyword</a> in <code>script-src</code> but ignores it
+          unless <code>disable-xss-protection</code> is declared as
+          an <a href="#options"><code>options</code></a> token.</p>
+        </section><!-- Inline scripts MUST NOT execute -->
+
+        <section>
+          <h4>Code MUST NOT be created from strings</h4>
+          <p>User-agents MUST prevent strings from being converted to ECMAScript code, including
+          calls to:</p>
+          <ul>
+            <li><code>eval()</code></li>
+            <li><code>new Function()</code> constructor</li>
+            <li><code>setTimeout()</code> called with a String argument</li>
+            <li><code>setInterval()</code> called with a String argument</li>
+          </ul>
+          <p>If a protected resource's policy declares
+          a <a href="#report-uri"><code>report-uri</code></a> and this restriction is violated,
+          user-agents MUST generate a <a href="#violation-report">violation report</a> and MUST send
+          the report to the <code>report-uri</code> specified in the policy.</p>
+
+          <h5>Enabling strings-into-code functionality</h5>
+          <p>The APIs listed above that turn strings into executable code can be enabled by adding
+          the <code>'unsafe-eval'</code> <a href="#source-expression-keywords">source expression
+          keyword</a> to the <a href="#script-src"><code>script-src</code></a> directive.  It is not
+          recommended to do so, however, as the risk of DOM-based cross-site scripting will be
+          greatly increased.</p>
+        </section><!-- Code MUST NOT be created from strings -->
+
+      </section><!-- Script Execution Restrictions -->
+
+      <section>
+        <h3>Inline CSS Restrictions</h3>
+        <p>This section describes required restrictions which MUST be applied by a user-agent
+        rendering a protected resource which has declared
+        a <a href="#style-src"><code>style-src</code></a> directive, or has implied
+        a <code>style-src</code> directive by declaring
+        a <a href="#default-src"><code>default-src</code></a> directive.  If
+        a <code>style-src</code> directive has not been declared in the policy a user-agent MUST NOT
+        enforce the following restrictions.</p>
+
+        <section>
+          <h4>Inline CSS MUST NOT be applied</h4>
+          <p>User-agents MUST prevent inline CSS from being applied to the protected document.  This
+          includes CSS properties defined in:</p>
+          <ul>
+            <li><code>&lt;style&gt;</code> elements</li>
+            <li><code>style</code> attributes on HTML elements</li>
+          </ul>
+
+          <p>The supported method for applying CSS properties to a protected resource which utilizes
+          the <code>style-src</code> directive is to include <code>&lt;link
+          rel="stylesheet"&gt;</code> elements in the document whose sources are permitted by the
+          protected document's policy.  User-agents MUST parse and apply all style properties from
+          external stylesheets whose <code>href</code> attribute refers to a permitted source.</p>
+
+          <p>If a protected resource's policy declares
+          a <a href="#report-uri"><code>report-uri</code></a> and this restriction is violated,
+          user-agents MUST generate a <a href="#violation-report">violation report</a> and MUST send
+          the report to the <code>report-uri</code> specified in the policy.</p>
+
+          <h5>Enabling inline CSS</h5>
+          <p>Inline CSS can be enabled by adding
+          the <code>'unsafe-inline'</code> <a href="#source-expression-keywords">source expression
+          keyword</a> to the <a href="#style-src"><code>style-src</code></a> directive.</p>
+        </section><!-- Inline CSS MUST NOT be applied -->
+
+      </section><!-- Inline CSS Restrictions -->
 
       <section>
         <h3>Interpreting Multiple Policies</h3>
@@ -1108,12 +1175,6 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
           user-agent, the user-agent MUST NOT enforce any restrictions on the protected resource.
           User-agents SHOULD report a warning message to the error console communicating that a
           policy containing no valid directives was received.</p>
-
-          <p class="issue">This issue was called out in the <a href="#directives">directives
-          section</a> and remains unresolved.  Should an empty policy result in the most restrictive
-          policy i.e. <code>default-src 'none'</code> or the most permissive policy
-          i.e. <code>default-src *; options disable-xss-protection eval-script</code> being
-          applied?</p>
         </section><!-- No Recognized Directives -->
 
         <section>
