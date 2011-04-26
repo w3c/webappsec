@@ -149,8 +149,18 @@
 
         <p>Most of the policy directives defined in this document take a list
         of <dfn title="">sources</dfn> as the directive value.  A source is a location, such as a
-        network host, that is permitted to serve content of a particular type.  Sources can be
-        specified according to scheme, host and port.</p>
+        network host, from which content of a particular type can be <dfn id="fetch"
+        title="">fetched</dfn> according to
+        the <a href="http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources">fetching
+        algorithm</a> defined in the HTML 5 standard [[!HTML5]].  Sources can be specified according
+        to scheme, host and port.</p>
+
+        <p>Fetching resources requires <dfn id="resolve">resolving</dfn>
+        and <dfn id="parse-url">parsing</dfn> URLs.  The algorithms
+        for <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/urls.html#resolving-urls">resolving
+        a URL</a>
+        and <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/urls.html#parse-a-url">parsing
+        a URL</a> are defined in the HTML 5 standard [[!HTML5]].</p>
 
         <p>Content Security Policies are applied by a user-agent on a <strong>per-resource
         basis</strong>.  This means that when a server emits a Content Security Policy in a
@@ -267,8 +277,8 @@ OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
           <h4><code>default-src</code></h4>
           <p>The <code>default-src</code> directive defines the default policy for all types of
           content which are not explicitly restricted by any of the other directives specified in a
-          policy.  The directive value represents the default list of sources that are permitted to
-          load content of types not specified elsewhere in the policy.</p>
+          policy.  The directive value represents the default list of sources from which content of
+          types not specified elsewhere in the policy may be <a href="#fetch">fetched</a>.
 
           <p>An exception to the <code>default-src</code> directive value being used as the default
           policy exists in the case of
@@ -282,11 +292,13 @@ OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
 
         <section>
           <h4><code>script-src</code></h4>
-          <p>The <code>script-src</code> directive defines the list of sources that are permitted to
-          load external <code>&lt;script&gt;</code> elements.</p>
+          <p>The <code>script-src</code> directive defines the list of sources from which scripts
+          may be <a href="#fetch">fetched</a> as external <code>&lt;script&gt;</code> elements.</p>
 
-          <p>The <code>origin</code> portion of the <code>src</code> attribute of an
-          external <code>&lt;script&gt;</code> element MUST be present in the source list defined by
+          <p>Prior to a script resource being fetched, the URL in the <code>&lt;script&gt;</code>
+          element's <code>src</code> attribute must first be <a href="#resolve">resolved</a>
+          relative to the element and then <a href="#parse-url">parsed</a> into its component parts.
+          The resulting scheme, host and port tuple MUST be present in the source list defined by
           the <code>script-src</code> directive in order for the script resource to be
           requested.</p>
 
