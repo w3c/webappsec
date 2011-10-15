@@ -191,6 +191,12 @@
 
         <p>The <code>XMLHttpRequest</code> object is defined in the <code>XMLHttpRequest</code>
         standard. [[!XMLHTTPREQUEST]]</p>
+
+        <p>The <code>WebSocket</code> object is defined in the <code>WebSocket</code>
+        standard. [<em><a href="http://dev.w3.org/html5/websockets/">WEBSOCKET</a></em>].</p>
+
+        <p>The <code>EventSource</code> object is defined in the <code>EventSource</code>
+        standard. [<em><a href="http://dev.w3.org/html5/eventsource/">EVENTSOURCE</a></em>].</p>
       </section>
 
     </section>
@@ -490,26 +496,49 @@ OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
         </section>
 
         <section>
-          <h4><code>xhr-src</code></h4>
-          <p>The <code>xhr-src</code> directive defines the list of sources that are permitted to be
-          connected to via <code>XMLHttpRequest</code> objects.</p>
+          <h4><code>connect-src</code></h4>
+          <p>The <code>connect-src</code> directive defines the list of sources that are permitted
+          to be connected to via the DOM APIs <code>XMLHttpRequest</code>, <code>WebSocket</code>
+          and <code>EventSource</code>.</p>
 
-          <p>Prior to an <code>XMLHttpRequest</code> connection being opened, the <code>url</code>
-          argument passed to
-          the <a href="http://www.w3.org/TR/XMLHttpRequest/#the-open-method"><code>open()</code>
-          method</a> of an <code>XMLHttpRequest</code> object MUST first
-          be <a href="#resolve">resolved</a> relative to the
+          <p>Prior to connecting to an external source using one of the restricted APIs, the source
+          URL MUST first be validated as conforming to the protected
+          document's <code>connect-src</code> directive.</p>
+
+          <p>Source URLs requiring validation prior to connection include:
+            <ol>
+              <li>The <code>url</code> argument passed to
+              the <a href="http://www.w3.org/TR/XMLHttpRequest/#the-open-method"><code>open()</code>
+              method</a> of an <code>XMLHttpRequest</code> object</li>
+              <li>The <code>url</code> argument passed to
+              the <a href="http://dev.w3.org/html5/websockets/#websocket"><code>WebSocket</code>
+              constructor</a></li>
+              <li>The <code>url</code> argument passed to
+              the <a href="http://dev.w3.org/html5/eventsource/#eventsource"><code>EventSource</code>
+              constructor</a></li>
+            </ol>
+          </p>
+
+          <p>Any source URLs identified per the above MUST first be
+          fully <a href="#resolve">resolved</a>.  In the case of an <code>XMLHttpRequest</code>
+          object, the source URL MUST be resolved relative to the
           object's <a href="http://www.w3.org/TR/XMLHttpRequest/#xmlhttprequest-base-url">base
-          URL</a> then <a href="#parse-url">parsed</a> into its component parts.  The resulting
-          scheme, host and port tuple MUST be present in the source list defined by
-          the <code>xhr-src</code> directive in order for the connection to be opened.</p>
+          URL</a>.  In the case of an <code>EventSource</code> object, the source URL MUST be
+          resolved relative to
+          the <a href="http://www.whatwg.org/specs/web-apps/current-work/#entry-script">entry
+          script's</a> <a href="http://www.whatwg.org/specs/web-apps/current-work/#script%27s-base-url">base
+          URL</a>.  A <code>WebSocket</code> URL is required to be an absolute URL, and thus does
+          not require relative resolution.  Once resolved, the source URL MUST
+          be <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
+          and port tuple MUST be present in the source list defined by the <code>connect-src</code>
+          directive in order for the connection to be made.</p>
 
-          <p>User-agents MUST NOT open <code>XMLHttpRequest</code> connections to non-approved
-          sources.</p>
+          <p>User-agents MUST NOT connect to any non-approved sources via restricted APIs.</p>
 
-          <p>If the <code>xhr-src</code> directive is not present in a policy and
+          <p>If the <code>connect-src</code> directive is not present in a policy and
           the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject <code>XMLHttpRequest</code> connections to
+          policy, user-agents MUST subject <code>XMLHttpRequest</code>, <code>WebSocket</code>
+          and <code>EventSource</code> connections to
           the <a href="#default-src"><code>default-src</code></a> directive.</p>
         </section>
 
@@ -873,7 +902,7 @@ frame-src         = "frame-src" [ WSP source-list ]
 
 font-src          = "font-src" [ WSP source-list ]
 
-xhr-src           = "xhr-src" [ WSP source-list ]
+connect-src       = "connect-src" [ WSP source-list ]
 
 frame-ancestors   = "frame-ancestors" [ WSP source-list ]
 
