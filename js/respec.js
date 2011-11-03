@@ -588,13 +588,13 @@ berjon.respec.prototype = {
 //        }
         var css;
         if (statStyle == "unofficial") {
-            css = "http://www.w3.org/StyleSheets/TR/w3c-unofficial";
+            css = "https://www.w3.org/StyleSheets/TR/w3c-unofficial";
         }
         else if (statStyle == "base") {
-            css = "http://www.w3.org/StyleSheets/TR/base";
+            css = "https://www.w3.org/StyleSheets/TR/base";
         }
         else {
-            css = "http://www.w3.org/StyleSheets/TR/W3C-" + statStyle;// + ".css";
+            css = "https://www.w3.org/StyleSheets/TR/W3C-" + statStyle;// + ".css";
         }
         this._insertCSS(css, false);
     },
