@@ -254,9 +254,8 @@
 
           <p>Upon receiving an HTTP response containing at least one
           <code>Content-Security-Policy</code> header field, the user agent
-          MUST <a href="#enforce">enforce</a> the <a
-          href="#combination">combination</a> of all the policies contained in
-          these header fields.</p>
+          MUST <a href="#enforce-the-combination">enforce the combination</a>
+          of all the policies contained in these header fields.</p>
         </section>
 
         <section>
@@ -277,9 +276,9 @@
 
           <p>Upon receiving an HTTP response containing at least one
           <code>Content-Security-Policy-Report-Only</code> header field, the
-          user agent MUST <a href="#monitor">monitor</a> the <a
-          href="#combination">combination</a> of all the policies contained in
-          these header fields.</p>
+          user agent MUST <a href="#monitor-the-combination">monitor the
+          combination</a> of all the policies contained in these header
+          fields.</p>
         </section>
 
         <section>
@@ -517,14 +516,49 @@ port              = ":" ( 1*DIGIT / "*" )
       <section>
         <h3>Processing Model</h3>
 
-        <p>An action is permitted by the <dfn
-        id="combination">combination</dfn> of one or more policies if the
-        action is permitted by each of the policies individually.</p>
+        <p>To <dfn id="enforce">enforce</dfn> a CSP policy, the user agent MUST
+        <a href="#parse-a-csp-policy">parse the policy</a> and enforce each of
+        the directives contained in the policy, where the specific
+        requirements for enforcing each directive are defined separately for
+        each directive (See <a href="#sec-directives">Directives</a>,
+        below).</p>
+
+        <p>Generally speaking, enforcing a directive prevent the protected
+        document from performing certain actions, such as loading scripts from
+        URIs other than those indicated in a source list. These restrictions
+        make it more difficult for an attacker to abuse an injection
+        vulnerability in the document because the attacker will be unable to
+        usurp the document's privileges that have been restricted in this
+        way.</p>
+
+        <p>To <dfn id="monitor">enforce</dfn> a CSP policy, the user agent MUST
+        <a href="#parse-a-csp-policy">parse the policy</a> and monitor each of
+        the directives contained in the policy, where the specific
+        requirements for monitoring each directive are defined separately for
+        each directive (See <a href="#sec-directives">Directives</a>,
+        below).</p>
+
+        <p>Generally speaking, monitoring a directive does not prevent the
+        protected document from undertaking any actions. Instead, any actions
+        that would have been prevented by the directive are instead reported
+        to the developer of the web application. Monitoring a CSP policy is
+        most useful for testing whether enforcing the policy will break the
+        web application.</p>
+
+        <p>To <dfn id="enforce-the-combination">enforce the combination</dfn>
+        of one or more policies, the user agent MUST enforce each policy. For
+        example, if an action is prevented by at least one of the policies,
+        then the action will be prevented by the combination of the
+        policies.</p>
+
+        <p>To <dfn id="monitor-the-combination">monitor the combination</dfn>
+        of one or more policies, the user agent MUST monitor each each
+        policy.</p>
       </section>
     </section>
 
     <section>
-      <h2>Directives</h2>
+      <h2 id="sec-directives">Directives</h2>
 
       <p>This section describes the content security policy directives
       introduced in this specification.</p>
