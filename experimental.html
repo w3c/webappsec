@@ -116,87 +116,87 @@
 
       <p>To take advantage of CSP, a web application needs to opt into using
       CSP by supplying a Content-Security-Policy HTTP header or an appropriate
-      &lg;meta&gt; element. Such policies apply the current document only. To
-      supply a policy for an entire site, the server need to supply a policy
-      along with each resource representation.</p>
+      <code>meta</code> element. Such policies apply the current document
+      only. To supply a policy for an entire site, the server need to supply a
+      policy along with each resource representation.</p>
     </section>
 
     <section>
       <h2>Conformance Criteria</h2>
-      <p>This specification is written for resource authors and user-agents.  All examples, and
-      notes in this specification are non-normative, as are all sections explicitly marked
-      non-normative. Everything else in this specification is normative.</p>
 
-      <p>The key words "MUST", "MUST NOT", "REQUIRED", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
-      and "OPTIONAL" in the normative parts of this document are to be interpreted as described in
-      RFC 2119. [[!RFC2119]]</p>
+      <p>This specification is written for resource authors and user-agents.
+      All examples, and notes in this specification are non-normative, as are
+      all sections explicitly marked non-normative. Everything else in this
+      specification is normative.</p>
 
-      <p>A conformant user-agent is one that implements all the requirements listed in this
-      specification that are applicable to user-agents.</p>
+      <p>The key words "MUST", "MUST NOT", "REQUIRED", "SHOULD", "SHOULD NOT",
+      "RECOMMENDED", "MAY", and "OPTIONAL" in the normative parts of this
+      document are to be interpreted as described in RFC 2119.
+      [[!RFC2119]]</p>
 
-      <p>A conformant server is one that implements all the requirements listed in this
-      specification that are applicable to servers.</p>
+      <p>A conformant user-agent is one that implements all the requirements
+      listed in this specification that are applicable to user-agents.</p>
+
+      <p>A conformant server is one that implements all the requirements
+      listed in this specification that are applicable to servers.</p>
 
       <section>
         <h3>Terminology</h3>
+
         <p>This section defines several terms used throughout the document.</p>
 
-        <p>The term <dfn title="">security policy</dfn>, or simply <dfn title="">policy</dfn>, for
-        the purposes of this specification refers to either:
+        <p>The term <dfn>security policy</dfn>, or
+        simply <dfn>policy</dfn>, for the purposes of this
+        specification refers to either:
           <ol>
-            <li>A set of security preferences for restricting the behavior of content within a
-            document or resource</li>
-            <li>A fragment of text that codifies these preferences</li>
+            <li>a set of security preferences for restricting the behavior of
+            content within a given document, or</li>
+            <li>a fragment of text that codifies these preferences.</li>
           </ol>
         </p>
 
-        <p>A server transmits their security policy for a particular resource as a composition
-        of <dfn title="">directives</dfn>, such as <code>default-src 'self'</code>, each of which
-        controls a specific set of content capabilities within a document rendered by a user-agent.
-        Directives may also be used to specify the locations of resources needed by user-agents to
-        process and enforce security policies.  More details are provided in
-        the <a href="#directives">directives</a> section.</p>
+        <p>The security policies defined by this document are applied by a
+        user-agent on a <em>per-resource representation basis</em>.
+        Specifically, when a user agent receives a policy along with the
+        representation of a given resource, that policy applies to <em>that
+        resource representation only</em>. That resource representation is
+        often referred to in this document as the <dfn>protected
+        document</dfn>.
 
-        <p>A directive is composed of a <dfn title="">directive name</dfn>, which indicates the
-        class of content that is to be restricted by the user-agent, and a <dfn title="">directive
-        value</dfn>, which specifies the range of permitted behavior for that content class.</p>
+        <p>A server transmits its security policy for a particular resource as
+        a collection of <dfn>directives</dfn>, such as <code>default-src
+        'self'</code>, each of which controls a specific set of privileges for
+        a document rendered by a user-agent. More details are provided in the
+        <a href="#directives">directives</a> section.</p>
 
-        <p>Most of the policy directives defined in this document take a list
-        of <dfn title="">sources</dfn> as the directive value.  A source is a location, such as a
-        network host, from which content of a particular type can be <dfn id="fetch"
-        title="">fetched</dfn> according to
-        the <a href="http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources">fetching
-        algorithm</a> defined in the HTML 5 standard [[!HTML5]].  Sources can be specified according
-        to scheme, host and port.</p>
+        <p>A directive consists of a <dfn>directive name</dfn>, which
+        indicates the privileges controlled by the directive, and a
+        <dfn>directive value</dfn>, which specifies the restrictions the
+        policy imposes on those privileges.</p>
+
+        <p>Most of the directives defined in this document have as their value
+        a <dfn>list of sources</dfn>. Each <dfn>source expression</dfn> in the
+        list represents a set of URIs (or types of locations) from which
+        content of the specified type can be retrieved. For example, the
+        source expression <code>'self'</code> represents the set of URIs which
+        are in the same origin as the protected document.</p>
 
         <p>Fetching resources requires <dfn id="resolve">resolving</dfn>
         and <dfn id="parse-url">parsing</dfn> URLs.  The algorithms
         for <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/urls.html#resolving-urls">resolving
         a URL</a>
         and <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/urls.html#parse-a-url">parsing
-        a URL</a> are defined in the HTML 5 standard [[!HTML5]].</p>
+        a URL</a> are defined in the HTML5 standard [[!HTML5]].</p>
 
-        <p>Content Security Policies are applied by a user-agent on a <strong>per-resource
-        basis</strong>.  This means that when a server emits a Content Security Policy in a
-        response, the user-agent applies the stated policy to the document returned <strong>in that
-        response only</strong> for the lifetime of the document.  That document is often referred to
-        in this specification as the <dfn title="">protected document</dfn>
-        or <dfn title="">protected resource</dfn>.</p>
+        <p>The term <dfn>origin</dfn> is defined in the Origin specification.
+        [<em><a href="http://tools.ietf.org/html/draft-ietf-websec-origin">ORIGIN</a></em>]</p>
 
-        <p>When Content Security Policy is enabled by a server,
-        several <a href="#base-restrictions">base restrictions</a> are applied in the user-agent
-        processing model.  These base restrictions provide support for the primary threat model.</p>
-
-        <p>The term <code>origin</code> is used per its definition in the Origin specification.
-          [<em><a href="http://tools.ietf.org/html/draft-abarth-origin-09">ORIGIN</a></em>]</p>
-
-        <p>The term <code>URI</code> is defined in the URI specification.  [[!URI]]</p>
+        <p>The term <dfn>URI</dfn> is defined in the URI specification.  [[!URI]]</p>
 
         <p>The <code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>,
         <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code>,
         <code>&lt;link&gt;</code>, <code>&lt;frame&gt;</code> and <code>&lt;iframe&gt;</code>
-        elements and the <code>Window</code> object are defined in the HTML 5
-        standard. [[!HTML5]].</p>
+        elements are defined in the HTML5 standard. [[!HTML5]].</p>
 
         <p>The <code>&lt;applet&gt;</code> element is defined in the HTML 4.01 standard. [[!HTML401]].</p>
 
