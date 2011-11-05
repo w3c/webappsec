@@ -134,6 +134,11 @@
       document are to be interpreted as described in RFC 2119.
       [[!RFC2119]]</p>
 
+      <p>Requirements phrased in the imperative as part of algorithms (such as
+      "strip any leading space characters" or "return false and abort these
+      steps") are to be interpreted with the meaning of the key word ("MUST",
+      "SHOULD", "MAY", etc) used in introducing the algorithm.</p>
+
       <p>A conformant user-agent is one that implements all the requirements
       listed in this specification that are applicable to user-agents.</p>
 
@@ -286,6 +291,50 @@
           these header fields.</p>
         </section>
 
+        <section>
+          <h4><code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code> HTML Element</h4>
+
+          <p>The server MAY supply a CSP policy in an HTML <code>meta</code>
+          element with an <code>http-equiv</code> attribute that is a case
+          insensitive match for either <code>Content-Security-Policy</code> or
+          <code>Content-Security-Policy-Report-Only</code>.</p>
+
+          <p>Add the following entries to the <a
+          href="http://www.w3.org/TR/html5/semantics.html#pragma-directives">pragma
+          directives</a> for the <code>meta</code> element:</p>
+
+          <dl>
+            <dt>Content security policy (<code>http-equiv="content-security-policy"</code>)</dt>
+            <dd>
+              <ol>
+                <li>If the document already has a <em>csp-policy</em>, abort
+                these steps.</li>
+
+                <li>If the <code>meta</code> element lacks a
+                <code>content</code> attribute, abort these steps.</li>
+
+                <li><a href="#enforce">Enforce</a> the CSP policy contained in
+                the <code>content</code> attribute of the <code>meta</code>
+                element.</li>
+              </ol>
+            </dd>
+
+            <dt>Content security policy, report only (<code>http-equiv="content-security-policy-report-only"</code>)</dt>
+            <dd>
+              <ol>
+                <li>If the document already has a <em>csp-policy</em>, abort
+                these steps.</li>
+
+                <li>If the <code>meta</code> element lacks a
+                <code>content</code> attribute, abort these steps.</li>
+
+                <li><a href="#monitor">Monitor</a> the CSP policy contained in
+                the <code>content</code> attribute of the <code>meta</code>
+                element.</li>
+              </ol>
+            </dd>
+          </dl>
+        </section>
       </section>
     </section>
 
@@ -304,49 +353,6 @@
       <h2>Syntax</h2>
       <p>This section defines the syntax and semantics of the policy directives and policy delivery
       mechanisms introduced by this specification.</p>
-
-      <section>
-        <h3>Policy Delivery</h3>
-
-          <section>
-            <h4><code>X-Content-Security-Policy</code> Response Header</h4>
-
-            <p>Content Security Policy can be deployed in <a href="#report-only-mode">report-only
-            mode</a> by sending the HTTP response
-            header <code>X-Content-Security-Policy-Report-Only</code>.</p>
-          </section>
-
-          <section>
-            <h4><code>&lt;meta http-equiv="X-Content-Security-Policy"&gt;</code> HTML Element</h4>
-            <p>The policy is transmitted as the <code>content</code> attribute of the element.</p>
-
-            <p>The Content Security Policy element MUST be placed in the <code>&lt;head&gt;</code>
-            element of the document and MUST precede all other <code>&lt;meta&gt;</code> elements in
-            order to be treated as valid policy.</p>
-
-            <p class="issue">There probably need to be additional restrictions placed on what other
-            elements cannot precede the policy element due to their parsing causing side effects
-            that the policy won't have an opportunity to prevent.</p>
-
-            <p>Content Security Policy can be deployed in <a href="#report-only-mode">report-only
-            mode</a> by placing a <code>&lt;meta
-            http-equiv="X-Content-Security-Policy-Report-Only"></code> HTML element in
-            the <code>&lt;head></code> section of a document.</p>
-
-            <p>The semantics of the <code>&lt;meta&gt;</code> and <code>&lt;head&gt;</code> elements
-            are defined in the HTML 5 standard. [[!HTML5]]</p>
-          </section>
-
-          <section>
-            <h4>Delivery Mechanism Precedence</h4>
-            <p>Policies expressed in <code>X-Content-Security-Policy</code> response headers take
-            precedence over policies expressed via <code>meta</code> elements.  If
-            no <code>X-Content-Security-Policy</code> response headers are present, then the first
-            Content Security Policy <code>meta</code> element found in the
-            document <code>head</code> takes precedence.</p>
-          </section>
-
-      </section><!-- Policy Delivery -->
 
       <section>
         <h3>Directives</h3>
