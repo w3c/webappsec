@@ -403,16 +403,40 @@ directive-value   = *( WSP / &lt;VCHAR except ";"&gt; )
 <pre>
 source-list       = *WSP [ source-expression *( 1*WSP source-expression ) *WSP ]
                   / *WSP "'none'" *WSP
-source-expression = scheme ":"
-                  / ( [ scheme "://" ] host [ port ] )
-                  / "'self'"
-                    ; &lt;scheme&gt; production from RFC 3986
-host              = [ "*." ] 1*host-char *( "." 1*host-char )
-                  / "*"
+source-expression = scheme-source / host-source / keyword-source
+scheme-source     = scheme ":"
+host-source       = ( [ scheme "://" ] host [ port ] )
+keyword-source    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'"
+scheme            = &lt;scheme&gt; production from RFC 3986
+host              = "*" / [ "*." ] 1*host-char *( "." 1*host-char )
 host-char         = ALPHA / DIGIT / "-"
 port              = ":" ( 1*DIGIT / "*" )
 option-value      = 1*( ALPHA / DIGIT / "-" )
 </pre>
+
+          <p>To <dfn id="parse-a-source-list">parse a source list</dfn>
+          <var>source list</var>, the user agent MUST use an algorithm
+          equivalent to the following:</p>
+
+          <ol>
+            <li>If <var>source list</var> (with <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strip-leading-and-trailing-whitespace">leading
+            and trailing whitespace stripped</a>) is a case insensitive match
+            for the string <code>'none'</code> (including the quotation
+            marks), return the empty set.</li>
+
+            <li>Let the <var>set of source expressions</var> be the empty set.</li>
+
+            <li>For each token returned by <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#split-a-string-on-spaces">splitting
+            <var>source list</var> on spaces</a>:
+              <ol>
+                <li>If the token matches the grammar for
+                <code>source-expression</code>, add the token to the <var>set
+                of source expressions</var>.</li>
+              </ol>
+            </li>
+
+            <li>Return the <var>set of source expressions</var>.</li>
+          </ol>
 
         </section>
       </section>
