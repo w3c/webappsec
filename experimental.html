@@ -212,6 +212,12 @@
 
         <p>The Augmented Backus-Naur Form (ABNF) notation used in this
         document is specified in RFC 5234. [[!ABNF]]</p>
+
+        <p>The following core rules are included by reference, as defined in
+        [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF Appendix B.1</a></em>]:
+        <code>ALPHA</code> (letters), <code>DIGIT</code> (decimal
+        0-9), <code>WSP</code> (white space) and <code>VCHAR</code> (printing
+        characters).</p>
       </section>
     </section>
 
@@ -936,164 +942,27 @@ port              = ":" ( 1*DIGIT / "*" )
           location.</p>
         </section>
 
-        <section>
-          <h4><code>options</code></h4>
-          <p>The <code>options</code> directive defines a set of modifications to the Content
-          Security Policy base restrictions.</p>
-
-          <p>The <code>options</code> directive value is comprised of a space-separated LDH tokens,
-          each specifying a modification to the default Content Security Policy processing
-          model.</p>
-
-          <p>User-agents MUST ignore any unrecognized <code>options</code> tokens and when an
-          unrecognized <code>options</code> token is encountered, user-agents SHOULD log the event
-          on the error console.</p>
-        </section>
-
       </section><!-- Directives -->
 
       <section class="informative">
         <h3>Source Expressions</h3>
-        <p>This section describes the structure of the directive values that restrict the loading of
-        content into a protected document.</p>
 
-        <p>A source expression represents a combination of a scheme, a set of hosts, and a network
-        port from which content may be loaded.  Source expressions may contain a
-        wildcard, <code>*</code>, used to match a set of hosts or a set of ports.</p>
+        <p>The <code>'unsafe-inline'</code> keyword may be used to enable a particular type of
+        content to be loaded inline, or from within the protected resource.  Only a subset of the
+        directives support this keyword.  When used, content of the type referenced by the
+        containing directive may be loaded inline.  More details regarding which directives
+        support this keyword are provided in the <a href="#directives">directives</a> section.</p>
 
-        <p>A source expression may specify a set of hosts represented by any number of DNS labels
-        and an optional leading <a href="#hostname-wildcards">hostname wildcard</a> which matches 0
-        or more leading DNS labels.  If 0 DNS labels are specified in the source expression, a
-        wildcard represents the set of URIs.</p>
-
-        <p class="note">Examples of host-only source expressions are <code>example.net</code>
-        and <code>*.example.com</code>.</p>
-
-        <p>Source expressions may specify a scheme and/or port from which content is limited to
-        loading from.  Content loading may be restricted to a single scheme by declaring the scheme
-        at the beginning of a source expression.  Content loading may also be restricted to a
-        particular port by declaring the port number at the end of a source expression.
-        A <a href="#port-wildcards">port wildcard</a> <code>*</code> may also be used in place of a
-        single port number to permit content from any port.</p>
-
-        <p>If a scheme is not specified as part of the source expression, a user-agent MUST use the
-        same scheme as the protected document.  If a port number is not specified as part of the
-        source expression, a user-agent MUST use the default port for the source's scheme, whether
-        the scheme was explicitly stated in the source expression or was inherited from the
-        protected document.</p>
-
-        <p class="note">An example of a source expression specifying a scheme restriction
-        is <code>https://example.com</code>.  An example of a source expression specifying scheme
-        and port restrictions is <code>https://*.example.org:443</code>.</p>
-
-        <p>A source expression may consist entirely of a scheme.  In this case, user-agents MUST
-        only restrict content to be loaded from the specified scheme and MUST NOT apply any host or
-        port restrictions.  This allows <a href="#host-less-schemes">host-less schemes</a> to be
-        used as sources in security policies.</p>
-
-        <p>User-agents MUST treat all invalid source expressions encountered in a directive value as
-        empty.</p>
-
-        <p>Servers MUST specify internationalized domain names in security policies according to
-        their punycode
-        representations. [<em><a href="http://tools.ietf.org/html/rfc3492">RFC 3492</a></em>]</p>
-
-        <section>
-          <h4>Host-less Schemes</h4>
-          <p>All source expressions do not require a hostname.  Schemes like <code>data:</code> can
-          be used to load inline content and do not require a hostname or port number.</p>
-
-          <p class="note"><code>data:</code> is an example of a complete and valid source expression
-          that specifies neither hostname nor port number and which permits data URIs to be used for
-          content loading.</p>
-        </section><!-- Host-less Schemes -->
-
-        <section>
-          <h4>Hostname Wildcards</h4>
-          <p>A source expression MAY contain a single wildcard character, <code>*</code>, in the
-          hostname portion and it MUST be used in place of the left-most, or most specific, DNS
-          label.  The wildcard character matches zero or more DNS labels.</p>
-
-          <p class="note">Examples of <strong>valid</strong> source expressions using hostname
-          wildcards include <code>*.example.com</code>, <code>*.org</code> and <code>*</code></p>
-
-          <p class="note">Examples of <strong>invalid</strong> hostname wildcards use
-          include <code>www.*.com</code>, <code>*.example.*</code> and <code>example.*</code></p>
-        </section><!-- Hostname Wildcards -->
-
-        <section>
-          <h4>Port Wildcards</h4>
-          <p>A source expression MAY contain a single wildcard character, <code>*</code>, in place
-          of the port number.  The wildcard character indicates that any port may be used to load
-          content.</p>
-
-          <p class="note">Examples of valid source expressions using the port wildcard
-          include <code>example.com:*</code> and <code>http://example.net:*</code>.</p>
-
-          <p>User-agents MAY prevent content from being loaded via specific ports, even when the
-          port wildcard is used, due to security reasons.</p>
-        </section><!-- Port Wildcards -->
-
-        <section>
-          <h4>Source Expression Keywords</h4>
-          <p>A source expression MAY make use of one of the following keywords which either serves
-          as a shorthand replacement for a set of hosts or modifies a default behavior for a
-          particular directive.</p>
-
-          <p>Source expression keywords begin and end with a single-quote character in order to
-          differentiate them from network hosts of the same name.</p>
-
-          <p>The <code>'none'</code> keyword represents the empty set of hosts.  If used, no hosts
-          are permitted for that directive.</p>
-
-          <p>The <code>'self'</code> keyword represents the source serving the protected resource.
-          When used, content may be loaded from the scheme, host and port that the protected
-          resource was served from.</p>
-
-          <p>The <code>'unsafe-inline'</code> keyword may be used to enable a particular type of
-          content to be loaded inline, or from within the protected resource.  Only a subset of the
-          directives support this keyword.  When used, content of the type referenced by the
-          containing directive may be loaded inline.  More details regarding which directives
-          support this keyword are provided in the <a href="#directives">directives</a> section.</p>
-
-          <p>The <code>'unsafe-eval'</code> keyword may be used to enable a set of ECMAScript APIs
-          that turn strings into code which
-          are <a href="#code-must-not-be-created-from-strings">restricted by default</a> when
-          the <a href="#script-src"><code>script-src</code></a> directive is
-          specified. <a href="#script-src"><code>script-src</code></a> is the only directive that
-          supports this keyword.</p>
-
-          <p>User-agents MUST ignore any unrecognized source expression keywords.</p>
-        </section><!-- Source Expression Keywords -->
+        <p>The <code>'unsafe-eval'</code> keyword may be used to enable a set of ECMAScript APIs
+        that turn strings into code which
+        are <a href="#code-must-not-be-created-from-strings">restricted by default</a> when
+        the <a href="#script-src"><code>script-src</code></a> directive is
+        specified. <a href="#script-src"><code>script-src</code></a> is the only directive that
+        supports this keyword.</p>
       </section><!-- Source Expressions -->
 
       <section>
         <h3>Formal Policy Grammar</h3>
-        <p>This section describes the formal grammar of Content Security Policy using a simple ABNF
-        notation.  Each rule in the grammar defines one symbol in the form:</p>
-
-        <pre>symbol = expression</pre>
-
-        <p>The expression on the right-hand side of a rule consists of one or more sequences of
-        symbols.  A complete sequence represents a possible substitution for the symbol on the
-        left-hand side of the rule.  A choice between sequences is indicated by a forward slash "/".
-        Expression symbols that do not appear on the left-hand side of any rule are terminal
-        symbols.  Sequence groups are enclosed in parentheses "(...)" and are treated as a single,
-        ordered element.  Symbol repetitions are preceded by an asterisk "*".  If a minimum number
-        of repetitions is required, the asterisk is preceded by that number.</p>
-
-        <p>The following core rules are included by reference, as defined in
-        [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF Appendix B.1</a></em>]:
-        <code>ALPHA</code> (letters), <code>DIGIT</code> (decimal
-        0-9), <code>WSP</code> (white space) and <code>VCHAR</code> (printing
-        characters).</p>
-
-        <section>
-          <h4>Content Security Policy Grammar</h4>
-          <p>This section defines the general syntax of Content Security Policies as well as some
-          grammar symbols used in the <a href="#directive-definitions">directive syntax
-          definitions</a>.</p>
-        </section><!-- Content Security Policy Grammar -->
 
         <section>
           <h4>Directive Definitions</h4>
@@ -1101,28 +970,17 @@ port              = ":" ( 1*DIGIT / "*" )
           specification.</p>
           <pre>
 default-src       = "default-src" [ WSP source-list ]
-
 script-src        = "script-src" [ WSP source-list ]
-
 object-src        = "object-src" [ WSP source-list ]
-
 img-src           = "img-src" [ WSP source-list ]
-
 media-src         = "media-src" [ WSP source-list ]
-
 style-src         = "style-src" [ WSP source-list ]
-
 frame-src         = "frame-src" [ WSP source-list ]
-
 font-src          = "font-src" [ WSP source-list ]
-
 connect-src       = "connect-src" [ WSP source-list ]
-
 frame-ancestors   = "frame-ancestors" [ WSP source-list ]
-
 report-uri        = "report-uri" *( 1*WSP &lt;URI&gt; ) *WSP
                     ; &lt;URI&gt; production from RFC 2396
-
 policy-uri        = "policy-uri" 1*WSP &lt;URI&gt; *WSP
                     ; &lt;URI&gt; production from RFC 2396
 </pre>
