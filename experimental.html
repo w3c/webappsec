@@ -116,7 +116,7 @@
 
       <p>To take advantage of CSP, a web application needs to opt into using
       CSP by supplying a Content-Security-Policy HTTP header or an appropriate
-      <code>meta</code> element. Such policies apply the current document
+      HTML <code>meta</code> element. Such policies apply the current document
       only. To supply a policy for an entire site, the server need to supply a
       policy along with each resource representation.</p>
     </section>
@@ -211,16 +211,82 @@
 
         <p>The <code>EventSource</code> object is defined in the <code>EventSource</code>
         standard. [<em><a href="http://dev.w3.org/html5/eventsource/">EVENTSOURCE</a></em>].</p>
-      </section>
 
+        <p>The Augmented Backus-Naur Form (ABNF) notation used in this
+        document is specified in RFC 5234. [[!ABNF]]</p>
+      </section>
     </section>
 
     <section>
       <h2>Framework</h2>
 
       <p>This section defines the general framework for content security
-      policies. The next section contains the directive introduced in this
-      specification.</p>
+      policies, including the delivery mechanisms and general syntax for
+      policies. The next section contains the details of the specific
+      directives introduced in this specification.</p>
+
+      <section>
+        <h3>Definitions</h3>
+
+        <p>An action is permitted by the <dfn
+        id="combination">combination</dfn> of one or more policies if the
+        action is permitted by each of the policies individually.</p>
+      </section>
+
+      <section>
+        <h3>Policy Delivery</h3>
+
+        <p>The policy can be delivered from the server to the client via an HTTP response header
+        or an HTML <code>meta</code> element.</p>
+
+        <p>Of the two delivery mechanisms, servers SHOULD use the HTTP
+        response header mechanism whenever possible because, when using the
+        <code>meta</code> element mechanism, there is a period of time between
+        when the user agent begins to process the document and when the user
+        agent encounters the <code>meta</code> element when the document is
+        not protected by the policy.</p>
+
+        <section>
+          <h4><code>Content-Security-Policy</code> Header Field</h4>
+
+          <p>The <code>Content-Security-Policy</code> header field is the
+          preferred mechanism for delivering a CSP policy.</p>
+
+          <p>A server MAY supply one or more CSP policies in HTTP response
+          header fields named <code>Content-Security-Policy</code> along with
+          the protected document.</p>
+
+          <p>Upon receiving an HTTP response containing at least one
+          <code>Content-Security-Policy</code> header field, the user agent
+          MUST <a href="#enforce">enforce</a> the <a
+          href="#combination">combination</a> of all the policies contained in
+          these header fields.</p>
+        </section>
+
+        <section>
+          <h4><code>Content-Security-Policy-Report-Only</code> Header Field</h4>
+
+          <p>The <code>Content-Security-Policy-Report-Only</code> header field
+          lets server experiment with CSP by monitoring (rather than
+          enforcing) a policy.</p>
+
+          <p>A server MAY supply one or more CSP policies in HTTP response
+          header fields named <code>Content-Security-Policy-Report-Only</code>
+          along with the protected document.</p>
+
+          <p>If a server supplies at least one
+          <code>Content-Security-Policy-Report-Only</code> header field in an
+          HTTP response, the server MUST NOT supply any
+          <code>Content-Security-Policy</code> header fields.</p>
+
+          <p>Upon receiving an HTTP response containing at least one
+          <code>Content-Security-Policy-Report-Only</code> header field, the
+          user agent MUST <a href="#monitor">monitor</a> the <a
+          href="#combination">combination</a> of all the policies contained in
+          these header fields.</p>
+        </section>
+
+      </section>
     </section>
 
     <section>
@@ -239,32 +305,11 @@
       <p>This section defines the syntax and semantics of the policy directives and policy delivery
       mechanisms introduced by this specification.</p>
 
-      <p>The Augmented Backus-Naur Form (ABNF) notation used in this document is specified in RFC
-      5234. [[!ABNF]]</p>
-
       <section>
         <h3>Policy Delivery</h3>
-          <p>The policy can be delivered from the server to the client via an HTTP response header
-          or an HTML <code>meta</code> element.  Both mechanisms indicates that a resource MUST have
-          the set of restrictions specified in the policy applied to it by the user-agent while
-          rendering the content.</p>
 
           <section>
             <h4><code>X-Content-Security-Policy</code> Response Header</h4>
-            <p>The policy is transmitted as the HTTP header value and is parsed by the client before
-            it receives the response body.</p>
-
-            <p>The syntax of the HTTP header will be defined in a future specification of the
-            IETF <a href="http://tools.ietf.org/wg/websec/">Web Security Working Group</a>.  This
-            document assumes a header structure as defined by the following simple ABNF:</p>
-            <pre>content-security-policy = "X-Content-Security-Policy:" OWS [ policy ] OWS
-OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
-
-            <p>where <code>&lt;policy&gt;</code> is a sequence
-            of <a href="#directives">directives</a> defined later in this document.  The preceding
-            definition includes by reference the core rules <code>CRLF</code> and <code>WSP</code>,
-            as defined in [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF
-            Appendix B.1</a></em>]</p>
 
             <p>Content Security Policy can be deployed in <a href="#report-only-mode">report-only
             mode</a> by sending the HTTP response
