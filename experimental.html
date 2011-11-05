@@ -230,14 +230,6 @@
       directives introduced in this specification.</p>
 
       <section>
-        <h3>Definitions</h3>
-
-        <p>An action is permitted by the <dfn
-        id="combination">combination</dfn> of one or more policies if the
-        action is permitted by each of the policies individually.</p>
-      </section>
-
-      <section>
         <h3>Policy Delivery</h3>
 
         <p>The policy can be delivered from the server to the client via an HTTP response header
@@ -339,16 +331,19 @@
       <section>
         <h3>Syntax</h3>
 
-        <p>A CSP policy consists of a U+003B SEMICOLON (<code>;</code>)
-        delimited list of directives:</p>
+        <section>
+          <h4>Policies</h4>
+
+          <p>A CSP <dfn>policy</dfn> consists of a U+003B SEMICOLON
+          (<code>;</code>) delimited list of directives:</p>
 
 <pre>
 policy            = directive-list
 directive-list    = [ directive *( ";" [ directive ] ) ]
 </pre>
 
-        <p>Each directive consists of a <var>directive-name</var> and
-        (optionally) a <var>directive-value</var>:</p>
+          <p>Each <dfn>directive</dfn> consists of a <var>directive-name</var>
+          and (optionally) a <var>directive-value</var>:</p>
 
 <pre>
 directive         = *WSP [ directive-name [ WSP directive-value ] ]
@@ -356,41 +351,42 @@ directive-name    = 1*( ALPHA / DIGIT / "-" )
 directive-value   = *( WSP / &lt;VCHAR except ";"&gt; )
 </pre>
 
-        <p>To <dfn id="parse-a-csp-policy">parse a CSP policy</dfn>
-        <var>policy</var>, the user agent MUST use an algorithm equivalent to
-        the following:</p>
+          <p>To <dfn id="parse-a-csp-policy">parse a CSP policy</dfn>
+          <var>policy</var>, the user agent MUST use an algorithm equivalent to
+          the following:</p>
 
-        <ol>
-          <li>Let the <var>set of directives</var> be the empty set.</li>
+          <ol>
+            <li>Let the <var>set of directives</var> be the empty set.</li>
 
-          <li>For each token returned by <a
-          href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strictly-split-a-string">strictly
-          spliting</a> the string <var>policy</var> on the character U+003B
-          SEMICOLON (<code>;</code>):
-            <ol>
-              <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#skip-whitespace">Skip whitespace</a>.</li>
+            <li>For each token returned by <a
+            href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strictly-split-a-string">strictly
+            spliting</a> the string <var>policy</var> on the character U+003B
+            SEMICOLON (<code>;</code>):
+              <ol>
+                <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#skip-whitespace">Skip whitespace</a>.</li>
 
-              <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#collect-a-sequence-of-characters">Collect
-              a sequence of characters</a> that are not
-              <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space characters</a>. The
-              collected characters are the <var>directive name</var>.</li>
+                <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#collect-a-sequence-of-characters">Collect
+                a sequence of characters</a> that are not
+                <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space characters</a>. The
+                collected characters are the <var>directive name</var>.</li>
 
-              <li>If <var>position</var> doesn't point past the end of the
-              token, skip ahead one character (which must be a <a
-              href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space
-              character</a>).</li>
+                <li>If <var>position</var> doesn't point past the end of the
+                token, skip ahead one character (which must be a <a
+                href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space
+                character</a>).</li>
 
-              <li>The remaining characters in <var>token</var> (if any) are
-              the <var>directive value</var>.</li>
+                <li>The remaining characters in <var>token</var> (if any) are
+                the <var>directive value</var>.</li>
 
-              <li>Add a <var>directive</var> to the <var>set of
-              directives</var> with name <var>directive name</var> and value
-              <var>directive value</var>.</li>
-            </ol>
-          </li>
+                <li>Add a <var>directive</var> to the <var>set of
+                directives</var> with name <var>directive name</var> and value
+                <var>directive value</var>.</li>
+              </ol>
+            </li>
 
-          <li>Return the <var>set of directives</var>.
-        </ol>
+            <li>Return the <var>set of directives</var>.
+          </ol>
+        </section>
 
         <section>
           <h4>Source List</h4>
@@ -508,12 +504,22 @@ port              = ":" ( 1*DIGIT / "*" )
             </li>
           </ol>
 
-          <p>A URI <dfn id="matches-a-set-of-source-expression">matches a set
-          of source expression</dfn>, if, and only if, the URI <a
-          href="#matches-a-source-expression">matches one of the source
-          expressions</a> in the set. Notice that no URIs match an empty set
-          of source expressions.</p>
+          <p>A URI <dfn id="matches-a-source-list">matches a source
+          list</dfn>, if, and only if, the URI <a
+          href="#matches-a-source-expression">matches at least one source
+          expression</a> in the set of source expressions obtained by <a
+          href="#parse-a-source-list">parsing the source list</a>. Notice that
+          no URIs match an empty set of source expressions, such as the set
+          obtained by parsing the source list <code>'none'</code>.</p>
         </section>
+      </section>
+
+      <section>
+        <h3>Processing Model</h3>
+
+        <p>An action is permitted by the <dfn
+        id="combination">combination</dfn> of one or more policies if the
+        action is permitted by each of the policies individually.</p>
       </section>
     </section>
 
@@ -1437,27 +1443,5 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
       </section><!-- Other User-Agent Considerations -->
 
     </section><!-- User-Agent Behavior -->
-
-    <section>
-      <h2>HTTP Server Behavior</h2>
-      <p>This section describes required behavior for conformant servers when emitting a Content
-      Security Policy.</p>
-
-      <section>
-        <h3>HTTP Header Placement</h3>
-        <p>The <a href="#x-content-security-policy-response-header">Content Security Policy HTTP
-        response header</a> MAY be present in the Message Headers section of a server's HTTP
-        response.</p>
-
-        <p>The <a href="#x-content-security-policy-response-header">Content Security Policy HTTP
-        response header</a> MUST NOT be present in the Trailer section of a server's HTTP response.
-        If a user-agent receives a Content Security Policy as an HTTP Trailer, it MUST NOT parse the
-        policy or attempt to enforce any restrictions on the rendered document.</p>
-
-        <p>HTTP Message Headers and Trailers are defined in the HTTP 1.1 standard. [[!HTTP11]]</p>
-      </section><!-- HTTP Header Placement -->
-
-    </section><!-- HTTP Server Behavior -->
-
   </body>
 </html>
