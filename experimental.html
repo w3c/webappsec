@@ -179,13 +179,6 @@
         <dfn>directive value</dfn>, which specifies the restrictions the
         policy imposes on those privileges.</p>
 
-        <p>Most of the directives defined in this document have as their value
-        a <dfn>list of sources</dfn>. Each <dfn>source expression</dfn> in the
-        list represents a set of URIs (or types of locations) from which
-        content of the specified type can be retrieved. For example, the
-        source expression <code>'self'</code> represents the set of URIs which
-        are in the same origin as the protected document.</p>
-
         <p>Fetching resources requires <dfn id="resolve">resolving</dfn>
         and <dfn id="parse-url">parsing</dfn> URLs.  The algorithms
         for <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/urls.html#resolving-urls">resolving
@@ -307,7 +300,7 @@
             <dt>Content security policy (<code>http-equiv="content-security-policy"</code>)</dt>
             <dd>
               <ol>
-                <li>If the document already has a <em>csp-policy</em>, abort
+                <li>If the document already has a <var>csp-policy</var>, abort
                 these steps.</li>
 
                 <li>If the <code>meta</code> element lacks a
@@ -322,7 +315,7 @@
             <dt>Content security policy, report only (<code>http-equiv="content-security-policy-report-only"</code>)</dt>
             <dd>
               <ol>
-                <li>If the document already has a <em>csp-policy</em>, abort
+                <li>If the document already has a <var>csp-policy</var>, abort
                 these steps.</li>
 
                 <li>If the <code>meta</code> element lacks a
@@ -334,6 +327,93 @@
               </ol>
             </dd>
           </dl>
+        </section>
+      </section>
+
+      <section>
+        <h3>Syntax</h3>
+
+        <p>A CSP policy consists of a U+003B SEMICOLON ("<code>;</code>")
+        delimited list of directives:</p>
+
+<pre>
+policy            = directive-list
+directive-list    = [ directive *( ";" [ directive ] ) ]
+</pre>
+
+        <p>Each directive consists of a <var>directive-name</var> and
+        (optionally) a <var>directive-value</var>:</p>
+
+<pre>
+directive         = *WSP [ directive-name [ WSP directive-value ] ]
+directive-name    = 1*( ALPHA / DIGIT / "-" )
+directive-value   = *( WSP / &lt;VCHAR except ";"&gt; )
+</pre>
+
+        <p>To <dfn id="parse-a-csp-policy">parse a CSP policy</dfn>
+        <var>policy</var>, the user agent MUST use an algorithm equivalent to
+        the following:</p>
+
+        <ol>
+          <li>Let the <var>set of directives</var> be the empty set.</li>
+
+          <li>For each token returned by <a
+          href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strictly-split-a-string">strictly
+          spliting</a> the string <var>policy</var> on the character U+003B
+          SEMICOLON ("<code>;</code>"):
+            <ol>
+              <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#skip-whitespace">Skip whitespace</a>.</li>
+
+              <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#collect-a-sequence-of-characters">Collect
+              a sequence of characters</a> that are not
+              <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space characters</a>. The
+              collected characters are the <var>directive name</var>.</li>
+
+              <li>If <var>position</var> doesn't point past the end of the
+              token, skip ahead one character (which must be a <a
+              href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space
+              character</a>).</li>
+
+              <li>The remaining characters in <var>token</var> (if any) are
+              the <var>directive value</var>.</li>
+
+              <li>Add a <var>directive</var> to the <var>set of
+              directives</var> with name <var>directive name</var> and value
+              <var>directive value</var>.</li>
+            </ol>
+          </li>
+
+          <li>Return the <var>set of directives</var>.
+        </ol>
+
+        <section>
+          <h4>Source List</h4>
+
+          <p>Many CSP directives use a value consisting of a <dfn>source
+          list</dfn>.</p>
+
+          <p>Each <dfn>source expression</dfn> in the source list represents a
+          set of URIs (or kinds of locations) from which content of the
+          specified type can be retrieved. For example, the source expression
+          <code>'self'</code> represents the set of URIs which are in the same
+          origin as the protected document.
+
+          <p>The ABNF grammar for source lists is defined below:</p>
+
+<pre>
+source-list       = *WSP [ source-expression *( 1*WSP source-expression ) *WSP ]
+                  / *WSP "'none'" *WSP
+source-expression = scheme ":"
+                  / ( [ scheme "://" ] host [ port ] )
+                  / "'self'"
+                    ; &lt;scheme&gt; production from RFC 3986
+host              = [ "*." ] 1*host-char *( "." 1*host-char )
+                  / "*"
+host-char         = ALPHA / DIGIT / "-"
+port              = ":" ( 1*DIGIT / "*" )
+option-value      = 1*( ALPHA / DIGIT / "-" )
+</pre>
+
         </section>
       </section>
     </section>
