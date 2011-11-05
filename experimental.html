@@ -333,7 +333,7 @@
       <section>
         <h3>Syntax</h3>
 
-        <p>A CSP policy consists of a U+003B SEMICOLON ("<code>;</code>")
+        <p>A CSP policy consists of a U+003B SEMICOLON (<code>;</code>)
         delimited list of directives:</p>
 
 <pre>
@@ -360,7 +360,7 @@ directive-value   = *( WSP / &lt;VCHAR except ";"&gt; )
           <li>For each token returned by <a
           href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strictly-split-a-string">strictly
           spliting</a> the string <var>policy</var> on the character U+003B
-          SEMICOLON ("<code>;</code>"):
+          SEMICOLON (<code>;</code>):
             <ol>
               <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#skip-whitespace">Skip whitespace</a>.</li>
 
@@ -410,7 +410,6 @@ scheme            = &lt;scheme&gt; production from RFC 3986
 host              = "*" / [ "*." ] 1*host-char *( "." 1*host-char )
 host-char         = ALPHA / DIGIT / "-"
 port              = ":" ( 1*DIGIT / "*" )
-option-value      = 1*( ALPHA / DIGIT / "-" )
 </pre>
 
           <p>To <dfn id="parse-a-source-list">parse a source list</dfn>
@@ -431,6 +430,70 @@ option-value      = 1*( ALPHA / DIGIT / "-" )
             <var>set of source expressions</var>.</li>
 
             <li>Return the <var>set of source expressions</var>.</li>
+          </ol>
+
+          <p>To check whether a URI <dfn
+          id="matches-a-source-expression">matches a source expression</dfn>,
+          the user agent MUST use an algorithm equivalent to the
+          following:</p>
+
+          <ol>
+            <li>If the source expression a single U+002A ASTERISK character
+            (<code>*</code>), then return <em>does match</em> and abort these
+            steps.</li>
+
+            <li>If the source expression matches the grammar for
+            <code>scheme-source</code>, the URI matches the source expression
+            of the URI's scheme is a case-insensitive match for the source
+            expression's <code>scheme</code>.</li>
+
+            <li>Otherwise, if the source expression matches the grammar for
+            <code>host-source</code>:
+              <ol>
+                <li>If the URI does not contain a host, then return <em>does
+                not match</em>.</li>
+
+                <li>Let <var>scheme</var>, <var>host</var>, and
+                <var>port</var> be the scheme, host, and port of the URI,
+                respectively. If the URI does not have a port, then let
+                <var>port</var> be the default port for
+                <var>scheme</var>.</li>
+
+                <li>If the source expression has a <code>scheme</code> that is
+                not a case insensitive match for <var>scheme</var>, then
+                return <em>does not match</em>.</li>
+
+                <li>If <var>scheme</var> is not a case insensitive match for
+                the scheme of the protected document's URI, then return
+                <em>does not match</em>.<br>
+                <em>FIXME: Should we allow HTTPS when the document's scheme is
+                HTTP?</em></li>
+
+                <li>If the first character of the source expression's
+                <code>host</code> is an U+002A ASTERISK character
+                (<code>*</code>) and the remaining characters, including the
+                leading U+002E FULL STOP character (<code>.</code>), are not a
+                case insensitive match for the rightmost characters of
+                <var>host</var>, then return <em>does not match</em>.</li>
+
+                <li>If <var>host</var> is not a case insensitive match for the
+                source expression's <code>host</code>, then return <em>does
+                not match</em>.</li>
+
+                <li>If the source expression does not contain a
+                <code>port</code> and <var>port</var> is not the default port
+                for <var>scheme</var>, then return <em>does not
+                match</em>.</li>
+
+                <li>If the source expression does contain a <code>port</code>
+                that (a) does <em>not</em> contain an U+002A ASTERISK
+                character (<code>*</code>) and (b) does <em>not</em> represent
+                the same number as <var>port</var>, then return <em>does not
+                match</em>.</li>
+
+                <li>Return <em>does match</em>.</li>
+              </ol>
+            </li>
           </ol>
 
         </section>
@@ -1019,34 +1082,6 @@ option-value      = 1*( ALPHA / DIGIT / "-" )
           <p>This section defines the general syntax of Content Security Policies as well as some
           grammar symbols used in the <a href="#directive-definitions">directive syntax
           definitions</a>.</p>
-          <pre>
-policy            = directive-list
-
-directive-list    = [ directive *( ";" [ directive ] ) ]
-
-directive         = *WSP [ directive-name [ WSP directive-value ] ]
-
-directive-name    = 1*( ALPHA / DIGIT / "-" )
-
-directive-value   = *( WSP / &lt;VCHAR except ";"&gt; )
-
-source-list       = *WSP [ source *( 1*WSP source ) *WSP ]
-                  / *WSP "'none'" *WSP
-
-source            = scheme ":"
-                  / ( [ scheme "://" ] host [ port ] )
-                  / "'self'"
-                    ; &lt;scheme&gt; production from RFC 3986
-
-host              = [ "*." ] 1*host-char *( "." 1*host-char )
-                  / "*"
-
-host-char         = ALPHA / DIGIT / "-"
-
-port              = ":" ( 1*DIGIT / "*" )
-
-option-value      = 1*( ALPHA / DIGIT / "-" )
-</pre>
         </section><!-- Content Security Policy Grammar -->
 
         <section>
@@ -1079,8 +1114,6 @@ report-uri        = "report-uri" *( 1*WSP &lt;URI&gt; ) *WSP
 
 policy-uri        = "policy-uri" 1*WSP &lt;URI&gt; *WSP
                     ; &lt;URI&gt; production from RFC 2396
-
-options           = "options" *( 1*WSP option-value ) *WSP
 </pre>
 
         </section><!-- Directive Definitions -->
