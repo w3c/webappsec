@@ -567,16 +567,33 @@ port              = ":" ( 1*DIGIT / "*" )
       <p>This section describes the content security policy directives
       introduced in this specification.</p>
 
+      <p>In order to protect against Cross-site Scripting (XSS), authors
+      SHOULD include
+      <ul>
+        <li>both the <code>script-src</code> and <code>object-src</code>
+        directives, or</li>
+
+        <li>include a <code>default-src</code> directive, which covers both
+        scripts and plug-ins.</li>
+      </ul>
+
+      <p>In either case, authors SHOULD NOT include
+      <code>'unsafe-inline'</code> in their CSP policies if they wish to
+      protect themselves against XSS.</p>
+
+      <section>
+        <h3><code>default-src</code></h3>
+
+        <p><em>FIXME: Spec me!</em></p>
+      </section>
       <section>
         <h3><code>script-src</code></h3>
 
         <p>The <code>script-src</code> directive restricts which scripts the
         protected document can execute. The directive also controls other
         resources, such as XSLT stylesheets, which can cause the user agent to
-        execute script.</p>
-
-        <p>The syntax for the name and value of the directive are described
-        by the following ABNF grammar:</p>
+        execute script. The syntax for the name and value of the directive are
+        described by the following ABNF grammar:</p>
 
 <pre>
 directive-name    = "script-src"
@@ -606,20 +623,25 @@ directive-value   = source-list
           MUST throw a security exception.</li>
 
           <li>When called with a first argument that is non-callable (e.g.,
-          not a function), the <code>setTimeout</code> function must return
+          not a function), the <code>setTimeout</code> function MUST return
           zero without creating a timer.</li>
 
           <li>When called with a first argument that is non-callable (e.g.,
-          not a function), the <code>setInterval</code> function must return
+          not a function), the <code>setInterval</code> function MUST return
           zero without creating a timer.</li>
         </ul>
+
+        <p>The term <dfn>callable</dfn> refers to an object whose interface
+        has one or more <dfn>callers</dfn> as defined in the <a
+        href="http://www.w3.org/TR/2010/WD-WebIDL-20101021/#idl-callers">Web
+        IDL</a> specification [[!WEBIDL]].</p>
 
         <p>Whenever the user agent <a
         href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
         a URI (including when following redirects) in the course of one of the
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed script
-        sources</var></a>, the user agent must act as if it had received an empty
+        sources</var></a>, the user agent MUST act as if it had received an empty
         HTTP 400 response:</p>
         <ul>
           <li>Requesting a script, such as when processing the
@@ -634,6 +656,43 @@ directive-value   = source-list
           <code>&lt;xsl:include&gt;</code> element, or the <code>href</code>
           attributes on <code>&lt;xsl:import&gt;</code> element.</li>
         </ul>
+      </section>
+      <section>
+        <h3><code>object-src</code></h3>
+
+        <p>The <code>object-src</code> directive restricts from where the
+        protected document can load plugins.The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "script-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let <var>allowed object sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed object
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for a plugin, such as when processing the
+          <code>data</code> attribute of an <code>object</code> element, the
+          <code>src</code> attribute of an <code>embed</code> elements, or the
+          <code>code</code> or <code>archive</code> attributes of an
+          <code>applet</code> element.</li>
+        </ul>
+
+        <p>Whenever the user agent would load a plug-in without an associated
+        URI (e.g., because the <code>object</code> element lacked a
+        <code>data</code> attribute), if the protected document's URI does not
+        <a href="#matches-a-source-list">match the <var>allowed object
+        sources</var></a>, the user agent MUST NOT load the plug-in.</p>
       </section>
     </section>
 
@@ -666,56 +725,6 @@ directive-value   = source-list
           <p>User-agents MUST enforce the <code>default-src</code> directive for any content request
           which would be restricted by one of the following more specific directives when that
           specific directive is not present in the policy.</p>
-        </section>
-
-        <section>
-          <h4><code>object-src</code></h4>
-          <p>The <code>object-src</code> directive defines the list of sources from which external
-          resources may be fetched when
-          constructing <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>
-          and <code>&lt;applet&gt;</code> elements.</p>
-
-          <p>Prior to fetching any external resource required by
-          an <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code> or <code>&lt;applet&gt;</code>
-          element, the resource URL MUST first be validated as conforming to the protected
-          document's <code>object-src</code> directive.</p>
-
-          <p>Resource URLs requiring validation prior to fetching include:
-            <ol>
-              <li><code>data</code> attributes on <code>&lt;object&gt;</code> elements</li>
-              <li><code>src</code> attributes on <code>&lt;embed&gt;</code> elements</li>
-              <li><code>code</code> or <code>archive</code> attributes
-              on <code>&lt;applet&gt;</code> elements</li>
-            </ol>
-          </p>
-
-          <p class="note">Resource URLs contained in the <code>&lt;applet&gt;</code> element
-          attributes listed above may be specified relative to the element's <code>codebase</code>
-          attribute or relative to the containing document's base URL.</p>
-
-          <p>Any <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>
-          or <code>&lt;applet&gt;</code> resource URLs identified per the above MUST first
-          be <a href="#resolve">resolved</a> relative to the containing element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>object-src</code>
-          directive in order for the resource URL to be requested.</p>
-
-          <p>User-agents MUST NOT request <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>
-          or <code>&lt;applet&gt;</code> resource URLs from non-approved sources.</p>
-
-          <p>If the <code>object-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for <code>&lt;object&gt;</code>,
-          <code>&lt;embed&gt;</code> and <code>&lt;applet&gt;</code> resources to the
-          <a href="#default-src"><code>default-src</code></a> directive.</p>
-
-          <p class="note">In order to achieve comprehensive XSS protection, sites must include both
-          a <code>script-src</code> directive and an <code>object-src</code> directive in their policy, or
-          a <code>default-src</code> directive, which covers both cases, due to some plugins having
-          scripting capability.</p>
-
-          <p class="issue">Some plugins, e.g. Google Gears, do not load via URLs.  How
-          does <code>object-src</code> interact with these kinds of plugins?</p>
         </section>
 
         <section>
@@ -1240,35 +1249,6 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
 
         <section>
           <h4>Code MUST NOT be created from strings</h4>
-          <p>User-agents MUST prevent strings from being converted to ECMAScript code, including
-          calls to:</p>
-          <ul>
-            <li><code>eval()</code>. Instead of evaluating their arguments,
-            both operator <code>eval</code> and function <code>eval</code>
-            MUST throw a security exception.</li>
-
-            <li><code>new Function()</code>. When called as a constructor, the
-            <code>Function</code> function MUST throw a security exception.</li>
-
-            <li><code>setTimeout()</code>. When called with a first argument
-            that is non-callable (e.g., not a function), the
-            <code>setTimeout</code> function MUST return zero without creating
-            a timer.</li>
-
-            <li><code>setInterval()</code>. When called with a first argument
-            that is non-callable (e.g., not a function), the
-            <code>setInterval</code> function MUST return zero without creating
-            a timer.</li>
-          </ul>
-
-          <p class="issue">Should <code>setTimeout</code> and
-          <code>setInterval</code> throw security exceptions rather than
-          returning zero?</p>
-
-          <p>The term <dfn title="">callable</dfn> refers to an object whose interface has one or
-          more <dfn title="">callers</dfn> as defined in
-          the <a href="http://www.w3.org/TR/2010/WD-WebIDL-20101021/#idl-callers">Web IDL</a>
-          specification [[!WEBIDL]].</p>
 
           <p>If a protected resource's policy declares
           a <a href="#report-uri"><code>report-uri</code></a> and this restriction is violated,
