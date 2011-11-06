@@ -535,7 +535,7 @@ port              = ":" ( 1*DIGIT / "*" )
         usurp the document's privileges that have been restricted in this
         way.</p>
 
-        <p>To <dfn id="monitor">enforce</dfn> a CSP policy, the user agent MUST
+        <p>To <dfn id="monitor">monitor</dfn> a CSP policy, the user agent MUST
         <a href="#parse-a-csp-policy">parse the policy</a> and monitor each of
         the directives contained in the policy, where the specific
         requirements for monitoring each directive are defined separately for
@@ -593,11 +593,6 @@ port              = ":" ( 1*DIGIT / "*" )
           content which are not explicitly restricted by any of the other directives specified in a
           policy.  The directive value represents the default list of sources from which content of
           types not specified elsewhere in the policy may be <a href="#fetch">fetched</a>.
-
-          <p>An exception to the <code>default-src</code> directive value being used as the default
-          policy exists in the case of
-          the <a href="#frame-ancestors"><code>frame-ancestors</code></a> directive, which MUST be
-          enforced as <code>*</code> (all sources) when not explicitly declared.</p>
 
           <p>User-agents MUST enforce the <code>default-src</code> directive for any content request
           which would be restricted by one of the following more specific directives when that
@@ -878,33 +873,6 @@ port              = ":" ( 1*DIGIT / "*" )
         </section>
 
         <section>
-          <h4><code>frame-ancestors</code></h4>
-          <p>The <code>frame-ancestors</code> directive defines the list of sources that are
-          permitted to embed the protected resource as
-          an <code>&lt;iframe&gt;</code>, <code>&lt;frame&gt;</code> or <code>&lt;object&gt;</code>
-          element.</p>
-
-          <p>If the <code>frame-ancestors</code> directive is present in a policy,
-          the <code>location.href</code> attribute for every <code>window</code> in the protected
-          document's window parent chain MUST be <a href="#parse-url">parsed</a> into its component
-          parts, and the resulting scheme, host and port tuple MUST be present in the source list
-          defined by the <code>frame-ancestors</code> directive in order for the protected document
-          to be used in the embedded browsing context.</p>
-
-          <p>If the <code>frame-ancestors</code> directive is not present in a policy its value MUST
-          be assumed to be <code>*</code>, or all sources.</p>
-
-          <p>User-agents MUST NOT render a protected document in an embedded browsing context if
-          any <code>window</code> in the protected document's window parent chain has
-          a <code>location.href</code> representing a non-approved source.</p>
-
-          <p class="note">We may want to remove <code>frame-ancestors</code> from Content Security
-          Policy as IETF is standardizing an equivalent feature in
-          its <a href="http://tools.ietf.org/html/draft-gondrom-frame-options-01">Frame Options</a>
-          draft.</p>
-        </section>
-
-        <section>
           <h4><code>report-uri</code></h4>
           <p>The <code>report-uri</code> directive defines one or more URIs to which
           a <a href="#violation-report-syntax">violation report</a> is sent when a policy violation
@@ -1022,7 +990,6 @@ style-src         = "style-src" [ WSP source-list ]
 frame-src         = "frame-src" [ WSP source-list ]
 font-src          = "font-src" [ WSP source-list ]
 connect-src       = "connect-src" [ WSP source-list ]
-frame-ancestors   = "frame-ancestors" [ WSP source-list ]
 report-uri        = "report-uri" *( 1*WSP &lt;URI&gt; ) *WSP
                     ; &lt;URI&gt; production from RFC 2396
 policy-uri        = "policy-uri" 1*WSP &lt;URI&gt; *WSP
@@ -1107,11 +1074,6 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
         <p>If the origin of the blocked-uri is not the same as the document's
         origin, then the user agent MUST replace the blocked-uri with the
         ASCII serialization of the blocked-uri's origin.</p>
-
-        <p>In the case where a protected resource is not rendered because
-        its <code>frame-ancestors</code> directive is violated, user-agents MUST NOT
-        send <code>blocked-uri</code> in the report as it is assumed to have the same value
-        as <code>request</code>.</p>
 
         <h4>Sample Policy Violation Report</h4>
         <p>In the following example a page located at <code>http://example.org/page.html</code> was
