@@ -566,6 +566,75 @@ port              = ":" ( 1*DIGIT / "*" )
 
       <p>This section describes the content security policy directives
       introduced in this specification.</p>
+
+      <section>
+        <h3><code>script-src</code></h3>
+
+        <p>The <code>script-src</code> directive restricts which scripts the
+        protected document can execute. The directive also controls other
+        resources, such as XSLT stylesheets, which can cause the user agent to
+        execute script.</p>
+
+        <p>The syntax for the name and value of the directive are described
+        by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "script-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let <var>allowed script sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>If <code>'unsafe-inline'</code> is not in <var>allowed script
+        sources</var>:<p>
+        <ul>
+          <li>Whenever the user agent would execute an inline script (either
+          from a <code>script</code> element or from an inline event handler),
+          instead the user agent MUST NOT execute script.</li>
+        </ul>
+
+        <p>If <code>'unsafe-eval'</code> is not in <var>allowed script
+        sources</var>:<p>
+        <ul>
+          <li>Instead of evaluating their arguments, both operator
+          <code>eval</code> and function <code>eval</code> MUST throw a
+          security exception.</li>
+
+          <li>When called as a constructor, the function <code>Function</code>
+          MUST throw a security exception.</li>
+
+          <li>When called with a first argument that is non-callable (e.g.,
+          not a function), the <code>setTimeout</code> function must return
+          zero without creating a timer.</li>
+
+          <li>When called with a first argument that is non-callable (e.g.,
+          not a function), the <code>setInterval</code> function must return
+          zero without creating a timer.</li>
+        </ul>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed script
+        sources</var></a>, the user agent must act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting a script, such as when processing the
+          <code>src</code> attribute of a <code>script</code> element or when
+          processing the <code>Worker</code> or <code>SharedWorker</code>
+          constructors.</li>
+
+          <li>Requesting an Extensible Stylesheet Language Transformations
+          (XSLT), such as when processing the
+          <code>&lt;?xml-stylesheet?&gt;</code> processing directive in an XML
+          document, the <code>href</code> attributes on
+          <code>&lt;xsl:include&gt;</code> element, or the <code>href</code>
+          attributes on <code>&lt;xsl:import&gt;</code> element.</li>
+        </ul>
+      </section>
     </section>
 
     <section>
@@ -597,49 +666,6 @@ port              = ":" ( 1*DIGIT / "*" )
           <p>User-agents MUST enforce the <code>default-src</code> directive for any content request
           which would be restricted by one of the following more specific directives when that
           specific directive is not present in the policy.</p>
-        </section>
-
-        <section>
-          <h4><code>script-src</code></h4>
-          <p>The <code>script-src</code> directive defines the list of sources from which script
-          resources may be fetched as external <code>&lt;script&gt;</code> elements
-          or <code>Worker</code> objects in HTML documents or <code>&lt;?xml-stylesheet?&gt;</code>
-          processing instructions in XML documents.</p>
-
-          <p>Prior to a script resource being fetched, the script resource URL MUST first be
-          validated as conforming to the protected document's <code>script-src</code> directive.</p>
-
-          <p>Script resource URLs requiring validation prior to fetching include:
-            <ol>
-              <li><code>src</code> attributes on <code>&lt;script&gt;</code> elements within HTML
-              documents</li>
-              <li><code>scriptURL</code> arguments passed to the
-              the <a href="http://dev.w3.org/html5/workers/#dedicated-workers-and-the-worker-interface"><code>Worker</code></a>
-              and <a href="http://dev.w3.org/html5/workers/#shared-workers-and-the-sharedworker-interface"><code>SharedWorker</code></a>
-              constructors within HTML documents</a></li>
-              <li><code>href</code> attributes on <code>&lt;xsl:include&gt;</code> elements within
-              XML documents</li>
-              <li><code>href</code> attributes on <code>&lt;xsl:import&gt;</code> elements within
-              XML documents</li>
-            </ol>
-          </p>
-
-          <p>Any script resource URLs identified per the above MUST first
-          be <a href="#resolve">resolved</a> relative to the containing element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>script-src</code>
-          directive in order for the script resource to be requested.</p>
-
-          <p>User-agents MUST NOT request script resources from non-approved sources.</p>
-
-          <p>In the case of an XSL transformation, any content to be included into the resulting XML
-          document must conform to the original XML document's security policy prior to being
-          fetched or loaded.</p>
-
-          <p>If the <code>script-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for script resources to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
         </section>
 
         <section>
