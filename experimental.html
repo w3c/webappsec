@@ -600,12 +600,12 @@ directive-name    = "script-src"
 directive-value   = source-list
 </pre>
 
-        <p>Let <var>allowed script sources</var> be the result of <a
+        <p>Let the <var>allowed script sources</var> be the result of <a
         href="#parse-a-source-list">parsing the directive's value as a
         source list</a>.</p>
 
         <p>If <code>'unsafe-inline'</code> is not in <var>allowed script
-        sources</var>:<p>
+        sources</var>:</p>
         <ul>
           <li>Whenever the user agent would execute an inline script (either
           from a <code>script</code> element or from an inline event handler),
@@ -613,7 +613,7 @@ directive-value   = source-list
         </ul>
 
         <p>If <code>'unsafe-eval'</code> is not in <var>allowed script
-        sources</var>:<p>
+        sources</var>:</p>
         <ul>
           <li>Instead of evaluating their arguments, both operator
           <code>eval</code> and function <code>eval</code> MUST throw a
@@ -661,15 +661,15 @@ directive-value   = source-list
         <h3><code>object-src</code></h3>
 
         <p>The <code>object-src</code> directive restricts from where the
-        protected document can load plugins.The syntax for the name and value
+        protected document can load plugins. The syntax for the name and value
         of the directive are described by the following ABNF grammar:</p>
 
 <pre>
-directive-name    = "script-src"
+directive-name    = "object-src"
 directive-value   = source-list
 </pre>
 
-        <p>Let <var>allowed object sources</var> be the result of <a
+        <p>Let the <var>allowed object sources</var> be the result of <a
         href="#parse-a-source-list">parsing the directive's value as a
         source list</a>.</p>
 
@@ -694,7 +694,239 @@ directive-value   = source-list
         <a href="#matches-a-source-list">match the <var>allowed object
         sources</var></a>, the user agent MUST NOT load the plug-in.</p>
       </section>
+
+      <section>
+        <h4><code>style-src</code></h4>
+
+        <p>The <code>style-src</code> directive restricts which styles the
+        user applies to the protected document. The syntax for the name and
+        value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "style-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let the <var>allowed style sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>If <code>'unsafe-inline'</code> is not in <var>allowed style
+        sources</var>:</p>
+        <ul>
+          <li>Whenever the user agent would apply style from a
+          <code>style</code> element, instead the user agent <code>MUST</code>
+          ignore the style.</li>
+
+          <li>Whenever the user agent would apply style from a
+          <code>style</code> attribute, instead the user agent
+          <code>MUST</code> ignore the style.</li>
+        </ul>
+
+        <p>Note: These restrictions on inline do not prevent the user agent
+        from applying style from an external stylesheet (e.g., found via
+        <code>&lt;link rel="stylesheet"&gt;</code>). The user agent is also
+        not prevented from applying style from CSSOM.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed style
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting external stylesheets, such as when processing the
+          <code>href</code> attribute of a <code>link</code> element with a
+          <code>rel</code> attribute containing the token
+          <code>stylesheet</code> or when processing the <code>@import</code>
+          directive in a stylesheet.</li>
+        </ul>
+
+        <p>Note: The <code>style-src</code> directive does not restrict the
+        use of XSLT. XSLT is restricted by the <code>script-src</code>
+        directive because the security consequences of including an untrusted
+        XSLT stylesheet are similar to those incurred by including an
+        untrusted script.</p>
+      </section>
+
+      <section>
+        <h4><code>img-src</code></h4>
+
+        <p>The <code>img-src</code> directive restricts from where the
+        protected document can load images. The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "img-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let the <var>allowed image sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed image
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for an image, such as when processing the
+          <code>src</code> attribute of an <code>img</code> elements,
+          the <code>url()</code> or <code>image()</code> values on any CSS
+          property that is capable of loading an image [<em><a
+          href="http://www.w3.org/TR/css3-images/">CSS3-Images</a></em>], or
+          the <code>href</code> attribute of a <code>link</code> element with
+          an image-related <code>rel</code> attribute, such as
+          <code>icon</code>.</li>
+        </ul>
+
+        <p class="issue">Should the user agent fire the error event when one of these loads fails?</p>
+      </section>
+
+      <section>
+        <h4><code>media-src</code></h4>
+
+        <p>The <code>media-src</code> directive restricts from where the
+        protected document can load video and audio. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "media-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let the <var>allowed media sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed media
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for a video or audio clip, such as when
+          processing the <code>src</code> attribute of a <code>video</code>
+          or <code>audio</code> elements.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h4><code>frame-src</code></h4>
+
+        <p>The <code>frame-src</code> directive restricts from where the
+        protected document can embed frames. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "frame-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let the <var>allowed frame sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed frame
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for display in a frame, such as when processing
+          the <code>src</code> attribute of an <code>iframe</code> or
+          <code>frame</code> element.</li>
+          <li>Navigating a nested browsing context within the protected
+          document.</li>
+        </ul>
+
+        <p class="issue">How does this work for the <code>object</code>
+        element? We don't know whether the request is going to lead to a
+        plug-in or a frame until we get the response back and can look at the
+        MIME type.</p>
+      </section>
+
+      <section>
+        <h4><code>font-src</code></h4>
+
+        <p>The <code>font-src</code> directive restricts from where the
+        protected document can load fonts. The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "font-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let the <var>allowed font sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed font
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for display in a font, such as when processing
+          the <code>@font-face</code> CSS rule. <em>TODO: Citation needed.</em></li>
+        </ul>
+      </section>
+
+      <section>
+        <h4><code>connect-src</code></h4>
+
+        <p>The <code>connect-src</code> directive restricts which URIs the
+        protected document can load using DOM APIs. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "connect-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let the <var>allowed connection targets</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed font
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Processing the <a
+          href="http://www.w3.org/TR/XMLHttpRequest/#the-open-method"><code>open()</code>
+          method</a> of an <code>XMLHttpRequest</code> object.</li>
+
+          <li>Processing the <a
+          href="http://dev.w3.org/html5/websockets/#websocket"><code>WebSocket</code>
+          constructor</a>.</li>
+
+          <li>Processing the <a
+          href="http://dev.w3.org/html5/eventsource/#eventsource"><code>EventSource</code>
+          constructor</a>.</li>
+        </ul>
+      </section>
     </section>
+
+
 
     <section>
       <h2>XYZZY</h2>
@@ -727,185 +959,8 @@ directive-value   = source-list
           specific directive is not present in the policy.</p>
         </section>
 
-        <section>
-          <h4><code>img-src</code></h4>
-          <p>The <code>img-src</code> directive defines the list of sources from which images may be
-          fetched via <code>&lt;img&gt;</code> elements, CSS properties and shortcut icons,
-          a.k.a. favicons.</p>
 
-          <p>Prior to fetching an image resource, the image resource URL MUST first be validated as
-          conforming to the protected document's <code>img-src</code> directive.</p>
 
-          <p>Resource URLs requiring validation prior to fetching include:
-            <ol>
-              <li><code>src</code> attributes on <code>&lt;img&gt;</code> elements</li>
-              <li><code>url()</code> or <code>image()</code> values on any CSS property that is
-              capable of loading an image</li>
-              <li><code>href</code> attributes on <code>&lt;link rel="icon"&gt;</code>
-              or <code>&lt;link rel="shortcut icon"&gt;</code> elements</li>
-            </ol>
-          </p>
-
-          <p>Any resource URLs identified per the above MUST first
-          be <a href="#resolve">resolved</a> relative to the <code>&lt;img&gt;</code>
-          element, <code>&lt;style&gt;</code> element or external stylesheet URL,
-          or <code>&lt;link&gt;</code> element, as appropriate.  Each resolved resource URL must
-          then be <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme,
-          host and port tuple MUST be present in the source list defined by the <code>img-src</code>
-          directive in order for the image resource to be requested.</p>
-
-          <p>User-agents MUST NOT request image resources from non-approved sources.</p>
-
-          <p class="issue">Should the user agent fire the error event when one of these loads fails?</p>
-
-          <p>If the <code>img-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for image resources to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-
-          <p>The <code>url()</code> and <code>image()</code> notations are defined in the CSS Image
-          Values and Replaced Content Module Level 3
-          standard. [<em><a href="http://www.w3.org/TR/css3-images/">CSS3-Images</a></em>]</p>
-        </section>
-
-        <section>
-          <h4><code>media-src</code></h4>
-          <p>The <code>media-src</code> directive defines the list of sources from which external
-          resources may be fetched via <code>&lt;video&gt;</code> and <code>&lt;audio&gt;</code>
-          elements.</p>
-
-          <p>Prior to a <code>&lt;video&gt;</code> or <code>&lt;audio&gt;</code> resource being
-          fetched, the URL in the element's <code>src</code> attribute MUST first
-          be <a href="#resolve">resolved</a> relative to the element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>media-src</code>
-          directive in order for the resource to be requested.</p>
-
-          <p>User-agents MUST NOT request <code>&lt;video&gt;</code> or <code>&lt;audio&gt;</code>
-          resources from non-approved sources.</p>
-
-          <p>If the <code>media-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for <code>&lt;video&gt;</code>
-          and <code>&lt;audio&gt;</code> resources to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>style-src</code></h4>
-          <p>The <code>style-src</code> directive defines the list of sources from which external
-          stylesheets may be fetched via <code>&lt;link rel="stylesheet"&gt;</code> elements.</p>
-
-          <p>Prior to an external stylesheet being fetched, the URL in the <code>href</code>
-          attribute of the <code>&lt;link rel="stylesheet"&gt;</code> element MUST first
-          be <a href="#resolve">resolved</a> relative to the element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>style-src</code>
-          directive in order for the stylesheet to be requested.</p>
-
-          <p>User-agents MUST NOT request external stylesheets from non-approved sources.</p>
-
-          <p>If the <code>style-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for external stylesheets to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>frame-src</code></h4>
-          <p>The <code>frame-src</code> directive defines the list of sources from which resources
-          may be fetched via <code>&lt;iframe&gt;</code> elements, and to which hosts
-          those <code>&lt;iframe&gt;</code> elements may be navigated.</p>
-
-          <p>Prior to an <code>&lt;iframe&gt;</code> resource being fetched, the URL in
-          the <code>&lt;iframe&gt;</code> element's <code>src</code> attribute MUST first
-          be <a href="#resolve">resolved</a> relative to the element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>frame-src</code>
-          directive in order for the resource to be requested.</p>
-
-          <p>Prior to an <code>&lt;iframe&gt;</code> element being navigated, the new location MUST
-          first be resolved relative to the element and then parsed into its component parts. The
-          resulting scheme, host and port tuple MUST be present in the source list defined by
-          the <code>frame-src</code> directive for the navigation to be permitted.</p>
-
-          <p>User-agents MUST NOT request <code>&lt;iframe&gt;</code> resources from non-approved
-          sources nor navigate <code>&lt;iframe&gt;</code> elements to non-approved sources.</p>
-
-          <p>If the <code>frame-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject <code>&lt;iframe&gt;</code> requests to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>font-src</code></h4>
-          <p>The <code>font-src</code> directive defines the list of sources from which downloadable
-          fonts may be fetched using the <code>@font-face</code> CSS rule.</p>
-
-          <p>Prior to a font resource being fetched, the <code>url</code> value of
-          the <code>src</code> descriptor of the <code>@font-face</code> CSS rule MUST first
-          be <a href="#resolve">resolved</a> relative to the <code>&lt;style&gt;</code> element or
-          the external stylesheet URL where the <code>@font-face</code> CSS rule is declared. The
-          resolved URL MUST then be <a href="#parse-url">parsed</a> into its component parts.  The
-          resulting scheme, host and port tuple MUST be present in the source list defined by
-          the <code>font-src</code> directive in order for the downloadable font resource to be
-          requested.</p>
-
-          <p>User-agents MUST NOT request downloadable font resources from non-approved sources.</p>
-
-          <p>If the <code>font-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for downloadable font resources to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>connect-src</code></h4>
-          <p>The <code>connect-src</code> directive defines the list of sources that are permitted
-          to be connected to via the DOM APIs <code>XMLHttpRequest</code>, <code>WebSocket</code>
-          and <code>EventSource</code>.</p>
-
-          <p>Prior to connecting to an external source using one of the restricted APIs, the source
-          URL MUST first be validated as conforming to the protected
-          document's <code>connect-src</code> directive.</p>
-
-          <p>Source URLs requiring validation prior to connection include:
-            <ol>
-              <li>The <code>url</code> argument passed to
-              the <a href="http://www.w3.org/TR/XMLHttpRequest/#the-open-method"><code>open()</code>
-              method</a> of an <code>XMLHttpRequest</code> object</li>
-              <li>The <code>url</code> argument passed to
-              the <a href="http://dev.w3.org/html5/websockets/#websocket"><code>WebSocket</code>
-              constructor</a></li>
-              <li>The <code>url</code> argument passed to
-              the <a href="http://dev.w3.org/html5/eventsource/#eventsource"><code>EventSource</code>
-              constructor</a></li>
-            </ol>
-          </p>
-
-          <p>Any source URLs identified per the above MUST first be
-          fully <a href="#resolve">resolved</a>.  In the case of an <code>XMLHttpRequest</code>
-          object, the source URL MUST be resolved relative to the
-          object's <a href="http://www.w3.org/TR/XMLHttpRequest/#xmlhttprequest-base-url">base
-          URL</a>.  In the case of an <code>EventSource</code> object, the source URL MUST be
-          resolved relative to
-          the <a href="http://www.whatwg.org/specs/web-apps/current-work/#entry-script">entry
-          script's</a> <a href="http://www.whatwg.org/specs/web-apps/current-work/#script%27s-base-url">base
-          URL</a>.  A <code>WebSocket</code> URL is required to be an absolute URL, and thus does
-          not require relative resolution.  Once resolved, the source URL MUST
-          be <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>connect-src</code>
-          directive in order for the connection to be made.</p>
-
-          <p>User-agents MUST NOT connect to any non-approved sources via restricted APIs.</p>
-
-          <p>If the <code>connect-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject <code>XMLHttpRequest</code>, <code>WebSocket</code>
-          and <code>EventSource</code> connections to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
 
         <section>
           <h4><code>report-uri</code></h4>
