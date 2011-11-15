@@ -263,7 +263,13 @@
 
           <p>The <code>Content-Security-Policy-Report-Only</code> header field
           lets server experiment with CSP by monitoring (rather than
-          enforcing) a policy.</p>
+          enforcing) a policy. This feature lets server operators develop
+          their security policy iteratively. They can deploy a report-only
+          policy based on their best estimate of how their site behaves. If
+          their site violates this policy, instead of breaking the site, the
+          user agent will send violation reports to a URI specified in the
+          policy. Once a site has confidence that the policy is appropriate,
+          they can promote the report-only policy to normal blocking mode.</p>
 
           <p>A server MAY supply one or more CSP policies in HTTP response
           header fields named <code>Content-Security-Policy-Report-Only</code>
@@ -534,6 +540,10 @@ port              = ":" ( 1*DIGIT / "*" )
         vulnerability in the document because the attacker will be unable to
         usurp the document's privileges that have been restricted in this
         way.</p>
+
+        <p>Enforcing a CSP policy SHOULD NOT interfere with the operation of
+        user-supplied scripts such as third-party user-agent add-ons and
+        JavaScript bookmarklets.</p>
 
         <p>To <dfn id="monitor">monitor</dfn> a CSP policy, the user agent MUST
         <a href="#parse-a-csp-policy">parse the policy</a> and monitor each of
@@ -1184,68 +1194,5 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
       </section><!-- Violation Report Syntax -->
 
     </section><!-- Syntax -->
-
-    <section>
-      <h2>User-Agent Behavior</h2>
-      <p>This section describes required behavior for conformant user-agents when processing a
-      Content Security Policy and applying restrictions to a protected resource.</p>
-
-      <section>
-        <h3>Report-Only Mode</h3>
-        <p>This section describes a mode of operation for user-agents in which security policies are
-        parsed and violations are logged as they occur, but without blocking content from loading or
-        executing as the user-agent would under normal processing of Content Security Policy.</p>
-
-        <p>Content Security Policy can be deployed by servers in report-only mode by sending
-        a <code>X-Content-Security-Policy-Report-Only</code> <a href="#x-content-security-policy-response-header">response
-        header</a> or by placing a <code>&lt;meta
-        http-equiv="X-Content-Security-Policy-Report-Only"></code> <a href="#meta-http-equiv--x-content-security-policy---html-element">policy
-        element</a> in the <code>&lt;head></code> section of a document.</p>
-
-        <p>When report-only mode is enabled by a server, the user-agent MUST log all policy
-        violations and policy parsing errors in the same manner that it would in normal blocking
-        mode, including sending <a href="#violation-reports">violation reports</a> to the server if
-        a <a href="#report-uri">report-uri</a> directive is present, as well as logging any
-        appropriate errors or warnings locally to the error console.  In report-only mode, the
-        user-agent MUST NOT prevent any content from loading or executing normally due to violations
-        of the protected document's stated security policy.</p>
-
-        <p class="note">This mode of operation is intended to ease deployment for servers that want
-        to experiment with a security policy but aren't ready to take the step of policy
-        enforcement.  Such sites can develop a security policy according to their knowledge and
-        assumptions about how the site functions and receive reports when content in the site
-        behaves in a manner contrary to the developed policy.  Report-only mode can also be used in
-        parallel with blocking mode as it is a useful test vehicle for a stricter policy.  The
-        stricter report-only policy can be deployed in production environments with no compatibility
-        risk and feedback can be collected from any violation reports received.  Once a site has
-        confidence that the policy is appropriate, they can promote the report-only policy to normal
-        blocking mode.</p>
-      </section><!-- Report-Only Mode -->
-
-      <section class="informative">
-        <h3>Other User-Agent Considerations</h3>
-        <p>This section contains miscellaneous items for consideration by user-agent
-        implementers.</p>
-
-        <h4>User Scripts</h4>
-        <p>Content Security Policy should not interfere with the operation of user-supplied scripts
-        such as third-party user-agent add-ons and JavaScript bookmarklets.</p>
-
-        <h4>Redirecting Content Loads</h4>
-        <p>For any protected document, when a request for a sub-document resource is redirected to
-        another location, whether temporary or permanent, all locations in the resource's redirect
-        chain, including the initial location and all subsequent redirected locations, must be
-        permitted by the protected document's security policy in order for the sub-document resource
-        to be allowed to load.  If any step in the redirect process violates the protected
-        document's security policy, the request should be terminated immediately and the load
-        canceled.</p>
-
-        <h4>Future Directives</h4>
-        <p>In order to support new policy directives in the future, user-agents must parse but
-        ignore unrecognized directives.  For this reason, this document specifies that user-agents
-        MUST skip over unrecognized directives but SHOULD report them on the error console.</p>
-      </section><!-- Other User-Agent Considerations -->
-
-    </section><!-- User-Agent Behavior -->
   </body>
 </html>
