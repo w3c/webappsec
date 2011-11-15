@@ -929,9 +929,69 @@ directive-value   = source-list
           constructor</a>.</li>
         </ul>
       </section>
+
+      <section>
+        <h4><code>policy-uri</code></h4>
+
+        <p>The <code>policy-uri</code> directive specifies a URI from which
+        the user agent can retrieve the actual policy. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "policy-uri"
+directive-value   = &lt;URI-reference from RFC 3986&gt;
+</pre>
+
+        <p class="issue">The <code>policy-uri</code> directive might be
+        removed from this document.</p>
+
+        <p>Authors MUST NOT specify policies that contain both a
+        <code>policy-uri</code> directive and another directive.</p>
+
+        <p>If the user agent would enforce a policy containing both the
+        <code>policy-uri</code> directive and another directive, instead the
+        user agent MUST enforce the policy <code>default-src
+        'none'</code>.</p>
+
+        <p>When processing the <code>policy-uri</code> directive, the user
+        agent MUST run an algorithm equivalent to the following:</p>
+        <ul>
+          <li>Let <var>request URI</var> be the URI that results from
+          resolving the value of the <code>policy-uri</code> directive
+          relative to the URI of the protected document.</li>
+
+          <li>If <var>request URI</var> is not from the same origin as the
+          protected document, abort these steps and enforce the policy
+          <code>default-src 'none'</code>.
+
+          <li>Fetch the <var>request URI</var> from origin of the protected
+          document, with the synchronous flag set, using HTTP method
+          <code>GET</code>.</li>
+
+          <li>If the fetch returned a status code other than <code>200</code>
+          or if the request encountered an HTTP redirect, abort these steps
+          and enforce the policy <code>default-src 'none'</code>.</li>
+
+          <li>If the fetched resource lacks a <code>Content-Type</code> header
+          field or if the <code>Content-Type</code> header field is not a case
+          insensitive match for <code>text/x-content-security-policy</code>,
+          abort these steps and enforce the policy <code>default-src
+          'none'</code>.</li>
+
+          <li>Let the <var>fetched policy</var> be the result of <a
+          href="#parse-a-csp-policy">parsing the fetched resource as a CSP
+          policy</a>.</li>
+
+          <li>If the <var>fetched policy</var> contains a
+          <code>policy-uri</code> directive, abort these steps and enforce the
+          policy <code>default-src 'none'</code>.</li>
+
+          <li><a href="#enforce">Enforce</a> the <var>fetched
+          policy</var>.</li>
+        </ul>
+      </section>
     </section>
-
-
 
     <section>
       <h2>XYZZY</h2>
@@ -1009,44 +1069,6 @@ directive-value   = source-list
           <p class="issue">This section is very HTTP-centric regarding report sending.  Is it proper
           to require HTTP POST, for instance, if the <code>report-uri</code> uses the ftp: scheme?
           Should non-HTTP schemes be allowed for reports?</p>
-        </section>
-
-        <section>
-          <h4><code>policy-uri</code></h4>
-          <p>The <code>policy-uri</code> directive defines the location of a file containing the
-          policy for a protected resource.  The contents of the file comprise the complete policy
-          for the protected resource.</p>
-
-          <p>The <code>policy-uri</code> directive MUST only be declared in the absence of all other
-          policy directives.</p>
-
-          <p>If the <code>policy-uri</code> directive is present in a policy and no other policy
-          directives are declared the user-agent MUST fetch the URI defined in
-          the <code>policy-uri</code> directive value and parse the content returned as the complete
-          security policy for the protected resource.</p>
-
-          <p>If the <code>policy-uri</code> directive is present in a policy and any other policy
-          directive is also declared the user-agent MUST enforce the policy <code>default-src
-          'none'</code>.</p>
-
-          <p>The URI specified in the <code>policy-uri</code> directive value MUST have the
-          same <code>origin</code> as the protected document in order to be treated as valid.</p>
-
-          <p>User-agents MUST NOT fetch an invalid <code>policy-uri</code> and when one is
-          encountered the user-agent MUST enforce the policy <code>default-src 'none'</code>.</p>
-
-          <p>The response to a <code>policy-uri</code> request MUST include a Content-Type
-          of <code>text/x-content-security-policy</code> in order for the response to be treated as
-          valid policy for the protected resource.  User-agents MUST NOT enforce a policy retrieved
-          from a <code>policy-uri</code> that does not have the required Content-Type and MUST
-          enforce the policy <code>default-src 'none'</code> when such a response is
-          received.</p>
-
-          <p>User-agents MUST NOT follow HTTP 3xx redirect responses when fetching
-          a <code>policy-uri</code>.</p>
-
-          <p>User-agents MUST resolve a <code>policy-uri</code> relative to the protected document's
-          location.</p>
         </section>
 
       </section><!-- Directives -->
