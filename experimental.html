@@ -1108,6 +1108,91 @@ directive-value   = &lt;URI-reference from RFC 3986&gt;
     </section>
 
     <section>
+      <h2>Examples</h2>
+
+      <section class="informative">
+        <h3>Sample Policy Definitions</h3>
+
+        <p>This section provides some sample use cases and accompanying security policies.</p>
+
+        <p><strong>Example 1:</strong> A server wishes to load resources only
+        form its own origin:</p>
+
+        <pre>Content-Security-Policy: default-src 'self'</pre>
+
+        <p><strong>Example 2:</strong> An auction site wishes to load images
+        from any URI, plug-in content from a list of trusted media providers
+        (including a content distribution network), and scripts only from a
+        server under its control hosting sanitized ECMAScript:</p>
+
+        <pre>Content-Security-Policy: default-src 'self'; img-src *;
+                         object-src media1.example.com media2.example.com *.cdn.example.com;
+                         script-src trustedscripts.example.com</pre>
+
+        <p><strong>Example 3:</strong> A site operations group wishes to globally deny all
+        third-party scripts in the site, and a particular project team wishes to also disallow
+        third-party media in their section of the site.  Site operations sends the first header
+        while the project team sends the second header, and the user-agent takes the combination of
+        the two headers to form the complete interpreted policy:</p>
+
+        <pre>Content-Security-Policy: default-src *; script-src 'self'
+Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</pre>
+
+        <p><strong>Example 4:</strong> Online banking site wishes to ensure that all of the content
+        in its pages is loaded over TLS to prevent attackers from eavesdropping on insecure content
+        requests:</p>
+
+        <pre>Content-Security-Policy: default-src https:</pre>
+      </section>
+
+      <section class="informative">
+        <h3>Sample Violation Report</h3>
+
+        <p>This section contains an example violation report the user agent
+        might sent to a server when the protected document violations a sample
+        policy.</p>
+
+        <p>In the following example, a document from
+        <code>http://example.org/page.html</code> was rendered with the
+        following CSP policy:</p>
+
+<pre>default-src 'self'; report-uri http://example.org/csp-report.cgi</pre>
+
+        <p>The document loaded an image from
+        <code>http://evil.example.com/image.png</code>, violating the
+        policy.</p>
+
+        <pre>{
+  "csp-report": {
+    "request": "GET http://example.org/page.html HTTP/1.1",
+    "request-headers": "Host: example.org
+                        User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0b12pre) Gecko/20110222 Firefox/4.0b12pre
+                        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+                        Accept-Language: en-us,en;q=0.5
+                        Accept-Encoding: gzip, deflate
+                        Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7
+                        Keep-Alive: 115
+                        Proxy-Connection: keep-alive
+                        Cache-Control: max-age=0",
+    "blocked-uri": "http://evil.example.com/image.png",
+    "violated-directive": "default-src http://example.org"
+  }
+}</pre>
+
+        <p>In the above sample report the <code>violated-directive</code>
+        field was sent in the way it was interpreted by the user-agent. The
+        directive was made explicit by replacing the keyword
+        <code>'self'</code> with the explicit host name of the protected
+        resource. This is recommended behavior for user-agents as it reduces
+        ambiguity, making policy violations easier to trace by server
+        admins.</p>
+
+        <p class="issue">Should we add this as a requirement when preparing
+        reports?</p>
+      </section>
+    </section>
+
+    <section>
       <h2>XYZZY</h2>
     </section>
 
@@ -1133,68 +1218,7 @@ directive-value   = &lt;URI-reference from RFC 3986&gt;
         </section>
       </section><!-- Directives -->
 
-      <section class="informative">
-        <h3>Sample Policy Definitions</h3>
-        <p>This section provides some sample use cases and accompanying security policies.</p>
 
-        <p><strong>Example 1:</strong> A server wants all content to come from its own domain:</p>
-        <pre>X-Content-Security-Policy: default-src 'self'</pre>
-
-        <p><strong>Example 2:</strong> An auction site wants to allow images from anywhere, plugin
-        content from a list of trusted media providers including a content distribution network, and
-        scripts only from a server under its control hosting sanitized ECMAScript:</p>
-        <pre>X-Content-Security-Policy: default-src 'self'; img-src *; \
-                           object-src media1.example.com media2.example.com *.cdn.example.com; \
-                           script-src trustedscripts.example.com</pre>
-
-        <p><strong>Example 3:</strong> A site operations group wants to globally deny all
-        third-party scripts in the site, and a particular project team wants to also disallow
-        third-party media in their section of the site.  Site operations sends the first header
-        while the project team sends the second header, and the user-agent takes the intersection of
-        the two headers to form the complete interpreted policy:</p>
-        <pre>X-Content-Security-Policy: default-src *; script-src 'self'
-X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</pre>
-
-        <p><strong>Example 4:</strong> Online banking site wants to ensure that all of the content
-        in its pages is loaded over TLS to prevent attackers from eavesdropping on insecure content
-        requests:</p>
-        <pre>X-Content-Security-Policy: default-src https://*:443</pre>
-      </section><!-- Sample Policy Definitions -->
-
-      <section>
-        <h3>Violation Report Syntax</h3>
-        <p>This section defines the structure of the violation report sent by a user-agent when a
-        protected resource's security policy is violated.</p>
-
-        <h4>Sample Policy Violation Report</h4>
-        <p>In the following example a page located at <code>http://example.org/page.html</code> was
-        requested and returned with its response a policy of <code>default-src 'self'; report-uri
-        http://example.org/csp-report.cgi</code>.  The policy was violated by an image element
-        from <code>evil.example.com</code> which had been embedded in the page.</p>
-
-        <pre>{
-  "csp-report": {
-    "request": "GET http://example.org/page.html HTTP/1.1",
-    "request-headers": "Host: example.org
-                        User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0b12pre) Gecko/20110222 Firefox/4.0b12pre
-                        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-                        Accept-Language: en-us,en;q=0.5
-                        Accept-Encoding: gzip, deflate
-                        Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7
-                        Keep-Alive: 115
-                        Proxy-Connection: keep-alive
-                        Cache-Control: max-age=0",
-    "blocked-uri": "http://evil.example.com/image.png",
-    "violated-directive": "default-src http://example.org"
-  }
-}</pre>
-
-        <p class="note">In the above sample report the <code>violated-directive</code> field was
-        sent in the way it was interpreted by the user-agent.  The directive was made explicit by
-        replacing the keyword <code>'self'</code> with the explicit host name of the protected
-        resource.  This is recommended behavior for user-agents as it reduces ambiguity, making
-        policy violations easier to trace by server admins.</p>
-      </section><!-- Violation Report Syntax -->
 
     </section><!-- Syntax -->
   </body>
