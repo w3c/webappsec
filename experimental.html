@@ -931,6 +931,101 @@ directive-value   = source-list
       </section>
 
       <section>
+        <h4><code>report-uri</code></h4>
+
+        <p>The <code>report-uri</code> directive specifies a URI to which the
+        user agent sends reports about policy violation. The syntax for the
+        name and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "report-uri"
+directive-value   = uri-reference *( 1*WSP uri-reference )
+uri-reference     = &lt;URI-reference from RFC 3986&gt;
+</pre>
+
+        <p>Let the <var>set of report URIs</var> be the value of the
+        <code>report-uri</code> directive, each resolved relative to the
+        protected document's URI.</p>
+
+        <p>To <dfn id="send-a-violation-report">send a violation report</dfn>,
+        the user agent MUST use an algorithm equivalent to the following:</p>
+        <ol>
+          <li>Prepare a dictionary <var>violation dictionary</var> with the
+          following keys and values:
+            <dl>
+              <dt>request</dt>
+              <dd>HTTP request line of the protected resource whose policy was
+              violated including method, URI and HTTP version</dd>
+
+              <dt>request-headers</dt>
+              <dd>HTTP request headers sent with the request for the protected
+              resource whose policy was violated</dd>
+
+              <dt>blocked-uri</dt>
+              <dd>URI of the resource that was prevented from loading due to
+              the policy violation</dd>
+
+              <dt>violated-directive</dt>
+              <dd>The policy directive that was violated</dd>
+
+              <dt>original-policy</dt>
+              <dd>The original policy as received by the user-agent. If the
+              policy was received via more than one Content Security Policy
+              response header, this field MUST contain a comma separated list
+              of original policies</dd>
+            </dl>
+
+            <p class="issue">We might need to change some of these keys
+            because they can leak sensitive information.</p>
+          </li>
+
+          <li>If the origin of the blocked-uri is not the same as the
+          document's origin, then replace the blocked-uri with the ASCII
+          serialization of the blocked-uri's origin.</li>
+
+          <li>Let the <var>violation report</var> be the JSON stringification
+          of the <var>violation dictionary</var>.</li>
+
+          <li>For each <var>report URI</var> in the <var>set of report URIs</var>:
+            <ol>
+              <li>If the <var>report URI</var> has a different scheme than the
+              URI of the protected document, then ignore this <var>report
+              URI</var> and continue to the next iteration of the loop.</li>
+
+              <li>If the <var>report URI</var> has a different port than the
+              URI of the protected document, then ignore this <var>report
+              URI</var> and continue to the next iteration of the loop.</li>
+
+              <li>If the <var>report URI</var>'s host does not share the same
+              <em><a href="http://publicsuffix.org/">public suffix</a> +1 DNS
+              label</em> as the URI of the protected document, then ignore
+              this <var>report URI</var> and continue to the next iteration of
+              the loop.
+
+              <p>Examples of public suffixes include <code>.com</code>,
+              <code>.net</code> and <code>.co.uk</code>. Examples of
+              <em>"public suffix +1 DNS label"</em> include
+              <code>example.com</code>, <code>example.net</code> and
+              <code>example.co.uk</code>. Therefore a protected document whose
+              host is <code>www.example.com</code> could have a
+              <code>report-uri</code> hosted on
+              <code>reports.example.com</code> but <b>not</b>
+              <code>reports.example.net</code>.</p></li>
+
+              <li>Fetch the <var>report URI</var> from origin of the protected
+              document, with the synchronous flag <em>not</em> set, using HTTP
+              method <code>POST</code>, with a <code>Content-Type</code>
+              header field of <code>application/json</code> with an entity
+              body consisting of the <var>violation report</var>. The user
+              agent MUST NOT follow redirects when fetching this resource.
+              (Note: The user agent ignores the fetched resource.)</li>
+            </ol>
+          </li>
+        </ol>
+      </section>
+
+      <section>
         <h4><code>policy-uri</code></h4>
 
         <p>The <code>policy-uri</code> directive specifies a URI from which
@@ -1023,54 +1118,6 @@ directive-value   = &lt;URI-reference from RFC 3986&gt;
           which would be restricted by one of the following more specific directives when that
           specific directive is not present in the policy.</p>
         </section>
-
-
-
-
-        <section>
-          <h4><code>report-uri</code></h4>
-          <p>The <code>report-uri</code> directive defines one or more URIs to which
-          a <a href="#violation-report-syntax">violation report</a> is sent when a policy violation
-          occurs.</p>
-
-          <p>If the <code>report-uri</code> directive is present in a policy the user-agent MUST
-          send a violation report to each valid URI specified in the directive value.</p>
-
-          <p>The violation report MUST be sent via an HTTP POST request whose body is comprised of a
-          JSON object containing violation information, and the request MUST have a Content-Type
-          of <code>application/json</code>.</p>
-
-          <p>The URIs specified in the <code>report-uri</code> directive value MUST have the same
-          scheme and port as the protected document and MUST share the
-          same <em><a href="http://publicsuffix.org/">public suffix</a> +1 DNS label</em> as the
-          protected document in order to be treated as valid.</p>
-
-          <p class="note">Examples of public suffixes include <code>.com</code>, <code>.net</code>
-          and <code>.co.uk</code>.  Examples of <em>"public suffix +1 DNS label"</em>
-          include <code>example.com</code>, <code>example.net</code> and <code>example.co.uk</code>.
-          Therefore a protected document whose host is <code>www.example.com</code> could have
-          a <code>report-uri</code> hosted on <code>reports.example.com</code>
-          but <b>not</b> <code>reports.example.net</code>.</p>
-
-          <p>User-agents MUST send <a href="#violation-report-syntax">violation reports</a> to all valid
-          URIs listed in the <code>report-uri</code> directive value.</p>
-
-          <p>User-agents MUST NOT send violation reports to any invalid URIs listed in
-          the <code>report-uri</code> directive value.</p>
-
-          <p>User-agents MUST NOT follow HTTP 3xx redirect responses when sending violation
-          reports.</p>
-
-          <p>User-agents MUST resolve a <code>report-uri</code> relative to the protected document's
-          location.</p>
-
-          <p>User-agents SHOULD log policy violations on the error console when they occur.</p>
-
-          <p class="issue">This section is very HTTP-centric regarding report sending.  Is it proper
-          to require HTTP POST, for instance, if the <code>report-uri</code> uses the ftp: scheme?
-          Should non-HTTP schemes be allowed for reports?</p>
-        </section>
-
       </section><!-- Directives -->
 
       <section class="informative">
@@ -1105,49 +1152,6 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
         <h3>Violation Report Syntax</h3>
         <p>This section defines the structure of the violation report sent by a user-agent when a
         protected resource's security policy is violated.</p>
-
-        <p>A user-agent MUST send a violation report in the following two cases:</p>
-        <ol>
-          <li>Whenever ANY policy violation occurs, a user-agent MUST dispatch
-          a <code>SecurityViolation</code> event which does not bubble and is not cancelable at
-          the <code>Document</code> object of the protected resource.</li>
-          <li>Whenever a policy violation occurs and the server's policy contains
-          a <code>report-uri</code>, a user-agent MUST send a violation report to all valid report
-          URIs declared in the policy via an HTTP POST request bearing the
-          Content-Type <code>application/json</code>.</li>
-        </ol>
-
-        <p>The <code>SecurityViolation</code> DOM event and the violation report sent by a
-        user-agent convey the same information about the policy violation and are intended to be
-        utilized by the server for monitoring and logging.</p>
-
-        <p>The <code>SecurityViolation</code> event uses the <code>CustomEvent</code> interface
-        defined in the DOM Level 3 Events specification. [[!DOM-LEVEL-3-EVENTS]].</p>
-
-        <p>The report structure defined below is a JSON object used for both the <code>detail</code>
-        argument to the <code>SecurityViolation</code> event constructor and the request body of the
-        violation report.</p>
-
-        <p>The <code>SecurityViolation</code> event <code>detail</code> and the report body sent by
-        the user-agent MUST be comprised of a JSON object having the following properties:</p>
-
-        <ul>
-          <li><strong><code>request</code></strong>: HTTP request line of the protected resource
-          whose policy was violated including method, URI and HTTP version</li>
-          <li><strong><code>request-headers</code></strong>: HTTP request headers sent with the
-          request for the protected resource whose policy was violated</li>
-          <li><strong><code>blocked-uri</code></strong>: URI of the resource that was prevented from
-          loading due to the policy violation</li>
-          <li><strong><code>violated-directive</code></strong>: The policy directive that was
-          violated</li>
-          <li><strong><code>original-policy</code></strong>: The original policy as received by the
-          user-agent.  If the policy was received via more than one Content Security Policy response
-          header, this field MUST contain a comma separated list of original policies.</li>
-        </ul>
-
-        <p>If the origin of the blocked-uri is not the same as the document's
-        origin, then the user agent MUST replace the blocked-uri with the
-        ASCII serialization of the blocked-uri's origin.</p>
 
         <h4>Sample Policy Violation Report</h4>
         <p>In the following example a page located at <code>http://example.org/page.html</code> was
