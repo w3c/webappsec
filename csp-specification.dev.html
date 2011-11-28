@@ -13,7 +13,7 @@
       var respecConfig = {
           // specification status (e.g. WD, LCWD, NOTE, etc.). If in doubt use ED.
           // Member-SUBM
-          specStatus:           "unofficial",
+          specStatus:           "FPWD",
 
           // the specification's short name, as in http://www.w3.org/TR/short-name/
           shortName:            "CSP",
@@ -69,122 +69,120 @@
           wgURI:        "http://www.w3.org/2011/webappsec/",
 
           // name (with the @w3c.org) of the public mailing to which comments are due
-          wgPublicList: "public-web-security@w3.org",
+          wgPublicList: "public-webappsec@w3.org",
 
           // URI of the patent status for this WG, for Rec-track documents
           // !!!! IMPORTANT !!!!
           // This is important for Rec-track documents, do not copy a patent URI from a random
           // document unless you know what you're doing. If in doubt ask your friendly neighbourhood
           // Team Contact.
-          wgPatentURI:  "",
+          wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/49309/status",
       };
     </script>
   </head>
   <body>
-    <section id='abstract'>
-      <p>This document defines a policy language used to declare a set of content restrictions for a
-      web resource, and a mechanism for transmitting the policy from a server to a client where the
-      policy is enforced.</p>
+    <section id="abstract">
+      <p>This document defines a policy language used to declare a set of
+      content restrictions for a web resource, and a mechanism for
+      transmitting the policy from a server to a client where the policy is
+      enforced.</p>
     </section>
 
     <section class="informative">
       <h2>Introduction</h2>
-      <p>The purpose of this specification is to provide a method for web applications to broadly
-      address a large class of vulnerabilities known as <strong>content injection</strong> which is
-      the primary focus of Content Security Policy.  Other threats, such as cross-site request
-      forgery, are not a focus of this specification.</p>
 
-      <p>Content Security Policy is a declarative policy framework that enables web authors and
-      server administrators to specify the permitted sources of content in their web applications
-      and to restrict the capabilities of that content.  Content Security Policy mitigates and
-      detects content injection attacks such as cross-site scripting (XSS).</p>
+      <p>This document defines Content Security Policy, a mechanism web
+      applications can use to mitigate the broad class of content injection
+      vulnerabilities, such as cross-site scripting (XSS). Content Security
+      Policy is a declarative policy that lets the authors (or server
+      administrators) of a web application restrict from where the application
+      can load resources.</p>
 
-      <p>Content Security Policy is not intended to be a fool-proof security system, but it is
-      intended to provide an effective layer of security that will dovetail with any site's existing
-      web application security program.</p>
+      <p>To mitigate XSS, for example, a web application can restrict itself
+      to loading scripts only from known, trusted URIs, making it difficult
+      for an attacker who can inject content into the web application to
+      inject malicious script.</p>
 
-      <p>Content Security Policy is an opt-in mechanism which requires that servers explicitly
-      declare a security policy in order to receive any of the protection described in this
-      document.  Content Security Policies are applied by the user-agent on a per resource basis, so
-      servers must emit a security policy with each resource that the server wants protected.</p>
+      <p>Content Security Policy (CSP) is not intended as a first line of
+      defense against content injection vulnerabilities. Instead, CSP is best
+      used as defense-in-depth, to reduce the harm caused by content injection
+      attacks.</p>
+
+      <p>There is often a non-trivial amount of work required to apply CSP to
+      an existing web application. To reap the greatest benefit, authors will
+      need to move all inline script and style out-of-line, for example into
+      external scripts, because the user agent cannot determine whether an
+      inline script was injected by an attacker.</p>
+
+      <p>To take advantage of CSP, a web application needs to opt into using
+      CSP by supplying a Content-Security-Policy HTTP header or an appropriate
+      HTML <code>meta</code> element. Such policies apply the current document
+      only. To supply a policy for an entire site, the server need to supply a
+      policy along with each resource representation.</p>
     </section>
 
-    <section>
-      <h2>Conformance Criteria</h2>
-      <p>This specification is written for resource authors and user-agents.  All examples, and
-      notes in this specification are non-normative, as are all sections explicitly marked
-      non-normative. Everything else in this specification is normative.</p>
+    <section id="conformance">
+      <p>Requirements phrased in the imperative as part of algorithms (such as
+      "strip any leading space characters" or "return false and abort these
+      steps") are to be interpreted with the meaning of the key word ("MUST",
+      "SHOULD", "MAY", etc) used in introducing the algorithm.</p>
 
-      <p>The key words "MUST", "MUST NOT", "REQUIRED", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
-      and "OPTIONAL" in the normative parts of this document are to be interpreted as described in
-      RFC 2119. [[!RFC2119]]</p>
+      <p>A conformant user-agent is one that implements all the requirements
+      listed in this specification that are applicable to user-agents.</p>
 
-      <p>A conformant user-agent is one that implements all the requirements listed in this
-      specification that are applicable to user-agents.</p>
-
-      <p>A conformant server is one that implements all the requirements listed in this
-      specification that are applicable to servers.</p>
+      <p>A conformant server is one that implements all the requirements
+      listed in this specification that are applicable to servers.</p>
 
       <section>
         <h3>Terminology</h3>
+
         <p>This section defines several terms used throughout the document.</p>
 
-        <p>The term <dfn title="">security policy</dfn>, or simply <dfn title="">policy</dfn>, for
-        the purposes of this specification refers to either:
+        <p>The term <dfn>security policy</dfn>, or
+        simply <dfn>policy</dfn>, for the purposes of this
+        specification refers to either:
           <ol>
-            <li>A set of security preferences for restricting the behavior of content within a
-            document or resource</li>
-            <li>A fragment of text that codifies these preferences</li>
+            <li>a set of security preferences for restricting the behavior of
+            content within a given document, or</li>
+            <li>a fragment of text that codifies these preferences.</li>
           </ol>
         </p>
 
-        <p>A server transmits their security policy for a particular resource as a composition
-        of <dfn title="">directives</dfn>, such as <code>default-src 'self'</code>, each of which
-        controls a specific set of content capabilities within a document rendered by a user-agent.
-        Directives may also be used to specify the locations of resources needed by user-agents to
-        process and enforce security policies.  More details are provided in
-        the <a href="#directives">directives</a> section.</p>
+        <p>The security policies defined by this document are applied by a
+        user-agent on a <em>per-resource representation basis</em>.
+        Specifically, when a user agent receives a policy along with the
+        representation of a given resource, that policy applies to <em>that
+        resource representation only</em>. That resource representation is
+        often referred to in this document as the <dfn>protected
+        document</dfn>.
 
-        <p>A directive is composed of a <dfn title="">directive name</dfn>, which indicates the
-        class of content that is to be restricted by the user-agent, and a <dfn title="">directive
-        value</dfn>, which specifies the range of permitted behavior for that content class.</p>
+        <p>A server transmits its security policy for a particular resource as
+        a collection of <dfn>directives</dfn>, such as <code>default-src
+        'self'</code>, each of which controls a specific set of privileges for
+        a document rendered by a user-agent. More details are provided in the
+        <a href="#directives">directives</a> section.</p>
 
-        <p>Most of the policy directives defined in this document take a list
-        of <dfn title="">sources</dfn> as the directive value.  A source is a location, such as a
-        network host, from which content of a particular type can be <dfn id="fetch"
-        title="">fetched</dfn> according to
-        the <a href="http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources">fetching
-        algorithm</a> defined in the HTML 5 standard [[!HTML5]].  Sources can be specified according
-        to scheme, host and port.</p>
+        <p>A directive consists of a <dfn>directive name</dfn>, which
+        indicates the privileges controlled by the directive, and a
+        <dfn>directive value</dfn>, which specifies the restrictions the
+        policy imposes on those privileges.</p>
 
         <p>Fetching resources requires <dfn id="resolve">resolving</dfn>
         and <dfn id="parse-url">parsing</dfn> URLs.  The algorithms
         for <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/urls.html#resolving-urls">resolving
         a URL</a>
         and <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/urls.html#parse-a-url">parsing
-        a URL</a> are defined in the HTML 5 standard [[!HTML5]].</p>
+        a URL</a> are defined in the HTML5 standard [[!HTML5]].</p>
 
-        <p>Content Security Policies are applied by a user-agent on a <strong>per-resource
-        basis</strong>.  This means that when a server emits a Content Security Policy in a
-        response, the user-agent applies the stated policy to the document returned <strong>in that
-        response only</strong> for the lifetime of the document.  That document is often referred to
-        in this specification as the <dfn title="">protected document</dfn>
-        or <dfn title="">protected resource</dfn>.</p>
+        <p>The term <dfn>origin</dfn> is defined in the Origin specification.
+        [<em><a href="http://tools.ietf.org/html/draft-ietf-websec-origin">ORIGIN</a></em>]</p>
 
-        <p>When Content Security Policy is enabled by a server,
-        several <a href="#base-restrictions">base restrictions</a> are applied in the user-agent
-        processing model.  These base restrictions provide support for the primary threat model.</p>
-
-        <p>The term <code>origin</code> is used per its definition in the Origin specification.
-          [<em><a href="http://tools.ietf.org/html/draft-abarth-origin-09">ORIGIN</a></em>]</p>
-
-        <p>The term <code>URI</code> is defined in the URI specification.  [[!URI]]</p>
+        <p>The term <dfn>URI</dfn> is defined in the URI specification.  [[!URI]]</p>
 
         <p>The <code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>,
         <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code>,
         <code>&lt;link&gt;</code>, <code>&lt;frame&gt;</code> and <code>&lt;iframe&gt;</code>
-        elements and the <code>Window</code> object are defined in the HTML 5
-        standard. [[!HTML5]].</p>
+        elements are defined in the HTML5 standard. [[!HTML5]].</p>
 
         <p>The <code>&lt;applet&gt;</code> element is defined in the HTML 4.01 standard. [[!HTML401]].</p>
 
@@ -199,805 +197,1011 @@
 
         <p>The <code>EventSource</code> object is defined in the <code>EventSource</code>
         standard. [<em><a href="http://dev.w3.org/html5/eventsource/">EVENTSOURCE</a></em>].</p>
-      </section>
 
-    </section>
-
-    <section>
-      <h2>Syntax</h2>
-      <p>This section defines the syntax and semantics of the policy directives and policy delivery
-      mechanisms introduced by this specification.</p>
-
-      <p>The Augmented Backus-Naur Form (ABNF) notation used in this document is specified in RFC
-      5234. [[!ABNF]]</p>
-
-      <section>
-        <h3>Policy Delivery</h3>
-          <p>The policy can be delivered from the server to the client via an HTTP response header
-          or an HTML <code>meta</code> element.  Both mechanisms indicates that a resource MUST have
-          the set of restrictions specified in the policy applied to it by the user-agent while
-          rendering the content.</p>
-
-          <section>
-            <h4><code>X-Content-Security-Policy</code> Response Header</h4>
-            <p>The policy is transmitted as the HTTP header value and is parsed by the client before
-            it receives the response body.</p>
-
-            <p>The syntax of the HTTP header will be defined in a future specification of the
-            IETF <a href="http://tools.ietf.org/wg/websec/">Web Security Working Group</a>.  This
-            document assumes a header structure as defined by the following simple ABNF:</p>
-            <pre>content-security-policy = "X-Content-Security-Policy:" OWS [ policy ] OWS
-OWS                     = *( [ CRLF ] WSP ) ; "optional white space"</pre>
-
-            <p>where <code>&lt;policy&gt;</code> is a sequence
-            of <a href="#directives">directives</a> defined later in this document.  The preceding
-            definition includes by reference the core rules <code>CRLF</code> and <code>WSP</code>,
-            as defined in [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF
-            Appendix B.1</a></em>]</p>
-
-            <p>Content Security Policy can be deployed in <a href="#report-only-mode">report-only
-            mode</a> by sending the HTTP response
-            header <code>X-Content-Security-Policy-Report-Only</code>.</p>
-          </section>
-
-          <section>
-            <h4><code>&lt;meta http-equiv="X-Content-Security-Policy"&gt;</code> HTML Element</h4>
-            <p>The policy is transmitted as the <code>content</code> attribute of the element.</p>
-
-            <p>The Content Security Policy element MUST be placed in the <code>&lt;head&gt;</code>
-            element of the document and MUST precede all other <code>&lt;meta&gt;</code> elements in
-            order to be treated as valid policy.</p>
-
-            <p class="issue">There probably need to be additional restrictions placed on what other
-            elements cannot precede the policy element due to their parsing causing side effects
-            that the policy won't have an opportunity to prevent.</p>
-
-            <p>Content Security Policy can be deployed in <a href="#report-only-mode">report-only
-            mode</a> by placing a <code>&lt;meta
-            http-equiv="X-Content-Security-Policy-Report-Only"></code> HTML element in
-            the <code>&lt;head></code> section of a document.</p>
-
-            <p>The semantics of the <code>&lt;meta&gt;</code> and <code>&lt;head&gt;</code> elements
-            are defined in the HTML 5 standard. [[!HTML5]]</p>
-          </section>
-
-          <section>
-            <h4>Delivery Mechanism Precedence</h4>
-            <p>Policies expressed in <code>X-Content-Security-Policy</code> response headers take
-            precedence over policies expressed via <code>meta</code> elements.  If
-            no <code>X-Content-Security-Policy</code> response headers are present, then the first
-            Content Security Policy <code>meta</code> element found in the
-            document <code>head</code> takes precedence.</p>
-          </section>
-
-      </section><!-- Policy Delivery -->
-
-      <section>
-        <h3>Directives</h3>
-        <p>This section describes the policy directives introduced by this specification.</p>
-
-        <p>None of the policy directives listed below are required for a policy to be treated as
-        valid, though user-agents SHOULD consider a policy containing no recognized directives as a
-        processing error and SHOULD report a warning message to the error console communicating that
-        a policy containing <a href="#no-recognized-directives">no recognized directives</a> was
-        received.</p>
-
-        <section>
-          <h4><code>default-src</code></h4>
-          <p>The <code>default-src</code> directive defines the default policy for all types of
-          content which are not explicitly restricted by any of the other directives specified in a
-          policy.  The directive value represents the default list of sources from which content of
-          types not specified elsewhere in the policy may be <a href="#fetch">fetched</a>.
-
-          <p>An exception to the <code>default-src</code> directive value being used as the default
-          policy exists in the case of
-          the <a href="#frame-ancestors"><code>frame-ancestors</code></a> directive, which MUST be
-          enforced as <code>*</code> (all sources) when not explicitly declared.</p>
-
-          <p>User-agents MUST enforce the <code>default-src</code> directive for any content request
-          which would be restricted by one of the following more specific directives when that
-          specific directive is not present in the policy.</p>
-        </section>
-
-        <section>
-          <h4><code>script-src</code></h4>
-          <p>The <code>script-src</code> directive defines the list of sources from which script
-          resources may be fetched as external <code>&lt;script&gt;</code> elements
-          or <code>Worker</code> objects in HTML documents or <code>&lt;?xml-stylesheet?&gt;</code>
-          processing instructions in XML documents.</p>
-
-          <p>Prior to a script resource being fetched, the script resource URL MUST first be
-          validated as conforming to the protected document's <code>script-src</code> directive.</p>
-
-          <p>Script resource URLs requiring validation prior to fetching include:
-            <ol>
-              <li><code>src</code> attributes on <code>&lt;script&gt;</code> elements within HTML
-              documents</li>
-              <li><code>scriptURL</code> arguments passed to the
-              the <a href="http://dev.w3.org/html5/workers/#dedicated-workers-and-the-worker-interface"><code>Worker</code></a>
-              and <a href="http://dev.w3.org/html5/workers/#shared-workers-and-the-sharedworker-interface"><code>SharedWorker</code></a>
-              constructors within HTML documents</a></li>
-              <li><code>href</code> attributes on <code>&lt;xsl:include&gt;</code> elements within
-              XML documents</li>
-              <li><code>href</code> attributes on <code>&lt;xsl:import&gt;</code> elements within
-              XML documents</li>
-            </ol>
-          </p>
-
-          <p>Any script resource URLs identified per the above MUST first
-          be <a href="#resolve">resolved</a> relative to the containing element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>script-src</code>
-          directive in order for the script resource to be requested.</p>
-
-          <p>User-agents MUST NOT request script resources from non-approved sources.</p>
-
-          <p>In the case of an XSL transformation, any content to be included into the resulting XML
-          document must conform to the original XML document's security policy prior to being
-          fetched or loaded.</p>
-
-          <p>If the <code>script-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for script resources to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>object-src</code></h4>
-          <p>The <code>object-src</code> directive defines the list of sources from which external
-          resources may be fetched when
-          constructing <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>
-          and <code>&lt;applet&gt;</code> elements.</p>
-
-          <p>Prior to fetching any external resource required by
-          an <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code> or <code>&lt;applet&gt;</code>
-          element, the resource URL MUST first be validated as conforming to the protected
-          document's <code>object-src</code> directive.</p>
-
-          <p>Resource URLs requiring validation prior to fetching include:
-            <ol>
-              <li><code>data</code> attributes on <code>&lt;object&gt;</code> elements</li>
-              <li><code>src</code> attributes on <code>&lt;embed&gt;</code> elements</li>
-              <li><code>code</code> or <code>archive</code> attributes
-              on <code>&lt;applet&gt;</code> elements</li>
-            </ol>
-          </p>
-
-          <p class="note">Resource URLs contained in the <code>&lt;applet&gt;</code> element
-          attributes listed above may be specified relative to the element's <code>codebase</code>
-          attribute or relative to the containing document's base URL.</p>
-
-          <p>Any <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>
-          or <code>&lt;applet&gt;</code> resource URLs identified per the above MUST first
-          be <a href="#resolve">resolved</a> relative to the containing element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>object-src</code>
-          directive in order for the resource URL to be requested.</p>
-
-          <p>User-agents MUST NOT request <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>
-          or <code>&lt;applet&gt;</code> resource URLs from non-approved sources.</p>
-
-          <p>If the <code>object-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for <code>&lt;object&gt;</code>,
-          <code>&lt;embed&gt;</code> and <code>&lt;applet&gt;</code> resources to the
-          <a href="#default-src"><code>default-src</code></a> directive.</p>
-
-          <p class="note">In order to achieve comprehensive XSS protection, sites must include both
-          a <code>script-src</code> directive and an <code>object-src</code> directive in their policy, or
-          a <code>default-src</code> directive, which covers both cases, due to some plugins having
-          scripting capability.</p>
-
-          <p class="issue">Some plugins, e.g. Google Gears, do not load via URLs.  How
-          does <code>object-src</code> interact with these kinds of plugins?</p>
-        </section>
-
-        <section>
-          <h4><code>img-src</code></h4>
-          <p>The <code>img-src</code> directive defines the list of sources from which images may be
-          fetched via <code>&lt;img&gt;</code> elements, CSS properties and shortcut icons,
-          a.k.a. favicons.</p>
-
-          <p>Prior to fetching an image resource, the image resource URL MUST first be validated as
-          conforming to the protected document's <code>img-src</code> directive.</p>
-
-          <p>Resource URLs requiring validation prior to fetching include:
-            <ol>
-              <li><code>src</code> attributes on <code>&lt;img&gt;</code> elements</li>
-              <li><code>url()</code> or <code>image()</code> values on any CSS property that is
-              capable of loading an image</li>
-              <li><code>href</code> attributes on <code>&lt;link rel="icon"&gt;</code>
-              or <code>&lt;link rel="shortcut icon"&gt;</code> elements</li>
-            </ol>
-          </p>
-
-          <p>Any resource URLs identified per the above MUST first
-          be <a href="#resolve">resolved</a> relative to the <code>&lt;img&gt;</code>
-          element, <code>&lt;style&gt;</code> element or external stylesheet URL,
-          or <code>&lt;link&gt;</code> element, as appropriate.  Each resolved resource URL must
-          then be <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme,
-          host and port tuple MUST be present in the source list defined by the <code>img-src</code>
-          directive in order for the image resource to be requested.</p>
-
-          <p>User-agents MUST NOT request image resources from non-approved sources.</p>
-
-          <p class="issue">Should the user agent fire the error event when one of these loads fails?</p>
-
-          <p>If the <code>img-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for image resources to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-
-          <p>The <code>url()</code> and <code>image()</code> notations are defined in the CSS Image
-          Values and Replaced Content Module Level 3
-          standard. [<em><a href="http://www.w3.org/TR/css3-images/">CSS3-Images</a></em>]</p>
-        </section>
-
-        <section>
-          <h4><code>media-src</code></h4>
-          <p>The <code>media-src</code> directive defines the list of sources from which external
-          resources may be fetched via <code>&lt;video&gt;</code> and <code>&lt;audio&gt;</code>
-          elements.</p>
-
-          <p>Prior to a <code>&lt;video&gt;</code> or <code>&lt;audio&gt;</code> resource being
-          fetched, the URL in the element's <code>src</code> attribute MUST first
-          be <a href="#resolve">resolved</a> relative to the element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>media-src</code>
-          directive in order for the resource to be requested.</p>
-
-          <p>User-agents MUST NOT request <code>&lt;video&gt;</code> or <code>&lt;audio&gt;</code>
-          resources from non-approved sources.</p>
-
-          <p>If the <code>media-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for <code>&lt;video&gt;</code>
-          and <code>&lt;audio&gt;</code> resources to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>style-src</code></h4>
-          <p>The <code>style-src</code> directive defines the list of sources from which external
-          stylesheets may be fetched via <code>&lt;link rel="stylesheet"&gt;</code> elements.</p>
-
-          <p>Prior to an external stylesheet being fetched, the URL in the <code>href</code>
-          attribute of the <code>&lt;link rel="stylesheet"&gt;</code> element MUST first
-          be <a href="#resolve">resolved</a> relative to the element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>style-src</code>
-          directive in order for the stylesheet to be requested.</p>
-
-          <p>User-agents MUST NOT request external stylesheets from non-approved sources.</p>
-
-          <p>If the <code>style-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for external stylesheets to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>frame-src</code></h4>
-          <p>The <code>frame-src</code> directive defines the list of sources from which resources
-          may be fetched via <code>&lt;iframe&gt;</code> elements, and to which hosts
-          those <code>&lt;iframe&gt;</code> elements may be navigated.</p>
-
-          <p>Prior to an <code>&lt;iframe&gt;</code> resource being fetched, the URL in
-          the <code>&lt;iframe&gt;</code> element's <code>src</code> attribute MUST first
-          be <a href="#resolve">resolved</a> relative to the element and
-          then <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>frame-src</code>
-          directive in order for the resource to be requested.</p>
-
-          <p>Prior to an <code>&lt;iframe&gt;</code> element being navigated, the new location MUST
-          first be resolved relative to the element and then parsed into its component parts. The
-          resulting scheme, host and port tuple MUST be present in the source list defined by
-          the <code>frame-src</code> directive for the navigation to be permitted.</p>
-
-          <p>User-agents MUST NOT request <code>&lt;iframe&gt;</code> resources from non-approved
-          sources nor navigate <code>&lt;iframe&gt;</code> elements to non-approved sources.</p>
-
-          <p>If the <code>frame-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject <code>&lt;iframe&gt;</code> requests to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>font-src</code></h4>
-          <p>The <code>font-src</code> directive defines the list of sources from which downloadable
-          fonts may be fetched using the <code>@font-face</code> CSS rule.</p>
-
-          <p>Prior to a font resource being fetched, the <code>url</code> value of
-          the <code>src</code> descriptor of the <code>@font-face</code> CSS rule MUST first
-          be <a href="#resolve">resolved</a> relative to the <code>&lt;style&gt;</code> element or
-          the external stylesheet URL where the <code>@font-face</code> CSS rule is declared. The
-          resolved URL MUST then be <a href="#parse-url">parsed</a> into its component parts.  The
-          resulting scheme, host and port tuple MUST be present in the source list defined by
-          the <code>font-src</code> directive in order for the downloadable font resource to be
-          requested.</p>
-
-          <p>User-agents MUST NOT request downloadable font resources from non-approved sources.</p>
-
-          <p>If the <code>font-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject requests for downloadable font resources to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>connect-src</code></h4>
-          <p>The <code>connect-src</code> directive defines the list of sources that are permitted
-          to be connected to via the DOM APIs <code>XMLHttpRequest</code>, <code>WebSocket</code>
-          and <code>EventSource</code>.</p>
-
-          <p>Prior to connecting to an external source using one of the restricted APIs, the source
-          URL MUST first be validated as conforming to the protected
-          document's <code>connect-src</code> directive.</p>
-
-          <p>Source URLs requiring validation prior to connection include:
-            <ol>
-              <li>The <code>url</code> argument passed to
-              the <a href="http://www.w3.org/TR/XMLHttpRequest/#the-open-method"><code>open()</code>
-              method</a> of an <code>XMLHttpRequest</code> object</li>
-              <li>The <code>url</code> argument passed to
-              the <a href="http://dev.w3.org/html5/websockets/#websocket"><code>WebSocket</code>
-              constructor</a></li>
-              <li>The <code>url</code> argument passed to
-              the <a href="http://dev.w3.org/html5/eventsource/#eventsource"><code>EventSource</code>
-              constructor</a></li>
-            </ol>
-          </p>
-
-          <p>Any source URLs identified per the above MUST first be
-          fully <a href="#resolve">resolved</a>.  In the case of an <code>XMLHttpRequest</code>
-          object, the source URL MUST be resolved relative to the
-          object's <a href="http://www.w3.org/TR/XMLHttpRequest/#xmlhttprequest-base-url">base
-          URL</a>.  In the case of an <code>EventSource</code> object, the source URL MUST be
-          resolved relative to
-          the <a href="http://www.whatwg.org/specs/web-apps/current-work/#entry-script">entry
-          script's</a> <a href="http://www.whatwg.org/specs/web-apps/current-work/#script%27s-base-url">base
-          URL</a>.  A <code>WebSocket</code> URL is required to be an absolute URL, and thus does
-          not require relative resolution.  Once resolved, the source URL MUST
-          be <a href="#parse-url">parsed</a> into its component parts.  The resulting scheme, host
-          and port tuple MUST be present in the source list defined by the <code>connect-src</code>
-          directive in order for the connection to be made.</p>
-
-          <p>User-agents MUST NOT connect to any non-approved sources via restricted APIs.</p>
-
-          <p>If the <code>connect-src</code> directive is not present in a policy and
-          the <a href="#default-src"><code>default-src</code></a> directive is present in the
-          policy, user-agents MUST subject <code>XMLHttpRequest</code>, <code>WebSocket</code>
-          and <code>EventSource</code> connections to
-          the <a href="#default-src"><code>default-src</code></a> directive.</p>
-        </section>
-
-        <section>
-          <h4><code>frame-ancestors</code></h4>
-          <p>The <code>frame-ancestors</code> directive defines the list of sources that are
-          permitted to embed the protected resource as
-          an <code>&lt;iframe&gt;</code>, <code>&lt;frame&gt;</code> or <code>&lt;object&gt;</code>
-          element.</p>
-
-          <p>If the <code>frame-ancestors</code> directive is present in a policy,
-          the <code>location.href</code> attribute for every <code>window</code> in the protected
-          document's window parent chain MUST be <a href="#parse-url">parsed</a> into its component
-          parts, and the resulting scheme, host and port tuple MUST be present in the source list
-          defined by the <code>frame-ancestors</code> directive in order for the protected document
-          to be used in the embedded browsing context.</p>
-
-          <p>If the <code>frame-ancestors</code> directive is not present in a policy its value MUST
-          be assumed to be <code>*</code>, or all sources.</p>
-
-          <p>User-agents MUST NOT render a protected document in an embedded browsing context if
-          any <code>window</code> in the protected document's window parent chain has
-          a <code>location.href</code> representing a non-approved source.</p>
-
-          <p class="note">We may want to remove <code>frame-ancestors</code> from Content Security
-          Policy as IETF is standardizing an equivalent feature in
-          its <a href="http://tools.ietf.org/html/draft-gondrom-frame-options-01">Frame Options</a>
-          draft.</p>
-        </section>
-
-        <section>
-          <h4><code>sandbox</code></h4>
-
-          <p class="issue">We might add a <code>sandbox</code> directive to
-          control the HTML5 sandbox bits.</p>
-        </section>
-
-        <section>
-          <h4><code>report-uri</code></h4>
-          <p>The <code>report-uri</code> directive defines one or more URIs to which
-          a <a href="#violation-report-syntax">violation report</a> is sent when a policy violation
-          occurs.</p>
-
-          <p>If the <code>report-uri</code> directive is present in a policy the user-agent MUST
-          send a violation report to each valid URI specified in the directive value.</p>
-
-          <p>The violation report MUST be sent via an HTTP POST request whose body is comprised of a
-          JSON object containing violation information, and the request MUST have a Content-Type
-          of <code>application/json</code>.</p>
-
-          <p>The URIs specified in the <code>report-uri</code> directive value MUST have the same
-          scheme and port as the protected document and MUST share the
-          same <em><a href="http://publicsuffix.org/">public suffix</a> +1 DNS label</em> as the
-          protected document in order to be treated as valid.</p>
-
-          <p class="note">Examples of public suffixes include <code>.com</code>, <code>.net</code>
-          and <code>.co.uk</code>.  Examples of <em>"public suffix +1 DNS label"</em>
-          include <code>example.com</code>, <code>example.net</code> and <code>example.co.uk</code>.
-          Therefore a protected document whose host is <code>www.example.com</code> could have
-          a <code>report-uri</code> hosted on <code>reports.example.com</code>
-          but <b>not</b> <code>reports.example.net</code>.</p>
-
-          <p>User-agents MUST send <a href="#violation-report-syntax">violation reports</a> to all valid
-          URIs listed in the <code>report-uri</code> directive value.</p>
-
-          <p>User-agents MUST NOT send violation reports to any invalid URIs listed in
-          the <code>report-uri</code> directive value.</p>
-
-          <p>User-agents MUST NOT follow HTTP 3xx redirect responses when sending violation
-          reports.</p>
-
-          <p>User-agents MUST resolve a <code>report-uri</code> relative to the protected document's
-          location.</p>
-
-          <p>User-agents SHOULD log policy violations on the error console when they occur.</p>
-
-          <p class="issue">This section is very HTTP-centric regarding report sending.  Is it proper
-          to require HTTP POST, for instance, if the <code>report-uri</code> uses the ftp: scheme?
-          Should non-HTTP schemes be allowed for reports?</p>
-        </section>
-
-        <section>
-          <h4><code>policy-uri</code></h4>
-          <p>The <code>policy-uri</code> directive defines the location of a file containing the
-          policy for a protected resource.  The contents of the file comprise the complete policy
-          for the protected resource.</p>
-
-          <p>The <code>policy-uri</code> directive MUST only be declared in the absence of all other
-          policy directives.</p>
-
-          <p>If the <code>policy-uri</code> directive is present in a policy and no other policy
-          directives are declared the user-agent MUST fetch the URI defined in
-          the <code>policy-uri</code> directive value and parse the content returned as the complete
-          security policy for the protected resource.</p>
-
-          <p>If the <code>policy-uri</code> directive is present in a policy and any other policy
-          directive is also declared the user-agent MUST enforce the policy <code>default-src
-          'none'</code>.</p>
-
-          <p>The URI specified in the <code>policy-uri</code> directive value MUST have the
-          same <code>origin</code> as the protected document in order to be treated as valid.</p>
-
-          <p>User-agents MUST NOT fetch an invalid <code>policy-uri</code> and when one is
-          encountered the user-agent MUST enforce the policy <code>default-src 'none'</code>.</p>
-
-          <p>The response to a <code>policy-uri</code> request MUST include a Content-Type
-          of <code>text/x-content-security-policy</code> in order for the response to be treated as
-          valid policy for the protected resource.  User-agents MUST NOT enforce a policy retrieved
-          from a <code>policy-uri</code> that does not have the required Content-Type and MUST
-          enforce the policy <code>default-src 'none'</code> when such a response is
-          received.</p>
-
-          <p>User-agents MUST NOT follow HTTP 3xx redirect responses when fetching
-          a <code>policy-uri</code>.</p>
-
-          <p>User-agents MUST resolve a <code>policy-uri</code> relative to the protected document's
-          location.</p>
-        </section>
-
-        <section>
-          <h4><code>options</code></h4>
-          <p>The <code>options</code> directive defines a set of modifications to the Content
-          Security Policy base restrictions.</p>
-
-          <p>The <code>options</code> directive value is comprised of a space-separated LDH tokens,
-          each specifying a modification to the default Content Security Policy processing
-          model.</p>
-
-          <p>User-agents MUST ignore any unrecognized <code>options</code> tokens and when an
-          unrecognized <code>options</code> token is encountered, user-agents SHOULD log the event
-          on the error console.</p>
-        </section>
-
-      </section><!-- Directives -->
-
-      <section class="informative">
-        <h3>Source Expressions</h3>
-        <p>This section describes the structure of the directive values that restrict the loading of
-        content into a protected document.</p>
-
-        <p>A source expression represents a combination of a scheme, a set of hosts, and a network
-        port from which content may be loaded.  Source expressions may contain a
-        wildcard, <code>*</code>, used to match a set of hosts or a set of ports.</p>
-
-        <p>A source expression may specify a set of hosts represented by any number of DNS labels
-        and an optional leading <a href="#hostname-wildcards">hostname wildcard</a> which matches 0
-        or more leading DNS labels.  If 0 DNS labels are specified in the source expression, a
-        wildcard represents the set of URIs.</p>
-
-        <p class="note">Examples of host-only source expressions are <code>example.net</code>
-        and <code>*.example.com</code>.</p>
-
-        <p>Source expressions may specify a scheme and/or port from which content is limited to
-        loading from.  Content loading may be restricted to a single scheme by declaring the scheme
-        at the beginning of a source expression.  Content loading may also be restricted to a
-        particular port by declaring the port number at the end of a source expression.
-        A <a href="#port-wildcards">port wildcard</a> <code>*</code> may also be used in place of a
-        single port number to permit content from any port.</p>
-
-        <p>If a scheme is not specified as part of the source expression, a user-agent MUST use the
-        same scheme as the protected document.  If a port number is not specified as part of the
-        source expression, a user-agent MUST use the default port for the source's scheme, whether
-        the scheme was explicitly stated in the source expression or was inherited from the
-        protected document.</p>
-
-        <p class="note">An example of a source expression specifying a scheme restriction
-        is <code>https://example.com</code>.  An example of a source expression specifying scheme
-        and port restrictions is <code>https://*.example.org:443</code>.</p>
-
-        <p>A source expression may consist entirely of a scheme.  In this case, user-agents MUST
-        only restrict content to be loaded from the specified scheme and MUST NOT apply any host or
-        port restrictions.  This allows <a href="#host-less-schemes">host-less schemes</a> to be
-        used as sources in security policies.</p>
-
-        <p>User-agents MUST treat all invalid source expressions encountered in a directive value as
-        empty.</p>
-
-        <p>Servers MUST specify internationalized domain names in security policies according to
-        their punycode
-        representations. [<em><a href="http://tools.ietf.org/html/rfc3492">RFC 3492</a></em>]</p>
-
-        <section>
-          <h4>Host-less Schemes</h4>
-          <p>All source expressions do not require a hostname.  Schemes like <code>data:</code> can
-          be used to load inline content and do not require a hostname or port number.</p>
-
-          <p class="note"><code>data:</code> is an example of a complete and valid source expression
-          that specifies neither hostname nor port number and which permits data URIs to be used for
-          content loading.</p>
-        </section><!-- Host-less Schemes -->
-
-        <section>
-          <h4>Hostname Wildcards</h4>
-          <p>A source expression MAY contain a single wildcard character, <code>*</code>, in the
-          hostname portion and it MUST be used in place of the left-most, or most specific, DNS
-          label.  The wildcard character matches zero or more DNS labels.</p>
-
-          <p class="note">Examples of <strong>valid</strong> source expressions using hostname
-          wildcards include <code>*.example.com</code>, <code>*.org</code> and <code>*</code></p>
-
-          <p class="note">Examples of <strong>invalid</strong> hostname wildcards use
-          include <code>www.*.com</code>, <code>*.example.*</code> and <code>example.*</code></p>
-        </section><!-- Hostname Wildcards -->
-
-        <section>
-          <h4>Port Wildcards</h4>
-          <p>A source expression MAY contain a single wildcard character, <code>*</code>, in place
-          of the port number.  The wildcard character indicates that any port may be used to load
-          content.</p>
-
-          <p class="note">Examples of valid source expressions using the port wildcard
-          include <code>example.com:*</code> and <code>http://example.net:*</code>.</p>
-
-          <p>User-agents MAY prevent content from being loaded via specific ports, even when the
-          port wildcard is used, due to security reasons.</p>
-        </section><!-- Port Wildcards -->
-
-        <section>
-          <h4>Source Expression Keywords</h4>
-          <p>A source expression MAY make use of one of the following keywords which either serves
-          as a shorthand replacement for a set of hosts or modifies a default behavior for a
-          particular directive.</p>
-
-          <p>Source expression keywords begin and end with a single-quote character in order to
-          differentiate them from network hosts of the same name.</p>
-
-          <p>The <code>'none'</code> keyword represents the empty set of hosts.  If used, no hosts
-          are permitted for that directive.</p>
-
-          <p>The <code>'self'</code> keyword represents the source serving the protected resource.
-          When used, content may be loaded from the scheme, host and port that the protected
-          resource was served from.</p>
-
-          <p>The <code>'unsafe-inline'</code> keyword may be used to enable a particular type of
-          content to be loaded inline, or from within the protected resource.  Only a subset of the
-          directives support this keyword.  When used, content of the type referenced by the
-          containing directive may be loaded inline.  More details regarding which directives
-          support this keyword are provided in the <a href="#directives">directives</a> section.</p>
-
-          <p>The <code>'unsafe-eval'</code> keyword may be used to enable a set of ECMAScript APIs
-          that turn strings into code which
-          are <a href="#code-must-not-be-created-from-strings">restricted by default</a> when
-          the <a href="#script-src"><code>script-src</code></a> directive is
-          specified. <a href="#script-src"><code>script-src</code></a> is the only directive that
-          supports this keyword.</p>
-
-          <p>User-agents MUST ignore any unrecognized source expression keywords.</p>
-        </section><!-- Source Expression Keywords -->
-      </section><!-- Source Expressions -->
-
-      <section>
-        <h3>Formal Policy Grammar</h3>
-        <p>This section describes the formal grammar of Content Security Policy using a simple ABNF
-        notation.  Each rule in the grammar defines one symbol in the form:</p>
-
-        <pre>symbol = expression</pre>
-
-        <p>The expression on the right-hand side of a rule consists of one or more sequences of
-        symbols.  A complete sequence represents a possible substitution for the symbol on the
-        left-hand side of the rule.  A choice between sequences is indicated by a forward slash "/".
-        Expression symbols that do not appear on the left-hand side of any rule are terminal
-        symbols.  Sequence groups are enclosed in parentheses "(...)" and are treated as a single,
-        ordered element.  Symbol repetitions are preceded by an asterisk "*".  If a minimum number
-        of repetitions is required, the asterisk is preceded by that number.</p>
+        <p>The Augmented Backus-Naur Form (ABNF) notation used in this
+        document is specified in RFC 5234. [[!ABNF]]</p>
 
         <p>The following core rules are included by reference, as defined in
         [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF Appendix B.1</a></em>]:
         <code>ALPHA</code> (letters), <code>DIGIT</code> (decimal
         0-9), <code>WSP</code> (white space) and <code>VCHAR</code> (printing
         characters).</p>
+      </section>
+    </section>
+
+    <section>
+      <h2>Framework</h2>
+
+      <p>This section defines the general framework for content security
+      policies, including the delivery mechanisms and general syntax for
+      policies. The next section contains the details of the specific
+      directives introduced in this specification.</p>
+
+      <section>
+        <h3>Policy Delivery</h3>
+
+        <p>The policy can be delivered from the server to the client via an HTTP response header
+        or an HTML <code>meta</code> element.</p>
+
+        <p>Of the two delivery mechanisms, servers SHOULD use the HTTP
+        response header mechanism whenever possible because, when using the
+        <code>meta</code> element mechanism, there is a period of time between
+        when the user agent begins to process the document and when the user
+        agent encounters the <code>meta</code> element when the document is
+        not protected by the policy.</p>
 
         <section>
-          <h4>Content Security Policy Grammar</h4>
-          <p>This section defines the general syntax of Content Security Policies as well as some
-          grammar symbols used in the <a href="#directive-definitions">directive syntax
-          definitions</a>.</p>
-          <pre>
+          <h4><code>Content-Security-Policy</code> Header Field</h4>
+
+          <p>The <code>Content-Security-Policy</code> header field is the
+          preferred mechanism for delivering a CSP policy.</p>
+
+          <p>A server MAY supply one or more CSP policies in HTTP response
+          header fields named <code>Content-Security-Policy</code> along with
+          the protected document.</p>
+
+          <p>Upon receiving an HTTP response containing at least one
+          <code>Content-Security-Policy</code> header field, the user agent
+          MUST <a href="#enforce-the-combination">enforce the combination</a>
+          of all the policies contained in these header fields.</p>
+        </section>
+
+        <section>
+          <h4><code>Content-Security-Policy-Report-Only</code> Header Field</h4>
+
+          <p>The <code>Content-Security-Policy-Report-Only</code> header field
+          lets server experiment with CSP by monitoring (rather than
+          enforcing) a policy. This feature lets server operators develop
+          their security policy iteratively. They can deploy a report-only
+          policy based on their best estimate of how their site behaves. If
+          their site violates this policy, instead of breaking the site, the
+          user agent will send violation reports to a URI specified in the
+          policy. Once a site has confidence that the policy is appropriate,
+          they can promote the report-only policy to normal blocking mode.</p>
+
+          <p>A server MAY supply one or more CSP policies in HTTP response
+          header fields named <code>Content-Security-Policy-Report-Only</code>
+          along with the protected document.</p>
+
+          <p>If a server supplies at least one
+          <code>Content-Security-Policy-Report-Only</code> header field in an
+          HTTP response, the server MUST NOT supply any
+          <code>Content-Security-Policy</code> header fields.</p>
+
+          <p>Upon receiving an HTTP response containing at least one
+          <code>Content-Security-Policy-Report-Only</code> header field, the
+          user agent MUST <a href="#monitor-the-combination">monitor the
+          combination</a> of all the policies contained in these header
+          fields.</p>
+        </section>
+
+        <section>
+          <h4>HTML <code>meta</code> Element</h4>
+
+          <p>The server MAY supply a CSP policy in an HTML <code>meta</code>
+          element with an <code>http-equiv</code> attribute that is a case
+          insensitive match for either <code>Content-Security-Policy</code> or
+          <code>Content-Security-Policy-Report-Only</code>.</p>
+
+          <p>Add the following entries to the <a
+          href="http://www.w3.org/TR/html5/semantics.html#pragma-directives">pragma
+          directives</a> for the <code>meta</code> element:</p>
+
+          <dl>
+            <dt>Content security policy (<code>http-equiv="content-security-policy"</code>)</dt>
+            <dd>
+              <ol>
+                <li>If the document already has a <var>csp-policy</var>, abort
+                these steps.</li>
+
+                <li>If the <code>meta</code> element lacks a
+                <code>content</code> attribute, abort these steps.</li>
+
+                <li><a href="#enforce">Enforce</a> the CSP policy contained in
+                the <code>content</code> attribute of the <code>meta</code>
+                element.</li>
+              </ol>
+            </dd>
+
+            <dt>Content security policy, report only (<code>http-equiv="content-security-policy-report-only"</code>)</dt>
+            <dd>
+              <ol>
+                <li>If the document already has a <var>csp-policy</var>, abort
+                these steps.</li>
+
+                <li>If the <code>meta</code> element lacks a
+                <code>content</code> attribute, abort these steps.</li>
+
+                <li><a href="#monitor">Monitor</a> the CSP policy contained in
+                the <code>content</code> attribute of the <code>meta</code>
+                element.</li>
+              </ol>
+            </dd>
+          </dl>
+        </section>
+      </section>
+
+      <section>
+        <h3>Syntax</h3>
+
+        <section>
+          <h4>Policies</h4>
+
+          <p>A CSP <dfn>policy</dfn> consists of a U+003B SEMICOLON
+          (<code>;</code>) delimited list of directives:</p>
+
+<pre>
 policy            = directive-list
-
 directive-list    = [ directive *( ";" [ directive ] ) ]
-
-directive         = *WSP [ directive-name [ WSP directive-value ] ]
-
-directive-name    = 1*( ALPHA / DIGIT / "-" )
-
-directive-value   = *( WSP / &lt;VCHAR except ";"&gt; )
-
-source-list       = *WSP [ source *( 1*WSP source ) *WSP ]
-                  / *WSP "'none'" *WSP
-
-source            = scheme ":"
-                  / ( [ scheme "://" ] host [ port ] )
-                  / "'self'"
-                    ; &lt;scheme&gt; production from RFC 3986
-
-host              = [ "*." ] 1*host-char *( "." 1*host-char )
-                  / "*"
-
-host-char         = ALPHA / DIGIT / "-"
-
-port              = ":" ( 1*DIGIT / "*" )
-
-option-value      = 1*( ALPHA / DIGIT / "-" )
 </pre>
-        </section><!-- Content Security Policy Grammar -->
+
+          <p>Each <dfn>directive</dfn> consists of a <var>directive-name</var>
+          and (optionally) a <var>directive-value</var>:</p>
+
+<pre>
+directive         = *WSP [ directive-name [ WSP directive-value ] ]
+directive-name    = 1*( ALPHA / DIGIT / "-" )
+directive-value   = *( WSP / &lt;VCHAR except ";"&gt; )
+</pre>
+
+          <p>To <dfn id="parse-a-csp-policy">parse a CSP policy</dfn>
+          <var>policy</var>, the user agent MUST use an algorithm equivalent to
+          the following:</p>
+
+          <ol>
+            <li>Let the <var>set of directives</var> be the empty set.</li>
+
+            <li>For each token returned by <a
+            href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strictly-split-a-string">strictly
+            splitting</a> the string <var>policy</var> on the character U+003B
+            SEMICOLON (<code>;</code>):
+              <ol>
+                <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#skip-whitespace">Skip whitespace</a>.</li>
+
+                <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#collect-a-sequence-of-characters">Collect
+                a sequence of characters</a> that are not
+                <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space characters</a>. The
+                collected characters are the <var>directive name</var>.</li>
+
+                <li>If <var>position</var> doesn't point past the end of the
+                token, skip ahead one character (which must be a <a
+                href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space
+                character</a>).</li>
+
+                <li>The remaining characters in <var>token</var> (if any) are
+                the <var>directive value</var>.</li>
+
+                <li>If the <var>set of directives</var> already contains a
+                directive with name <var>directive name</var>, ignore this
+                instance of the directive and continue to the next token.</li>
+
+                <li>Add a <var>directive</var> to the <var>set of
+                directives</var> with name <var>directive name</var> and value
+                <var>directive value</var>.</li>
+              </ol>
+            </li>
+
+            <li>Return the <var>set of directives</var>.
+          </ol>
+        </section>
 
         <section>
-          <h4>Directive Definitions</h4>
-          <p>This section defines the syntax of each <code>directive</code> introduced by this
-          specification.</p>
-          <pre>
-default-src       = "default-src" [ WSP source-list ]
+          <h4>Source List</h4>
 
-script-src        = "script-src" [ WSP source-list ]
+          <p>Many CSP directives use a value consisting of a <dfn>source
+          list</dfn>.</p>
 
-object-src        = "object-src" [ WSP source-list ]
+          <p>Each <dfn>source expression</dfn> in the source list represents a
+          location from which content of the specified type can be retrieved.
+          For example, the source expression <code>'self'</code> represents
+          the set of URIs which are in the same origin as the protected
+          document and the source expression <code>'unsafe-inline'</code>
+          represents content supplied inline in the document itself.</p>
 
-img-src           = "img-src" [ WSP source-list ]
-
-media-src         = "media-src" [ WSP source-list ]
-
-style-src         = "style-src" [ WSP source-list ]
-
-frame-src         = "frame-src" [ WSP source-list ]
-
-font-src          = "font-src" [ WSP source-list ]
-
-connect-src       = "connect-src" [ WSP source-list ]
-
-frame-ancestors   = "frame-ancestors" [ WSP source-list ]
-
-report-uri        = "report-uri" *( 1*WSP &lt;URI&gt; ) *WSP
-                    ; &lt;URI&gt; production from RFC 2396
-
-policy-uri        = "policy-uri" 1*WSP &lt;URI&gt; *WSP
-                    ; &lt;URI&gt; production from RFC 2396
-
-options           = "options" *( 1*WSP option-value ) *WSP
+<pre>
+source-list       = *WSP [ source-expression *( 1*WSP source-expression ) *WSP ]
+                  / *WSP "'none'" *WSP
+source-expression = scheme-source / host-source / keyword-source
+scheme-source     = scheme ":"
+host-source       = ( [ scheme "://" ] host [ port ] )
+keyword-source    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'"
+scheme            = &lt;scheme&gt; production from RFC 3986
+host              = "*" / [ "*." ] 1*host-char *( "." 1*host-char )
+host-char         = ALPHA / DIGIT / "-"
+port              = ":" ( 1*DIGIT / "*" )
 </pre>
 
-        </section><!-- Directive Definitions -->
-      </section><!-- Formal Policy Grammar -->
+          <p>To <dfn id="parse-a-source-list">parse a source list</dfn>
+          <var>source list</var>, the user agent MUST use an algorithm
+          equivalent to the following:</p>
+
+          <ol>
+            <li>If <var>source list</var> (with <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strip-leading-and-trailing-whitespace">leading
+            and trailing whitespace stripped</a>) is a case insensitive match
+            for the string <code>'none'</code> (including the quotation
+            marks), return the empty set.</li>
+
+            <li>Let the <var>set of source expressions</var> be the empty set.</li>
+
+            <li>For each token returned by <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#split-a-string-on-spaces">splitting
+            <var>source list</var> on spaces</a>, if the token matches the
+            grammar for <code>source-expression</code>, add the token to the
+            <var>set of source expressions</var>.</li>
+
+            <li>Return the <var>set of source expressions</var>.</li>
+          </ol>
+
+          <p>To check whether a URI <dfn
+          id="matches-a-source-expression">matches a source expression</dfn>,
+          the user agent MUST use an algorithm equivalent to the
+          following:</p>
+
+          <ol>
+            <li>If the source expression a single U+002A ASTERISK character
+            (<code>*</code>), then return <em>does match</em>.</li>
+
+            <li>If the source expression matches the grammar for
+            <code>scheme-source</code>, then the URI matches the source
+            expression of the URI's scheme is a case-insensitive match for the
+            source expression's <code>scheme</code>.</li>
+
+            <li>Otherwise, if the source expression matches the grammar for
+            <code>host-source</code>:
+              <ol>
+                <li>If the URI does not contain a host, then return <em>does
+                not match</em>.</li>
+
+                <li>Let <var>scheme</var>, <var>host</var>, and
+                <var>port</var> be the scheme, host, and port of the URI,
+                respectively. If the URI does not have a port, then let
+                <var>port</var> be the default port for
+                <var>scheme</var>.</li>
+
+                <li>If the source expression has a <code>scheme</code> that is
+                not a case insensitive match for <var>scheme</var>, then
+                return <em>does not match</em>.</li>
+
+                <li>If <var>scheme</var> is not a case insensitive match for
+                the scheme of the protected document's URI, then return
+                <em>does not match</em>.<br>
+                <em>FIXME: Should we allow HTTPS when the document's scheme is
+                HTTP?</em></li>
+
+                <li>If the first character of the source expression's
+                <code>host</code> is an U+002A ASTERISK character
+                (<code>*</code>) and the remaining characters, including the
+                leading U+002E FULL STOP character (<code>.</code>), are not a
+                case insensitive match for the rightmost characters of
+                <var>host</var>, then return <em>does not match</em>.</li>
+
+                <li>If <var>host</var> is not a case insensitive match for the
+                source expression's <code>host</code>, then return <em>does
+                not match</em>.</li>
+
+                <li>If the source expression does not contain a
+                <code>port</code> and <var>port</var> is not the default port
+                for <var>scheme</var>, then return <em>does not
+                match</em>.</li>
+
+                <li>If the source expression does contain a <code>port</code>
+                that (a) does <em>not</em> contain an U+002A ASTERISK
+                character (<code>*</code>) and (b) does <em>not</em> represent
+                the same number as <var>port</var>, then return <em>does not
+                match</em>.</li>
+
+                <li>Return <em>does match</em>.</li>
+              </ol>
+
+              <li>Otherwise, if the source expression is a case insensitive
+              match for <code>'self'</code> (including the quotation marks),
+              then return the URI matches the source expression if the URI has
+              the same scheme, host, and port as the document's URI.</li>
+
+              <li>Otherwise, the URI does not match the source expression.</li>
+            </li>
+          </ol>
+
+          <p>A URI <dfn id="matches-a-source-list">matches a source
+          list</dfn>, if, and only if, the URI <a
+          href="#matches-a-source-expression">matches at least one source
+          expression</a> in the set of source expressions obtained by <a
+          href="#parse-a-source-list">parsing the source list</a>. Notice that
+          no URIs match an empty set of source expressions, such as the set
+          obtained by parsing the source list <code>'none'</code>.</p>
+        </section>
+      </section>
+
+      <section>
+        <h3>Processing Model</h3>
+
+        <p>To <dfn id="enforce">enforce</dfn> a CSP policy, the user agent MUST
+        <a href="#parse-a-csp-policy">parse the policy</a> and enforce each of
+        the directives contained in the policy, where the specific
+        requirements for enforcing each directive are defined separately for
+        each directive (See <a href="#sec-directives">Directives</a>,
+        below).</p>
+
+        <p>Generally speaking, enforcing a directive prevent the protected
+        document from performing certain actions, such as loading scripts from
+        URIs other than those indicated in a source list. These restrictions
+        make it more difficult for an attacker to abuse an injection
+        vulnerability in the document because the attacker will be unable to
+        usurp the document's privileges that have been restricted in this
+        way.</p>
+
+        <p>Enforcing a CSP policy SHOULD NOT interfere with the operation of
+        user-supplied scripts such as third-party user-agent add-ons and
+        JavaScript bookmarklets.</p>
+
+        <p>To <dfn id="monitor">monitor</dfn> a CSP policy, the user agent MUST
+        <a href="#parse-a-csp-policy">parse the policy</a> and monitor each of
+        the directives contained in the policy, where the specific
+        requirements for monitoring each directive are defined separately for
+        each directive (See <a href="#sec-directives">Directives</a>,
+        below).</p>
+
+        <p>Generally speaking, monitoring a directive does not prevent the
+        protected document from undertaking any actions. Instead, any actions
+        that would have been prevented by the directive are instead reported
+        to the developer of the web application. Monitoring a CSP policy is
+        most useful for testing whether enforcing the policy will break the
+        web application.</p>
+
+        <p>If the user agent monitors or enforces a CSP policy that does not
+        contain any directives, the user agent SHOULD report a warning message
+        in the developer console.</p>
+
+        <p>If the user agent monitors or enforces a CSP policy that contains
+        an unrecognized directive, the user agent SHOULD report a warning
+        message in the developer console indicating the name of the
+        unrecognized directive.</p>
+
+        <p>To <dfn id="enforce-the-combination">enforce the combination</dfn>
+        of one or more policies, the user agent MUST enforce each policy. For
+        example, if an action is prevented by at least one of the policies,
+        then the action will be prevented by the combination of the
+        policies.</p>
+
+        <p>To <dfn id="monitor-the-combination">monitor the combination</dfn>
+        of one or more policies, the user agent MUST monitor each each
+        policy.</p>
+      </section>
+    </section>
+
+    <section>
+      <h2 id="sec-directives">Directives</h2>
+
+      <p>This section describes the content security policy directives
+      introduced in this specification.</p>
+
+      <p>In order to protect against Cross-site Scripting (XSS), authors
+      SHOULD include
+      <ul>
+        <li>both the <code>script-src</code> and <code>object-src</code>
+        directives, or</li>
+
+        <li>include a <code>default-src</code> directive, which covers both
+        scripts and plug-ins.</li>
+      </ul>
+
+      <p>In either case, authors SHOULD NOT include
+      <code>'unsafe-inline'</code> in their CSP policies if they wish to
+      protect themselves against XSS.</p>
+
+      <section>
+        <h3><code>default-src</code></h3>
+
+        <p>The <code>default-src</code> directive sets a default source list
+        for a number of directives. The syntax for the name and value of the
+        directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "default-src"
+directive-value   = source-list
+</pre>
+
+        <p>Let the <var>default sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a
+        source list</a>.</p>
+
+        <p>To enforce the <code>default-src</code> directive, the user agent
+        MUST enforce the following directives:</p>
+        <ul>
+          <li>script-src</li>
+          <li>object-src</li>
+          <li>style-src</li>
+          <li>img-src</li>
+          <li>media-src</li>
+          <li>frame-src</li>
+          <li>font-src</li>
+          <li>connect-src</li>
+        </ul>
+
+        <p>If not specified explicitly in the policy, the directives listed
+        above will use the <var>default sources</var>.</p>
+      </section>
+
+      <section>
+        <h3><code>script-src</code></h3>
+
+        <p>The <code>script-src</code> directive restricts which scripts the
+        protected document can execute. The directive also controls other
+        resources, such as XSLT stylesheets, which can cause the user agent to
+        execute script. The syntax for the name and value of the directive are
+        described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "script-src"
+directive-value   = source-list
+</pre>
+
+        <p>If the policy contains an explicit <code>script-src</code>, let the
+        <var>allowed script sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a source
+        list</a>. Otherwise, let the <var>allowed script sources</var> be the
+        <var>default sources</var></p>
+
+        <p>If <code>'unsafe-inline'</code> is not in <var>allowed script
+        sources</var>:</p>
+        <ul>
+          <li>Whenever the user agent would execute an inline script (either
+          from a <code>script</code> element or from an inline event handler),
+          instead the user agent MUST NOT execute script.</li>
+
+          <li>Whenever the user agent would execute script contained in a
+          <code>javascript</code> URI, instead the user agent MUST NOT execute
+          the script. (Note: The user agent SHOULD execute script contained in
+          "bookmarklets" even when enforcing this restriction.)</li>
+        </ul>
+
+        <p>If <code>'unsafe-eval'</code> is not in <var>allowed script
+        sources</var>:</p>
+        <ul>
+          <li>Instead of evaluating their arguments, both operator
+          <code>eval</code> and function <code>eval</code> MUST throw a
+          security exception.</li>
+
+          <li>When called as a constructor, the function <code>Function</code>
+          MUST throw a security exception.</li>
+
+          <li>When called with a first argument that is non-callable (e.g.,
+          not a function), the <code>setTimeout</code> function MUST return
+          zero without creating a timer.</li>
+
+          <li>When called with a first argument that is non-callable (e.g.,
+          not a function), the <code>setInterval</code> function MUST return
+          zero without creating a timer.</li>
+        </ul>
+
+        <p>The term <dfn>callable</dfn> refers to an object whose interface
+        has one or more <dfn>callers</dfn> as defined in the <a
+        href="http://www.w3.org/TR/2010/WD-WebIDL-20101021/#idl-callers">Web
+        IDL</a> specification [[!WEBIDL]].</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed script
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting a script, such as when processing the
+          <code>src</code> attribute of a <code>script</code> element or when
+          processing the <code>Worker</code> or <code>SharedWorker</code>
+          constructors.</li>
+
+          <li>Requesting an Extensible Stylesheet Language Transformations
+          (XSLT), such as when processing the
+          <code>&lt;?xml-stylesheet?&gt;</code> processing directive in an XML
+          document, the <code>href</code> attributes on
+          <code>&lt;xsl:include&gt;</code> element, or the <code>href</code>
+          attributes on <code>&lt;xsl:import&gt;</code> element.</li>
+        </ul>
+      </section>
+      <section>
+        <h3><code>object-src</code></h3>
+
+        <p>The <code>object-src</code> directive restricts from where the
+        protected document can load plugins. The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "object-src"
+directive-value   = source-list
+</pre>
+
+        <p>If the policy contains an explicit <code>object-src</code>, let the
+        <var>allowed object sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a source
+        list</a>. Otherwise, let the <var>allowed object sources</var> be the
+        <var>default sources</var></p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed object
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for a plugin, such as when processing the
+          <code>data</code> attribute of an <code>object</code> element, the
+          <code>src</code> attribute of an <code>embed</code> elements, or the
+          <code>code</code> or <code>archive</code> attributes of an
+          <code>applet</code> element.</li>
+        </ul>
+
+        <p>Whenever the user agent would load a plug-in without an associated
+        URI (e.g., because the <code>object</code> element lacked a
+        <code>data</code> attribute), if the protected document's URI does not
+        <a href="#matches-a-source-list">match the <var>allowed object
+        sources</var></a>, the user agent MUST NOT load the plug-in.</p>
+      </section>
+
+      <section>
+        <h4><code>style-src</code></h4>
+
+        <p>The <code>style-src</code> directive restricts which styles the
+        user applies to the protected document. The syntax for the name and
+        value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "style-src"
+directive-value   = source-list
+</pre>
+
+
+        <p>If the policy contains an explicit <code>style-src</code>, let the
+        <var>allowed style sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a source
+        list</a>. Otherwise, let the <var>allowed style sources</var> be the
+        <var>default sources</var></p>
+
+        <p>If <code>'unsafe-inline'</code> is not in <var>allowed style
+        sources</var>:</p>
+        <ul>
+          <li>Whenever the user agent would apply style from a
+          <code>style</code> element, instead the user agent <code>MUST</code>
+          ignore the style.</li>
+
+          <li>Whenever the user agent would apply style from a
+          <code>style</code> attribute, instead the user agent
+          <code>MUST</code> ignore the style.</li>
+        </ul>
+
+        <p>Note: These restrictions on inline do not prevent the user agent
+        from applying style from an external stylesheet (e.g., found via
+        <code>&lt;link rel="stylesheet"&gt;</code>). The user agent is also
+        not prevented from applying style from CSSOM.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed style
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting external stylesheets, such as when processing the
+          <code>href</code> attribute of a <code>link</code> element with a
+          <code>rel</code> attribute containing the token
+          <code>stylesheet</code> or when processing the <code>@import</code>
+          directive in a stylesheet.</li>
+        </ul>
+
+        <p>Note: The <code>style-src</code> directive does not restrict the
+        use of XSLT. XSLT is restricted by the <code>script-src</code>
+        directive because the security consequences of including an untrusted
+        XSLT stylesheet are similar to those incurred by including an
+        untrusted script.</p>
+      </section>
+
+      <section>
+        <h4><code>img-src</code></h4>
+
+        <p>The <code>img-src</code> directive restricts from where the
+        protected document can load images. The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "img-src"
+directive-value   = source-list
+</pre>
+
+        <p>If the policy contains an explicit <code>img-src</code>, let the
+        <var>allowed image sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a source
+        list</a>. Otherwise, let the <var>allowed image sources</var> be the
+        <var>default sources</var></p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed image
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for an image, such as when processing the
+          <code>src</code> attribute of an <code>img</code> elements,
+          the <code>url()</code> or <code>image()</code> values on any CSS
+          property that is capable of loading an image [<em><a
+          href="http://www.w3.org/TR/css3-images/">CSS3-Images</a></em>], or
+          the <code>href</code> attribute of a <code>link</code> element with
+          an image-related <code>rel</code> attribute, such as
+          <code>icon</code>.</li>
+        </ul>
+
+        <p class="issue">Should the user agent fire the error event when one of these loads fails?</p>
+      </section>
+
+      <section>
+        <h4><code>media-src</code></h4>
+
+        <p>The <code>media-src</code> directive restricts from where the
+        protected document can load video and audio. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "media-src"
+directive-value   = source-list
+</pre>
+
+        <p>If the policy contains an explicit <code>media-src</code>, let the
+        <var>allowed media sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a source
+        list</a>. Otherwise, let the <var>allowed media sources</var> be the
+        <var>default sources</var></p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed media
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for a video or audio clip, such as when
+          processing the <code>src</code> attribute of a <code>video</code>
+          or <code>audio</code> elements.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h4><code>frame-src</code></h4>
+
+        <p>The <code>frame-src</code> directive restricts from where the
+        protected document can embed frames. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "frame-src"
+directive-value   = source-list
+</pre>
+
+        <p>If the policy contains an explicit <code>frame-src</code>, let the
+        <var>allowed frame sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a source
+        list</a>. Otherwise, let the <var>allowed frame sources</var> be the
+        <var>default sources</var></p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed frame
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for display in a frame, such as when processing
+          the <code>src</code> attribute of an <code>iframe</code> or
+          <code>frame</code> element.</li>
+          <li>Navigating a nested browsing context within the protected
+          document.</li>
+        </ul>
+
+        <p class="issue">How does this work for the <code>object</code>
+        element? We don't know whether the request is going to lead to a
+        plug-in or a frame until we get the response back and can look at the
+        MIME type.</p>
+      </section>
+
+      <section>
+        <h4><code>font-src</code></h4>
+
+        <p>The <code>font-src</code> directive restricts from where the
+        protected document can load fonts. The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "font-src"
+directive-value   = source-list
+</pre>
+
+        <p>If the policy contains an explicit <code>font-src</code>, let the
+        <var>allowed font sources</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a source
+        list</a>. Otherwise, let the <var>allowed font sources</var> be the
+        <var>default sources</var></p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed font
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Requesting data for display in a font, such as when processing
+          the <code>@font-face</code> CSS rule. <em>TODO: Citation needed.</em></li>
+        </ul>
+      </section>
+
+      <section>
+        <h4><code>connect-src</code></h4>
+
+        <p>The <code>connect-src</code> directive restricts which URIs the
+        protected document can load using DOM APIs. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "connect-src"
+directive-value   = source-list
+</pre>
+
+        <p>If the policy contains an explicit <code>connect-src</code>, let
+        the <var>allowed connection targets</var> be the result of <a
+        href="#parse-a-source-list">parsing the directive's value as a source
+        list</a>. Otherwise, let the <var>allowed connection targets</var> be
+        the <var>default sources</var></p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match the <var>allowed font
+        sources</var></a>, the user agent MUST act as if it had received an empty
+        HTTP 400 response:</p>
+        <ul>
+          <li>Processing the <a
+          href="http://www.w3.org/TR/XMLHttpRequest/#the-open-method"><code>open()</code>
+          method</a> of an <code>XMLHttpRequest</code> object.</li>
+
+          <li>Processing the <a
+          href="http://dev.w3.org/html5/websockets/#websocket"><code>WebSocket</code>
+          constructor</a>.</li>
+
+          <li>Processing the <a
+          href="http://dev.w3.org/html5/eventsource/#eventsource"><code>EventSource</code>
+          constructor</a>.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h4><code>sandbox</code></h4>
+
+        <p class="issue">A future version of this document might include a
+        <code>sandbox</code> directive for controlling the HTML5 sandbox
+        flags.</p>
+      </section>
+
+      <section>
+        <h4><code>report-uri</code></h4>
+
+        <p>The <code>report-uri</code> directive specifies a URI to which the
+        user agent sends reports about policy violation. The syntax for the
+        name and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "report-uri"
+directive-value   = uri-reference *( 1*WSP uri-reference )
+uri-reference     = &lt;URI-reference from RFC 3986&gt;
+</pre>
+
+        <p>Let the <var>set of report URIs</var> be the value of the
+        <code>report-uri</code> directive, each resolved relative to the
+        protected document's URI.</p>
+
+        <p>To <dfn id="send-a-violation-report">send a violation report</dfn>,
+        the user agent MUST use an algorithm equivalent to the following:</p>
+        <ol>
+          <li>Prepare a dictionary <var>violation dictionary</var> with the
+          following keys and values:
+            <dl>
+              <dt>request</dt>
+              <dd>HTTP request line of the protected resource whose policy was
+              violated including method, URI and HTTP version</dd>
+
+              <dt>request-headers</dt>
+              <dd>HTTP request headers sent with the request for the protected
+              resource whose policy was violated</dd>
+
+              <dt>blocked-uri</dt>
+              <dd>URI of the resource that was prevented from loading due to
+              the policy violation</dd>
+
+              <dt>violated-directive</dt>
+              <dd>The policy directive that was violated</dd>
+
+              <dt>original-policy</dt>
+              <dd>The original policy as received by the user-agent. If the
+              policy was received via more than one Content Security Policy
+              response header, this field MUST contain a comma separated list
+              of original policies</dd>
+            </dl>
+
+            <p class="issue">We might need to change some of these keys
+            because they can leak sensitive information.</p>
+          </li>
+
+          <li>If the origin of the blocked-uri is not the same as the
+          document's origin, then replace the blocked-uri with the ASCII
+          serialization of the blocked-uri's origin.</li>
+
+          <li>Let the <var>violation report</var> be the JSON stringification
+          of the <var>violation dictionary</var>.</li>
+
+          <li>For each <var>report URI</var> in the <var>set of report URIs</var>:
+            <ol>
+              <li>If the <var>report URI</var> has a different scheme than the
+              URI of the protected document, then ignore this <var>report
+              URI</var> and continue to the next iteration of the loop.</li>
+
+              <li>If the <var>report URI</var> has a different port than the
+              URI of the protected document, then ignore this <var>report
+              URI</var> and continue to the next iteration of the loop.</li>
+
+              <li>If the <var>report URI</var>'s host does not share the same
+              <em><a href="http://publicsuffix.org/">public suffix</a> +1 DNS
+              label</em> as the URI of the protected document, then ignore
+              this <var>report URI</var> and continue to the next iteration of
+              the loop.
+
+              <p>Examples of public suffixes include <code>.com</code>,
+              <code>.net</code> and <code>.co.uk</code>. Examples of
+              <em>"public suffix +1 DNS label"</em> include
+              <code>example.com</code>, <code>example.net</code> and
+              <code>example.co.uk</code>. Therefore a protected document whose
+              host is <code>www.example.com</code> could have a
+              <code>report-uri</code> hosted on
+              <code>reports.example.com</code> but <b>not</b>
+              <code>reports.example.net</code>.</p></li>
+
+              <li>Fetch the <var>report URI</var> from origin of the protected
+              document, with the synchronous flag <em>not</em> set, using HTTP
+              method <code>POST</code>, with a <code>Content-Type</code>
+              header field of <code>application/json</code> with an entity
+              body consisting of the <var>violation report</var>. The user
+              agent MUST NOT follow redirects when fetching this resource.
+              (Note: The user agent ignores the fetched resource.)</li>
+            </ol>
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <h4><code>policy-uri</code></h4>
+
+        <p>The <code>policy-uri</code> directive specifies a URI from which
+        the user agent can retrieve the actual policy. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "policy-uri"
+directive-value   = &lt;URI-reference from RFC 3986&gt;
+</pre>
+
+        <p class="issue">The <code>policy-uri</code> directive might be
+        removed from this document.</p>
+
+        <p>Authors MUST NOT specify policies that contain both a
+        <code>policy-uri</code> directive and another directive.</p>
+
+        <p>If the user agent would enforce a policy containing both the
+        <code>policy-uri</code> directive and another directive, instead the
+        user agent MUST enforce the policy <code>default-src
+        'none'</code>.</p>
+
+        <p>When processing the <code>policy-uri</code> directive, the user
+        agent MUST run an algorithm equivalent to the following:</p>
+        <ul>
+          <li>Let <var>request URI</var> be the URI that results from
+          resolving the value of the <code>policy-uri</code> directive
+          relative to the URI of the protected document.</li>
+
+          <li>If <var>request URI</var> is not from the same origin as the
+          protected document, abort these steps and enforce the policy
+          <code>default-src 'none'</code>.
+
+          <li>Fetch the <var>request URI</var> from origin of the protected
+          document, with the synchronous flag set, using HTTP method
+          <code>GET</code>.</li>
+
+          <li>If the fetch returned a status code other than <code>200</code>
+          or if the request encountered an HTTP redirect, abort these steps
+          and enforce the policy <code>default-src 'none'</code>.</li>
+
+          <li>If the fetched resource lacks a <code>Content-Type</code> header
+          field or if the <code>Content-Type</code> header field is not a case
+          insensitive match for <code>text/x-content-security-policy</code>,
+          abort these steps and enforce the policy <code>default-src
+          'none'</code>.</li>
+
+          <li>Let the <var>fetched policy</var> be the result of <a
+          href="#parse-a-csp-policy">parsing the fetched resource as a CSP
+          policy</a>.</li>
+
+          <li>If the <var>fetched policy</var> contains a
+          <code>policy-uri</code> directive, abort these steps and enforce the
+          policy <code>default-src 'none'</code>.</li>
+
+          <li><a href="#enforce">Enforce</a> the <var>fetched
+          policy</var>.</li>
+        </ul>
+      </section>
+    </section>
+
+    <section>
+      <h2>Examples</h2>
 
       <section class="informative">
         <h3>Sample Policy Definitions</h3>
+
         <p>This section provides some sample use cases and accompanying security policies.</p>
 
-        <p><strong>Example 1:</strong> A server wants all content to come from its own domain:</p>
-        <pre>X-Content-Security-Policy: default-src 'self'</pre>
+        <p><strong>Example 1:</strong> A server wishes to load resources only
+        form its own origin:</p>
 
-        <p><strong>Example 2:</strong> An auction site wants to allow images from anywhere, plugin
-        content from a list of trusted media providers including a content distribution network, and
-        scripts only from a server under its control hosting sanitized ECMAScript:</p>
-        <pre>X-Content-Security-Policy: default-src 'self'; img-src *; \
-                           object-src media1.example.com media2.example.com *.cdn.example.com; \
-                           script-src trustedscripts.example.com</pre>
+        <pre>Content-Security-Policy: default-src 'self'</pre>
 
-        <p><strong>Example 3:</strong> A site operations group wants to globally deny all
-        third-party scripts in the site, and a particular project team wants to also disallow
+        <p><strong>Example 2:</strong> An auction site wishes to load images
+        from any URI, plug-in content from a list of trusted media providers
+        (including a content distribution network), and scripts only from a
+        server under its control hosting sanitized ECMAScript:</p>
+
+        <pre>Content-Security-Policy: default-src 'self'; img-src *;
+                         object-src media1.example.com media2.example.com *.cdn.example.com;
+                         script-src trustedscripts.example.com</pre>
+
+        <p><strong>Example 3:</strong> A site operations group wishes to globally deny all
+        third-party scripts in the site, and a particular project team wishes to also disallow
         third-party media in their section of the site.  Site operations sends the first header
-        while the project team sends the second header, and the user-agent takes the intersection of
+        while the project team sends the second header, and the user-agent takes the combination of
         the two headers to form the complete interpreted policy:</p>
-        <pre>X-Content-Security-Policy: default-src *; script-src 'self'
-X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</pre>
 
-        <p><strong>Example 4:</strong> Online banking site wants to ensure that all of the content
+        <pre>Content-Security-Policy: default-src *; script-src 'self'
+Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</pre>
+
+        <p><strong>Example 4:</strong> Online banking site wishes to ensure that all of the content
         in its pages is loaded over TLS to prevent attackers from eavesdropping on insecure content
         requests:</p>
-        <pre>X-Content-Security-Policy: default-src https://*:443</pre>
-      </section><!-- Sample Policy Definitions -->
 
-      <section>
-        <h3>Violation Report Syntax</h3>
-        <p>This section defines the structure of the violation report sent by a user-agent when a
-        protected resource's security policy is violated.</p>
+        <pre>Content-Security-Policy: default-src https:</pre>
+      </section>
 
-        <p>A user-agent MUST send a violation report in the following two cases:</p>
-        <ol>
-          <li>Whenever ANY policy violation occurs, a user-agent MUST dispatch
-          a <code>SecurityViolation</code> event which does not bubble and is not cancelable at
-          the <code>Document</code> object of the protected resource.</li>
-          <li>Whenever a policy violation occurs and the server's policy contains
-          a <code>report-uri</code>, a user-agent MUST send a violation report to all valid report
-          URIs declared in the policy via an HTTP POST request bearing the
-          Content-Type <code>application/json</code>.</li>
-        </ol>
+      <section class="informative">
+        <h3>Sample Violation Report</h3>
 
-        <p>The <code>SecurityViolation</code> DOM event and the violation report sent by a
-        user-agent convey the same information about the policy violation and are intended to be
-        utilized by the server for monitoring and logging.</p>
+        <p>This section contains an example violation report the user agent
+        might sent to a server when the protected document violations a sample
+        policy.</p>
 
-        <p>The <code>SecurityViolation</code> event uses the <code>CustomEvent</code> interface
-        defined in the DOM Level 3 Events specification. [[!DOM-LEVEL-3-EVENTS]].</p>
+        <p>In the following example, a document from
+        <code>http://example.org/page.html</code> was rendered with the
+        following CSP policy:</p>
 
-        <p>The report structure defined below is a JSON object used for both the <code>detail</code>
-        argument to the <code>SecurityViolation</code> event constructor and the request body of the
-        violation report.</p>
+<pre>default-src 'self'; report-uri http://example.org/csp-report.cgi</pre>
 
-        <p>The <code>SecurityViolation</code> event <code>detail</code> and the report body sent by
-        the user-agent MUST be comprised of a JSON object having the following properties:</p>
-
-        <ul>
-          <li><strong><code>request</code></strong>: HTTP request line of the protected resource
-          whose policy was violated including method, URI and HTTP version</li>
-          <li><strong><code>request-headers</code></strong>: HTTP request headers sent with the
-          request for the protected resource whose policy was violated</li>
-          <li><strong><code>blocked-uri</code></strong>: URI of the resource that was prevented from
-          loading due to the policy violation</li>
-          <li><strong><code>violated-directive</code></strong>: The policy directive that was
-          violated</li>
-          <li><strong><code>original-policy</code></strong>: The original policy as received by the
-          user-agent.  If the policy was received via more than one Content Security Policy response
-          header, this field MUST contain a comma separated list of original policies.</li>
-        </ul>
-
-        <p>If the origin of the blocked-uri is not the same as the document's
-        origin, then the user agent MUST replace the blocked-uri with the
-        ASCII serialization of the blocked-uri's origin.</p>
-
-        <p>In the case where a protected resource is not rendered because
-        its <code>frame-ancestors</code> directive is violated, user-agents MUST NOT
-        send <code>blocked-uri</code> in the report as it is assumed to have the same value
-        as <code>request</code>.</p>
-
-        <h4>Sample Policy Violation Report</h4>
-        <p>In the following example a page located at <code>http://example.org/page.html</code> was
-        requested and returned with its response a policy of <code>default-src 'self'; report-uri
-        http://example.org/csp-report.cgi</code>.  The policy was violated by an image element
-        from <code>evil.example.com</code> which had been embedded in the page.</p>
+        <p>The document loaded an image from
+        <code>http://evil.example.com/image.png</code>, violating the
+        policy.</p>
 
         <pre>{
   "csp-report": {
@@ -1016,372 +1220,17 @@ X-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</p
   }
 }</pre>
 
-        <p class="note">In the above sample report the <code>violated-directive</code> field was
-        sent in the way it was interpreted by the user-agent.  The directive was made explicit by
-        replacing the keyword <code>'self'</code> with the explicit host name of the protected
-        resource.  This is recommended behavior for user-agents as it reduces ambiguity, making
-        policy violations easier to trace by server admins.</p>
-      </section><!-- Violation Report Syntax -->
+        <p>In the above sample report the <code>violated-directive</code>
+        field was sent in the way it was interpreted by the user-agent. The
+        directive was made explicit by replacing the keyword
+        <code>'self'</code> with the explicit host name of the protected
+        resource. This is recommended behavior for user-agents as it reduces
+        ambiguity, making policy violations easier to trace by server
+        admins.</p>
 
-    </section><!-- Syntax -->
-
-    <section>
-      <h2>User-Agent Behavior</h2>
-      <p>This section describes required behavior for conformant user-agents when processing a
-      Content Security Policy and applying restrictions to a protected resource.</p>
-
-      <section>
-        <h3>Base Restrictions</h3>
-        <p>The following restrictions MUST be applied by a user-agent rendering a protected resource
-        which has declared a Content Security Policy containing at least one valid directive, except
-        in cases where the policy includes directives which disable or modify the restrictions.</p>
-
-        <section>
-          <h4>data: URIs MUST NOT be permitted</h4>
-          <p>User-agents MUST prevent data: URIs from being used to load inline content unless the
-          protected document's policy explicitly permits the data: protocol for that type of
-          content.</p>
-
-          <p>If a protected resource's policy declares
-          a <a href="#report-uri"><code>report-uri</code></a> and this base restriction is violated,
-          user-agents MUST generate a <a href="#violation-report">violation report</a> with fields
-          set appropriately to describe the violation and MUST send the report to
-          the <code>report-uri</code> specified in the policy.</p>
-
-          <h5>Enabling data: URIs</h5>
-          <p>Inline content can be loaded via data: URIs by adding
-          the <a href="#host-less-schemes">data: source expression</a> to the directive that
-          restricts that particular type of content.</p>
-
-          <p class="note">For example, a site that wishes to load inline images via data: URIs would
-          add the directive <code>img-src data:</code> to their policy.</p>
-        </section><!-- data: URIs MUST NOT be permitted -->
-
-        <section>
-          <h4>CSS-ECMAScript bindings MUST come from chrome: or resource: URIs</h4>
-          <p>User-agents which allow external ECMAScript content to be bound to document elements
-          via CSS rules MUST prevent such bindings unless the external content is served as a
-          chrome: or resource: URI.</p>
-
-          <p class="note">An example of such a CSS-ECMAScript binding technology is XBL.
-          [[!XBL]]</p>
-
-          <p class="note">This restriction prevents untrusted remote content from being injected
-          into a document via a stylesheet because both the chrome: and resource: protocols serve
-          only local, trusted content.</p>
-
-          <p>If a protected resource's policy declares
-          a <a href="#report-uri"><code>report-uri</code></a> and this base restriction is violated,
-          user-agents MUST generate a <a href="#violation-report">violation report</a> with fields
-          set appropriately to describe the violation and MUST send the report to
-          the <code>report-uri</code> specified in the policy.</p>
-        </section><!-- ECMAScript bindings to CSS MUST come from chrome: or resource: URIs -->
-
-      </section><!-- Base Restrictions -->
-
-      <section>
-        <h3>Script Execution Restrictions</h3>
-        <p>This section describes required restrictions which MUST be applied by a user-agent
-        rendering a protected resource which has declared ANY directive which controls the loading
-        of ECMAScript content into the protected resource.  Such directives
-        include: <a href="#script-src"><code>script-src</code></a>
-        and <a href="#object-src"><code>object-src</code></a>, as well as an implied value for
-        either of these directives as indicated by
-        a <a href="#default-src"><code>default-src</code></a> directive.  If
-        a <code>script-src</code> directive has not been declared in the policy a user-agent MUST NOT
-        enforce the following restrictions.</p>
-
-        <p class="issue">It may be preferable to only activate these restrictions
-        when <code>script-src</code> is declared.</p>
-
-        <section>
-          <h4>Inline scripts MUST NOT execute</h4>
-          <p>User-agents MUST prevent inline scripts from executing.  These include:</p>
-          <ul>
-            <li>Contents of internal <code>&lt;script&gt;</code> elements</li>
-            <li>javascript: URIs</li>
-            <li>Event-handling HTML attributes</li>
-          </ul>
-
-          <p>The supported method for executing ECMAScript in a protected document is to include
-          <code>&lt;script&gt;</code> elements in the document whose sources are permitted by the
-          protected document's policy.  User-agents MUST execute all external scripts
-          whose <code>src</code> attribute refers to a permitted source and which are served with a
-          Content-Type of <code>application/javascript</code> or <code>application/json</code>.</p>
-
-          <p>If a protected resource's policy declares
-          a <a href="#report-uri"><code>report-uri</code></a> and this restriction is violated,
-          user-agents MUST generate a <a href="#violation-report">violation report</a> and MUST send
-          the report to the <code>report-uri</code> specified in the policy.</p>
-
-          <h5>Enabling inline scripts</h5>
-          <p>Inline script can be enabled by adding
-          the <code>'unsafe-inline'</code> <a href="#source-expression-keywords">source expression
-          keyword</a> to the <a href="#script-src"><code>script-src</code></a> directive.  It is not
-          recommended to do so, however, as all cross-site scripting protection provided by Content
-          Security Policy will be effectively disabled.</p>
-
-          <p class="issue">There is an
-          alternate <a href="http://lists.w3.org/Archives/Public/public-web-security/2011Apr/0033.html">proposal</a>
-          for enabling inline script by Collin Jackson which uses
-          an <code>'inline'</code> <a href="#source-expression-keywords">source expression
-          keyword</a> in <code>script-src</code> but ignores it
-          unless <code>disable-xss-protection</code> is declared as
-          an <a href="#options"><code>options</code></a> token.</p>
-        </section><!-- Inline scripts MUST NOT execute -->
-
-        <section>
-          <h4>Code MUST NOT be created from strings</h4>
-          <p>User-agents MUST prevent strings from being converted to ECMAScript code, including
-          calls to:</p>
-          <ul>
-            <li><code>eval()</code>. Instead of evaluating their arguments,
-            both operator <code>eval</code> and function <code>eval</code>
-            MUST throw a security exception.</li>
-
-            <li><code>new Function()</code>. When called as a constructor, the
-            <code>Function</code> function MUST throw a security exception.</li>
-
-            <li><code>setTimeout()</code>. When called with a first argument
-            that is non-callable (e.g., not a function), the
-            <code>setTimeout</code> function MUST return zero without creating
-            a timer.</li>
-
-            <li><code>setInterval()</code>. When called with a first argument
-            that is non-callable (e.g., not a function), the
-            <code>setInterval</code> function MUST return zero without creating
-            a timer.</li>
-          </ul>
-
-          <p class="issue">Should <code>setTimeout</code> and
-          <code>setInterval</code> throw security exceptions rather than
-          returning zero?</p>
-
-          <p>The term <dfn title="">callable</dfn> refers to an object whose interface has one or
-          more <dfn title="">callers</dfn> as defined in
-          the <a href="http://www.w3.org/TR/2010/WD-WebIDL-20101021/#idl-callers">Web IDL</a>
-          specification [[!WEBIDL]].</p>
-
-          <p>If a protected resource's policy declares
-          a <a href="#report-uri"><code>report-uri</code></a> and this restriction is violated,
-          user-agents MUST generate a <a href="#violation-report">violation report</a> and MUST send
-          the report to the <code>report-uri</code> specified in the policy.</p>
-
-          <h5>Enabling strings-into-code functionality</h5>
-          <p>The APIs listed above that turn strings into executable code can be enabled by adding
-          the <code>'unsafe-eval'</code> <a href="#source-expression-keywords">source expression
-          keyword</a> to the <a href="#script-src"><code>script-src</code></a> directive.  It is not
-          recommended to do so, however, as the risk of DOM-based cross-site scripting will be
-          greatly increased.</p>
-        </section><!-- Code MUST NOT be created from strings -->
-
-      </section><!-- Script Execution Restrictions -->
-
-      <section>
-        <h3>Inline CSS Restrictions</h3>
-        <p>This section describes required restrictions which MUST be applied by a user-agent
-        rendering a protected resource which has declared
-        a <a href="#style-src"><code>style-src</code></a> directive, or has implied
-        a <code>style-src</code> directive by declaring
-        a <a href="#default-src"><code>default-src</code></a> directive.  If
-        a <code>style-src</code> directive has not been declared in the policy a user-agent MUST NOT
-        enforce the following restrictions.</p>
-
-        <section>
-          <h4>Inline CSS MUST NOT be applied</h4>
-          <p>User-agents MUST prevent inline CSS from being applied to the protected document.  This
-          includes CSS properties defined in:</p>
-          <ul>
-            <li><code>&lt;style&gt;</code> elements</li>
-            <li><code>style</code> attributes on HTML elements</li>
-          </ul>
-
-          <p>The supported method for applying CSS properties to a protected resource which utilizes
-          the <code>style-src</code> directive is to include <code>&lt;link
-          rel="stylesheet"&gt;</code> elements in the document whose sources are permitted by the
-          protected document's policy.  User-agents MUST parse and apply all style properties from
-          external stylesheets whose <code>href</code> attribute refers to a permitted source.</p>
-
-          <p>If a protected resource's policy declares
-          a <a href="#report-uri"><code>report-uri</code></a> and this restriction is violated,
-          user-agents MUST generate a <a href="#violation-report">violation report</a> and MUST send
-          the report to the <code>report-uri</code> specified in the policy.</p>
-
-          <h5>Enabling inline CSS</h5>
-          <p>Inline CSS can be enabled by adding
-          the <code>'unsafe-inline'</code> <a href="#source-expression-keywords">source expression
-          keyword</a> to the <a href="#style-src"><code>style-src</code></a> directive.</p>
-        </section><!-- Inline CSS MUST NOT be applied -->
-
-      </section><!-- Inline CSS Restrictions -->
-
-      <section>
-        <h3>Interpreting Multiple Policies</h3>
-        <p>When multiple instances of the Content Security Policy response header are present in a
-        single HTTP response, the user-agent MUST enforce the most restrictive intersection of the
-        policies received.  This means that no action can be taken by the user-agent when rendering
-        the protected document unless every policy directive of every policy header received permits
-        such an action.  If an action taken by a user-agent will violate any of the policy
-        directives received in any response header, that action MUST NOT be taken by the
-        user-agent.</p>
-
-        <p class="issue">Is a description of a policy intersection algorithm necessary?</p>
-
-        <p>When differing <code>report-uri</code> values are received in multiple policy headers the
-        intersection of the policy values is NOT taken.  Rather, user-agents MUST send a single
-        report to each valid URI specified in any <code>report-uri</code> directive received in a
-        policy header.</p>
-
-        <p>When multiple Content Security Policy <code>&lt;meta></code> elements are present in
-        the <code>head</code> section of a protected resource, the first <code>&lt;meta></code>
-        element MUST be parsed as the document's security policy and enforced.  All subsequent
-        policy <code>&lt;meta></code> elements MUST be ignored by the user-agent.</p>
-
-        <p class="issue">What should happen when multiple instances of the same directive but with
-        different values occur within a single policy header or meta element, i.e. should they be
-        combined or intersected as they are successively parsed?</p>
-      </section><!-- Interpreting Multiple Policies -->
-
-      <section>
-        <h3>Handling Policy Parsing Errors</h3>
-        <p>This section describes how user-agents should handle various error conditions encountered
-        when parsing Content Security Policies.  The error conditions described in this section are
-        distinct from the policy violations described earlier in this document.  While policy
-        violations MUST be reported to servers when a <code>policy-uri</code> has been declared,
-        policy parsing warnings SHOULD be reported locally in the user-agent's error console, and
-        SHOULD NOT be reported to the remote server.</p>
-
-        <section>
-          <h4>Unrecognized Directive</h4>
-          <p>When a user-agent receives a directive name that it does not recognize, the user-agent
-          MUST not parse the directive name or value and MUST skip ahead to the next directive name
-          present in the policy or to the end of the policy if no further directives are declared.
-          The user-agent SHOULD report a warning message to the error console containing the
-          unrecognized directive name.</p>
-        </section><!-- Unrecognized Directive -->
-
-        <section>
-          <h4>Invalid Directive</h4>
-          <p>When a user-agent receives a directive name that violates all of
-          the <a href="#directive-definitions">directive syntax</a>, the user-agent MUST not parse
-          the directive name or value and MUST skip ahead to the next directive name present in the
-          policy or to the end of the policy if no further directives are declared.  The user-agent
-          SHOULD report a warning message to the error console containing the invalid directive
-          name.</p>
-        </section><!-- Invalid Directive -->
-
-        <section>
-          <h4>Unrecognized <code>options</code> Token</h4>
-          <p>When a user-agent receives a token in an <code>options</code> directive that it does
-          not recognize, the user-agent MUST skip over it.  User-agents SHOULD report a warning
-          message to the error console containing the unrecognized token.</p>
-        </section><!-- Unrecognized options Token -->
-
-        <section>
-          <h4>Directive Syntax Error</h4>
-          <p>When a user-agent receives a policy directive that
-          violates <a href="#formal-policy-grammar">Content Security Policy syntax</a>, the
-          user-agent MUST discard the entire policy and enforce a policy of <code>default-src
-          'none'</code> on the protected resource.  User-agents SHOULD report a warning message to
-          the error console communicating that an invalid policy was received.</p>
-        </section><!-- Directive Syntax Error -->
-
-        <section>
-          <h4>No Recognized Directives</h4>
-          <p>When a user-agent receives a policy that contains no directives recognized by the
-          user-agent, the user-agent MUST NOT enforce any restrictions on the protected resource.
-          User-agents SHOULD report a warning message to the error console communicating that a
-          policy containing no valid directives was received.</p>
-        </section><!-- No Recognized Directives -->
-
-        <section>
-          <h4>Other Parsing Errors</h4>
-          <p>Any other parsing errors not described in the above sections MUST result in the
-          user-agent enforcing a policy of <code>default-src 'none'</code> on the protected resource
-          and SHOULD result in the user-agent reporting a warning message to the error console
-          describing the error.</p>
-        </section><!-- Other Parsing Errors -->
-
-      </section><!-- Handling Policy Parsing Errors -->
-
-      <section>
-        <h3>Report-Only Mode</h3>
-        <p>This section describes a mode of operation for user-agents in which security policies are
-        parsed and violations are logged as they occur, but without blocking content from loading or
-        executing as the user-agent would under normal processing of Content Security Policy.</p>
-
-        <p>Content Security Policy can be deployed by servers in report-only mode by sending
-        a <code>X-Content-Security-Policy-Report-Only</code> <a href="#x-content-security-policy-response-header">response
-        header</a> or by placing a <code>&lt;meta
-        http-equiv="X-Content-Security-Policy-Report-Only"></code> <a href="#meta-http-equiv--x-content-security-policy---html-element">policy
-        element</a> in the <code>&lt;head></code> section of a document.</p>
-
-        <p>When report-only mode is enabled by a server, the user-agent MUST log all policy
-        violations and policy parsing errors in the same manner that it would in normal blocking
-        mode, including sending <a href="#violation-reports">violation reports</a> to the server if
-        a <a href="#report-uri">report-uri</a> directive is present, as well as logging any
-        appropriate errors or warnings locally to the error console.  In report-only mode, the
-        user-agent MUST NOT prevent any content from loading or executing normally due to violations
-        of the protected document's stated security policy.</p>
-
-        <p class="note">This mode of operation is intended to ease deployment for servers that want
-        to experiment with a security policy but aren't ready to take the step of policy
-        enforcement.  Such sites can develop a security policy according to their knowledge and
-        assumptions about how the site functions and receive reports when content in the site
-        behaves in a manner contrary to the developed policy.  Report-only mode can also be used in
-        parallel with blocking mode as it is a useful test vehicle for a stricter policy.  The
-        stricter report-only policy can be deployed in production environments with no compatibility
-        risk and feedback can be collected from any violation reports received.  Once a site has
-        confidence that the policy is appropriate, they can promote the report-only policy to normal
-        blocking mode.</p>
-      </section><!-- Report-Only Mode -->
-
-      <section class="informative">
-        <h3>Other User-Agent Considerations</h3>
-        <p>This section contains miscellaneous items for consideration by user-agent
-        implementers.</p>
-
-        <h4>User Scripts</h4>
-        <p>Content Security Policy should not interfere with the operation of user-supplied scripts
-        such as third-party user-agent add-ons and JavaScript bookmarklets.</p>
-
-        <h4>Redirecting Content Loads</h4>
-        <p>For any protected document, when a request for a sub-document resource is redirected to
-        another location, whether temporary or permanent, all locations in the resource's redirect
-        chain, including the initial location and all subsequent redirected locations, must be
-        permitted by the protected document's security policy in order for the sub-document resource
-        to be allowed to load.  If any step in the redirect process violates the protected
-        document's security policy, the request should be terminated immediately and the load
-        canceled.</p>
-
-        <h4>Future Directives</h4>
-        <p>In order to support new policy directives in the future, user-agents must parse but
-        ignore unrecognized directives.  For this reason, this document specifies that user-agents
-        MUST skip over unrecognized directives but SHOULD report them on the error console.</p>
-      </section><!-- Other User-Agent Considerations -->
-
-    </section><!-- User-Agent Behavior -->
-
-    <section>
-      <h2>HTTP Server Behavior</h2>
-      <p>This section describes required behavior for conformant servers when emitting a Content
-      Security Policy.</p>
-
-      <section>
-        <h3>HTTP Header Placement</h3>
-        <p>The <a href="#x-content-security-policy-response-header">Content Security Policy HTTP
-        response header</a> MAY be present in the Message Headers section of a server's HTTP
-        response.</p>
-
-        <p>The <a href="#x-content-security-policy-response-header">Content Security Policy HTTP
-        response header</a> MUST NOT be present in the Trailer section of a server's HTTP response.
-        If a user-agent receives a Content Security Policy as an HTTP Trailer, it MUST NOT parse the
-        policy or attempt to enforce any restrictions on the rendered document.</p>
-
-        <p>HTTP Message Headers and Trailers are defined in the HTTP 1.1 standard. [[!HTTP11]]</p>
-      </section><!-- HTTP Header Placement -->
-
-    </section><!-- HTTP Server Behavior -->
-
+        <p class="issue">Should we add this as a requirement when preparing
+        reports?</p>
+      </section>
+    </section>
   </body>
 </html>
