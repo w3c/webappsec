@@ -252,14 +252,17 @@
           <p>The <code>Content-Security-Policy</code> header field is the
           preferred mechanism for delivering a CSP policy.</p>
 
-          <p>A server MAY supply one or more CSP policies in HTTP response
-          header fields named <code>Content-Security-Policy</code> along with
-          the protected document.</p>
+          <p>A server MUST NOT send more than one HTTP header field named
+          <code>Content-Security-Policy</code> with a given resource
+          representation.  A server MAY send different
+          <code>Content-Security-Policy</code> header field values with
+          different representations of the same resource or with different
+          resources.</p>
 
           <p>Upon receiving an HTTP response containing at least one
           <code>Content-Security-Policy</code> header field, the user agent
-          MUST <a href="#enforce-the-combination">enforce the combination</a>
-          of all the policies contained in these header fields.</p>
+          MUST <a href="#enforce">enforce</a> the policy contained in the
+          <em>first</em> such header field.</p>
         </section>
 
         <section>
@@ -275,20 +278,19 @@
           policy. Once a site has confidence that the policy is appropriate,
           they can promote the report-only policy to normal blocking mode.</p>
 
-          <p>A server MAY supply one or more CSP policies in HTTP response
-          header fields named <code>Content-Security-Policy-Report-Only</code>
-          along with the protected document.</p>
+          <p>A server MUST NOT send more than one HTTP header field named
+          <code>Content-Security-Policy-Report-Only</code> with a given resource
+          representation.</p>
 
-          <p>If a server supplies at least one
-          <code>Content-Security-Policy-Report-Only</code> header field in an
-          HTTP response, the server MUST NOT supply any
-          <code>Content-Security-Policy</code> header fields.</p>
+          <p>A server MUST NOT send an HTTP response that contains both
+          <code>Conent-Security-Policy</code> and
+          <code>Content-Security-Policy-Report-Only</code> header fields.
 
           <p>Upon receiving an HTTP response containing at least one
-          <code>Content-Security-Policy-Report-Only</code> header field, the
-          user agent MUST <a href="#monitor-the-combination">monitor the
-          combination</a> of all the policies contained in these header
-          fields.</p>
+          <code>Content-Security-Policy-Report-Only</code> header field (and
+          zero <code>Content-Security-Policy</code> header fields), the user
+          agent MUST <a href="#monitor">monitor</a> of the policies contained
+          in the <em>first</em> such header field.</p>
         </section>
 
         <section>
@@ -571,16 +573,6 @@ port              = ":" ( 1*DIGIT / "*" )
         an unrecognized directive, the user agent SHOULD report a warning
         message in the developer console indicating the name of the
         unrecognized directive.</p>
-
-        <p>To <dfn id="enforce-the-combination">enforce the combination</dfn>
-        of one or more policies, the user agent MUST enforce each policy. For
-        example, if an action is prevented by at least one of the policies,
-        then the action will be prevented by the combination of the
-        policies.</p>
-
-        <p>To <dfn id="monitor-the-combination">monitor the combination</dfn>
-        of one or more policies, the user agent MUST monitor each each
-        policy.</p>
       </section>
     </section>
 
@@ -1203,20 +1195,11 @@ directive-value   = &lt;URI-reference from RFC 3986&gt;
                          object-src media1.example.com media2.example.com *.cdn.example.com;
                          script-src trustedscripts.example.com</pre>
 
-        <p><strong>Example 3:</strong> A site operations group wishes to globally deny all
-        third-party scripts in the site, and a particular project team wishes to also disallow
-        third-party media in their section of the site.  Site operations sends the first header
-        while the project team sends the second header, and the user-agent takes the combination of
-        the two headers to form the complete interpreted policy:</p>
-
-        <pre>Content-Security-Policy: default-src *; script-src 'self'
-Content-Security-Policy: default-src *; script-src 'self'; media-src 'self'</pre>
-
-        <p><strong>Example 4:</strong> Online banking site wishes to ensure that all of the content
+        <p><strong>Example 3:</strong> Online banking site wishes to ensure that all of the content
         in its pages is loaded over TLS to prevent attackers from eavesdropping on insecure content
         requests:</p>
 
-        <pre>Content-Security-Policy: default-src https:</pre>
+        <pre>Content-Security-Policy: default-src https: 'unsafe-inline' 'unsafe-eval'</pre>
       </section>
 
       <section class="informative">
