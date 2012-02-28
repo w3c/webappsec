@@ -1065,13 +1065,21 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
           <li>Prepare a dictionary <var>violation dictionary</var> with the
           following keys and values:
             <dl>
-              <dt>request</dt>
-              <dd>HTTP request line of the protected resource whose policy was
-              violated including method, URI and HTTP version</dd>
+              <dt>document-uri</dt>
+              <dd>The <a href="http://www.w3.org/TR/html5/dom.html#the-document-s-address">address</a>
+              of the protected document, with any
+              <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
+              component removed</dd>
+
+              <dt>referrer</dt>
+              <dd>The <a href="http://www.w3.org/TR/html5/dom.html#dom-document-referrer">referrer</a>
+              attribute of the protected document</dd>
 
               <dt>blocked-uri</dt>
               <dd>URI of the resource that was prevented from loading due to
-              the policy violation</dd>
+              the policy violation, with any
+              <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
+              component removed</dd>
 
               <dt>violated-directive</dt>
               <dd>The policy directive that was violated</dd>
@@ -1237,23 +1245,14 @@ directive-value   = &lt;URI-reference from RFC 3986&gt;
 
         <pre>{
   "csp-report": {
-    "request": "GET http://example.org/page.html HTTP/1.1",
+    "document-uri": "http://example.org/page.html",
+    "referrer": "http://evil.example.com/haxor.html",
     "blocked-uri": "http://evil.example.com/image.png",
-    "violated-directive": "default-src http://example.org",
+    "violated-directive": "default-src 'self'",
     "original-policy": "default-src 'self'; report-uri http://example.org/csp-report.cgi"
   }
 }</pre>
 
-        <p>In the above sample report the <code>violated-directive</code>
-        field was sent in the way it was interpreted by the user-agent. The
-        directive was made explicit by replacing the keyword
-        <code>'self'</code> with the explicit host name of the protected
-        resource. This is recommended behavior for user-agents as it reduces
-        ambiguity, making policy violations easier to trace by server
-        admins.</p>
-
-        <p class="issue">Should we add this as a requirement when preparing
-        reports?</p>
       </section>
     </section>
     <section>
