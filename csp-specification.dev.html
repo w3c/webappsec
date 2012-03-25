@@ -231,15 +231,15 @@
       <section>
         <h3>Policy Delivery</h3>
 
-        <p>The policy can be delivered from the server to the client via an HTTP response header
-        or an HTML <code>meta</code> element.</p>
+        <p>The policy can be delivered from the server to the client via an
+        HTTP response header or an HTML <code>meta</code> element.</p>
 
         <p>Of the two delivery mechanisms, servers SHOULD use the HTTP
-        response header mechanism whenever possible because, when using the
-        <code>meta</code> element mechanism, there is a period of time between
-        when the user agent begins to process the document and when the user
-        agent encounters the <code>meta</code> element when the document is
-        not protected by the policy.</p>
+        response header mechanism whenever possible. When using the HTML
+        <code>meta</code> element, there is a peroid of time between when
+        the user agent begins processing the document and when the user
+        agent processes the <code>meta</code> element when the document
+        is not protected by the policy.</p>
 
         <section>
           <h4><code>Content-Security-Policy</code> Header Field</h4>
@@ -265,14 +265,17 @@
           <h4><code>Content-Security-Policy-Report-Only</code> Header Field</h4>
 
           <p>The <code>Content-Security-Policy-Report-Only</code> header field
-          lets server experiment with CSP by monitoring (rather than
-          enforcing) a policy. This feature lets server operators develop
-          their security policy iteratively. They can deploy a report-only
+          lets servers experiment with policies by monitoring (rather than
+          enforcing) a policy.</p>
+
+          <p>For example, a server operators might wish to develop their
+          security policy iteratively. The operators can deploy a report-only
           policy based on their best estimate of how their site behaves. If
           their site violates this policy, instead of breaking the site, the
           user agent will send violation reports to a URI specified in the
           policy. Once a site has confidence that the policy is appropriate,
-          they can promote the report-only policy to normal blocking mode.</p>
+          they start enforcing the policy using the
+          <code>Content-Security-Policy</code> header field.</p>
 
           <p>A server MUST NOT send more than one HTTP header field named
           <code>Content-Security-Policy-Report-Only</code> with a given
@@ -287,8 +290,13 @@
           in the <em>first</em> such header field. The user agent MUST ignore
           subsequent such header fields.</p>
 
-          <p class="note">A user agent might monitor one policy while
-          enforcing another policy.</p>
+          <p>A server MAY monitor one policy while enforcing another policy.
+          For example, if a server operator is using one policy but wishes to
+          experiment with a stricter policy, the server operator can monitor
+          the stricter policy while enforcing the original policy. Once the
+          server operator is satified that the stricter policy does not break
+          the web application, the server operator can start enforcing the
+          stricter policy.</p>
         </section>
 
         <section>
@@ -334,6 +342,13 @@
               </ol>
             </dd>
           </dl>
+
+          <p>As a consequence of these requirements, a policy supplied in an
+          HTTP header field takes precedence over policies supplied in
+          <code>meta</code> elements. Similarly, the above requirements entail
+          that the first <code>meta</code> element containing a policy takes
+          precedence over policies supplied in subsequent <code>meta</code>
+          elements.</p>
         </section>
       </section>
 
