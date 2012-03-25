@@ -1114,68 +1114,6 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
           </li>
         </ol>
       </section>
-
-      <section>
-        <h4><code>policy-uri</code></h4>
-
-        <p>The <code>policy-uri</code> directive specifies a URI from which
-        the user agent can retrieve the actual policy. The syntax for the name
-        and value of the directive are described by the following ABNF
-        grammar:</p>
-
-<pre>
-directive-name    = "policy-uri"
-directive-value   = &lt;URI-reference from RFC 3986&gt;
-</pre>
-
-        <p class="issue">The <code>policy-uri</code> directive might be
-        removed from this document.</p>
-
-        <p>Authors MUST NOT specify policies that contain both a
-        <code>policy-uri</code> directive and another directive.</p>
-
-        <p>If the user agent would enforce a policy containing both the
-        <code>policy-uri</code> directive and another directive, instead the
-        user agent MUST enforce the policy <code>default-src
-        'none'</code>.</p>
-
-        <p>When processing the <code>policy-uri</code> directive, the user
-        agent MUST run an algorithm equivalent to the following:</p>
-        <ul>
-          <li>Let <var>request URI</var> be the URI that results from
-          resolving the value of the <code>policy-uri</code> directive
-          relative to the URI of the protected document.</li>
-
-          <li>If <var>request URI</var> is not from the same origin as the
-          protected document, abort these steps and enforce the policy
-          <code>default-src 'none'</code>.
-
-          <li>Fetch the <var>request URI</var> from origin of the protected
-          document, with the synchronous flag set, using HTTP method
-          <code>GET</code>.</li>
-
-          <li>If the fetch returned a status code other than <code>200</code>
-          or if the request encountered an HTTP redirect, abort these steps
-          and enforce the policy <code>default-src 'none'</code>.</li>
-
-          <li>If the fetched resource lacks a <code>Content-Type</code> header
-          field or if the <code>Content-Type</code> header field is not a case
-          insensitive match for <code>text/x-content-security-policy</code>,
-          abort these steps and enforce the policy <code>default-src
-          'none'</code>.</li>
-
-          <li>Let the <var>fetched policy</var> be the result of <a
-          href="#parse-a-csp-policy">parsing the fetched resource as a CSP
-          policy</a>.</li>
-
-          <li>If the <var>fetched policy</var> contains a
-          <code>policy-uri</code> directive, abort these steps and enforce the
-          policy <code>default-src 'none'</code>.</li>
-
-          <li><a href="#enforce">Enforce</a> the <var>fetched
-          policy</var>.</li>
-        </ul>
-      </section>
     </section>
 
     <section>
