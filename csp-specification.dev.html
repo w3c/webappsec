@@ -471,11 +471,16 @@ port              = ":" ( 1*DIGIT / "*" )
             (<code>*</code>), then return <em>does match</em>.</li>
 
             <li>If the source expression matches the grammar for
-            <code>scheme-source</code>, then the URI matches the source
-            expression of the URI's scheme is a case-insensitive match for the
-            source expression's <code>scheme</code>.</li>
+            <code>scheme-source</code>:
+              <ol>
+                <li>If the URI's scheme is a case-insensitive match for the
+                source expression's <code>scheme</code>, return <em>does
+                match</em>.</li>
 
-            <li>Otherwise, if the source expression matches the grammar for
+                <li>Otherwise, return <em>does not match</em>.</li>
+              </ol>
+            </li>
+            <li>If the source expression matches the grammar for
             <code>host-source</code>:
               <ol>
                 <li>If the URI does not contain a host, then return <em>does
@@ -491,11 +496,10 @@ port              = ":" ( 1*DIGIT / "*" )
                 not a case insensitive match for <var>scheme</var>, then
                 return <em>does not match</em>.</li>
 
-                <li>If <var>scheme</var> is not a case insensitive match for
-                the scheme of the protected document's URI, then return
-                <em>does not match</em>.<br>
-                <em>FIXME: Should we allow HTTPS when the document's scheme is
-                HTTP?</em></li>
+                <li>If the source expression does <strong>not</strong> have a
+                <code>scheme</code> and if <var>scheme</var> is not a case
+                insensitive match for the scheme of the protected document's
+                URI, then return <em>does not match</em>.</li>
 
                 <li>If the first character of the source expression's
                 <code>host</code> is an U+002A ASTERISK character
@@ -508,27 +512,28 @@ port              = ":" ( 1*DIGIT / "*" )
                 source expression's <code>host</code>, then return <em>does
                 not match</em>.</li>
 
-                <li>If the source expression does not contain a
-                <code>port</code> and <var>port</var> is not the default port
-                for <var>scheme</var>, then return <em>does not
-                match</em>.</li>
+                <li>If the source expression does <strong>not</strong> contain
+                a <code>port</code> and <var>port</var> is not the default port
+                for <var>scheme</var>, then return <em>does not match</em>.</li>
 
                 <li>If the source expression does contain a <code>port</code>
-                that (a) does <em>not</em> contain an U+002A ASTERISK
-                character (<code>*</code>) and (b) does <em>not</em> represent
-                the same number as <var>port</var>, then return <em>does not
-                match</em>.</li>
+                that (a) does <strong>not</strong> contain an U+002A ASTERISK
+                character (<code>*</code>) and (b) does <strong>not</strong>
+                represent the same number as <var>port</var>, then return
+                <em>does not match</em>.</li>
 
-                <li>Return <em>does match</em>.</li>
+                <li>Otherwise, return <em>does match</em>.</li>
               </ol>
+            </il>
 
-              <li>Otherwise, if the source expression is a case insensitive
-              match for <code>'self'</code> (including the quotation marks),
-              then return the URI matches the source expression if the URI has
-              the same scheme, host, and port as the document's URI.</li>
+            <li>If the source expression is a case insensitive
+            match for <code>'self'</code> (including the quotation marks),
+            then return <em>does match</em> if the URI has the same scheme,
+            host, and port as the document's URI (using the default port
+            for the appropriate scheme if either or both URIs are missing
+            ports).</li>
 
-              <li>Otherwise, the URI does not match the source expression.</li>
-            </li>
+            <li>Otherwise, return <em>does not match</em>.</li>
           </ol>
 
           <p>A URI <dfn id="matches-a-source-list">matches a source
