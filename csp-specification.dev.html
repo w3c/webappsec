@@ -1173,29 +1173,53 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
     </section>
     <section>
       <h2>Implementation Considerations</h2>
-      <section>
-        <h3>Servers</h3>
 
-        <p>Some servers might wish to combine multiple Content Security
-        Policies (e.g., from multiple components in a single document).
-        Servers SHOULD use the following algorithm to combine policies:</p>
+      <p>The <code>Content-Security-Policy</code> header is an end-to-end
+      header.  It is processed and enforced at the client and, therefore,
+      SHOULD NOT be modified or removed by proxies or other intermediaries not
+      in the same administrative domain as the resource.</p>
 
-        <ol>
-          <li>TODO</li>
-        </ol>
+      <p>The originating administrative domain for a resource might wish to
+      apply a <code>Content-Security-Policy</code> header outside of the
+      immediate context of an application.  For example, a large organization
+      might have many resources and applications managed by different
+      individuals or teams but all subject to a uniform organizational
+      standard. In such situations, a <code>Content-Security-Policy</code>
+      header might be added or combined with an existing one at a network-edge
+      security gateway device or web application firewall.  When using the
+      <code>Content-Security-Policy</code> header in this way, administrators
+      ought to remember that the user agent will enforce only the first policy
+      statement it receives.  To enforce multiple policies, the administrator
+      MUST combine the policy into a single header.  An administrator might
+      wish to use different combination algorithms depending on his or her
+      intended semantics.</p>
 
-        <h3>Internet Service Providers</h3>
+      <p>One sensible policy combination algorithm is to start by allowing a
+      default set of sources and then letting individual upstream resource
+      owners expand the set of allowed sources by including additional origins.
+      In this approach, the resultant policy is the union of all allowed
+      origins in the input policies.</p>
 
-        <p>Some Internet service providers manipulate resources as they travel
-        across their networks [TODO: Citation needed]. It's possible that these
-        manipulations can cause a site to violate its Content Security Policy.</p>
+      <p>Another sensible policy combination algorithm is to intersect the
+      given policies.  This approach enforces that content comes from a certain
+      whitelist of origins, for example, preventing developers from including
+      third-party scripts or content in violation of organizational standards
+      and practices.  In this approach, the combination algorithm forms the
+      combined policy by removing disallowed hosts from the policies supplied
+      by upstream resource owners.</p>
 
-        <p>Internet server providers SHOULD NOT manipulate resources as they
-        travel across their networks. If Internet Service Providers persist in
-        manipulating these resources, servers SHOULD employ transport-layer
-        security, such as HTTPS, to ensure the integrity of their site over
-        hostile networks.</p>
-      </section>
+      <p>Interactions between the <code>default-src</code> and other directives
+      SHOULD be given special consideration when combining policies.  If none
+      of the policies contains a <code>default-src</code> directive, adding new
+      src directives results in a more restrictive policy.  However, if one or
+      more of the input policies contain a <code>default-src</code> directive,
+      adding new src directives might result in a less restrictive policy, for
+      example, if the more specific directive contains a more permissive set of
+      allowed origins.</p>
+
+      <p>Using a more restrictive policy than the input policy authored by the
+      resource owner might prevent the resource from rendering or operating as
+      intended.</p>
     </section>
     <section>
       <h2>IANA Considerations</h2>
