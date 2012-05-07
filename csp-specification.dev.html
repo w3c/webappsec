@@ -323,6 +323,82 @@ obs-fold       = CRLF ( SP / HTAB )
           stricter policy.</p>
         </section>
 
+        <section>
+          <h4>HTML <code>meta</code> Element (Experimental)</h4>
+
+          <p>The server MAY supply a CSP policy in an HTML <code>meta</code>
+          element with an <code>http-equiv</code> attribute that is a case
+          insensitive match for either <code>Content-Security-Policy</code> or
+          <code>Content-Security-Policy-Report-Only</code>.</p>
+
+          <p>Add the following entries to the <a
+          href="http://www.w3.org/TR/html5/semantics.html#pragma-directives">pragma
+          directives</a> for the <code>meta</code> element:</p>
+
+          <dl>
+            <dt>Content security policy (<code>http-equiv="content-security-policy"</code>)</dt>
+            <dd>
+              <ol>
+                <li>If the user agent is already enforcing a CSP policy for the
+                document, abort these steps.</li>
+
+                <li>If the <code>meta</code> element lacks a
+                <code>content</code> attribute, abort these steps.</li>
+
+                <li><a href="#enforce">Enforce</a> the CSP policy contained in
+                the <code>content</code> attribute of the <code>meta</code>
+                element.</li>
+              </ol>
+            </dd>
+
+            <dt>Content security policy, report only (<code>http-equiv="content-security-policy-report-only"</code>)</dt>
+            <dd>
+              <ol>
+                <li>If the user agent is already monitoring a CSP policy for
+                the document, abort these steps.</li>
+
+                <li>If the <code>meta</code> element lacks a
+                <code>content</code> attribute, abort these steps.</li>
+
+                <li><a href="#monitor">Monitor</a> the CSP policy contained in
+                the <code>content</code> attribute of the <code>meta</code>
+                element.</li>
+              </ol>
+            </dd>
+          </dl>
+
+          <p>As a consequence of these requirements, a policy supplied in an
+          HTTP header field takes precedence over policies supplied in
+          <code>meta</code> elements. Similarly, the above requirements entail
+          that the first <code>meta</code> element containing a policy takes
+          precedence over policies supplied in subsequent <code>meta</code>
+          elements.</p>
+
+          <p><em>TODO: Turn the bullets below into actual spec text.</em>
+          <ul>
+              <li>In order to work, the <code>meta</code> element needs to be
+              in document's head. This requirement makes it harder for folks to
+              inject CSP policies into vulnerable documents.</li>
+
+              <li>Ignore the <code>report-uri</code> directive in CSP policies
+              obtained from <code>meta</code> elements. This requirement
+              mitigates one attack that might result from an injected policy.
+              It also provides a carrot for supplying the policy in an HTTP
+              header, which is better for security.</li>
+
+              <li>Add some guidance that sites should put the <code>meta</code>
+              element as early as possible in their document to reduce the risk
+              of an attacker injecting another policy in front.</li>
+
+              <li>Ignore policies from <code>meta</code> elements that get
+              inserted after the document's readyState reaches "interactive".
+              This requirement further mitigates the risk of the
+              <code>meta</code> element being injected.  (Is this requirement
+              still useful in light of the above mitigations?)</li>
+          </ul>
+        </section>
+      </section>
+
       <section>
         <h3>Syntax</h3>
 
