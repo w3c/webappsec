@@ -591,7 +591,7 @@ port              = ":" ( 1*DIGIT / "*" )
         directives, or</li>
 
         <li>include a <code>default-src</code> directive, which covers both
-        scripts and plug-ins.</li>
+        scripts and plugins.</li>
       </ul>
 
       <p>In either case, authors SHOULD NOT include
@@ -758,11 +758,11 @@ directive-value   = source-list
         such as an <code>object</code> element with a <code>text/html</code>
         MIME type.</p>
 
-        <p>Whenever the user agent would load a plug-in without an associated
+        <p>Whenever the user agent would load a plugin without an associated
         URI (e.g., because the <code>object</code> element lacked a
         <code>data</code> attribute), if the protected resource's URI does not
         <a href="#matches-a-source-list">match the <var>allowed object
-        sources</var></a>, the user agent MUST NOT load the plug-in.</p>
+        sources</var></a>, the user agent MUST NOT load the plugin.</p>
       </section>
 
       <section>
@@ -1094,10 +1094,43 @@ nonce             = &lt;token from RFC 2616&gt;
       </section>
 
       <section>
+        <h4><code>plugin-types</code> (Experimental)</h4>
+
+        <p>The <code>plugin-types</code> restricts the set of plugins that can
+        be invoked by the protected resource.  The syntax for the name and
+        value of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "script-types"
+directive-value   = media-type *( 1*WSP media-type )
+media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
+</pre>
+
+        <p>Let the <var>allowed plugin media types</var> be the directive's
+        value, <a
+        href="http://www.whatwg.org/specs/web-apps/current-work/#split-a-string-on-spaces">split
+        on spaces</a>.</p>
+
+        <p>When enforcing the <code>script-types</code> directive:
+        <ul>
+            <li>Whenever the user agent would instantiate a <a
+            href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
+            for the protected resource to handle a resource whose media type is
+            not contained in the list of <var>allowed plugin media types</var>,
+            instead the user agent MUST act as the plugin reported an error
+            (which will cause the user agent to display the <a
+            href="http://www.whatwg.org/specs/web-apps/current-work/#fallback-content">fallback
+            content</a>).</li>
+        </ul>
+        </p>
+      </section>
+
+      <section>
         <h4><code>frame-options</code> (Experimental)</h4>
 
         <p><em>TODO:</em> Coordinate with the IETF websec Working Group.</p>
       </section>
+
       <section>
         <h4><code>report-uri</code></h4>
 
@@ -1187,7 +1220,7 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
         <pre>Content-Security-Policy: default-src 'self'</pre>
 
         <p><strong>Example 2:</strong> An auction site wishes to load images
-        from any URI, plug-in content from a list of trusted media providers
+        from any URI, plugin content from a list of trusted media providers
         (including a content distribution network), and scripts only from a
         server under its control hosting sanitized ECMAScript:</p>
 
