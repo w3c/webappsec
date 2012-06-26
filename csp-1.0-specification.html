@@ -187,7 +187,7 @@
         <dfn>directive value</dfn>, which specifies the restrictions the
         policy imposes on those privileges.</p>
 
-        <p>The term <dfn>origin</dfn> is defined in the Origin specification.
+        <p>The term <dfn id="origin">origin</dfn> is defined in the Origin specification.
         [<em><a href="http://tools.ietf.org/html/draft-ietf-websec-origin">ORIGIN</a></em>]</p>
 
         <p>The term <dfn>URI</dfn> is defined in the URI specification.  [[!URI]]</p>
@@ -296,15 +296,8 @@
           <code>Content-Security-Policy-Report-Only</code> header field, the
           user agent MUST <a href="#monitor">monitor</a> each of the policies
           contained in each such header field.</p>
-
-          <p>A server MAY monitor one policy while enforcing another policy.
-          For example, if a server operator is using one policy but wishes to
-          experiment with a stricter policy, the server operator can monitor
-          the stricter policy while enforcing the original policy. Once the
-          server operator is satisfied that the stricter policy does not break
-          the web application, the server operator can start enforcing the
-          stricter policy.</p>
         </section>
+      </section>
 
       <section>
         <h3>Syntax</h3>
@@ -378,7 +371,7 @@ directive-value   = *( WSP / &lt;VCHAR except ";" and ","&gt; )
           <p>Each <dfn>source expression</dfn> in the source list represents a
           location from which content of the specified type can be retrieved.
           For example, the source expression <code>'self'</code> represents
-          the set of URIs which are in the same origin as the protected
+          the set of URIs which are in the same <a href="#origin">origin</code> as the protected
           resource and the source expression <code>'unsafe-inline'</code>
           represents content supplied inline in the resource itself.</p>
 
@@ -442,18 +435,18 @@ port              = ":" ( 1*DIGIT / "*" )
                 <li>If the URI does not contain a host, then return <em>does
                 not match</em>.</li>
 
-                <li>Let <var>scheme</var>, <var>host</var>, and
-                <var>port</var> be the scheme, host, and port of the URI,
+                <li>Let <var>uri-scheme</var>, <var>uri-host</var>, and
+                <var>uri-port</var> be the scheme, host, and port of the URI,
                 respectively. If the URI does not have a port, then let
-                <var>port</var> be the default port for
-                <var>scheme</var>.</li>
+                <var>uri-port</var> be the default port for
+                <var>uri-scheme</var>.</li>
 
                 <li>If the source expression has a <code>scheme</code> that is
-                not a case insensitive match for <var>scheme</var>, then
+                not a case insensitive match for <var>uri-scheme</var>, then
                 return <em>does not match</em>.</li>
 
                 <li>If the source expression does <strong>not</strong> have a
-                <code>scheme</code> and if <var>scheme</var> is not a case
+                <code>scheme</code> and if <var>uri-scheme</var> is not a case
                 insensitive match for the scheme of the protected resource's
                 URI, then return <em>does not match</em>.</li>
 
@@ -462,20 +455,20 @@ port              = ":" ( 1*DIGIT / "*" )
                 (<code>*</code>) and the remaining characters, including the
                 leading U+002E FULL STOP character (<code>.</code>), are not a
                 case insensitive match for the rightmost characters of
-                <var>host</var>, then return <em>does not match</em>.</li>
+                <var>uri-host</var>, then return <em>does not match</em>.</li>
 
-                <li>If <var>host</var> is not a case insensitive match for the
+                <li>If <var>uri-host</var> is not a case insensitive match for the
                 source expression's <code>host</code>, then return <em>does
                 not match</em>.</li>
 
                 <li>If the source expression does <strong>not</strong> contain
-                a <code>port</code> and <var>port</var> is not the default port
-                for <var>scheme</var>, then return <em>does not match</em>.</li>
+                a <code>port</code> and <var>uri-port</var> is not the default port
+                for <var>uri-scheme</var>, then return <em>does not match</em>.</li>
 
                 <li>If the source expression does contain a <code>port</code>
                 that (a) does <strong>not</strong> contain an U+002A ASTERISK
                 character (<code>*</code>) and (b) does <strong>not</strong>
-                represent the same number as <var>port</var>, then return
+                represent the same number as <var>uri-port</var>, then return
                 <em>does not match</em>.</li>
 
                 <li>Otherwise, return <em>does match</em>.</li>
@@ -533,6 +526,14 @@ port              = ":" ( 1*DIGIT / "*" )
         prevented by the directives are instead reported to the developer of
         the web application. Monitoring a CSP policy is useful for testing
         whether enforcing the policy will break the web application.</p>
+
+        <p>A server MAY monitor one policy while enforcing another policy.
+        For example, if a server operator is using one policy but wishes to
+        experiment with a stricter policy, the server operator can monitor
+        the stricter policy while enforcing the original policy. Once the
+        server operator is satisfied that the stricter policy does not break
+        the web application, the server operator can start enforcing the
+        stricter policy.</p>
 
         <p>If the user agent monitors or enforces a CSP policy that does not
         contain any directives, the user agent SHOULD report a warning message
@@ -1175,13 +1176,10 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
       individuals or teams but all subject to a uniform organizational
       standard. In such situations, a <code>Content-Security-Policy</code>
       header might be added or combined with an existing one at a network-edge
-      security gateway device or web application firewall.  When using the
-      <code>Content-Security-Policy</code> header in this way, administrators
-      ought to remember that the user agent will enforce only the first policy
-      statement it receives.  To enforce multiple policies, the administrator
-      MUST combine the policy into a single header.  An administrator might
-      wish to use different combination algorithms depending on his or her
-      intended semantics.</p>
+      security gateway device or web application firewall.  To enforce multiple
+      policies, the administrator SHOULD combine the policy into a single header.
+      An administrator might wish to use different combination algorithms
+      depending on his or her intended semantics.</p>
 
       <p>One sensible policy combination algorithm is to start by allowing a
       default set of sources and then letting individual upstream resource
