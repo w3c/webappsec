@@ -146,14 +146,15 @@
       steps") are to be interpreted with the meaning of the key word ("MUST",
       "SHOULD", "MAY", etc) used in introducing the algorithm.</p>
 
-      <p>A conformant user agent is one that implements all the requirements
-      listed in this specification that are applicable to user-agents.</p>
+      <p>A <dfn>conformant user agent</dfn> MUST implement all the
+      requirements listed in this specification that are applicable to
+      user-agents, and MAY implement those marked as "(Optional)".
 
-      <p>A conformant server is one that implements all the requirements
+      <p>A <dfn>conformant server</dfn> MUST implement all the requirements
       listed in this specification that are applicable to servers.</p>
 
       <section>
-        <h3>Terminology</h3>
+        <h3>Key Concepts and Terminology</h3>
 
         <p>This section defines several terms used throughout the document.</p>
 
@@ -171,14 +172,15 @@
         user agent on a <em>per-resource representation basis</em>.
         Specifically, when a user agent receives a policy along with the
         representation of a given resource, that policy applies to <em>that
-        resource representation only</em>. This document often referes to
+        resource representation only</em>. This document often refers to
         that resource representation as the <dfn>protected resource</dfn>.
 
-        <p>A server transmits its security policy for a particular resource as
-        a collection of <dfn>directives</dfn>, such as <code>default-src
-        'self'</code>, each of which controls a specific set of privileges for
-        a document rendered by the user agent. More details are provided in the
-        <a href="#directives">directives</a> section.</p>
+        <p>A server transmits its security policy for a particular protected
+        resource as a collection of <dfn>directives</dfn>, such as
+        <code>default-src 'self'</code>, each of which controls a specific set
+        of privileges for that protected resource as instantiated by the user
+        agent. More details are provided in the <a href="#directives">directives</a>
+        section.</p>
 
         <p>A directive consists of a <dfn>directive name</dfn>, which
         indicates the privileges controlled by the directive, and a
@@ -192,6 +194,7 @@
 
         <p>The <code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>,
         <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code>,
+        <code>&lt;source&gt;</code>, <code>&lt;track&gt;</code>,
         <code>&lt;link&gt;</code>, <code>&lt;frame&gt;</code> and <code>&lt;iframe&gt;</code>
         elements are defined in the HTML5 standard. [[!HTML5]].</p>
 
@@ -211,6 +214,8 @@
 
         <p>The Augmented Backus-Naur Form (ABNF) notation used in this
         document is specified in RFC 5234. [[!ABNF]]</p>
+
+        <p>This document also uses the ABNF extension "#rule" as defined in [[!HTTP11]].</p>
 
         <p>The following core rules are included by reference, as defined in
         [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF Appendix B.1</a></em>]:
@@ -636,7 +641,7 @@ directive-value   = source-list
 
           <li>Whenever the user agent would execute script contained in a
           <code>javascript</code> URI, instead the user agent MUST NOT execute
-          the script. (Note: The user agent SHOULD execute script contained in
+          the script. (The user agent SHOULD execute script contained in
           "bookmarklets" even when enforcing this restriction.)</li>
         </ul>
 
@@ -865,8 +870,9 @@ directive-value   = source-list
         HTTP 400 response:</p>
         <ul>
           <li>Requesting data for a video or audio clip, such as when
-          processing the <code>src</code> attribute of a <code>video</code>
-          or <code>audio</code> elements.</li>
+          processing the <code>src</code> attribute of a <code>video</code>,
+          <code>audio</code>, <code>source</code>, or <code>track</code>
+          elements.</li>
         </ul>
       </section>
 
@@ -980,6 +986,8 @@ directive-value   = source-list
       <section>
         <h4><code>sandbox</code> (Optional)</h4>
 
+        <p>The <code>sandbox</code> directive is optional.</p>
+
         <p>The <code>sandbox</code> directive specifies an HTML sandbox policy
         that the user agent applies to the protected resource. The syntax for
         the name and value of the directive are described by the following
@@ -990,10 +998,6 @@ directive-name    = "sandbox"
 directive-value   = token *( 1*WSP token )
 token             = &lt;token from RFC 2616&gt;
 </pre>
-
-        <p>The <code>sandbox</code> directive is optional. If the user agent does not support the
-        <code>sandbox</code> attribute, the user agent MUST ignore every <code>sandbox</code>
-        directive.</p>
 
         <p>When enforcing the <code>sandbox</code> directive, a user agent that supports the
         <code>sandbox</code> directive
