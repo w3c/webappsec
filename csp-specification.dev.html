@@ -135,9 +135,9 @@
 
       <p>To take advantage of CSP, a web application opts into using CSP by
       supplying a <code>Content-Security-Policy</code> HTTP header Such
-      policies apply the current document only. To supply a policy for an
-      entire site, the server need to supply a policy with each resource
-      representation.</p>
+      policies apply the current resource representation only. To supply a
+      policy for an entire site, the server needs to supply a policy with each
+      resource representation.</p>
     </section>
 
     <section id="conformance">
@@ -146,14 +146,15 @@
       steps") are to be interpreted with the meaning of the key word ("MUST",
       "SHOULD", "MAY", etc) used in introducing the algorithm.</p>
 
-      <p>A conformant user agent is one that implements all the requirements
-      listed in this specification that are applicable to user-agents.</p>
+      <p>A <dfn>conformant user agent</dfn> MUST implement all the
+      requirements listed in this specification that are applicable to
+      user-agents.
 
-      <p>A conformant server is one that implements all the requirements
+      <p>A <dfn>conformant server</dfn> MUST implement all the requirements
       listed in this specification that are applicable to servers.</p>
 
       <section>
-        <h3>Terminology</h3>
+        <h3>Key Concepts and Terminology</h3>
 
         <p>This section defines several terms used throughout the document.</p>
 
@@ -171,46 +172,54 @@
         user agent on a <em>per-resource representation basis</em>.
         Specifically, when a user agent receives a policy along with the
         representation of a given resource, that policy applies to <em>that
-        resource representation only</em>. This document often referes to
+        resource representation only</em>. This document often refers to
         that resource representation as the <dfn>protected resource</dfn>.
 
-        <p>A server transmits its security policy for a particular resource as
-        a collection of <dfn>directives</dfn>, such as <code>default-src
-        'self'</code>, each of which controls a specific set of privileges for
-        a document rendered by the user agent. More details are provided in the
-        <a href="#directives">directives</a> section.</p>
+        <p>A server transmits its security policy for a particular protected
+        resource as a collection of <dfn>directives</dfn>, such as
+        <code>default-src 'self'</code>, each of which controls a specific set
+        of privileges for that protected resource as instantiated by the user
+        agent. More details are provided in the <a href="#directives">directives</a>
+        section.</p>
 
         <p>A directive consists of a <dfn>directive name</dfn>, which
         indicates the privileges controlled by the directive, and a
         <dfn>directive value</dfn>, which specifies the restrictions the
         policy imposes on those privileges.</p>
 
-        <p>The term <dfn>origin</dfn> is defined in the Origin specification.
-        [<em><a href="http://tools.ietf.org/html/draft-ietf-websec-origin">ORIGIN</a></em>]</p>
+        <p>The term <dfn id="origin">origin</dfn> is defined in the Origin specification. [[!RFC6454]]</p>
 
         <p>The term <dfn>URI</dfn> is defined in the URI specification.  [[!URI]]</p>
 
+        <p>The term <dfn>resource representation</dfn> is defined in the HTTP 1.1 specification.  [[!HTTP11]]</p>
+
         <p>The <code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>,
         <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code>,
+        <code>&lt;source&gt;</code>, <code>&lt;track&gt;</code>,
         <code>&lt;link&gt;</code>, <code>&lt;frame&gt;</code> and <code>&lt;iframe&gt;</code>
-        elements are defined in the HTML5 standard. [[!HTML5]].</p>
+        elements are defined in the HTML5 specification. [[!HTML5]]</p>
 
-        <p>The <code>&lt;applet&gt;</code> element is defined in the HTML 4.01 standard. [[!HTML401]].</p>
+        <p>The <code>&lt;applet&gt;</code> element is defined in the HTML 4.01 specification. [[!HTML401]]</p>
 
-        <p>The <code>@font-face</code> CSS rule is defined in the CSS Fonts Module Level 3 standard.
-        [[!CSS3FONT]]</p>
+        <p>A <a href="http://www.w3.org/TR/html5/infrastructure.html#plugin">plugin</a> is defined
+        in the HTML5 specification. [[!HTML5]]</p> 
+
+        <p>The <code>@font-face</code> Cascading Style Sheets (CSS) rule is defined in the
+        CSS Fonts Module Level 3 specification. [[!CSS3FONT]]</p>
 
         <p>The <code>XMLHttpRequest</code> object is defined in the <code>XMLHttpRequest</code>
-        standard. [[!XMLHTTPREQUEST]]</p>
+        specification. [[!XMLHTTPREQUEST]]</p>
 
         <p>The <code>WebSocket</code> object is defined in the <code>WebSocket</code>
-        standard. [<em><a href="http://dev.w3.org/html5/websockets/">WEBSOCKET</a></em>].</p>
+        specification. [[!WEBSOCKETS]]</p>
 
         <p>The <code>EventSource</code> object is defined in the <code>EventSource</code>
-        standard. [<em><a href="http://dev.w3.org/html5/eventsource/">EVENTSOURCE</a></em>].</p>
+        specification. [[!EVENTSOURCE]]</p>
 
         <p>The Augmented Backus-Naur Form (ABNF) notation used in this
         document is specified in RFC 5234. [[!ABNF]]</p>
+
+        <p>This document also uses the ABNF extension "#rule" as defined in HTTP 1.1. [[!HTTP11]]</p>
 
         <p>The following core rules are included by reference, as defined in
         [<em><a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">ABNF Appendix B.1</a></em>]:
@@ -291,14 +300,6 @@
           <code>Content-Security-Policy-Report-Only</code> header field, the
           user agent MUST <a href="#monitor">monitor</a> each of the policies
           contained in each such header field.</p>
-
-          <p>A server MAY monitor one policy while enforcing another policy.
-          For example, if a server operator is using one policy but wishes to
-          experiment with a stricter policy, the server operator can monitor
-          the stricter policy while enforcing the original policy. Once the
-          server operator is satisfied that the stricter policy does not break
-          the web application, the server operator can start enforcing the
-          stricter policy.</p>
         </section>
 
         <section>
@@ -378,7 +379,7 @@
       </section>
 
       <section>
-        <h3>Syntax</h3>
+        <h3>Syntax and Algorithms</h3>
 
         <section>
           <h4>Policies</h4>
@@ -399,45 +400,49 @@ directive-name    = 1*( ALPHA / DIGIT / "-" )
 directive-value   = *( WSP / &lt;VCHAR except ";" and ","&gt; )
 </pre>
 
-          <p>To <dfn id="parse-a-csp-policy">parse a CSP policy</dfn>
-          <var>policy</var>, the user agent MUST use an algorithm equivalent to
-          the following:</p>
+          <section>
+            <h5>Parsing</h5>
 
-          <ol>
-            <li>Let the <var>set of directives</var> be the empty set.</li>
+            <p>To <dfn id="parse-a-csp-policy">parse a CSP policy</dfn>
+            <var>policy</var>, the user agent MUST use an algorithm equivalent to
+            the following:</p>
 
-            <li>For each non-empty token returned by <a
-            href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strictly-split-a-string">strictly
-            splitting</a> the string <var>policy</var> on the character U+003B
-            SEMICOLON (<code>;</code>):
-              <ol>
-                <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#skip-whitespace">Skip whitespace</a>.</li>
+            <ol>
+              <li>Let the <var>set of directives</var> be the empty set.</li>
 
-                <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#collect-a-sequence-of-characters">Collect
-                a sequence of characters</a> that are not
-                <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space characters</a>. The
-                collected characters are the <var>directive name</var>.</li>
+              <li>For each non-empty token returned by <a
+              href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strictly-split-a-string">strictly
+              splitting</a> the string <var>policy</var> on the character U+003B
+              SEMICOLON (<code>;</code>):
+                <ol>
+                  <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#skip-whitespace">Skip whitespace</a>.</li>
 
-                <li>If there are characters remaining in <var>token</var>,
-                skip ahead exactly one character (which must be a <a
-                href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space
-                character</a>).</li>
+                  <li><a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#collect-a-sequence-of-characters">Collect
+                  a sequence of characters</a> that are not
+                  <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space characters</a>. The
+                  collected characters are the <var>directive name</var>.</li>
 
-                <li>The remaining characters in <var>token</var> (if any) are
-                the <var>directive value</var>.</li>
+                  <li>If there are characters remaining in <var>token</var>,
+                  skip ahead exactly one character (which must be a <a
+                  href="http://www.w3.org/TR/html5/common-microsyntaxes.html#space-character">space
+                  character</a>).</li>
 
-                <li>If the <var>set of directives</var> already contains a
-                directive with name <var>directive name</var>, ignore this
-                instance of the directive and continue to the next token.</li>
+                  <li>The remaining characters in <var>token</var> (if any) are
+                  the <var>directive value</var>.</li>
 
-                <li>Add a <var>directive</var> to the <var>set of
-                directives</var> with name <var>directive name</var> and value
-                <var>directive value</var>.</li>
-              </ol>
-            </li>
+                  <li>If the <var>set of directives</var> already contains a
+                  directive with name <var>directive name</var>, ignore this
+                  instance of the directive and continue to the next token.</li>
 
-            <li>Return the <var>set of directives</var>.
-          </ol>
+                  <li>Add a <var>directive</var> to the <var>set of
+                  directives</var> with name <var>directive name</var> and value
+                  <var>directive value</var>.</li>
+                </ol>
+              </li>
+
+              <li>Return the <var>set of directives</var>.
+            </ol>
+          </section>
         </section>
 
         <section>
@@ -449,7 +454,7 @@ directive-value   = *( WSP / &lt;VCHAR except ";" and ","&gt; )
           <p>Each <dfn>source expression</dfn> in the source list represents a
           location from which content of the specified type can be retrieved.
           For example, the source expression <code>'self'</code> represents
-          the set of URIs which are in the same origin as the protected
+          the set of URIs which are in the same <a href="#origin">origin</a> as the protected
           resource and the source expression <code>'unsafe-inline'</code>
           represents content supplied inline in the resource itself.</p>
 
@@ -468,108 +473,116 @@ host-char         = ALPHA / DIGIT / "-"
 port              = ":" ( 1*DIGIT / "*" )
 </pre>
 
-          <p>To <dfn id="parse-a-source-list">parse a source list</dfn>
-          <var>source list</var>, the user agent MUST use an algorithm
-          equivalent to the following:</p>
+          <section>
+            <h5>Parsing</h5>
 
-          <ol>
-            <li>If <var>source list</var> (with <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strip-leading-and-trailing-whitespace">leading
-            and trailing whitespace stripped</a>) is a case insensitive match
-            for the string <code>'none'</code> (including the quotation
-            marks), return the empty set.</li>
+            <p>To <dfn id="parse-a-source-list">parse a source list</dfn>
+            <var>source list</var>, the user agent MUST use an algorithm
+            equivalent to the following:</p>
 
-            <li>Let the <var>set of source expressions</var> be the empty set.</li>
+            <ol>
+              <li>If <var>source list</var> (with <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#strip-leading-and-trailing-whitespace">leading
+              and trailing whitespace stripped</a>) is a case insensitive match
+              for the string <code>'none'</code> (including the quotation
+              marks), return the empty set.</li>
 
-            <li>For each token returned by <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#split-a-string-on-spaces">splitting
-            <var>source list</var> on spaces</a>, if the token matches the
-            grammar for <code>source-expression</code>, add the token to the
-            <var>set of source expressions</var>.</li>
+              <li>Let the <var>set of source expressions</var> be the empty set.</li>
 
-            <li>Return the <var>set of source expressions</var>.</li>
-          </ol>
+              <li>For each token returned by <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#split-a-string-on-spaces">splitting
+              <var>source list</var> on spaces</a>, if the token matches the
+              grammar for <code>source-expression</code>, add the token to the
+              <var>set of source expressions</var>.</li>
 
-          <p>To check whether a URI <dfn
-          id="matches-a-source-expression">matches a source expression</dfn>,
-          the user agent MUST use an algorithm equivalent to the
-          following:</p>
+              <li>Return the <var>set of source expressions</var>.</li>
+            </ol>
+          </section>
 
-          <ol>
-            <li>If the source expression a single U+002A ASTERISK character
-            (<code>*</code>), then return <em>does match</em>.</li>
+          <section>
+            <h5>Matching</h5>
 
-            <li>If the source expression matches the grammar for
-            <code>scheme-source</code>:
-              <ol>
-                <li>If the URI's scheme is a case-insensitive match for the
-                source expression's <code>scheme</code>, return <em>does
-                match</em>.</li>
+            <p>To check whether a URI <dfn
+            id="matches-a-source-expression">matches a source expression</dfn>,
+            the user agent MUST use an algorithm equivalent to the
+            following:</p>
 
-                <li>Otherwise, return <em>does not match</em>.</li>
-              </ol>
-            </li>
-            <li>If the source expression matches the grammar for
-            <code>host-source</code> or <code>ext-host-source</code>:
-              <ol>
-                <li>If the URI does not contain a host, then return <em>does
-                not match</em>.</li>
+            <ol>
+              <li>If the source expression a consists of a single U+002A ASTERISK character
+              (<code>*</code>), then return <em>does match</em>.</li>
 
-                <li>Let <var>scheme</var>, <var>host</var>, and
-                <var>port</var> be the scheme, host, and port of the URI,
-                respectively. If the URI does not have a port, then let
-                <var>port</var> be the default port for
-                <var>scheme</var>.</li>
+              <li>If the source expression matches the grammar for
+              <code>scheme-source</code>:
+                <ol>
+                  <li>If the URI's scheme is a case-insensitive match for the
+                  source expression's <code>scheme</code>, return <em>does
+                  match</em>.</li>
 
-                <li>If the source expression has a <code>scheme</code> that is
-                not a case insensitive match for <var>scheme</var>, then
-                return <em>does not match</em>.</li>
+                  <li>Otherwise, return <em>does not match</em>.</li>
+                </ol>
+              </li>
+              <li>If the source expression matches the grammar for
+              <code>host-source</code> or <code>ext-host-source</code>:
+                <ol>
+                  <li>If the URI does not contain a host, then return <em>does
+                  not match</em>.</li>
 
-                <li>If the source expression does <strong>not</strong> have a
-                <code>scheme</code> and if <var>scheme</var> is not a case
-                insensitive match for the scheme of the protected resource's
-                URI, then return <em>does not match</em>.</li>
+                  <li>Let <var>uri-scheme</var>, <var>uri-host</var>, and
+                  <var>uri-port</var> be the scheme, host, and port of the URI,
+                  respectively. If the URI does not have a port, then let
+                  <var>uri-port</var> be the default port for
+                  <var>uri-scheme</var>.</li>
 
-                <li>If the first character of the source expression's
-                <code>host</code> is an U+002A ASTERISK character
-                (<code>*</code>) and the remaining characters, including the
-                leading U+002E FULL STOP character (<code>.</code>), are not a
-                case insensitive match for the rightmost characters of
-                <var>host</var>, then return <em>does not match</em>.</li>
+                  <li>If the source expression has a <code>scheme</code> that is
+                  not a case insensitive match for <var>uri-scheme</var>, then
+                  return <em>does not match</em>.</li>
 
-                <li>If <var>host</var> is not a case insensitive match for the
-                source expression's <code>host</code>, then return <em>does
-                not match</em>.</li>
+                  <li>If the source expression does <strong>not</strong> have a
+                  <code>scheme</code> and if <var>uri-scheme</var> is not a case
+                  insensitive match for the scheme of the protected resource's
+                  URI, then return <em>does not match</em>.</li>
 
-                <li>If the source expression does <strong>not</strong> contain
-                a <code>port</code> and <var>port</var> is not the default port
-                for <var>scheme</var>, then return <em>does not match</em>.</li>
+                  <li>If the first character of the source expression's
+                  <code>host</code> is an U+002A ASTERISK character
+                  (<code>*</code>) and the remaining characters, including the
+                  leading U+002E FULL STOP character (<code>.</code>), are not a
+                  case insensitive match for the rightmost characters of
+                  <var>uri-host</var>, then return <em>does not match</em>.</li>
 
-                <li>If the source expression does contain a <code>port</code>
-                that (a) does <strong>not</strong> contain an U+002A ASTERISK
-                character (<code>*</code>) and (b) does <strong>not</strong>
-                represent the same number as <var>port</var>, then return
-                <em>does not match</em>.</li>
+                  <li>If <var>uri-host</var> is not a case insensitive match for the
+                  source expression's <code>host</code>, then return <em>does
+                  not match</em>.</li>
 
-                <li>Otherwise, return <em>does match</em>.</li>
-              </ol>
-            </il>
+                  <li>If the source expression does <strong>not</strong> contain
+                  a <code>port</code> and <var>uri-port</var> is not the default port
+                  for <var>uri-scheme</var>, then return <em>does not match</em>.</li>
 
-            <li>If the source expression is a case insensitive
-            match for <code>'self'</code> (including the quotation marks),
-            then return <em>does match</em> if the URI has the same scheme,
-            host, and port as the resource's URI (using the default port
-            for the appropriate scheme if either or both URIs are missing
-            ports).</li>
+                  <li>If the source expression does contain a <code>port</code>
+                  that (a) does <strong>not</strong> contain an U+002A ASTERISK
+                  character (<code>*</code>) and (b) does <strong>not</strong>
+                  represent the same number as <var>uri-port</var>, then return
+                  <em>does not match</em>.</li>
 
-            <li>Otherwise, return <em>does not match</em>.</li>
-          </ol>
+                  <li>Otherwise, return <em>does match</em>.</li>
+                </ol>
+              </il>
 
-          <p>A URI <dfn id="matches-a-source-list">matches a source
-          list</dfn>, if, and only if, the URI <a
-          href="#matches-a-source-expression">matches at least one source
-          expression</a> in the set of source expressions obtained by <a
-          href="#parse-a-source-list">parsing the source list</a>. Notice that
-          no URIs match an empty set of source expressions, such as the set
-          obtained by parsing the source list <code>'none'</code>.</p>
+              <li>If the source expression is a case insensitive
+              match for <code>'self'</code> (including the quotation marks),
+              then return <em>does match</em> if the URI has the same scheme,
+              host, and port as the protected resource's URI (using the default port
+              for the appropriate scheme if either or both URIs are missing
+              ports).</li>
+
+              <li>Otherwise, return <em>does not match</em>.</li>
+            </ol>
+
+            <p>A URI <dfn id="matches-a-source-list">matches a source
+            list</dfn>, if, and only if, the URI <a
+            href="#matches-a-source-expression">matches at least one source
+            expression</a> in the set of source expressions obtained by <a
+            href="#parse-a-source-list">parsing the source list</a>. Notice that
+            no URIs match an empty set of source expressions, such as the set
+            obtained by parsing the source list <code>'none'</code>.</p>
+          </section>
         </section>
       </section>
 
@@ -583,7 +596,7 @@ port              = ":" ( 1*DIGIT / "*" )
         each directive (See <a href="#sec-directives">Directives</a>,
         below).</p>
 
-        <p>Generally speaking, enforcing a directive prevent the protected
+        <p>Generally speaking, enforcing a directive prevents the protected
         resource from performing certain actions, such as loading scripts from
         URIs other than those indicated in a source list. These restrictions
         make it more difficult for an attacker to abuse an injection
@@ -603,7 +616,16 @@ port              = ":" ( 1*DIGIT / "*" )
         undertaking any actions. Instead, any actions that would have been
         prevented by the directives are instead reported to the developer of
         the web application. Monitoring a CSP policy is useful for testing
-        whether enforcing the policy will break the web application.</p>
+        whether enforcing the policy will cause the web application to
+        malfunction.</p>
+
+        <p>A server MAY monitor one policy while enforcing another policy.
+        For example, if a server operator is using one policy but wishes to
+        experiment with a stricter policy, the server operator can monitor
+        the stricter policy while enforcing the original policy. Once the
+        server operator is satisfied that the stricter policy does not break
+        the web application, the server operator can start enforcing the
+        stricter policy.</p>
 
         <p>If the user agent monitors or enforces a CSP policy that does not
         contain any directives, the user agent SHOULD report a warning message
@@ -616,7 +638,7 @@ port              = ":" ( 1*DIGIT / "*" )
 
         <p>Whenever a user agent <a
         href="http://www.w3.org/TR/workers/#run-a-worker">runs a worker</a>:
-        </p>
+        [[!WEBWORKERS]]</p>
 
         <ul>
           <li>If the user agent is enforcing a CSP policy for the <var>owner
@@ -678,8 +700,8 @@ port              = ":" ( 1*DIGIT / "*" )
       <p>This section describes the content security policy directives
       introduced in this specification.</p>
 
-      <p>In order to protect against Cross-site Scripting (XSS), authors
-      SHOULD include
+      <p>In order to protect against Cross-Site Scripting (XSS), web
+      application authors SHOULD include
       <ul>
         <li>both the <code>script-src</code> and <code>object-src</code>
         directives, or</li>
@@ -730,9 +752,9 @@ directive-value   = source-list
 
         <p>The <code>script-src</code> directive restricts which scripts the
         protected resource can execute. The directive also controls other
-        resources, such as XSLT stylesheets, which can cause the user agent to
-        execute script. The syntax for the name and value of the directive are
-        described by the following ABNF grammar:</p>
+        resources, such as XSLT style sheets [[!XSLT]], which can cause the
+        user agent to execute script. The syntax for the name and value of
+        the directive are described by the following ABNF grammar:</p>
 
 <pre>
 directive-name    = "script-src"
@@ -754,7 +776,7 @@ directive-value   = source-list
 
           <li>Whenever the user agent would execute script contained in a
           <code>javascript</code> URI, instead the user agent MUST NOT execute
-          the script. (Note: The user agent SHOULD execute script contained in
+          the script. (The user agent SHOULD execute script contained in
           "bookmarklets" even when enforcing this restriction.)</li>
         </ul>
 
@@ -762,19 +784,21 @@ directive-value   = source-list
         sources</var>:</p>
         <ul>
           <li>Instead of evaluating their arguments, both operator
-          <code>eval</code> and function <code>eval</code> MUST throw a
-          security exception.</li>
+          <code>eval</code> and function <code>eval</code>
+          MUST throw a security exception. [[!ECMA-262]]</li>
 
           <li>When called as a constructor, the function <code>Function</code>
-          MUST throw a security exception.</li>
+          MUST throw a security exception. [[!ECMA-262]]</li>
 
           <li>When called with a first argument that is non-callable (e.g.,
-          not a function), the <code>setTimeout</code> function MUST return
-          zero without creating a timer.</li>
+          not a function), the
+          <a href="http://www.w3.org/TR/html5/timers.html#dom-windowtimers-settimeout"><code>setTimeout</code></a>
+          function MUST return zero without creating a timer.</li>
 
           <li>When called with a first argument that is non-callable (e.g.,
-          not a function), the <code>setInterval</code> function MUST return
-          zero without creating a timer.</li>
+          not a function), the
+          <a href="http://www.w3.org/TR/html5/timers.html#dom-windowtimers-setinterval"><code>setInterval</code></a>
+          function MUST return zero without creating a timer.</li>
         </ul>
 
         <p>The term <dfn>callable</dfn> refers to an object whose interface
@@ -788,7 +812,7 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed script
         sources</var></a>, the user agent MUST act as if it had received an empty
-        HTTP 400 response:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
           <li>Requesting a script, such as when processing the
           <code>src</code> attribute of a <code>script</code> element or when
@@ -796,9 +820,9 @@ directive-value   = source-list
           constructors.</li>
 
           <li>Requesting an Extensible Stylesheet Language Transformations
-          (XSLT), such as when processing the
+          (XSLT) [[!XSLT]], such as when processing the
           <code>&lt;?xml-stylesheet?&gt;</code> processing directive in an XML
-          document, the <code>href</code> attributes on
+          document [[!XML11]], the <code>href</code> attributes on
           <code>&lt;xsl:include&gt;</code> element, or the <code>href</code>
           attributes on <code>&lt;xsl:import&gt;</code> element.</li>
         </ul>
@@ -827,7 +851,7 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed object
         sources</var></a>, the user agent MUST act as if it had received an empty
-        HTTP 400 response:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
           <li>Requesting data for a plugin, such as when processing the
           <code>data</code> attribute of an <code>object</code> element, the
@@ -835,11 +859,12 @@ directive-value   = source-list
           <code>code</code> or <code>archive</code> attributes of an
           <code>applet</code> element.</li>
 
-          <li>Requesting data for display in a nested browsing context in the
-          protected resource created by an <code>object</code> or an
+          <li>Requesting data for display in a
+          <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>
+          in the protected resource created by an <code>object</code> or an
           <code>embed</code> element.</li>
 
-          <li>Navigating such a nested browsing context.</li>
+          <li>Navigating such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
         </ul>
 
         <p>It is not required that the consumer of the element's data be a
@@ -847,8 +872,8 @@ directive-value   = source-list
         enforced.  Data for any <code>object</code>, <code>embed</code>,
         or <code>applet</code> element MUST match the <var>allowed object
         sources</var> in order to be fetched.  This is true even when the
-        element data is semantically equivalent to content which would be
-        restricted by one of the other <a href="#directives">directives</a>,
+        element data is semantically equivalent to content which would otherwise
+        be restricted by one of the other <a href="#directives">directives</a>,
         such as an <code>object</code> element with a <code>text/html</code>
         MIME type.</p>
 
@@ -894,7 +919,8 @@ directive-value   = source-list
         <p>Note: These restrictions on inline do not prevent the user agent
         from applying style from an external stylesheet (e.g., found via
         <code>&lt;link rel="stylesheet"&gt;</code>). The user agent is also
-        not prevented from applying style from CSSOM.</p>
+        not prevented from applying style from Cascading Style Sheets Object
+        Model (CSSOM). [[!CSSOM]]</p>
 
         <p>Whenever the user agent <a
         href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
@@ -902,9 +928,9 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed style
         sources</var></a>, the user agent MUST act as if it had received an empty
-        HTTP 400 response:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
-          <li>Requesting external stylesheets, such as when processing the
+          <li>Requesting external style sheets, such as when processing the
           <code>href</code> attribute of a <code>link</code> element with a
           <code>rel</code> attribute containing the token
           <code>stylesheet</code> or when processing the <code>@import</code>
@@ -942,11 +968,12 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed image
         sources</var></a>, the user agent MUST act as if it had received an empty
-        HTTP 400 response:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
           <li>Requesting data for an image, such as when processing the
           <code>src</code> attribute of an <code>img</code> elements,
-          the <code>url()</code> or <code>image()</code> values on any CSS
+          the <code>url()</code> or <code>image()</code> values on any
+          Cascading Style Sheets (CSS)
           property that is capable of loading an image [<em><a
           href="http://www.w3.org/TR/css3-images/">CSS3-Images</a></em>], or
           the <code>href</code> attribute of a <code>link</code> element with
@@ -980,11 +1007,12 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed media
         sources</var></a>, the user agent MUST act as if it had received an empty
-        HTTP 400 response:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
           <li>Requesting data for a video or audio clip, such as when
-          processing the <code>src</code> attribute of a <code>video</code>
-          or <code>audio</code> elements.</li>
+          processing the <code>src</code> attribute of a <code>video</code>,
+          <code>audio</code>, <code>source</code>, or <code>track</code>
+          elements.</li>
         </ul>
       </section>
 
@@ -1013,13 +1041,14 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed frame
         sources</var></a>, the user agent MUST act as if it had received an empty
-        HTTP 400 response:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
-          <li>Requesting data for display in a nested browsing context in the
+          <li>Requesting data for display in a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a> in the
           protected resource created by an <code>iframe</code> or
           a <code>frame</code> element.</li>
 
-          <li>Navigating such a nested browsing context.</li>
+          <li><a href="http://www.w3.org/TR/html5/history.html#navigate">Navigating</a>
+          such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
         </ul>
       </section>
 
@@ -1047,10 +1076,10 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed font
         sources</var></a>, the user agent MUST act as if it had received an empty
-        HTTP 400 response:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
           <li>Requesting data for display in a font, such as when processing
-          the <code>@font-face</code> CSS rule.</li>
+          the <code>@font-face</code> Cascading Style Sheets (CSS) rule.</li>
         </ul>
       </section>
 
@@ -1058,8 +1087,8 @@ directive-value   = source-list
         <h4><code>connect-src</code></h4>
 
         <p>The <code>connect-src</code> directive restricts which URIs the
-        protected resource can load using DOM APIs. The syntax for the name
-        and value of the directive are described by the following ABNF
+        protected resource can load using script interfaces. The syntax for
+        the name and value of the directive are described by the following ABNF
         grammar:</p>
 
 <pre>
@@ -1079,7 +1108,7 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match the <var>allowed font
         sources</var></a>, the user agent MUST act as if it had received an empty
-        HTTP 400 response:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
           <li>Processing the <a
           href="http://www.w3.org/TR/XMLHttpRequest/#the-open-method"><code>open()</code>
@@ -1142,7 +1171,7 @@ token             = &lt;token from RFC 2616&gt;
         the sandboxing directive</a> using the <code>directive-value</code>
         as the <em>input</em> and protected resource's
         <a href="http://www.whatwg.org/specs/web-apps/current-work/#forced-sandboxing-flag-set">forced sandboxing flag set</a>
-        as the output.</p>
+        as the output. [[!HTML5]]</p>
       </section>
 
       <section>
@@ -1248,11 +1277,11 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
         <p>To <dfn id="send-a-violation-report">send a violation report</dfn>,
         the user agent MUST use an algorithm equivalent to the following:</p>
         <ol>
-          <li>Prepare a dictionary <var>violation dictionary</var> with the
-          following keys and values:
+          <li>Prepare a JSON object <var>violation-object</var> with the
+          following keys and values: [[!RFC4627]]
             <dl>
               <dt>csp-report</dt>
-              <dd>A dictionary containing the following keys and values:
+              <dd>A JSON object containing the following keys and values:
                 <dl>
                   <dt>document-uri</dt>
                   <dd>The <a href="http://www.w3.org/TR/html5/dom.html#the-document-s-address">address</a>
@@ -1285,11 +1314,12 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
           serialization of the blocked-uri's origin.</li>
 
           <li>Let the <var>violation report</var> be the JSON stringification
-          of the <var>violation dictionary</var>.</li>
+          of the <var>violation-object</var>.</li>
 
           <li>For each <var>report URI</var> in the <var>set of report URIs</var>:
             <ol>
-              <li>Fetch the <var>report URI</var> from origin of the protected
+              <li><a href="http://www.w3.org/TR/html5/urls.html#fetch">Fetch</a>
+              the <var>report URI</var> from origin of the protected
               resource, with the synchronous flag <em>not</em> set, using HTTP
               method <code>POST</code>, with a <code>Content-Type</code>
               header field of <code>application/json</code> with an entity
@@ -1329,6 +1359,9 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
         requests:</p>
 
         <pre>Content-Security-Policy: default-src https: 'unsafe-inline' 'unsafe-eval'</pre>
+
+        <p>This policy allows inline content (such as inline <code>script</code> elements), use of
+        <code>eval</code>, and loading resources over <code>https</code>.
       </section>
 
       <section class="informative">
@@ -1338,13 +1371,13 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
         might sent to a server when the protected resource violations a sample
         policy.</p>
 
-        <p>In the following example, a document from
-        <code>http://example.org/page.html</code> was rendered with the
+        <p>In the following example, the user agent rendered a representation
+        of the resource <code>http://example.org/page.html</code> with the
         following CSP policy:</p>
 
 <pre>default-src 'self'; report-uri http://example.org/csp-report.cgi</pre>
 
-        <p>The document loaded an image from
+        <p>The protected resource loaded an image from
         <code>http://evil.example.com/image.png</code>, violating the
         policy.</p>
 
@@ -1366,17 +1399,33 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
         <h3>Cascading Style Sheet (CSS) Parsing</h3>
 
         <p>The <code>style-src</code> directive restricts the locations from
-        which a document can load styles. However, if the user agent uses a
+        which the protected resource can load styles. However, if the user agent uses a
         lax CSS parsing algorithm, an attacker might be able to trick the user
-        agent into accepting malicious "stylesheets" hosted by an otherwise
+        agent into accepting malicious "style sheets" hosted by an otherwise
         trustworthy origin.</p>
 
         <p>These attacks are similar to the <a
         href="http://scarybeastsecurity.blogspot.com/2009/12/generic-cross-browser-cross-domain.html">CSS
         cross-origin data leakage</a> attack described by Chris Evans in 2009.
         User agents SHOULD defend against both attacks using the same
-        mechanism: stricter CSS parsing rules for stylesheets with improper
+        mechanism: stricter CSS parsing rules for style sheets with improper
         MIME types.</p>
+      </section>
+      <section>
+        <h3>Violation Reports</h3>
+
+        <p>The violation reporting mechanism in this document has been
+        designed to mitigate the risk that a malicious web site could use
+        violation reports to probe the behavior of other servers. For example,
+        consider a malicious web site that white lists <code>https://example.com</code>
+        as a source of images. If the malicious site attempts to load
+        <code>https://example.com/login</code> as an image, and the
+        <code>example.com</code> server redirects to an identity provider (e.g.,
+        <code>idenityprovider.example.net</code>), CSP will block the request.
+        If violation reports contained the full blocked URL, the violation
+        report might contain sensitive information contained in the redirected URI,
+        such as session identifiers or purported identities. For this reason, the
+        user agent includes only the origin of the blocked URI.</p>
       </section>
     </section>
     <section>
@@ -1394,13 +1443,10 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
       individuals or teams but all subject to a uniform organizational
       standard. In such situations, a <code>Content-Security-Policy</code>
       header might be added or combined with an existing one at a network-edge
-      security gateway device or web application firewall.  When using the
-      <code>Content-Security-Policy</code> header in this way, administrators
-      ought to remember that the user agent will enforce only the first policy
-      statement it receives.  To enforce multiple policies, the administrator
-      MUST combine the policy into a single header.  An administrator might
-      wish to use different combination algorithms depending on his or her
-      intended semantics.</p>
+      security gateway device or web application firewall.  To enforce multiple
+      policies, the administrator SHOULD combine the policy into a single header.
+      An administrator might wish to use different combination algorithms
+      depending on his or her intended semantics.</p>
 
       <p>One sensible policy combination algorithm is to start by allowing a
       default set of sources and then letting individual upstream resource
