@@ -420,7 +420,7 @@ port              = ":" ( 1*DIGIT / "*" )
           following:</p>
 
           <ol>
-            <li>If the source expression a single U+002A ASTERISK character
+            <li>If the source expression a consists of a single U+002A ASTERISK character
             (<code>*</code>), then return <em>does match</em>.</li>
 
             <li>If the source expression matches the grammar for
@@ -482,7 +482,7 @@ port              = ":" ( 1*DIGIT / "*" )
             <li>If the source expression is a case insensitive
             match for <code>'self'</code> (including the quotation marks),
             then return <em>does match</em> if the URI has the same scheme,
-            host, and port as the resource's URI (using the default port
+            host, and port as the protected resource's URI (using the default port
             for the appropriate scheme if either or both URIs are missing
             ports).</li>
 
@@ -509,7 +509,7 @@ port              = ":" ( 1*DIGIT / "*" )
         each directive (See <a href="#sec-directives">Directives</a>,
         below).</p>
 
-        <p>Generally speaking, enforcing a directive prevent the protected
+        <p>Generally speaking, enforcing a directive prevents the protected
         resource from performing certain actions, such as loading scripts from
         URIs other than those indicated in a source list. These restrictions
         make it more difficult for an attacker to abuse an injection
@@ -529,7 +529,8 @@ port              = ":" ( 1*DIGIT / "*" )
         undertaking any actions. Instead, any actions that would have been
         prevented by the directives are instead reported to the developer of
         the web application. Monitoring a CSP policy is useful for testing
-        whether enforcing the policy will break the web application.</p>
+        whether enforcing the policy will cause the web application to
+        malfunction.</p>
 
         <p>A server MAY monitor one policy while enforcing another policy.
         For example, if a server operator is using one policy but wishes to
@@ -550,7 +551,7 @@ port              = ":" ( 1*DIGIT / "*" )
 
         <p>Whenever a user agent <a
         href="http://www.w3.org/TR/workers/#run-a-worker">runs a worker</a>:
-        </p>
+        [[!WEBWORKERS]]</p>
 
         <ul>
           <li>If the user agent is enforcing a CSP policy for the <var>owner
@@ -570,8 +571,8 @@ port              = ":" ( 1*DIGIT / "*" )
       <p>This section describes the content security policy directives
       introduced in this specification.</p>
 
-      <p>In order to protect against Cross-site Scripting (XSS), authors
-      SHOULD include
+      <p>In order to protect against Cross-Site Scripting (XSS), web
+      application authors SHOULD include
       <ul>
         <li>both the <code>script-src</code> and <code>object-src</code>
         directives, or</li>
@@ -622,7 +623,7 @@ directive-value   = source-list
 
         <p>The <code>script-src</code> directive restricts which scripts the
         protected resource can execute. The directive also controls other
-        resources, such as XSLT stylesheets [[!XSLT]], which can cause the
+        resources, such as XSLT style sheets [[!XSLT]], which can cause the
         user agent to execute script. The syntax for the name and value of
         the directive are described by the following ABNF grammar:</p>
 
@@ -789,7 +790,8 @@ directive-value   = source-list
         <p>Note: These restrictions on inline do not prevent the user agent
         from applying style from an external stylesheet (e.g., found via
         <code>&lt;link rel="stylesheet"&gt;</code>). The user agent is also
-        not prevented from applying style from CSSOM. [[!CSSOM]]</p>
+        not prevented from applying style from Cascading Style Sheets Object
+        Model (CSSOM). [[!CSSOM]]</p>
 
         <p>Whenever the user agent <a
         href="http://www.w3.org/TR/html5/fetching-resources.html#fetch">fetches</a>
@@ -799,7 +801,7 @@ directive-value   = source-list
         sources</var></a>, the user agent MUST act as if it had received an empty
         <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
-          <li>Requesting external stylesheets, such as when processing the
+          <li>Requesting external style sheets, such as when processing the
           <code>href</code> attribute of a <code>link</code> element with a
           <code>rel</code> attribute containing the token
           <code>stylesheet</code> or when processing the <code>@import</code>
@@ -916,7 +918,8 @@ directive-value   = source-list
           protected resource created by an <code>iframe</code> or
           a <code>frame</code> element.</li>
 
-          <li>Navigating such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
+          <li><a href="http://www.w3.org/TR/html5/history.html#navigate">Navigating</a>
+          such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
         </ul>
       </section>
 
@@ -1038,7 +1041,7 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
         <p>To <dfn id="send-a-violation-report">send a violation report</dfn>,
         the user agent MUST use an algorithm equivalent to the following:</p>
         <ol>
-          <li>Prepare a JSON object <var>violation object</var> with the
+          <li>Prepare a JSON object <var>violation-object</var> with the
           following keys and values: [[!RFC4627]]
             <dl>
               <dt>csp-report</dt>
@@ -1075,7 +1078,7 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
           serialization of the blocked-uri's origin.</li>
 
           <li>Let the <var>violation report</var> be the JSON stringification
-          of the <var>violation object</var>.</li>
+          of the <var>violation-object</var>.</li>
 
           <li>For each <var>report URI</var> in the <var>set of report URIs</var>:
             <ol>
@@ -1162,14 +1165,14 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
         <p>The <code>style-src</code> directive restricts the locations from
         which the protected resource can load styles. However, if the user agent uses a
         lax CSS parsing algorithm, an attacker might be able to trick the user
-        agent into accepting malicious "stylesheets" hosted by an otherwise
+        agent into accepting malicious "style sheets" hosted by an otherwise
         trustworthy origin.</p>
 
         <p>These attacks are similar to the <a
         href="http://scarybeastsecurity.blogspot.com/2009/12/generic-cross-browser-cross-domain.html">CSS
         cross-origin data leakage</a> attack described by Chris Evans in 2009.
         User agents SHOULD defend against both attacks using the same
-        mechanism: stricter CSS parsing rules for stylesheets with improper
+        mechanism: stricter CSS parsing rules for style sheets with improper
         MIME types.</p>
       </section>
       <section>
