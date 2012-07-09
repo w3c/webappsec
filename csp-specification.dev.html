@@ -1177,8 +1177,8 @@ token             = &lt;token from RFC 2616&gt;
       <section>
         <h4><code>script-nonce</code> (Experimental)</h4>
 
-        <p>The <code>script-nonce</code> directive prevents scripts from
-        executing unless they contain a specified nonce.  The syntax for the
+        <p>The <code>script-nonce</code> directive restricts script execution
+        by requiring the presence of the specified nonce. The syntax for the
         name and value of the directive are described by the following ABNF
         grammar:</p>
 
@@ -1188,8 +1188,9 @@ directive-value   = nonce
 nonce             = &lt;token from RFC 2616&gt;
 </pre>
 
-        <p>Let the <var>script nonce</var> be the directive's value, <a
-        href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripped
+        <p>If the directive's value is empty, or consists solely of whitespace,
+        ignore the directive. Otherwise, let the <var>script nonce</var> be the
+        directive's value, <a href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripped
         of leading and trailing whitespace</a>.</p>
 
         <p>If the policy contains a <code>script-nonce</code> directive, the
@@ -1200,20 +1201,30 @@ nonce             = &lt;token from RFC 2616&gt;
 
         <p>When enforcing the <code>script-nonce</code> directive:
         <ul>
-            <li>Whenever the user agent would execute a script from an inline
-            event handler, instead the user agent MUST NOT execute script.</li>
             <li>Whenever the user agent would execute a script from a
-            <code>script</code> element, if that script element lacks a
+            <code>script</code> element, the user agent MUST NOT execute
+            the script unless that script element contains a
             <code>nonce</code> attribute whose value, after <a
             href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripping
-            leading and trailing whitespace</a>, is not a case-sensitive match
-            for the <var>script nonce</var>, instead the user agent MUST NOT
-            execute the script.</li>
+            leading and trailing whitespace</a>, is a case-sensitive match
+            for the <var>script nonce</var>.</li>
+            <li>Whenever the user agent would execute a script from an inline
+            event handler, instead the user agent MUST NOT execute the
+            script.</li>
             <li>Whenever the user agent would execute script contained in a
             javascript URI, instead the user agent MUST NOT execute the
             script.</li>
         </ul>
         </p>
+  
+        <p>Note: If both <code>script-nonce</code> and <code>script-src</code>
+        directives are present, then script is required to satisfy <em>both</em>
+        directives in order to be executed. If a nonce is required, then inline
+        event handlers and javascript URIs will not execute, even if
+        <code>'unsafe-inline'</code> is an accepted source of script. Likewise,
+        a <code>script</code> element will not execute if the script's source is
+        not allowed, even if it contains a matching <code>nonce</code>
+        attribute.</p>
       </section>
 
       <section>
@@ -1362,7 +1373,20 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
 
         <p>This policy allows inline content (such as inline <code>script</code> elements), use of
         <code>eval</code>, and loading resources over <code>https</code>.  Note: This policy does
-        not provide any protection from cross-site scripting vulnerabilities.
+        not provide any protection from cross-site scripting vulnerabilities.</p>
+
+        <p><strong>Example 4:</strong> A website that relies on inline
+        <code>script</code> elements wishes to ensure that script is only
+        executed from its own origin, and those elements it intentionally
+        inserted inline:</p>
+
+        <pre>Content-Security-Policy: script-src 'self' 'unsafe-inline';
+                         script-nonce: <em>nonce_value</em>;</pre>
+
+        <p>The inline <code>script</code> elements would then only execute if
+        they contained a matching <code>nonce</code> attribute:</p>
+
+        <pre>&lt;script nonce="<em>nonce_value</em>"&gt;...&lt;/script&gt;</pre>
       </section>
 
       <section class="informative">
