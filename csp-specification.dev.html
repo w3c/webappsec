@@ -1188,9 +1188,11 @@ directive-value   = nonce
 nonce             = &lt;token from RFC 2616&gt;
 </pre>
 
-        <p>If the directive's value is empty, or consists solely of whitespace,
-        ignore the directive. Otherwise, let the <var>script nonce</var> be the
-        directive's value, <a href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripped
+        <p>If the directive's value is empty, consists solely of whitespace, or
+        contains invalid characters, let the <var>script nonce</var> be the empty
+        string. Otherwise, let the <var>script nonce</var> be the directive's
+        value, <a
+        href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripped
         of leading and trailing whitespace</a>.</p>
 
         <p>If the policy contains a <code>script-nonce</code> directive, the
@@ -1203,8 +1205,9 @@ nonce             = &lt;token from RFC 2616&gt;
         <ul>
             <li>Whenever the user agent would execute a script from a
             <code>script</code> element, the user agent MUST NOT execute
-            the script unless that script element contains a
-            <code>nonce</code> attribute whose value, after <a
+            the script unless the <var>script nonce</var> is non-empty, and
+            that script element contains a <code>nonce</code> attribute whose
+            value, after <a
             href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripping
             leading and trailing whitespace</a>, is a case-sensitive match
             for the <var>script nonce</var>.</li>
@@ -1212,19 +1215,37 @@ nonce             = &lt;token from RFC 2616&gt;
             event handler, instead the user agent MUST NOT execute the
             script.</li>
             <li>Whenever the user agent would execute script contained in a
-            javascript URI, instead the user agent MUST NOT execute the
-            script.</li>
+            <code>javascript</code> URI, instead the user agent MUST NOT execute
+            the script.</li>
         </ul>
         </p>
-  
-        <p>Note: If both <code>script-nonce</code> and <code>script-src</code>
-        directives are present, then script is required to satisfy <em>both</em>
-        directives in order to be executed. If a nonce is required, then inline
-        event handlers and javascript URIs will not execute, even if
-        <code>'unsafe-inline'</code> is an accepted source of script. Likewise,
-        a <code>script</code> element will not execute if the script's source is
-        not allowed, even if it contains a matching <code>nonce</code>
-        attribute.</p>
+
+        <section class="informative">
+          <h5>Interaction with the <code>script-src</code> directive</h5>
+          <p>The <code>script-nonce</code> and <code>script-src</code>
+          directives' restrictions on code execution are non-exclusive: script
+          will not execute unless it satisfies <em>both</em> directives. For
+          example, inline event handlers will not execute given the following
+          policy:</p>
+          <pre>Content-Security-Policy: script-src 'self' 'unsafe-inline';
+                         script-nonce <em>nonce_value</em>;</pre>
+          <p>The <code>script-src</code> directive allows
+          <code>'unsafe-inline'</code>, but the event handler's execution is
+          blocked by the presence of the <code>script-nonce</code>
+          directive.</p>
+          <p>Similarly, script will not be executed given the following
+          policy:</p>
+          <pre>Content-Security-Policy: script-src https://cdn.example.com;
+                         script-nonce <em>nonce_value</em>;</pre>
+          <p>and the following <code>script</code> element:</p>
+          <pre>&lt;script nonce="<em>nonce_value</em>" src="https://not.example.com/script.js"&gt;&lt;/script&gt;</pre>
+          <p>The nonce value matches, but the source isn't included in the
+          <code>script-src</code> directive's source list. If the
+          <code>script</code> element was loading script from
+          <code>https://cdn.example.com/</code> instead, it would execute, as
+          its execution would violate neither the <code>script-nonce</code> nor
+          <code>script-src</code> directives.</p>
+        </section>
       </section>
 
       <section>
