@@ -652,10 +652,10 @@ port              = ":" ( 1*DIGIT / "*" )
       </section>
 
       <section>
-        <h3>Script Interfaces</h3>
+        <h3>Script Interfaces (Experimental)</h3>
 
         <section>
-          <h4>Document (Experimental)</h4>
+          <h4>Document</h4>
 
           <dl title="partial interface Document" class="idl">
             <dt>readonly attribute SecurityPolicy securityPolicy</dt>
@@ -664,33 +664,142 @@ port              = ":" ( 1*DIGIT / "*" )
         </section>
 
         <section>
-          <h4>SecurityPolicy (Experimental)</h4>
+          <h4>SecurityPolicy</h4>
 
-          <p>Let the <var>active CSP policies</var> be the set of CSP policies
+          <p>Let the <dfn>active CSP policies</dfn> be the set of CSP policies
           the user agent is currently enforcing for the associated
           document.</p>
 
           <dl title="interface SecurityPolicy" class="idl">
-            <dt>readonly attribute boolean active</dt>
-            <dd>Whether the set of <var>active CSP policies</var> is
-            non-empty.</dd>
-
             <dt>readonly attribute DOMString[] reportURIs</dt>
-            <dd>An array consisting of the union of the <a
-            href="#dfn-set-of-report-uris">set of report URIs</a> for all the
-            <var>active CSP policies</var>.</dd>
+            <dd>An array consisting of the union of the <var>set of report
+            URIs</var> for all the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
 
-            <dt>bool isWhitelisted(DOMString directive, DOMString value)</dt>
-            <dd>Returns <code>true</code> if the set of <var>active CSP
-            policies</var> is empty or if none of the <var>active CSP
-            policies</var> contains a directive named <var>directive</var>.
-            Otherwise, returns the logical <code>and</code> of whether
-            the given <var>value</var> "is whitelisted" for the given directive
-            in each of the <var>active CSP policies</var> which contain the
-            directive.  (See the individual directives in the following section
-            for details about what "is whitelisted" means for each
-            directive.)</dd>
+            <dt>bool allowsEval()</dt>
+            <dd>Returns the logical <code>and</code> of whether the source
+            expression <code>'unsafe-eval'</code> is present in the
+            <a href="#dfn-allowed-script-sources">allowed script sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsInlineScript()</dt>
+            <dd>Returns the logical <code>and</code> of whether the source
+            expression <code>'unsafe-inline'</code> is present in the
+            <a href="#dfn-allowed-script-sources">allowed script sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsInlineStyle()</dt>
+            <dd>Returns the logical <code>and</code> of whether the source
+            expression <code>'unsafe-inline'</code> is present in the
+            <a href="#dfn-allowed-style-sources">allowed style sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsConnectionTo(DOMString url)</dt>
+            <dd>Returns the logical <code>and</code> of whether the provided
+            <var>url</var> <a href="#matches-a-source-list">matches</a> the
+            <a href="#dfn-allowed-connection-targets">allowed connection
+            targets</a> of each of the <a href="#dfn-active-csp-policies">active
+            CSP policies</a>.</dd>
+
+            <dt>bool allowsFontFrom(DOMString url)</dt>
+            <dd>Returns the logical <code>and</code> of whether the provided
+            <var>url</var> <a href="#matches-a-source-list">matches</a> the
+            <a href="#dfn-allowed-font-sources">allowed font sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsFrameFrom(DOMString url)</dt>
+            <dd>Returns the logical <code>and</code> of whether the provided
+            <var>url</var> <a href="#matches-a-source-list">matches</a> the
+            <a href="#dfn-allowed-frame-sources">allowed frame sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsImageFrom(DOMString url)</dt>
+            <dd>Returns the logical <code>and</code> of whether the provided
+            <var>url</var> <a href="#matches-a-source-list">matches</a> the
+            <a href="#dfn-allowed-image-sources">allowed image sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsMediaFrom(DOMString url)</dt>
+            <dd>Returns the logical <code>and</code> of whether the provided
+            <var>url</var> <a href="#matches-a-source-list">matches</a> the
+            <a href="#dfn-allowed-media-sources">allowed media sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsObjectFrom(DOMString url)</dt>
+            <dd>Returns the logical <code>and</code> of whether the provided
+            <var>url</var> <a href="#matches-a-source-list">matches</a> the
+            <a href="#dfn-allowed-object-sources">allowed object sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsScriptFrom(DOMString url)</dt>
+            <dd>Returns the logical <code>and</code> of whether the provided
+            <var>url</var> <a href="#matches-a-source-list">matches</a> the
+            <a href="#dfn-allowed-script-sources">allowed script sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool allowsStyleFrom(DOMString url)</dt>
+            <dd>Returns the logical <code>and</code> of whether the provided
+            <var>url</var> <a href="#matches-a-source-list">matches</a> the
+            <a href="#dfn-allowed-style-sources">allowed style sources</a>
+            of each of the <a href="#dfn-active-csp-policies">active CSP
+            policies</a>.</dd>
+
+            <dt>bool isActive()</dt>
+            <dd>Returns <code>true</code> if the set of
+            <a href="#dfn-active-csp-policies">active CSP policies</a> is
+            non-empty, and <code>false</code> otherwise.</dd>
           </dl>
+        </section>
+        <section class="informative">
+          <h4>Usage</h4>
+          <p>The script interface described here serves as a feature detection
+          API that developers can use in order to make intelligent decisions
+          about code that executes on a page based on the page's active
+          policy. This is especially important for developers of libraries or
+          frameworks which are meant to be used on a variety of sites in
+          unknown contexts.</p>
+          <p>A few use-cases follow for illustration:</p>
+          <ul>
+            <li>
+              <p><strong>Does the user agent support CSP?</strong></p>
+              <pre>var isCSPSupported = !!document.securityPolicy;</pre>
+            </li>
+            <li>
+              <p><strong>Is a policy active on the current page?</strong> If
+              not, perhaps one should be injected via the
+              <a href="#html-meta-element--experimental">(experimental)
+              <code>meta</code> element</a>.</p>
+              <pre>var isCSPActive = document.securityPolicy.isActive();</pre>
+            </li>
+            <li>
+              <p><strong>Can I use <code>new Function();</code> or
+              <code>eval()</code>?</strong> Some libraries use these dangerous
+              methods for performance optimizations. If they are unavailable,
+              the library could gracefully fall back to a less performant (but
+              safer) mechanism.</p>
+              <pre>var isEvalAvailable = document.securityPolicy.allowsEval();</pre>
+            </li>
+            <li>
+              <p><strong>Can I use <var>library X</var>, hosted on a
+              third-party server?</strong> Analytics packages are a good
+              example of such third-party packages that a developer might want
+              to include if they're allowed. For a library that's hosted on
+              <code>https://cdn.example.com/</code> and that includes images
+              from <code>https://img.example.com/</code>, the following would
+              allow a developer to determine its availability.</p>
+              <pre>var isLibraryAvailable = (document.securityPolicy.allowsScriptFrom('https://cdn.example.com/path/to/library.js')
+                          &amp;&amp; document.securityPolicy.allowsImageFrom('https://img.example.com/path/to/img.png'));</pre>
+            </li>
+          </ul>
         </section>
       </section>
     </section>
