@@ -1404,8 +1404,9 @@ nonce             = &lt;token from RFC 2616&gt;
         <h4><code>plugin-types</code> (Experimental)</h4>
 
         <p>The <code>plugin-types</code> restricts the set of plugins that can
-        be invoked by the protected resource.  The syntax for the name and
-        value of the directive are described by the following ABNF grammar:</p>
+        be invoked by the protected resource by limiting the types of resources
+        that can be embedded.  The syntax for the name and value of the
+        directive are described by the following ABNF grammar:</p>
 
 <pre>
 directive-name    = "plugin-types"
@@ -1413,8 +1414,10 @@ directive-value   = media-type *( 1*WSP media-type )
 media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
 </pre>
 
-        <p>The term <dfn>allowed plugin media types</dfn> refers to the
-        <code>plugin-types</code> directive's value, <a
+        <p>If the <code>plugin-types</code> directive's value is empty,
+        consists solely of whitespace, or contains invalid characters, let the
+        <dfn>allowed plugin media types</dfn> be the empty set. Otherwise, the
+        term refers to the <code>plugin-types</code> directive's value, <a
         href="http://www.whatwg.org/specs/web-apps/current-work/#split-a-string-on-spaces">split
         on spaces</a>.</p>
 
@@ -1424,11 +1427,32 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
             href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
             for the protected resource to handle a resource whose media type is
             not contained in the list of <a href="#dfn-allowed-plugin-media-types">allowed plugin media types</a>,
-            instead the user agent MUST act as the plugin reported an error
-            (which will cause the user agent to display the <a
+            instead the user agent MUST act as though the plugin reported an
+            error (which will cause the user agent to display the <a
             href="http://www.whatwg.org/specs/web-apps/current-work/#fallback-content">fallback
             content</a>).</li>
         </ul>
+
+        <section class="informative">
+          <h5>Usage</h5>
+          <p>The <code>plugin-types</code> directive whitelists a certain set
+          of MIME types that can be embedded in a protected resource. For
+          example, a site might want to ensure that PDF content loads, but that
+          no other plugins can be instantiated. The following directive would
+          satisfy that requirement:</p>
+          <pre>Content-Security-Policy: plugin-types application/pdf;</pre>
+          <p>Resources embedded via an <code>embed</code> or <code>object</code>
+          element delivered with an <code>application/pdf</code> content type
+          would be rendered in the appropriate plugin; resources delivered with
+          some other content type would be blocked. Multiple types can be
+          specified, in any order. If the site decided to additionally allow
+          Flash at some point in the future, it could do so with the following
+          directive:</p>
+          <pre>Content-Security-Policy: plugin-types application/pdf application/x-shockwave-flash;</pre>
+          <p>Note that wildcards are not accepted in the
+          <code>plugin-types</code> directive. Only the resource types
+          explicitly listed in the directive will be allowed.</p>
+        </section>
       </section>
 
       <section>
