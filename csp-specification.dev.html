@@ -580,6 +580,51 @@ port              = ":" ( 1*DIGIT / "*" )
             obtained by parsing the source list <code>'none'</code>.</p>
           </section>
         </section>
+
+        <section>
+          <h4>Media Type List</h4>
+
+          <p>The experimental
+          <a href="#plugin-types--experimental"><code>plugin-types</code></a>
+          directive uses a value consisting of a <dfn>media type list</dfn>.</p>
+
+          <p>Each <dfn>media type</dfn> in the media type list represents a
+          specific type of resource that can be retrieved and used to
+          instantiate a <a href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
+          in the protected resource.</p>
+
+<pre>
+media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
+</pre>
+
+          <section>
+            <h5>Parsing</h5>
+
+            <p>To <dfn id="parse-a-media-type-list">parse a media type
+            list</dfn> <var>media type list</var>, the user agent MUST use an
+            algorithm equivalent to the following:</p>
+
+            <ol>
+              <li>Let the <var>set of media types</var> be the empty set.</li>
+
+              <li>For each token returned by <a href="http://www.w3.org/TR/html5/common-microsyntaxes.html#split-a-string-on-spaces">splitting
+              <var>media type list</var> on spaces</a>, if the token matches the
+              grammar for <code>media-type</code>, add the token to the
+              <var>set of media types</var>. Otherwise ignore the token.</li>
+
+              <li>Return the <var>set of media types</var>.</li>
+            </ol>
+          </section>
+
+          <section>
+            <h5>Matching</h5>
+
+            <p>A media type <dfn>matches a media type list</dfn> if, and only
+            if, the media type is a case-insensitive match for at least one
+            token in the set of media types obtained by <a href="#parse-a-media-type-list">parsing
+            the media type list</a>.
+          </section>
+        </section>
       </section>
 
       <section>
@@ -1411,23 +1456,20 @@ nonce             = &lt;token from RFC 2616&gt;
 <pre>
 directive-name    = "plugin-types"
 directive-value   = media-type *( 1*WSP media-type )
-media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
 </pre>
 
-        <p>If the <code>plugin-types</code> directive's value is empty,
-        consists solely of whitespace, or contains invalid characters, let the
-        <dfn>allowed plugin media types</dfn> be the empty set. Otherwise, the
-        term refers to the <code>plugin-types</code> directive's value, <a
-        href="http://www.whatwg.org/specs/web-apps/current-work/#split-a-string-on-spaces">split
-        on spaces</a>.</p>
+        <p>The term <dfn>allowed media types</dfn> refers to the result of
+        <a href="#parse-a-media-type-list">parsing the <code>plugin-types</code>
+        directive's value as a media type list</a></p>
 
         <p>When enforcing the <code>plugin-types</code> directive:</p>
         <ul>
             <li>Whenever the user agent would instantiate a <a
             href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
-            for the protected resource to handle a resource whose media type is
-            not contained in the list of <a href="#dfn-allowed-plugin-media-types">allowed plugin media types</a>,
-            instead the user agent MUST act as though the plugin reported an
+            for the protected resource to handle a resource whose media type
+            does not <a href="#match-a-media-type-list">match</a> the list of
+            <a href="#dfn-allowed-plugin-media-types">allowed plugin media types</a>,
+            the user agent MUST instead act as though the plugin reported an
             error (which will cause the user agent to display the <a
             href="http://www.whatwg.org/specs/web-apps/current-work/#fallback-content">fallback
             content</a>).</li>
