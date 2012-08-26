@@ -1477,18 +1477,41 @@ directive-value   = media-type-list
         <a href="#parse-a-media-type-list">parsing the <code>plugin-types</code>
         directive's value as a media type list</a></p>
 
-        <p>When enforcing the <code>plugin-types</code> directive:</p>
+        <p>Whenever the user agent would instantiate a <a
+        href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
+        to handle <var>resource</var> while enforcing the
+        <code>plugin-types</code> directive, the user agent MUST instead act as
+        though the plugin reported an error if any of the following conditions
+        hold:</p>
+
         <ul>
-            <li>Whenever the user agent would instantiate a <a
-            href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
-            for the protected resource to handle a resource whose media type
-            does not <a href="#dfn-matches-a-media-type-list">match</a> the list
-            of <a href="#dfn-allowed-plugin-types">allowed plugin types</a>,
-            the user agent MUST instead act as though the plugin reported an
-            error (which will cause the user agent to display the <a
-            href="http://www.whatwg.org/specs/web-apps/current-work/#fallback-content">fallback
-            content</a>).</li>
+            <li>The plugin is embedded into the protected resource via an
+            <code>object</code> or <code>embed</code> element that does not
+            explicitly declare a <a
+            href="http://www.whatwg.org/specs/web-apps/current-work/#mime-type">MIME type</a>
+            with a <code>type</code> attribute.</li>
+
+            <li><var>resource</var>'s media type does not <a
+            href="#match-a-media-type-list">match</a> the list of <a
+            href="#dfn-allowed-plugin-media-types">allowed plugin media
+            types</a>.</li>
+
+            <li>The plugin is embedded into the protected resource via an
+            <code>object</code> or <code>embed</code> element, and the media
+            type declared in the element's <code>type</code> attribute is not
+            a case-insensitive match for the <var>resource</var>'s media
+            type.</li>
+
+            <li>The plugin is embedded into the protected resource via an
+            <code>applet</code> element, and <var>resource</var>'s media type
+            is not a case-insensitive match for
+            <code>application/x-java-applet</code>.</li>
         </ul>
+
+        <p>Note that in any of these cases, acting as though the plugin reported an error
+        will cause the user agent to display the <a
+        href="http://www.whatwg.org/specs/web-apps/current-work/#fallback-content">fallback
+        content</a>.</p>
 
         <section class="informative">
           <h5>Usage</h5>
@@ -1509,6 +1532,23 @@ directive-value   = media-type-list
           <p>Note that wildcards are not accepted in the
           <code>plugin-types</code> directive. Only the resource types
           explicitly listed in the directive will be allowed.</p>
+      </section>
+      <section class="informative">
+          <h5>Predeclaration of expected media types</h5>
+          <p>Enforcing the <code>plugin-types</code> directive requires that
+          <code>object</code> and <code>embed</code> elements declare the
+          expected media type of the resource they include via the
+          <code>type</code> attribute. If an author expects to load a PDF, she
+          could specify this as follows:</p>
+          <pre>&lt;object data="<var>resource</var>" type="application/pdf"&gt;&lt;/object&gt;</pre>
+          <p>If <var>resource</var> isn't actually a PDF file, it won't
+          load. This prevents certain types of attacks that rely on serving
+          content that unexpectedly invokes a plugin other than that which the
+          author intended.</p>
+          <p>Note that <var>resource</var> will not load in this scenario even
+          if its media type is otherwise whitelisted: resources will only load
+          when their media type is whitelisted <em>and</em> matches the
+          declared type in their containing element.</p>
         </section>
       </section>
 
