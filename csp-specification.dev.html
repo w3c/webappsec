@@ -456,13 +456,12 @@ source-list       = *WSP [ source-expression *( 1*WSP source-expression ) *WSP ]
                   / *WSP "'none'" *WSP
 source-expression = scheme-source / host-source / keyword-source
 scheme-source     = scheme ":"
-host-source       = [ scheme "://" ] host [ port ]
-ext-host-source   = host-source "/" *( &lt;VCHAR except ";" and ","&gt; )
-                  ; ext-host-source is reserved for future use.
+host-source       = [ scheme "://" ] host [ port ] [ path ]
 keyword-source    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'"
-scheme            = &lt;scheme production from RFC 3986&gt;
+scheme            = &lt;scheme production from <a href="http://tools.ietf.org/html/rfc3986#section-3.1">RFC 3986, section 3.1</a>&gt;
 host              = "*" / [ "*." ] 1*host-char *( "." 1*host-char )
 host-char         = ALPHA / DIGIT / "-"
+path              = &lt;path production from <a href="http://tools.ietf.org/html/rfc3986#section-3.3">RFC 3986, section 3.3</a>&gt;
 port              = ":" ( 1*DIGIT / "*" )
 </pre>
 
@@ -513,7 +512,7 @@ port              = ":" ( 1*DIGIT / "*" )
                 </ol>
               </li>
               <li>If the source expression matches the grammar for
-              <code>host-source</code> or <code>ext-host-source</code>:
+              <code>host-source</code>:
                 <ol>
                   <li>If the URI does not contain a host, then return <em>does
                   not match</em>.</li>
@@ -522,7 +521,12 @@ port              = ":" ( 1*DIGIT / "*" )
                   <var>uri-port</var> be the scheme, host, and port of the URI,
                   respectively. If the URI does not have a port, then let
                   <var>uri-port</var> be the default port for
-                  <var>uri-scheme</var>.</li>
+                  <var>uri-scheme</var>. Let <var>uri-path</var> be
+                  the path of the URI, after
+                  <a href="http://tools.ietf.org/html/rfc3986#section-2.1">decoding
+                  percent-encoded characters</a>. If the URI does not have a
+                  path, then let <var>uri-path</var> be the U+002F SOLIDUS
+                  character (<code>/</code>).</li>
 
                   <li>If the source expression has a <code>scheme</code> that is
                   not a case insensitive match for <var>uri-scheme</var>, then
@@ -553,6 +557,22 @@ port              = ":" ( 1*DIGIT / "*" )
                   character (<code>*</code>) and (b) does <strong>not</strong>
                   represent the same number as <var>uri-port</var>, then return
                   <em>does not match</em>.</li>
+
+                  <li>If the source expression contains a non-empty
+                  <code>path</code>, then:
+                    <ol>
+                      <li>Let <var>decoded-path</var> be the result of
+                      <a href="http://tools.ietf.org/html/rfc3986#section-2.1">decoding
+                      <code>path</code>'s percent-encoded characters</a>.</li>
+                      <li>If the final character of <var>decoded-path</var> is
+                      not the U+002F SOLIDUS character (<code>/</code>), then
+                      append the U+002F SOLIDUS character (<code>/</code>) to
+                      <var>decoded-path</var>.</li>
+                      <li>If <var>decoded-path</var> is not a prefix of
+                      <var>uri-path</var>, then return <em>does not
+                      match</em>.</li>
+                    </ol>
+                  </li>
 
                   <li>Otherwise, return <em>does match</em>.</li>
                 </ol>
