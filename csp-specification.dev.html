@@ -938,6 +938,38 @@ directive-value   = source-list
 
         <p>If not specified explicitly in the policy, the directives listed
         above will use the <a href="#dfn-default-sources">default sources</a>.</p>
+        <section class="informative">
+          <h4>Usage</h4>
+          <p><code>default-src</code>, as the name implies, serves as a default
+          source list which the other source list-style directives will use as
+          a fallback if they're not otherwise explicitly set. That is, consider
+          the following policy declaration:</p>
+
+          <pre>Content-Security-Policy: default-src 'self'</pre>
+
+          <p>Under this policy, fonts, frames, images, media, objects, scripts,
+          and styles will all only load from the same origin as the protected
+          resource, and connections will only be made to the same origin. Adding
+          a more specific declaration to the policy would completely override
+          the default source list for that resource type.<p>
+
+          <pre>Content-Security-Policy: default-src 'self'; script-src example.com</pre>
+
+          <p>Under this new policy, fonts, frames, and etc. continue to be load
+          from the same origin, but scripts will <em>only</em> load from
+          <code>example.com</code>. There's no inheritance; the
+          <code>script-src</code> directive sets the allowed sources of script,
+          and the default list is not used for that resource type.</p>
+
+          <p>Given this behavior, one good way of building a policy for a site
+          would be to begin with a <code>default-src</code> of
+          <code>'none'</code>, and to build up a policy from there that contains
+          only those resource types which are actually in use for the page you'd
+          like to protect. If you don't use webfonts, for instance, there's no
+          reason to specify a source list for <code>font-src</code>; specifying
+          only those resource types a page uses ensures that the possible attack
+          surface for that page remains as small as possible.</p>
+        </section>
       </section>
 
       <section>
