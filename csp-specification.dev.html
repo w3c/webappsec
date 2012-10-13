@@ -524,11 +524,13 @@ port              = ":" ( 1*DIGIT / "*" )
                   respectively. If the URI does not have a port, then let
                   <var>uri-port</var> be the default port for
                   <var>uri-scheme</var>. Let <var>uri-path</var> be
-                  the path of the URI, after
+                  the path of the URI and <var>uri-query</var> be the URI's
+                  query component, after
                   <a href="http://tools.ietf.org/html/rfc3986#section-2.1">decoding
                   percent-encoded characters</a>. If the URI does not have a
                   path, then let <var>uri-path</var> be the U+002F SOLIDUS
-                  character (<code>/</code>).</li>
+                  character (<code>/</code>). If the URI does not have a query,
+                  then let <var>uri-query</var> be the empty string.</li>
 
                   <li>If the source expression has a <code>scheme</code> that is
                   not a case insensitive match for <var>uri-scheme</var>, then
@@ -571,15 +573,25 @@ port              = ":" ( 1*DIGIT / "*" )
                       <li>Let <var>decoded-path</var> be the result of
                       <a href="http://tools.ietf.org/html/rfc3986#section-2.1">decoding
                       <code>path</code>'s percent-encoded characters</a>.</li>
+
                       <li>If the final character of <var>decoded-path</var> is
-                      not the U+002F SOLIDUS character (<code>/</code>), then
-                      append the U+002F SOLIDUS character (<code>/</code>) to
-                      <var>decoded-path</var>.</li>
-                      <li>If <var>decoded-path</var> is not a prefix of
+                      the U+002F SOLIDUS character (<code>/</code>), and
+                      <var>decoded-path</var> is not a prefix of
                       <var>uri-path</var>, then return <em>does not
+                      match</em>.</li>
+
+                      <li>If the final character of <var>decoded-path</var> is
+                      not the the U+002F SOLIDUS character (<code>/</code>),
+                      and <var>decoded-path</var> is not an exact match for
+                      <var>uri-path</var> then return <em>does not
                       match</em>.</li>
                     </ol>
                   </li>
+
+                  <li>If the source expression contains a non-empty
+                  <code>query</code>, then return <em>does not match</em>
+                  unless <code>query</code> is an exact match for
+                  <var>uri-query</var>.</li>
 
                   <li>Otherwise, return <em>does match</em>.</li>
                 </ol>
@@ -602,6 +614,39 @@ port              = ":" ( 1*DIGIT / "*" )
             href="#parse-a-source-list">parsing the source list</a>. Notice that
             no URIs match an empty set of source expressions, such as the set
             obtained by parsing the source list <code>'none'</code>.</p>
+
+            <section class="informative">
+              <h6>Path Matching</h6>
+
+              <p>The rules for matching source expressions that contain paths
+              are simpler than they look: paths that end with the '/' character
+              match all files in a directory and its subdirectories. Paths that
+              do not end with the '/' character match only one specific file. A
+              few examples should make this clear:</p>
+              <ol>
+                <li>The source expression <code>example.com</code> has no path,
+                and therefore matches any file served from that host.</li>
+
+                <li>The source expression <code>example.com/scripts/</code>
+                matches any file in the <code>scripts</code> directory of
+                <code>example.com</code>, and any of its subdirectories. For
+                example, both <code>https://example.com/scripts/file.js</code>
+                and <code>https://example.com/scripts/js/file.js</code> would
+                match.</li>
+
+                <li>The source expression
+                <code>example.com/scripts/file.js</code> matches only the file
+                named <code>file.js</code> in the <code>scripts</code> directory
+                of <code>example.com</code>.</li>
+
+                <li>Likewise, the source expression <code>example.com/js</code>
+                matches only the file named <code>js</code>. In particular, note
+                that it would not match files inside a directory named
+                <code>js</code>. Files like <code>example.com/js/file.js</code>
+                would be matched only if the source expression ended with a
+                trailing "/", as in <code>example.com/js/</code>.</li>
+              </ol>
+            </section>
           </section>
         </section>
 
