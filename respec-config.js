@@ -35,10 +35,10 @@ var respecConfig = {
     // editors, add as many as you like
     // only "name" is required
     editors:  [
-        { name: "Brandon Sterne", url: "mailto:bsterne@mozilla.com",
-          company: "Mozilla Corporation", companyURL: "http://www.mozilla.com/" },
         { name: "Adam Barth", url: "mailto:w3c@adambarth.com",
           company: "Google, Inc.", companyURL: "http://www.google.com/" },
+        { name: "Dan Veditz", url: "mailto:dveditz@mozilla.com",
+          company: "Mozilla Corporation", companyURL: "http://www.mozilla.com/" },
         { name: "Mike West", url: "mailto:mkwst@google.com",
           company: "Google, Inc.", companyURL: "http://www.google.com/" },
     ],
