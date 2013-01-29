@@ -306,6 +306,36 @@
               still useful in light of the above mitigations?)</li>
           </ul>
         </section>
+        <section class="informative">
+          <h4>Enforcing multiple policies.</h4>
+          <p>The above sections note that when multiple policies are present,
+          each must be enforced or reported, according to its type. An example
+          will help clarify how that ought to work in practice. The behavior of
+          an <code>XMLHttpRequest</code> might seem unclear given a site
+          that, for whatever reason, delivered the following HTTP headers:</p>
+          <pre>
+Content-Security-Policy: default-src 'self' http://example.com http://example.net;
+                         connect-src 'none';
+Content-Security-Policy: connect-src http://example.com/;
+                         script-src http://example.com/
+          </pre>
+          <p>Is a connection to <code>example.com</code> allowed or not? The
+          short answer is that the connection is not allowed. Enforcing both
+          policies means that a potential connection would have to pass through
+          both unscathed. Even though the second policy would allow this
+          connection, the first policy contains <code>connect-src 'none'</code>,
+          so its enforcement blocks the connection. The impact is that adding
+          additional policies to the list of policies to enforce can only
+          further restrict the capabilities of the protected resource.</p>
+          <p>To demonstrate that further, consider a script tag on this page.
+          The first policy would lock scripts down to <code>'self'</code>,
+          <code>http://example.com</code> and <code>http://example.net</code>
+          via the <code>default-src</code> directive. The second, however, would
+          only allow script from <code>http://example.com/</code>. Script will
+          only load if it meets both policy's criteria: in this case, the only
+          origin that can match is <code>http://example.com</code>, as both
+          policies allow it.</p>
+        </section>
       </section>
 
       <section>
