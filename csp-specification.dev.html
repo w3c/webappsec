@@ -763,11 +763,43 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
         <h3>Script Interfaces (Experimental)</h3>
 
         <section>
+          <h4><code>SecurityPolicyViolationEvent</code> Events</h4>
+
+          <p id="fire-securitypolicyviolation">If a policy violation occurs while <a href="#enforce">enforcing</a> or
+          <a href="#monitor">monitoring</a> a policy, the user agent MUST
+          <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#queue-a-task">queue a task</a>
+          to <a href="http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-event-fire">fire an event</a>
+          named <code>securitypolicyviolation</code> using the <code>SecurityPolicyViolationEvent</code> interface with its
+          <code>cancelable</code> attribute set to false.</p>
+
+          <dl title="interface SecurityPolicyViolationEvent : Event" class="idl">
+            <dt>readonly attribute DOMString documentURI</dt>
+            <dd>Refer to the <a href="#violation-report-document-uri"><code>document-uri</code></a> property of violation reports for a description of this property.</dd>
+            <dt>readonly attribute DOMString referrer</dt>
+            <dd>Refer to the <a href="#violation-report-referrer"><code>referrer</code></a> property of violation reports for a description of this property.</dd>
+            <dt>readonly attribute DOMString blockedURI</dt>
+            <dd>Refer to the <a href="#violation-report-blocked-uri"><code>blocked-uri</code></a> property of violation reports for a description of this property.</dd>
+            <dt>readonly attribute DOMString violatedDirective</dt>
+            <dd>Refer to the <a href="#violation-report-violated-directive"><code>violated-directive</code></a> property of violation reports for a description of this property.</dd>
+            <dt>readonly attribute DOMString effectiveDirective</dt>
+            <dd>Refer to the <a href="#violation-report-effective-directive"><code>effective-directive</code></a> property of violation reports for a description of this property.</dd>
+            <dt>readonly attribute DOMString originalPolicy</dt>
+            <dd>Refer to the <a href="#violation-report-original-policy"><code>original-policy</code></a> property of violation reports for a description of this property.</dd>
+            <dt>readonly attribute DOMString sourceURL</dt>
+            <dd>Refer to the <a href="#violation-report-source-url"><code>source-url</code></a> property of violation reports for a description of this property.</dd>
+            <dt>readonly attribute long lineNumber</dt>
+            <dd>Refer to the <a href="#violation-report-line-number"><code>line-number</code></a> property of violation reports for a description of this property.</dd>
+          </dl>
+        </section>
+
+        <section>
           <h4>Document</h4>
 
           <dl title="partial interface Document" class="idl">
             <dt>readonly attribute SecurityPolicy securityPolicy</dt>
             <dd>The security policy for this document.</dd>
+            <dt>attribute EventHandler onsecuritypolicyviolation</dt>
+            <dd>Event handler for <code>securitypolicyviolation</code> events.</dd>
           </dl>
         </section>
 
@@ -1821,52 +1853,52 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
               <dd>
                 <p>A JSON object containing the following keys and values:</p>
                 <dl>
-                  <dt>document-uri</dt>
+                  <dt id="violation-report-document-uri">document-uri</dt>
                   <dd>The <a href="http://www.w3.org/TR/html5/dom.html#the-document%27s-address">address</a>
                   of the protected resource, with any
                   <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
                   component removed.</dd>
 
-                  <dt>referrer</dt>
+                  <dt id="violation-report-referrer">referrer</dt>
                   <dd>The <a href="http://www.w3.org/TR/html5/dom.html#dom-document-referrer">referrer</a>
                   attribute of the protected resource, or the empty string if
                   the protected resource has no referrer.</dd>
 
-                  <dt>blocked-uri</dt>
+                  <dt id="violation-report-blocked-uri">blocked-uri</dt>
                   <dd>URI of the resource that was prevented from loading due to
                   the policy violation, with any
                   <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
                   component removed, or the empty string if the resource has no
                   URI (inline script and inline style, for example).</dd>
 
-                  <dt>violated-directive</dt>
+                  <dt id="violation-report-violated-directive">violated-directive</dt>
                   <dd>The policy directive that was violated. This will contain
                   the <code>default-src</code> directive in the case of policy
                   violations caused by falling back to the <a href="#dfn-default-sources">default sources</a>
                   when enforcing a directive.</dd>
 
-                  <dt>effective-directive</dt>
+                  <dt id="violation-report-effective-directive">effective-directive</dt>
                   <dd>The name of the policy directive that was violated. This
                   will contain the directive whose enforcement triggered the
                   violation, even if that directive does not explicitly appear
                   in the policy, but is implicitly activated via the
                   <code>default-src</code> directive.</dd>
 
-                  <dt>original-policy</dt>
+                  <dt id="violation-report-original-policy">original-policy</dt>
                   <dd>The original policy as received by the user-agent.</dd>
                 </dl>
                 <p>If the violation occurred as a result of script execution,
                 and a specific line can be identified as the source, the
                 following keys and values MAY be added:</p>
                 <dl>
-                  <dt>source-url</dt>
+                  <dt id="violation-report-source-url">source-url</dt>
                   <dd>The <a href="http://www.w3.org/TR/html5/dom.html#the-document%27s-address">address</a>
                   of the resource where the violation occurred (an external
                   script file, for instance), with any
                   <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
                   component removed.</dd>
 
-                  <dt>line-number</dt>
+                  <dt id="violation-report-line-number">line-number</dt>
                   <dd>The line number in <code>source-url</code> on which the
                   violation occurred.</dd>
                 </dl>
