@@ -1028,410 +1028,6 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
       directly in the document itself; they are best avoided completely.</p>
 
       <section>
-        <h3><code>default-src</code></h3>
-
-        <p>The <code>default-src</code> directive sets a default source list
-        for a number of directives. The syntax for the name and value of the
-        directive are described by the following ABNF grammar:</p>
-
-<pre>
-directive-name    = "default-src"
-directive-value   = source-list
-</pre>
-
-        <p>Let the <dfn>default sources</dfn> be the result of <a
-        href="#parse-a-source-list">parsing the <code>default-src</code>
-        directive's value as a source list</a>.</p>
-
-        <p>To enforce the <code>default-src</code> directive, the user agent
-        MUST enforce the following directives:</p>
-        <ul>
-          <li>script-src</li>
-          <li>object-src</li>
-          <li>style-src</li>
-          <li>img-src</li>
-          <li>media-src</li>
-          <li>frame-src</li>
-          <li>font-src</li>
-          <li>connect-src</li>
-        </ul>
-
-        <p>If not specified explicitly in the policy, the directives listed
-        above will use the <a href="#dfn-default-sources">default sources</a>.</p>
-        <section class="informative">
-          <h4>Usage</h4>
-          <p><code>default-src</code>, as the name implies, serves as a default
-          source list which the other source list-style directives will use as
-          a fallback if they're not otherwise explicitly set. That is, consider
-          the following policy declaration:</p>
-
-          <pre>Content-Security-Policy: default-src 'self'</pre>
-
-          <p>Under this policy, fonts, frames, images, media, objects, scripts,
-          and styles will all only load from the same origin as the protected
-          resource, and connections will only be made to the same origin. Adding
-          a more specific declaration to the policy would completely override
-          the default source list for that resource type.<p>
-
-          <pre>Content-Security-Policy: default-src 'self'; script-src example.com</pre>
-
-          <p>Under this new policy, fonts, frames, and etc. continue to be load
-          from the same origin, but scripts will <em>only</em> load from
-          <code>example.com</code>. There's no inheritance; the
-          <code>script-src</code> directive sets the allowed sources of script,
-          and the default list is not used for that resource type.</p>
-
-          <p>Given this behavior, one good way of building a policy for a site
-          would be to begin with a <code>default-src</code> of
-          <code>'none'</code>, and to build up a policy from there that contains
-          only those resource types which are actually in use for the page you'd
-          like to protect. If you don't use webfonts, for instance, there's no
-          reason to specify a source list for <code>font-src</code>; specifying
-          only those resource types a page uses ensures that the possible attack
-          surface for that page remains as small as possible.</p>
-        </section>
-      </section>
-
-      <section>
-        <h3><code>script-src</code></h3>
-
-        <p>The <code>script-src</code> directive restricts which scripts the
-        protected resource can execute. The directive also controls other
-        resources, such as XSLT style sheets [[!XSLT]], which can cause the
-        user agent to execute script. The syntax for the name and value of
-        the directive are described by the following ABNF grammar:</p>
-
-<pre>
-directive-name    = "script-src"
-directive-value   = source-list
-</pre>
-
-        <p>The term <dfn>allowed script sources</dfn> refers to the result of
-        <a href="#parse-a-source-list">parsing the <code>script-src</code>
-        directive's value as a source list</a> if the policy contains an
-        explicit <code>script-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.
-        
-        <p>If <code>'unsafe-inline'</code> is <strong>not</strong> in
-        <a href="#dfn-allowed-script-sources">allowed script sources</a>:</p>
-        <ul>
-          <li>Whenever the user agent would execute an inline script (either
-          from a <code>script</code> element or from an inline event handler),
-          instead the user agent MUST NOT execute script.</li>
-
-          <li>Whenever the user agent would execute script contained in a
-          <code>javascript</code> URI, instead the user agent MUST NOT execute
-          the script. (The user agent SHOULD execute script contained in
-          "bookmarklets" even when enforcing this restriction.)</li>
-        </ul>
-
-        <p>If <code>'unsafe-eval'</code> is <strong>not</strong> in
-        <a href="#dfn-allowed-script-sources">allowed script sources</a>:</p>
-        <ul>
-          <li>Instead of evaluating their arguments, both operator
-          <code>eval</code> and function <code>eval</code>
-          MUST throw a security exception. [[!ECMA-262]]</li>
-
-          <li>When called as a constructor, the function <code>Function</code>
-          MUST throw a security exception. [[!ECMA-262]]</li>
-
-          <li>When called with a first argument that is non-callable (e.g.,
-          not a function), the
-          <a href="http://www.w3.org/TR/html5/timers.html#dom-windowtimers-settimeout"><code>setTimeout</code></a>
-          function MUST return zero without creating a timer.</li>
-
-          <li>When called with a first argument that is non-callable (e.g.,
-          not a function), the
-          <a href="http://www.w3.org/TR/html5/timers.html#dom-windowtimers-setinterval"><code>setInterval</code></a>
-          function MUST return zero without creating a timer.</li>
-        </ul>
-
-        <p>The term <dfn>callable</dfn> refers to an object whose interface
-        has one or more <dfn>callers</dfn> as defined in the <a
-        href="http://www.w3.org/TR/2010/WD-WebIDL-20101021/#idl-callers">Web
-        IDL</a> specification [[!WEBIDL]].</p>
-
-        <p>Whenever the user agent <a
-        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
-        a URI (including when following redirects) in the course of one of the
-        following activities, if the URI does not <a
-        href="#matches-a-source-list">match</a> the <a
-        href="#dfn-allowed-script-sources">allowed script sources</a>, the user
-        agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
-        <ul>
-          <li>Requesting a script, such as when processing the
-          <code>src</code> attribute of a <code>script</code> element or when
-          processing the <code>Worker</code> or <code>SharedWorker</code>
-          constructors.</li>
-
-          <li>Requesting an Extensible Stylesheet Language Transformations
-          (XSLT) [[!XSLT]], such as when processing the
-          <code>&lt;?xml-stylesheet?&gt;</code> processing directive in an XML
-          document [[!XML11]], the <code>href</code> attributes on
-          <code>&lt;xsl:include&gt;</code> element, or the <code>href</code>
-          attributes on <code>&lt;xsl:import&gt;</code> element.</li>
-        </ul>
-      </section>
-      <section>
-        <h3><code>object-src</code></h3>
-
-        <p>The <code>object-src</code> directive restricts from where the
-        protected resource can load plugins. The syntax for the name and value
-        of the directive are described by the following ABNF grammar:</p>
-
-<pre>
-directive-name    = "object-src"
-directive-value   = source-list
-</pre>
-
-        <p>The term <dfn>allowed object sources</dfn> refers to the result of
-        <a href="#parse-a-source-list">parsing the <code>object-src</code>
-        directive's value as a source list</a> if the policy contains an
-        explicit <code>object-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.
-
-        <p>Whenever the user agent <a
-        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
-        a URI (including when following redirects) in the course of one of the
-        following activities, if the URI does not <a href="#matches-a-source-list">match</a>
-        the <a href="#dfn-allowed-object-sources">allowed object sources</a>,
-        the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
-        <ul>
-          <li>Requesting data for a plugin, such as when processing the
-          <code>data</code> attribute of an <code>object</code> element, the
-          <code>src</code> attribute of an <code>embed</code> elements, or the
-          <code>code</code> or <code>archive</code> attributes of an
-          <code>applet</code> element.</li>
-
-          <li>Requesting data for display in a
-          <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>
-          in the protected resource created by an <code>object</code> or an
-          <code>embed</code> element.</li>
-
-          <li>Navigating such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
-        </ul>
-
-        <p>It is not required that the consumer of the element's data be a
-        plugin in order for the <code>object-src</code> directive to be
-        enforced.  Data for any <code>object</code>, <code>embed</code>,
-        or <code>applet</code> element MUST match the <a
-        href="#dfn-allowed-object-sources">allowed object sources</a> in order
-        to be fetched.  This is true even when the
-        element data is semantically equivalent to content which would otherwise
-        be restricted by one of the other <a href="#directives">directives</a>,
-        such as an <code>object</code> element with a <code>text/html</code>
-        MIME type.</p>
-
-        <p>Whenever the user agent would load a plugin without an associated
-        URI (e.g., because the <code>object</code> element lacked a
-        <code>data</code> attribute), if the protected resource's URI does not
-        <a href="#matches-a-source-list">match</a> the
-        <a href="#dfn-allowed-object-sources">allowed object sources</a>, the
-        user agent MUST NOT load the plugin.</p>
-      </section>
-
-      <section>
-        <h4><code>style-src</code></h4>
-
-        <p>The <code>style-src</code> directive restricts which styles the
-        user applies to the protected resource. The syntax for the name and
-        value of the directive are described by the following ABNF
-        grammar:</p>
-
-<pre>
-directive-name    = "style-src"
-directive-value   = source-list
-</pre>
-
-        <p>The term <dfn>allowed style sources</dfn> refers to the result of
-        <a href="#parse-a-source-list">parsing the <code>style-src</code>
-        directive's value as a source list</a> if the policy contains an
-        explicit <code>style-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.</p>
-
-        <p>If <code>'unsafe-inline'</code> is <strong>not</strong> in
-        <a href="#dfn-allowed-style-sources">allowed style sources</a>:</p>
-        <ul>
-          <li>Whenever the user agent would apply style from a
-          <code>style</code> element, instead the user agent <code>MUST</code>
-          ignore the style.</li>
-
-          <li>Whenever the user agent would apply style from a
-          <code>style</code> attribute, instead the user agent
-          <code>MUST</code> ignore the style.</li>
-        </ul>
-
-        <p>Note: These restrictions on inline do not prevent the user agent
-        from applying style from an external stylesheet (e.g., found via
-        <code>&lt;link rel="stylesheet"&gt;</code>). The user agent is also
-        not prevented from applying style from Cascading Style Sheets Object
-        Model (CSSOM). [[!CSSOM]]</p>
-
-        <p>Whenever the user agent <a
-        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
-        a URI (including when following redirects) in the course of one of the
-        following activities, if the URI does not <a
-        href="#matches-a-source-list">match</a> the <a
-        href="#dfn-allowed-style-sources">allowed style sources</a>, the user
-        agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
-        <ul>
-          <li>Requesting external style sheets, such as when processing the
-          <code>href</code> attribute of a <code>link</code> element with a
-          <code>rel</code> attribute containing the token
-          <code>stylesheet</code> or when processing the <code>@import</code>
-          directive in a stylesheet.</li>
-        </ul>
-
-        <p>Note: The <code>style-src</code> directive does not restrict the
-        use of XSLT. XSLT is restricted by the <code>script-src</code>
-        directive because the security consequences of including an untrusted
-        XSLT stylesheet are similar to those incurred by including an
-        untrusted script.</p>
-      </section>
-
-      <section>
-        <h4><code>img-src</code></h4>
-
-        <p>The <code>img-src</code> directive restricts from where the
-        protected resource can load images. The syntax for the name and value
-        of the directive are described by the following ABNF grammar:</p>
-
-<pre>
-directive-name    = "img-src"
-directive-value   = source-list
-</pre>
-
-        <p>The term <dfn>allowed image sources</dfn> refers to the result of
-        <a href="#parse-a-source-list">parsing the <code>img-src</code>
-        directive's value as a source list</a> if the policy contains an
-        explicit <code>img-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.</p>
-
-        <p>Whenever the user agent <a
-        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
-        a URI (including when following redirects) in the course of one of the
-        following activities, if the URI does not <a
-        href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-image-sources">allowed image
-        sources</a>, the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
-        <ul>
-          <li>Requesting data for an image, such as when processing the
-          <code>src</code> attribute of an <code>img</code> elements,
-          the <code>url()</code> or <code>image()</code> values on any
-          Cascading Style Sheets (CSS)
-          property that is capable of loading an image [<em><a
-          href="http://www.w3.org/TR/css3-images/">CSS3-Images</a></em>], or
-          the <code>href</code> attribute of a <code>link</code> element with
-          an image-related <code>rel</code> attribute, such as
-          <code>icon</code>.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h4><code>media-src</code></h4>
-
-        <p>The <code>media-src</code> directive restricts from where the
-        protected resource can load video and audio. The syntax for the name
-        and value of the directive are described by the following ABNF
-        grammar:</p>
-
-<pre>
-directive-name    = "media-src"
-directive-value   = source-list
-</pre>
-
-        <p>The term <dfn>allowed media sources</dfn> refers to the result of
-        <a href="#parse-a-source-list">parsing the <code>media-src</code>
-        directive's value as a source list</a> if the policy contains an
-        explicit <code>media-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.</p>
-
-        <p>Whenever the user agent <a
-        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
-        a URI (including when following redirects) in the course of one of the
-        following activities, if the URI does not <a
-        href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-media-sources">allowed media
-        sources</a>, the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
-        <ul>
-          <li>Requesting data for a video or audio clip, such as when
-          processing the <code>src</code> attribute of a <code>video</code>,
-          <code>audio</code>, <code>source</code>, or <code>track</code>
-          elements.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h4><code>frame-src</code></h4>
-
-        <p>The <code>frame-src</code> directive restricts from where the
-        protected resource can embed frames. The syntax for the name
-        and value of the directive are described by the following ABNF
-        grammar:</p>
-
-<pre>
-directive-name    = "frame-src"
-directive-value   = source-list
-</pre>
-
-        <p>The term <dfn>allowed frame sources</dfn> refers to the result of
-        <a href="#parse-a-source-list">parsing the <code>frame-src</code>
-        directive's value as a source list</a> if the policy contains an
-        explicit <code>frame-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.</p>
-
-        <p>Whenever the user agent <a
-        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
-        a URI (including when following redirects) in the course of one of the
-        following activities, if the URI does not <a
-          href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-frame-sources">allowed frame
-          sources</a>, the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
-        <ul>
-          <li>Requesting data for display in a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a> in the
-          protected resource created by an <code>iframe</code> or
-          a <code>frame</code> element.</li>
-
-          <li><a href="http://www.w3.org/TR/html5/history.html#navigate">Navigating</a>
-          such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h4><code>font-src</code></h4>
-
-        <p>The <code>font-src</code> directive restricts from where the
-        protected resource can load fonts. The syntax for the name and value
-        of the directive are described by the following ABNF grammar:</p>
-
-<pre>
-directive-name    = "font-src"
-directive-value   = source-list
-</pre>
-
-        <p>The term <dfn>allowed font sources</dfn> refers to the result of
-        <a href="#parse-a-source-list">parsing the <code>font-src</code>
-        directive's value as a source list</a> if the policy contains an
-        explicit <code>font-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.</p>
-
-        <p>Whenever the user agent <a
-        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
-        a URI (including when following redirects) in the course of one of the
-        following activities, if the URI does not <a
-        href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-font-sources">allowed font
-        sources</a>, the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
-        <ul>
-          <li>Requesting data for display in a font, such as when processing
-          the <code>@font-face</code> Cascading Style Sheets (CSS) rule.</li>
-        </ul>
-      </section>
-
-      <section>
         <h4><code>connect-src</code></h4>
 
         <p>The <code>connect-src</code> directive restricts which URIs the
@@ -1501,371 +1097,265 @@ directive-value   = source-list
           </ul>
         </section>
       </section>
-
       <section>
-        <h4><code>form-action</code> (Experimental)</h4>
+        <h3><code>default-src</code></h3>
 
-        <p>The <code>form-action</code> restricts which URIs can be used as the
-        action of HTML <code>form</code> elements.  The syntax for the name and
-        value of the directive are described by the following ABNF grammar:</p>
+        <p>The <code>default-src</code> directive sets a default source list
+        for a number of directives. The syntax for the name and value of the
+        directive are described by the following ABNF grammar:</p>
 
 <pre>
-directive-name    = "form-action"
+directive-name    = "default-src"
 directive-value   = source-list
 </pre>
 
-        <p>The term <dfn>allowed form actions</dfn> refers to the result of
-        <a href="#parse-a-source-list">parsing the <code>form-action</code>
+        <p>Let the <dfn>default sources</dfn> be the result of <a
+        href="#parse-a-source-list">parsing the <code>default-src</code>
         directive's value as a source list</a>.</p>
+
+        <p>To enforce the <code>default-src</code> directive, the user agent
+        MUST enforce the following directives:</p>
+        <ul>
+          <li><a href="#connect-src"><code>connect-src</code></a></li>
+          <li><a href="#font-src"><code>font-src</code></a></li>
+          <li><a href="#frame-src"><code>frame-src</code></a></li>
+          <li><a href="#img-src"><code>img-src</code></a></li>
+          <li><a href="#media-src"><code>media-src</code></a></li>
+          <li><a href="#object-src"><code>object-src</code></a></li>
+          <li><a href="#script-src"><code>script-src</code></a></li>
+          <li><a href="#style-src"><code>style-src</code></a></li>
+        </ul>
+
+        <p>If not specified explicitly in the policy, the directives listed
+        above will use the <a href="#dfn-default-sources">default sources</a>.</p>
+        <section class="informative">
+          <h4>Usage</h4>
+          <p><code>default-src</code>, as the name implies, serves as a default
+          source list which the other source list-style directives will use as
+          a fallback if they're not otherwise explicitly set. That is, consider
+          the following policy declaration:</p>
+
+          <pre>Content-Security-Policy: default-src 'self'</pre>
+
+          <p>Under this policy, fonts, frames, images, media, objects, scripts,
+          and styles will all only load from the same origin as the protected
+          resource, and connections will only be made to the same origin. Adding
+          a more specific declaration to the policy would completely override
+          the default source list for that resource type.<p>
+
+          <pre>Content-Security-Policy: default-src 'self'; script-src example.com</pre>
+
+          <p>Under this new policy, fonts, frames, and etc. continue to be load
+          from the same origin, but scripts will <em>only</em> load from
+          <code>example.com</code>. There's no inheritance; the
+          <code>script-src</code> directive sets the allowed sources of script,
+          and the default list is not used for that resource type.</p>
+
+          <p>Given this behavior, one good way of building a policy for a site
+          would be to begin with a <code>default-src</code> of
+          <code>'none'</code>, and to build up a policy from there that contains
+          only those resource types which are actually in use for the page you'd
+          like to protect. If you don't use webfonts, for instance, there's no
+          reason to specify a source list for <code>font-src</code>; specifying
+          only those resource types a page uses ensures that the possible attack
+          surface for that page remains as small as possible.</p>
+        </section>
+      </section>
+
+      <section>
+        <h4><code>font-src</code></h4>
+
+        <p>The <code>font-src</code> directive restricts from where the
+        protected resource can load fonts. The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "font-src"
+directive-value   = source-list
+</pre>
+
+        <p>The term <dfn>allowed font sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>font-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>font-src</code>, or otherwise to the
+        <a href="#dfn-default-sources">default sources</a>.</p>
 
         <p>Whenever the user agent <a
         href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
         a URI (including when following redirects) in the course of one of the
         following activities, if the URI does not <a
-        href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-form-actions">allowed form
-        actions</a>, the user agent MUST act as if it had received an
-        empty HTTP 400 response:</p>
+        href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-font-sources">allowed font
+        sources</a>, the user agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
-          <li>Processing an HTML <code>form</code> element.
+          <li>Requesting data for display in a font, such as when processing
+          the <code>@font-face</code> Cascading Style Sheets (CSS) rule.</li>
         </ul>
-        <p>Note that <code>form-action</code> does not fall back to the default
-        source list when the directive is not defined. That is, a policy that
-        defines <code>default-src 'none'</code> but not
-        <code>form-action</code> will still allow form submissions to any
-        target.</p>
       </section>
-
       <section>
-        <h4><code>sandbox</code></h4>
+        <h4><code>frame-src</code></h4>
 
-        <p>The <code>sandbox</code> directive specifies an HTML sandbox policy
-        that the user agent applies to the protected resource. The syntax for
-        the name and value of the directive are described by the following
-        ABNF grammar:</p>
+        <p>The <code>frame-src</code> directive restricts from where the
+        protected resource can embed frames. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
 
 <pre>
-directive-name    = "sandbox"
-directive-value   = token *( 1*WSP token )
-token             = &lt;token from RFC 2616&gt;
+directive-name    = "frame-src"
+directive-value   = source-list
 </pre>
 
-        <p>When enforcing the <code>sandbox</code> directive, the user agent
-        MUST <a href="http://www.whatwg.org/specs/web-apps/current-work/#parse-a-sandboxing-directive">parse
-        the sandboxing directive</a> using the <code>directive-value</code>
-        as the <em>input</em> and protected resource's
-        <a href="http://www.whatwg.org/specs/web-apps/current-work/#forced-sandboxing-flag-set">forced sandboxing flag set</a>
-        as the output. [[!HTML5]]</p>
+        <p>The term <dfn>allowed frame sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>frame-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>frame-src</code>, or otherwise to the
+        <a href="#dfn-default-sources">default sources</a>.</p>
 
-        <section class="informative">
-          <h5>Usage</h5>
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+          href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-frame-sources">allowed frame
+          sources</a>, the user agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <ul>
+          <li>Requesting data for display in a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a> in the
+          protected resource created by an <code>iframe</code> or
+          a <code>frame</code> element.</li>
 
-          <p>HTML5 defines a
-          <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#attr-iframe-sandbox"><code>sandbox</code> attribute</a>
-          for <code>iframe</code> elements, intended to allow web authors to
-          reduce the risk of including potentially untrusted content by imposing
-          restrictions on that content's abilities. When the attribute is set,
-          the content is forced into a unique origin, prevented from submitting
-          forms, running script, creating or navigating other browsing contexts,
-          and prevented from running plugins. These restrictions can be loosened
-          by setting certain flags as the attribute's value.</p>
-
-          <p>The <code>sandbox</code> directive allows any resource, framed or
-          not, to ask for the same sorts of restrictions to be applied to
-          itself.</p>
-
-          <p>For example, a message board or email system might provide
-          downloads of arbitrary attachments provided by other users. Attacks
-          that rely on tricking a client into rendering one of these attachments
-          could be mitigated by requesting that resources only be rendered in a
-          very restrictive sandbox. Sending the <code>sandbox</code> directive
-          with an empty value establishes such an environment:</p>
-
-          <pre>Content-Security-Policy: sandbox</pre>
-
-          <p>More trusted resources might be allowed to run in an environment
-          with fewer restrictions by adding <code>allow-*</code> flags to the
-          directive's value. For example, you can allow a page that you trust
-          to run script, while ensuring that it isn't treated as same-origin
-          with the rest of your site. This can be accomplished by sending the
-          <code>sandbox</code> directive with the <code>allow-scripts</code>
-          flag:</p>
-
-          <pre>Content-Security-Policy: sandbox allow-scripts</pre>
-
-          <p>The set of flags available to the CSP directive should match those
-          available to the <code>iframe</code> attribute. Currently, those
-          include:</p>
-          <ul>
-            <li><code>allow-forms</code></li>
-            <li><code>allow-same-origin</code></li>
-            <li><code>allow-scripts</code>, and</li>
-            <li><code>allow-top-navigation</code></li>
-          </ul>
-
-          <p>Note as well that, like the rest of Content Security Policy, the
-          <code>sandbox</code> directive is meant as a defense-in-depth. Web
-          authors would be well-served to use it <em>in addition to</em>
-          standard sniffing-mitigation and privilege-reduction techniques.</p>
-        </section>
+          <li><a href="http://www.w3.org/TR/html5/history.html#navigate">Navigating</a>
+          such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
+        </ul>
       </section>
-
       <section>
-        <h4><code>script-nonce</code> (Experimental)</h4>
+        <h4><code>img-src</code></h4>
 
-        <p>The <code>script-nonce</code> directive restricts script execution
-        by requiring the presence of the specified nonce on <code>script</code>
-        elements. The syntax for the name and value of the directive are
-        described by the following ABNF grammar:</p>
+        <p>The <code>img-src</code> directive restricts from where the
+        protected resource can load images. The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
 
 <pre>
-directive-name    = "script-nonce"
-directive-value   = nonce
-nonce             = 1*( &lt;VCHAR except ";" and ","&gt; )
+directive-name    = "img-src"
+directive-value   = source-list
 </pre>
 
-        <p>If the directive's value is empty, consists solely of whitespace, or
-        contains invalid characters, let the <var>script nonce</var> be the empty
-        string. Otherwise, let the <var>script nonce</var> be the directive's
-        value, <a
-        href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripped
-        of leading and trailing whitespace</a>.</p>
+        <p>The term <dfn>allowed image sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>img-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>img-src</code>, or otherwise to the
+        <a href="#dfn-default-sources">default sources</a>.</p>
 
-        <p>If the policy contains a <code>script-nonce</code> directive, the
-        server MUST generate a fresh value for the <code>script-nonce</code>
-        directive at random and independently each time it transmits a policy.
-        This requirement ensures that the nonce value is difficult for an
-        attacker to predict.</p>
-
-        <p>When enforcing the <code>script-nonce</code> directive:</p>
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-image-sources">allowed image
+        sources</a>, the user agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
-            <li>Whenever the user agent would execute a script from a
-            <code>script</code> element, the user agent MUST NOT execute
-            the script unless the <var>script nonce</var> is non-empty, and
-            that script element contains a <code>nonce</code> attribute whose
-            value, after <a
-            href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripping
-            leading and trailing whitespace</a>, is a case-sensitive match
-            for the <var>script nonce</var>.</li>
-            <li>Whenever the user agent would execute a script from an inline
-            event handler, instead the user agent MUST NOT execute the
-            script.</li>
-            <li>Whenever the user agent would execute script contained in a
-            <code>javascript</code> URI, instead the user agent MUST NOT execute
-            the script.</li>
+          <li>Requesting data for an image, such as when processing the
+          <code>src</code> attribute of an <code>img</code> elements,
+          the <code>url()</code> or <code>image()</code> values on any
+          Cascading Style Sheets (CSS)
+          property that is capable of loading an image [<em><a
+          href="http://www.w3.org/TR/css3-images/">CSS3-Images</a></em>], or
+          the <code>href</code> attribute of a <code>link</code> element with
+          an image-related <code>rel</code> attribute, such as
+          <code>icon</code>.</li>
         </ul>
-
-        <section class="informative">
-          <h5>Usage</h5>
-          <p>The <code>script-nonce</code> directive is intended to allow
-          developers to strictly specify exactly which <code>script</code>
-          elements on a page were intentionally included for execution. This
-          is particularly useful when <code>'unsafe-inline'</code> is accepted
-          as a valid <code>script-src</code> (though any site is better off
-          avoiding inline script completely), but can also serve as a layer of
-          protection against the execution of otherwise trusted resources in a
-          context where they might be unexpected and potentially dangerous.</p>
-
-          <p>Usage is straightforward. For <em>each</em> request, the server
-          generates a unique value at random, and includes it in the CSP
-          header:</p>
-
-          <pre>Content-Security-Policy: script-nonce <em>random-value</em>;</pre>
-
-          <p>This same value is then applied as a <code>nonce</code> attribute
-          to each <code>script</code> tag that ought to be executed.</p>
-
-          <pre>&lt;script src="/path/to/script.js" nonce="<em>random-value</em>"&gt;&lt;/script&gt;
-&lt;script nonce="<em>random-value</em>"&gt;
-  alert("I execute! Hooray!");
-&lt;/script&gt;
-&lt;script&gt;
-  alert("I don't execute. Boo!");
-&lt;/script&gt;
-</pre>
-
-          <p>Note that the nonce's value is <em>not</em> a hash or signature
-          that verifies the contents of the script resources. It's quite simply
-          a random string that informs the user agent which scripts were
-          intentionally included in the page.</p>
-
-          <p><code>script</code> elements containing the proper nonce execute.
-          <code>script</code> elements that don't, don't. Even if an attacker
-          is able to inject markup into the protected resource, the attack
-          will be blocked by the attacker's inability to guess the random
-          value.</p>
-        </section>
-
-        <section class="informative">
-          <h5>Interaction with the <code>script-src</code> directive</h5>
-          <p>The <code>script-nonce</code> and <code>script-src</code>
-          directives' restrictions on code execution are non-exclusive: script
-          will not execute unless it satisfies <em>both</em> directives. For
-          example, inline event handlers will not execute given the following
-          policy:</p>
-          <pre>Content-Security-Policy: script-src 'self' 'unsafe-inline';
-                         script-nonce <em>nonce_value</em>;</pre>
-          <p>The <code>script-src</code> directive allows
-          <code>'unsafe-inline'</code>, but the event handler's execution is
-          blocked by the presence of the <code>script-nonce</code>
-          directive.</p>
-          <p>Similarly, script will not be executed given the following
-          policy:</p>
-          <pre>Content-Security-Policy: script-src https://cdn.example.com;
-                         script-nonce <em>nonce_value</em>;</pre>
-          <p>and the following <code>script</code> element:</p>
-          <pre>&lt;script nonce="<em>nonce_value</em>" src="https://not.example.com/script.js"&gt;&lt;/script&gt;</pre>
-          <p>The nonce value matches, but the source isn't included in the
-          <code>script-src</code> directive's source list. If the
-          <code>script</code> element was loading script from
-          <code>https://cdn.example.com/</code> instead, it would execute, as
-          its execution would violate neither the <code>script-nonce</code> nor
-          <code>script-src</code> directives.</p>
-          <p>Finally, and potentially surprisingly, script will not be executed
-          given the following policy:</p>
-          <pre>Content-Security-Policy: script-src https://cdn.example.com;
-                         script-nonce <em>nonce_value</em>;</pre>
-          <p>and the following <code>script</code> element:</p>
-          <pre>&lt;script src="https://cdn.example.com/script.js"&gt;&lt;/script&gt;</pre>
-          <p>The source matches the <code>script-src</code> directive's source
-          list, but no nonce is present. Its execution would therefore violate
-          the <code>script-nonce</code> directive's restrictions.</p>
-        </section>
       </section>
+
 
       <section>
-        <h4><code>plugin-types</code> (Experimental)</h4>
+        <h4><code>media-src</code></h4>
 
-        <p>The <code>plugin-types</code> restricts the set of plugins that can
-        be invoked by the protected resource by limiting the types of resources
-        that can be embedded.  The syntax for the name and value of the
-        directive are described by the following ABNF grammar:</p>
+        <p>The <code>media-src</code> directive restricts from where the
+        protected resource can load video and audio. The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
 
 <pre>
-directive-name    = "plugin-types"
-directive-value   = media-type-list
+directive-name    = "media-src"
+directive-value   = source-list
 </pre>
 
-        <p>The term <dfn>allowed plugin types</dfn> refers to the result of
-        <a href="#parse-a-media-type-list">parsing the <code>plugin-types</code>
-        directive's value as a media type list</a></p>
+        <p>The term <dfn>allowed media sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>media-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>media-src</code>, or otherwise to the
+        <a href="#dfn-default-sources">default sources</a>.</p>
 
-        <p>Whenever the user agent would instantiate a <a
-        href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
-        to handle <var>resource</var> while enforcing the
-        <code>plugin-types</code> directive, the user agent MUST instead act as
-        though the plugin reported an error if any of the following conditions
-        hold:</p>
-
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-media-sources">allowed media
+        sources</a>, the user agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
-            <li>The plugin is embedded into the protected resource via an
-            <code>object</code> or <code>embed</code> element that does not
-            explicitly declare a <a
-            href="http://www.whatwg.org/specs/web-apps/current-work/#mime-type">MIME type</a>
-            with a <code>type</code> attribute.</li>
-
-            <li><var>resource</var>'s media type does not <a
-            href="#match-a-media-type-list">match</a> the list of <a
-            href="#dfn-allowed-plugin-media-types">allowed plugin media
-            types</a>.</li>
-
-            <li>The plugin is embedded into the protected resource via an
-            <code>object</code> or <code>embed</code> element, and the media
-            type declared in the element's <code>type</code> attribute is not
-            a case-insensitive match for the <var>resource</var>'s media
-            type.</li>
-
-            <li>The plugin is embedded into the protected resource via an
-            <code>applet</code> element, and <var>resource</var>'s media type
-            is not a case-insensitive match for
-            <code>application/x-java-applet</code>.</li>
+          <li>Requesting data for a video or audio clip, such as when
+          processing the <code>src</code> attribute of a <code>video</code>,
+          <code>audio</code>, <code>source</code>, or <code>track</code>
+          elements.</li>
         </ul>
-
-        <p>Note that in any of these cases, acting as though the plugin reported an error
-        will cause the user agent to display the <a
-        href="http://www.whatwg.org/specs/web-apps/current-work/#fallback-content">fallback
-        content</a>.</p>
-
-        <section class="informative">
-          <h5>Usage</h5>
-          <p>The <code>plugin-types</code> directive whitelists a certain set
-          of MIME types that can be embedded in a protected resource. For
-          example, a site might want to ensure that PDF content loads, but that
-          no other plugins can be instantiated. The following directive would
-          satisfy that requirement:</p>
-          <pre>Content-Security-Policy: plugin-types application/pdf;</pre>
-          <p>Resources embedded via an <code>embed</code> or <code>object</code>
-          element delivered with an <code>application/pdf</code> content type
-          would be rendered in the appropriate plugin; resources delivered with
-          some other content type would be blocked. Multiple types can be
-          specified, in any order. If the site decided to additionally allow
-          Flash at some point in the future, it could do so with the following
-          directive:</p>
-          <pre>Content-Security-Policy: plugin-types application/pdf application/x-shockwave-flash;</pre>
-          <p>Note that wildcards are not accepted in the
-          <code>plugin-types</code> directive. Only the resource types
-          explicitly listed in the directive will be allowed.</p>
       </section>
-      <section class="informative">
-          <h5>Predeclaration of expected media types</h5>
-          <p>Enforcing the <code>plugin-types</code> directive requires that
-          <code>object</code> and <code>embed</code> elements declare the
-          expected media type of the resource they include via the
-          <code>type</code> attribute. If an author expects to load a PDF, she
-          could specify this as follows:</p>
-          <pre>&lt;object data="<var>resource</var>" type="application/pdf"&gt;&lt;/object&gt;</pre>
-          <p>If <var>resource</var> isn't actually a PDF file, it won't
-          load. This prevents certain types of attacks that rely on serving
-          content that unexpectedly invokes a plugin other than that which the
-          author intended.</p>
-          <p>Note that <var>resource</var> will not load in this scenario even
-          if its media type is otherwise whitelisted: resources will only load
-          when their media type is whitelisted <em>and</em> matches the
-          declared type in their containing element.</p>
-        </section>
-      </section>
-
       <section>
-        <h4><code>reflected-xss</code> (Experimental)</h4>
-        <p>The <code>reflected-xss</code> directive instructs a user agent
-        to active or disactivate any heuristics used to filter or block
-        reflected cross-site scripting attacks. The syntax for the name and
-        value of the directive are described by the following ABNF grammar:</p>
+        <h3><code>object-src</code></h3>
+
+        <p>The <code>object-src</code> directive restricts from where the
+        protected resource can load plugins. The syntax for the name and value
+        of the directive are described by the following ABNF grammar:</p>
+
 <pre>
-directive-name    = "reflected-xss"
-directive-value   = "allow" / "block" / "filter"
+directive-name    = "object-src"
+directive-value   = source-list
 </pre>
-        <p>A user agent with support for XSS protection MUST enforce this
-        directive as follows:</p>
+
+        <p>The term <dfn>allowed object sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>object-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>object-src</code>, or otherwise to the
+        <a href="#dfn-default-sources">default sources</a>.
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a href="#matches-a-source-list">match</a>
+        the <a href="#dfn-allowed-object-sources">allowed object sources</a>,
+        the user agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
         <ul>
-          <li>If the value of the directive is <code>allow</code>, the user
-          agent MUST disable its active protections against reflected cross-site
-          scripting attacks for the protected resource.</li>
-          <li>If the value of the directive is <code>filter</code>, the user
-          agent MUST enable its active protections against reflected cross-site
-          scripting attacks for the protected resource. This might result in
-          filtering script that is believed to be reflected being filtered or
-          selectively blocking script execution.</p>
-          <li>If the value of the directive is <code>block</code>, the user
-          agent MUST stop rendering the protected resource upon detection of
-          reflected script, and instead act as though it received an empty
-          <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP
-          400 response</a> for the protected resource itself.</li>
+          <li>Requesting data for a plugin, such as when processing the
+          <code>data</code> attribute of an <code>object</code> element, the
+          <code>src</code> attribute of an <code>embed</code> elements, or the
+          <code>code</code> or <code>archive</code> attributes of an
+          <code>applet</code> element.</li>
+
+          <li>Requesting data for display in a
+          <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>
+          in the protected resource created by an <code>object</code> or an
+          <code>embed</code> element.</li>
+
+          <li>Navigating such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
         </ul>
 
-        <section class="informative">
-          <h5>Relationship to <code>X-XSS-Protection</code></h5>
-          <p>This directive is meant to subsume the functionality provided by
-          the propriatary <code>X-XSS-Protection</code> HTTP header which is
-          supported by a number of user agents. Roughly speaking:</p>
-          <ul>
-            <li><code>reflected-xss allow</code> is equivalent to
-            <code>X-XSS-Protection: 0</code></li>
-            <li><code>reflected-xss filter</code> is equivalent to
-            <code>X-XSS-Protection: 1</code></li>
-            <li><code>reflected-xss block</code> is equivalent to
-            <code>X-XSS-Protection: 1; mode=block</code></li>
-          </ul>
-        </section>
+        <p>It is not required that the consumer of the element's data be a
+        plugin in order for the <code>object-src</code> directive to be
+        enforced.  Data for any <code>object</code>, <code>embed</code>,
+        or <code>applet</code> element MUST match the <a
+        href="#dfn-allowed-object-sources">allowed object sources</a> in order
+        to be fetched.  This is true even when the
+        element data is semantically equivalent to content which would otherwise
+        be restricted by one of the other <a href="#directives">directives</a>,
+        such as an <code>object</code> element with a <code>text/html</code>
+        MIME type.</p>
+
+        <p>Whenever the user agent would load a plugin without an associated
+        URI (e.g., because the <code>object</code> element lacked a
+        <code>data</code> attribute), if the protected resource's URI does not
+        <a href="#matches-a-source-list">match</a> the
+        <a href="#dfn-allowed-object-sources">allowed object sources</a>, the
+        user agent MUST NOT load the plugin.</p>
       </section>
       <section>
         <h4><code>report-uri</code></h4>
@@ -1974,6 +1464,519 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
             </ol>
           </li>
         </ol>
+      </section>
+      <section>
+        <h4><code>sandbox</code></h4>
+
+        <p>The <code>sandbox</code> directive specifies an HTML sandbox policy
+        that the user agent applies to the protected resource. The syntax for
+        the name and value of the directive are described by the following
+        ABNF grammar:</p>
+
+<pre>
+directive-name    = "sandbox"
+directive-value   = token *( 1*WSP token )
+token             = &lt;token from RFC 2616&gt;
+</pre>
+
+        <p>When enforcing the <code>sandbox</code> directive, the user agent
+        MUST <a href="http://www.whatwg.org/specs/web-apps/current-work/#parse-a-sandboxing-directive">parse
+        the sandboxing directive</a> using the <code>directive-value</code>
+        as the <em>input</em> and protected resource's
+        <a href="http://www.whatwg.org/specs/web-apps/current-work/#forced-sandboxing-flag-set">forced sandboxing flag set</a>
+        as the output. [[!HTML5]]</p>
+
+        <section class="informative">
+          <h5>Usage</h5>
+
+          <p>HTML5 defines a
+          <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#attr-iframe-sandbox"><code>sandbox</code> attribute</a>
+          for <code>iframe</code> elements, intended to allow web authors to
+          reduce the risk of including potentially untrusted content by imposing
+          restrictions on that content's abilities. When the attribute is set,
+          the content is forced into a unique origin, prevented from submitting
+          forms, running script, creating or navigating other browsing contexts,
+          and prevented from running plugins. These restrictions can be loosened
+          by setting certain flags as the attribute's value.</p>
+
+          <p>The <code>sandbox</code> directive allows any resource, framed or
+          not, to ask for the same sorts of restrictions to be applied to
+          itself.</p>
+
+          <p>For example, a message board or email system might provide
+          downloads of arbitrary attachments provided by other users. Attacks
+          that rely on tricking a client into rendering one of these attachments
+          could be mitigated by requesting that resources only be rendered in a
+          very restrictive sandbox. Sending the <code>sandbox</code> directive
+          with an empty value establishes such an environment:</p>
+
+          <pre>Content-Security-Policy: sandbox</pre>
+
+          <p>More trusted resources might be allowed to run in an environment
+          with fewer restrictions by adding <code>allow-*</code> flags to the
+          directive's value. For example, you can allow a page that you trust
+          to run script, while ensuring that it isn't treated as same-origin
+          with the rest of your site. This can be accomplished by sending the
+          <code>sandbox</code> directive with the <code>allow-scripts</code>
+          flag:</p>
+
+          <pre>Content-Security-Policy: sandbox allow-scripts</pre>
+
+          <p>The set of flags available to the CSP directive should match those
+          available to the <code>iframe</code> attribute. Currently, those
+          include:</p>
+          <ul>
+            <li><code>allow-forms</code></li>
+            <li><code>allow-same-origin</code></li>
+            <li><code>allow-scripts</code>, and</li>
+            <li><code>allow-top-navigation</code></li>
+          </ul>
+
+          <p>Note as well that, like the rest of Content Security Policy, the
+          <code>sandbox</code> directive is meant as a defense-in-depth. Web
+          authors would be well-served to use it <em>in addition to</em>
+          standard sniffing-mitigation and privilege-reduction techniques.</p>
+        </section>
+      </section>
+      <section>
+        <h3><code>script-src</code></h3>
+
+        <p>The <code>script-src</code> directive restricts which scripts the
+        protected resource can execute. The directive also controls other
+        resources, such as XSLT style sheets [[!XSLT]], which can cause the
+        user agent to execute script. The syntax for the name and value of
+        the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "script-src"
+directive-value   = source-list
+</pre>
+
+        <p>The term <dfn>allowed script sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>script-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>script-src</code>, or otherwise to the
+        <a href="#dfn-default-sources">default sources</a>.
+        
+        <p>If <code>'unsafe-inline'</code> is <strong>not</strong> in
+        <a href="#dfn-allowed-script-sources">allowed script sources</a>:</p>
+        <ul>
+          <li>Whenever the user agent would execute an inline script (either
+          from a <code>script</code> element or from an inline event handler),
+          instead the user agent MUST NOT execute script.</li>
+
+          <li>Whenever the user agent would execute script contained in a
+          <code>javascript</code> URI, instead the user agent MUST NOT execute
+          the script. (The user agent SHOULD execute script contained in
+          "bookmarklets" even when enforcing this restriction.)</li>
+        </ul>
+
+        <p>If <code>'unsafe-eval'</code> is <strong>not</strong> in
+        <a href="#dfn-allowed-script-sources">allowed script sources</a>:</p>
+        <ul>
+          <li>Instead of evaluating their arguments, both operator
+          <code>eval</code> and function <code>eval</code>
+          MUST throw a security exception. [[!ECMA-262]]</li>
+
+          <li>When called as a constructor, the function <code>Function</code>
+          MUST throw a security exception. [[!ECMA-262]]</li>
+
+          <li>When called with a first argument that is non-callable (e.g.,
+          not a function), the
+          <a href="http://www.w3.org/TR/html5/timers.html#dom-windowtimers-settimeout"><code>setTimeout</code></a>
+          function MUST return zero without creating a timer.</li>
+
+          <li>When called with a first argument that is non-callable (e.g.,
+          not a function), the
+          <a href="http://www.w3.org/TR/html5/timers.html#dom-windowtimers-setinterval"><code>setInterval</code></a>
+          function MUST return zero without creating a timer.</li>
+        </ul>
+
+        <p>The term <dfn>callable</dfn> refers to an object whose interface
+        has one or more <dfn>callers</dfn> as defined in the <a
+        href="http://www.w3.org/TR/2010/WD-WebIDL-20101021/#idl-callers">Web
+        IDL</a> specification [[!WEBIDL]].</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match</a> the <a
+        href="#dfn-allowed-script-sources">allowed script sources</a>, the user
+        agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <ul>
+          <li>Requesting a script, such as when processing the
+          <code>src</code> attribute of a <code>script</code> element or when
+          processing the <code>Worker</code> or <code>SharedWorker</code>
+          constructors.</li>
+
+          <li>Requesting an Extensible Stylesheet Language Transformations
+          (XSLT) [[!XSLT]], such as when processing the
+          <code>&lt;?xml-stylesheet?&gt;</code> processing directive in an XML
+          document [[!XML11]], the <code>href</code> attributes on
+          <code>&lt;xsl:include&gt;</code> element, or the <code>href</code>
+          attributes on <code>&lt;xsl:import&gt;</code> element.</li>
+        </ul>
+      </section>
+      <section>
+        <h4><code>style-src</code></h4>
+
+        <p>The <code>style-src</code> directive restricts which styles the
+        user applies to the protected resource. The syntax for the name and
+        value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "style-src"
+directive-value   = source-list
+</pre>
+
+        <p>The term <dfn>allowed style sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>style-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>style-src</code>, or otherwise to the
+        <a href="#dfn-default-sources">default sources</a>.</p>
+
+        <p>If <code>'unsafe-inline'</code> is <strong>not</strong> in
+        <a href="#dfn-allowed-style-sources">allowed style sources</a>:</p>
+        <ul>
+          <li>Whenever the user agent would apply style from a
+          <code>style</code> element, instead the user agent <code>MUST</code>
+          ignore the style.</li>
+
+          <li>Whenever the user agent would apply style from a
+          <code>style</code> attribute, instead the user agent
+          <code>MUST</code> ignore the style.</li>
+        </ul>
+
+        <p>Note: These restrictions on inline do not prevent the user agent
+        from applying style from an external stylesheet (e.g., found via
+        <code>&lt;link rel="stylesheet"&gt;</code>). The user agent is also
+        not prevented from applying style from Cascading Style Sheets Object
+        Model (CSSOM). [[!CSSOM]]</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+        a URI (including when following redirects) in the course of one of the
+        following activities, if the URI does not <a
+        href="#matches-a-source-list">match</a> the <a
+        href="#dfn-allowed-style-sources">allowed style sources</a>, the user
+        agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <ul>
+          <li>Requesting external style sheets, such as when processing the
+          <code>href</code> attribute of a <code>link</code> element with a
+          <code>rel</code> attribute containing the token
+          <code>stylesheet</code> or when processing the <code>@import</code>
+          directive in a stylesheet.</li>
+        </ul>
+
+        <p>Note: The <code>style-src</code> directive does not restrict the
+        use of XSLT. XSLT is restricted by the <code>script-src</code>
+        directive because the security consequences of including an untrusted
+        XSLT stylesheet are similar to those incurred by including an
+        untrusted script.</p>
+      </section>
+
+
+
+
+
+      <section>
+        <h3 id="sec-experimental-directives">Experimental Directives</h3>
+
+        <p>Note that the directives described in this section are strawmen,
+        still subject to active discussion. <i>Caveat implementor</i>.</p>
+
+        <section>
+          <h4><code>form-action</code></h4>
+
+          <p>The <code>form-action</code> restricts which URIs can be used as the
+          action of HTML <code>form</code> elements.  The syntax for the name and
+          value of the directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "form-action"
+directive-value   = source-list
+</pre>
+
+          <p>The term <dfn>allowed form actions</dfn> refers to the result of
+          <a href="#parse-a-source-list">parsing the <code>form-action</code>
+          directive's value as a source list</a>.</p>
+
+          <p>Whenever the user agent <a
+          href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+          a URI (including when following redirects) in the course of one of the
+          following activities, if the URI does not <a
+          href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-form-actions">allowed form
+          actions</a>, the user agent MUST act as if it had received an
+          empty HTTP 400 response:</p>
+          <ul>
+            <li>Processing an HTML <code>form</code> element.
+          </ul>
+          <p>Note that <code>form-action</code> does not fall back to the default
+          source list when the directive is not defined. That is, a policy that
+          defines <code>default-src 'none'</code> but not
+          <code>form-action</code> will still allow form submissions to any
+          target.</p>
+        </section>
+        <section>
+          <h4><code>plugin-types</code></h4>
+
+          <p>The <code>plugin-types</code> restricts the set of plugins that can
+          be invoked by the protected resource by limiting the types of resources
+          that can be embedded.  The syntax for the name and value of the
+          directive are described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "plugin-types"
+directive-value   = media-type-list
+</pre>
+
+          <p>The term <dfn>allowed plugin types</dfn> refers to the result of
+          <a href="#parse-a-media-type-list">parsing the <code>plugin-types</code>
+          directive's value as a media type list</a></p>
+
+          <p>Whenever the user agent would instantiate a <a
+          href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
+          to handle <var>resource</var> while enforcing the
+          <code>plugin-types</code> directive, the user agent MUST instead act as
+          though the plugin reported an error if any of the following conditions
+          hold:</p>
+
+          <ul>
+              <li>The plugin is embedded into the protected resource via an
+              <code>object</code> or <code>embed</code> element that does not
+              explicitly declare a <a
+              href="http://www.whatwg.org/specs/web-apps/current-work/#mime-type">MIME type</a>
+              with a <code>type</code> attribute.</li>
+
+              <li><var>resource</var>'s media type does not <a
+              href="#match-a-media-type-list">match</a> the list of <a
+              href="#dfn-allowed-plugin-media-types">allowed plugin media
+              types</a>.</li>
+
+              <li>The plugin is embedded into the protected resource via an
+              <code>object</code> or <code>embed</code> element, and the media
+              type declared in the element's <code>type</code> attribute is not
+              a case-insensitive match for the <var>resource</var>'s media
+              type.</li>
+
+              <li>The plugin is embedded into the protected resource via an
+              <code>applet</code> element, and <var>resource</var>'s media type
+              is not a case-insensitive match for
+              <code>application/x-java-applet</code>.</li>
+          </ul>
+
+          <p>Note that in any of these cases, acting as though the plugin reported an error
+          will cause the user agent to display the <a
+          href="http://www.whatwg.org/specs/web-apps/current-work/#fallback-content">fallback
+          content</a>.</p>
+
+          <section class="informative">
+            <h5>Usage</h5>
+            <p>The <code>plugin-types</code> directive whitelists a certain set
+            of MIME types that can be embedded in a protected resource. For
+            example, a site might want to ensure that PDF content loads, but that
+            no other plugins can be instantiated. The following directive would
+            satisfy that requirement:</p>
+            <pre>Content-Security-Policy: plugin-types application/pdf;</pre>
+            <p>Resources embedded via an <code>embed</code> or <code>object</code>
+            element delivered with an <code>application/pdf</code> content type
+            would be rendered in the appropriate plugin; resources delivered with
+            some other content type would be blocked. Multiple types can be
+            specified, in any order. If the site decided to additionally allow
+            Flash at some point in the future, it could do so with the following
+            directive:</p>
+            <pre>Content-Security-Policy: plugin-types application/pdf application/x-shockwave-flash;</pre>
+            <p>Note that wildcards are not accepted in the
+            <code>plugin-types</code> directive. Only the resource types
+            explicitly listed in the directive will be allowed.</p>
+        </section>
+        <section class="informative">
+            <h5>Predeclaration of expected media types</h5>
+            <p>Enforcing the <code>plugin-types</code> directive requires that
+            <code>object</code> and <code>embed</code> elements declare the
+            expected media type of the resource they include via the
+            <code>type</code> attribute. If an author expects to load a PDF, she
+            could specify this as follows:</p>
+            <pre>&lt;object data="<var>resource</var>" type="application/pdf"&gt;&lt;/object&gt;</pre>
+            <p>If <var>resource</var> isn't actually a PDF file, it won't
+            load. This prevents certain types of attacks that rely on serving
+            content that unexpectedly invokes a plugin other than that which the
+            author intended.</p>
+            <p>Note that <var>resource</var> will not load in this scenario even
+            if its media type is otherwise whitelisted: resources will only load
+            when their media type is whitelisted <em>and</em> matches the
+            declared type in their containing element.</p>
+          </section>
+        </section>
+        <section>
+          <h4><code>reflected-xss</code></h4>
+          <p>The <code>reflected-xss</code> directive instructs a user agent
+          to active or disactivate any heuristics used to filter or block
+          reflected cross-site scripting attacks. The syntax for the name and
+          value of the directive are described by the following ABNF grammar:</p>
+<pre>
+directive-name    = "reflected-xss"
+directive-value   = "allow" / "block" / "filter"
+</pre>
+          <p>A user agent with support for XSS protection MUST enforce this
+          directive as follows:</p>
+          <ul>
+            <li>If the value of the directive is <code>allow</code>, the user
+            agent MUST disable its active protections against reflected cross-site
+            scripting attacks for the protected resource.</li>
+            <li>If the value of the directive is <code>filter</code>, the user
+            agent MUST enable its active protections against reflected cross-site
+            scripting attacks for the protected resource. This might result in
+            filtering script that is believed to be reflected being filtered or
+            selectively blocking script execution.</p>
+            <li>If the value of the directive is <code>block</code>, the user
+            agent MUST stop rendering the protected resource upon detection of
+            reflected script, and instead act as though it received an empty
+            <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP
+            400 response</a> for the protected resource itself.</li>
+          </ul>
+
+          <section class="informative">
+            <h5>Relationship to <code>X-XSS-Protection</code></h5>
+            <p>This directive is meant to subsume the functionality provided by
+            the propriatary <code>X-XSS-Protection</code> HTTP header which is
+            supported by a number of user agents. Roughly speaking:</p>
+            <ul>
+              <li><code>reflected-xss allow</code> is equivalent to
+              <code>X-XSS-Protection: 0</code></li>
+              <li><code>reflected-xss filter</code> is equivalent to
+              <code>X-XSS-Protection: 1</code></li>
+              <li><code>reflected-xss block</code> is equivalent to
+              <code>X-XSS-Protection: 1; mode=block</code></li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <h4><code>script-nonce</code></h4>
+
+          <p>The <code>script-nonce</code> directive restricts script execution
+          by requiring the presence of the specified nonce on <code>script</code>
+          elements. The syntax for the name and value of the directive are
+          described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "script-nonce"
+directive-value   = nonce
+nonce             = 1*( &lt;VCHAR except ";" and ","&gt; )
+</pre>
+
+          <p>If the directive's value is empty, consists solely of whitespace, or
+          contains invalid characters, let the <var>script nonce</var> be the empty
+          string. Otherwise, let the <var>script nonce</var> be the directive's
+          value, <a
+          href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripped
+          of leading and trailing whitespace</a>.</p>
+
+          <p>If the policy contains a <code>script-nonce</code> directive, the
+          server MUST generate a fresh value for the <code>script-nonce</code>
+          directive at random and independently each time it transmits a policy.
+          This requirement ensures that the nonce value is difficult for an
+          attacker to predict.</p>
+
+          <p>When enforcing the <code>script-nonce</code> directive:</p>
+          <ul>
+              <li>Whenever the user agent would execute a script from a
+              <code>script</code> element, the user agent MUST NOT execute
+              the script unless the <var>script nonce</var> is non-empty, and
+              that script element contains a <code>nonce</code> attribute whose
+              value, after <a
+              href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripping
+              leading and trailing whitespace</a>, is a case-sensitive match
+              for the <var>script nonce</var>.</li>
+              <li>Whenever the user agent would execute a script from an inline
+              event handler, instead the user agent MUST NOT execute the
+              script.</li>
+              <li>Whenever the user agent would execute script contained in a
+              <code>javascript</code> URI, instead the user agent MUST NOT execute
+              the script.</li>
+          </ul>
+
+          <section class="informative">
+            <h5>Usage</h5>
+            <p>The <code>script-nonce</code> directive is intended to allow
+            developers to strictly specify exactly which <code>script</code>
+            elements on a page were intentionally included for execution. This
+            is particularly useful when <code>'unsafe-inline'</code> is accepted
+            as a valid <code>script-src</code> (though any site is better off
+            avoiding inline script completely), but can also serve as a layer of
+            protection against the execution of otherwise trusted resources in a
+            context where they might be unexpected and potentially dangerous.</p>
+
+            <p>Usage is straightforward. For <em>each</em> request, the server
+            generates a unique value at random, and includes it in the CSP
+            header:</p>
+
+            <pre>Content-Security-Policy: script-nonce <em>random-value</em>;</pre>
+
+            <p>This same value is then applied as a <code>nonce</code> attribute
+            to each <code>script</code> tag that ought to be executed.</p>
+
+            <pre>&lt;script src="/path/to/script.js" nonce="<em>random-value</em>"&gt;&lt;/script&gt;
+&lt;script nonce="<em>random-value</em>"&gt;
+  alert("I execute! Hooray!");
+&lt;/script&gt;
+&lt;script&gt;
+  alert("I don't execute. Boo!");
+&lt;/script&gt;
+</pre>
+
+            <p>Note that the nonce's value is <em>not</em> a hash or signature
+            that verifies the contents of the script resources. It's quite simply
+            a random string that informs the user agent which scripts were
+            intentionally included in the page.</p>
+
+            <p><code>script</code> elements containing the proper nonce execute.
+            <code>script</code> elements that don't, don't. Even if an attacker
+            is able to inject markup into the protected resource, the attack
+            will be blocked by the attacker's inability to guess the random
+            value.</p>
+          </section>
+
+          <section class="informative">
+            <h5>Interaction with the <code>script-src</code> directive</h5>
+            <p>The <code>script-nonce</code> and <code>script-src</code>
+            directives' restrictions on code execution are non-exclusive: script
+            will not execute unless it satisfies <em>both</em> directives. For
+            example, inline event handlers will not execute given the following
+            policy:</p>
+            <pre>Content-Security-Policy: script-src 'self' 'unsafe-inline';
+                           script-nonce <em>nonce_value</em>;</pre>
+            <p>The <code>script-src</code> directive allows
+            <code>'unsafe-inline'</code>, but the event handler's execution is
+            blocked by the presence of the <code>script-nonce</code>
+            directive.</p>
+            <p>Similarly, script will not be executed given the following
+            policy:</p>
+            <pre>Content-Security-Policy: script-src https://cdn.example.com;
+                           script-nonce <em>nonce_value</em>;</pre>
+            <p>and the following <code>script</code> element:</p>
+            <pre>&lt;script nonce="<em>nonce_value</em>" src="https://not.example.com/script.js"&gt;&lt;/script&gt;</pre>
+            <p>The nonce value matches, but the source isn't included in the
+            <code>script-src</code> directive's source list. If the
+            <code>script</code> element was loading script from
+            <code>https://cdn.example.com/</code> instead, it would execute, as
+            its execution would violate neither the <code>script-nonce</code> nor
+            <code>script-src</code> directives.</p>
+            <p>Finally, and potentially surprisingly, script will not be executed
+            given the following policy:</p>
+            <pre>Content-Security-Policy: script-src https://cdn.example.com;
+                           script-nonce <em>nonce_value</em>;</pre>
+            <p>and the following <code>script</code> element:</p>
+            <pre>&lt;script src="https://cdn.example.com/script.js"&gt;&lt;/script&gt;</pre>
+            <p>The source matches the <code>script-src</code> directive's source
+            list, but no nonce is present. Its execution would therefore violate
+            the <code>script-nonce</code> directive's restrictions.</p>
+          </section>
+        </section>
       </section>
     </section>
 
