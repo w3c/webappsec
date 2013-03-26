@@ -127,6 +127,8 @@
 
         <p>The term <dfn>resource representation</dfn> is defined in the HTTP 1.1 specification.  [[!HTTP11]]</p>
 
+        <p>The term <dfn>JSON object</dfn> is defined in the JSON specification.  [[!RFC4627]]</p>
+
         <p>The <code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>,
         <code>&lt;img&gt;</code>, <code>&lt;video&gt;</code>, <code>&lt;audio&gt;</code>,
         <code>&lt;source&gt;</code>, <code>&lt;track&gt;</code>,
@@ -690,6 +692,113 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
             the media type list</a>.
           </section>
         </section>
+        <section>
+          <h4>Reporting</h4>
+
+          <p>To <dfn>strip <code>uri</code> for reporting</dfn>, the user agent
+          MUST use an algorithm equivalent to the following:</p>
+
+          <ol>
+            <li>If the origin of <var>uri</var> is a <a href="#dfn-globally-unique-identifier">globally unique identifier</a>
+            (for example, <var>uri</var> has a scheme of <code>data</code>, <code>blob</code>, or <code>file</code>), then
+            abort these steps, and return the ASCII serialization of <var>uri</var>'s scheme.</li>
+            <li>If the origin of <var>uri</var> is not the same as the origin
+            of the protected resource, then abort these steps, and return the
+            ASCII serialization of <var>uri</var>'s origin.</li>
+            <li>Return <var>uri</var>, with any <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
+            component removed.</li>
+          </ol>
+
+          <p>To <dfn>generate a violation report object</dfn>, the user agent
+          MUST use an algorithm equivalent to the following:</p>
+
+          <ol>
+            <li>Prepare a JSON object <var>violation</var> with the
+            following keys and values:
+
+              <dl>
+                <dt>blocked-uri</dt>
+                <dd>The URI of the resource that was prevented from loading,
+                <a href="#dfn-strip-uri-for-reporting">stripped for reporting</a>,
+                or the empty string if the resource has no URI (inline script and
+                inline style, for example).</dd>
+
+                <dt>document-uri</dt>
+                <dd>The <a href="http://www.w3.org/TR/html5/dom.html#the-document%27s-address">address</a>
+                of the protected resource, <a href="#dfn-strip-uri-for-reporting">stripped for reporting</a>.</dd>
+
+                <dt>effective-directive</dt>
+                <dd>The name of the policy directive that was violated. This will
+                contain the directive whose enforcement triggered the violation,
+                even if that directive does not explicitly appear in the policy,
+                but is implicitly activated via the <code>default-src</code>
+                directive.</dd>
+
+                <dt>original-policy</dt>
+                <dd>The original policy, as received by the user agent.</dd>
+
+                <dt>referrer</dt>
+                <dd>The <a href="http://www.w3.org/TR/html5/dom.html#dom-document-referrer">referrer</a>
+                attribute of the protected resource, or the empty string if the
+                protected resource has no referrer.</dd>
+
+                <dt>violated-directive</dt>
+                <dd>The policy directive that was violated, as it appears in the
+                policy. This will contain the <code>default-src</code> directive
+                in the case of violations caused by falling back to the
+                <a href="#dfn-default-sources">default sources</a> when enforcing
+                a directive.</dd>
+              </dl>
+            </li>
+            <li>If a specific line or a specific file can be identified as the
+            cause of the violation (for example, script execution that violates
+            the <code>script-src</code> directive), the user agent MAY add the
+            following keys and values to <var>violation</var>:
+
+              <dl>
+                <dt>source-file</dt>
+                <dd>The URI of the resource where the violation occurred,
+                <a href="#dfn-strip-uri-for-reporting">stripped for reporting</a>.</dd>
+
+                <dt>line-number</dt>
+                <dd>The line number in <code>source-file</code> on which
+                the violation occurred.</dd>
+              </dl>
+            </li>
+            <li>Return <var>violation</var>.</li>
+          </ol>
+
+          <p>To <dfn>send violation reports</dfn>, the user agent MUST use an
+          algorithm equivalent to the following:</p>
+
+          <ol>
+            <li>Prepare a JSON object <var>report object</var> with a single
+            key, <code>csp-report</code>, whose value is the result of
+            <a href="#dfn-generate-a-violation-report-object">generating a violation report object</a>.</li>
+            <li>Let <var>report body</var> be the JSON stringification of
+            <var>report object</var>.</li>
+            <li>For each <var>report URI</var> in the <a href="#dfn-set-of-report-uris">set of report URIs</a>:
+              <ol>
+                <li><a href="http://www.w3.org/TR/html5/urls.html#fetch">Fetch</a> <var>report URI</var>
+                from the origin of the protected resource, with the synchronous
+                flag <em>not</em>set, using HTTP method <code>POST</code>, with
+                a <code>Content-Type</code> header field of <code>application/json</code>
+                with an entity body consisting of <var>report body</var>. The
+                user agent MUST NOT follow redirects when fetching this
+                resource. (Note: The user agent ignores the fetched resource.)</li>
+              </ol>
+            </li>
+          </ol>
+
+          <p>To <dfn>report a violation</dfn>, the user agent MUST:</p>
+          <ol>
+            <li><a href="#dfn-fire-a-violation-event">Fire a violation event</a> at
+            the protected resource's <a href="http://www.w3.org/TR/html5/dom.html#document"><code>Document</code></a>, and</li>
+            <li>If the <a href="#dfn-set-of-report-uris">set of report URIs</a>
+            is non-empty, <a href="#dfn-send-a-violation-report">send violation reports</a>
+            to each.</li>
+          </ol>
+        </section>
       </section>
 
       <section>
@@ -760,8 +869,7 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
 
         <p>If a policy violation occurs while <a href="#enforce">enforcing</a>
         or <a href="#monitor">monitoring</a> a policy, the user agent MUST
-        <a href="#dfn-fire-a-violation-event">fire a violation event</a> at
-        the protected resource's <a href="http://www.w3.org/TR/html5/dom.html#document"><code>Document</code></a>.</p>
+        .</p>
       </section>
 
       <section>
@@ -1053,7 +1161,8 @@ directive-value   = source-list
         href="#matches-a-source-list">match</a> the
         <a href="#dfn-allowed-connection-targets">allowed connection targets</a>,
         the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
           <li>Processing the <a
           href="http://www.w3.org/TR/XMLHttpRequest/#the-open-method"><code>open()</code>
@@ -1141,7 +1250,7 @@ directive-value   = source-list
           and styles will all only load from the same origin as the protected
           resource, and connections will only be made to the same origin. Adding
           a more specific declaration to the policy would completely override
-          the default source list for that resource type.<p>
+          the default source list for that resource type.</p>
 
           <pre>Content-Security-Policy: default-src 'self'; script-src example.com</pre>
 
@@ -1186,7 +1295,8 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-font-sources">allowed font
         sources</a>, the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
           <li>Requesting data for display in a font, such as when processing
           the <code>@font-face</code> Cascading Style Sheets (CSS) rule.</li>
@@ -1214,10 +1324,11 @@ directive-value   = source-list
         <p>Whenever the user agent <a
         href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
         a URI (including when following redirects) in the course of one of the
-        following activities, if the URI does not <a
-          href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-frame-sources">allowed frame
-          sources</a>, the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        following activities, if the URI does not <a href="#matches-a-source-list">match</a>
+        the <a href="#dfn-allowed-frame-sources">allowed frame sources</a>, the
+        user agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
           <li>Requesting data for display in a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a> in the
           protected resource created by an <code>iframe</code> or
@@ -1251,7 +1362,8 @@ directive-value   = source-list
         following activities, if the URI does not <a
         href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-image-sources">allowed image
         sources</a>, the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
           <li>Requesting data for an image, such as when processing the
           <code>src</code> attribute of an <code>img</code> elements,
@@ -1323,7 +1435,8 @@ directive-value   = source-list
         following activities, if the URI does not <a href="#matches-a-source-list">match</a>
         the <a href="#dfn-allowed-object-sources">allowed object sources</a>,
         the user agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
           <li>Requesting data for a plugin, such as when processing the
           <code>data</code> attribute of an <code>object</code> element, the
@@ -1375,95 +1488,9 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
         <code>report-uri</code> directive, each resolved relative to the
         protected resource's URI.</p>
 
-        <p>To <dfn id="send-a-violation-report">send a violation report</dfn>,
-        the user agent MUST use an algorithm equivalent to the following:</p>
-        <ol>
-          <li>Prepare a JSON object <var>violation-object</var> with the
-          following keys and values: [[!RFC4627]]
-            <dl>
-              <dt>csp-report</dt>
-              <dd>
-                <p>A JSON object containing the following keys and values:</p>
-                <dl>
-                  <dt id="violation-report-document-uri">document-uri</dt>
-                  <dd>The <a href="http://www.w3.org/TR/html5/dom.html#the-document%27s-address">address</a>
-                  of the protected resource, with any
-                  <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
-                  component removed.</dd>
-
-                  <dt id="violation-report-referrer">referrer</dt>
-                  <dd>The <a href="http://www.w3.org/TR/html5/dom.html#dom-document-referrer">referrer</a>
-                  attribute of the protected resource, or the empty string if
-                  the protected resource has no referrer.</dd>
-
-                  <dt id="violation-report-blocked-uri">blocked-uri</dt>
-                  <dd>URI of the resource that was prevented from loading due to
-                  the policy violation, with any
-                  <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
-                  component removed, or the empty string if the resource has no
-                  URI (inline script and inline style, for example).</dd>
-
-                  <dt id="violation-report-violated-directive">violated-directive</dt>
-                  <dd>The policy directive that was violated. This will contain
-                  the <code>default-src</code> directive in the case of policy
-                  violations caused by falling back to the <a href="#dfn-default-sources">default sources</a>
-                  when enforcing a directive.</dd>
-
-                  <dt id="violation-report-effective-directive">effective-directive</dt>
-                  <dd>The name of the policy directive that was violated. This
-                  will contain the directive whose enforcement triggered the
-                  violation, even if that directive does not explicitly appear
-                  in the policy, but is implicitly activated via the
-                  <code>default-src</code> directive.</dd>
-
-                  <dt id="violation-report-original-policy">original-policy</dt>
-                  <dd>The original policy as received by the user-agent.</dd>
-                </dl>
-                <p>If the violation occurred as a result of script execution,
-                and a specific line can be identified as the source, the
-                following keys and values MAY be added:</p>
-                <dl>
-                  <dt id="violation-report-source-file">source-file</dt>
-                  <dd>The <a href="http://www.w3.org/TR/html5/dom.html#the-document%27s-address">address</a>
-                  of the resource where the violation occurred (an external
-                  script file, for instance), with any
-                  <a href="http://www.w3.org/TR/html5/urls.html#url-fragment">&lt;fragment&gt;</a>
-                  component removed.</dd>
-
-                  <dt id="violation-report-line-number">line-number</dt>
-                  <dd>The line number in <code>source-file</code> on which the
-                  violation occurred.</dd>
-                </dl>
-              </dd>
-            </dl>
-          </li>
-
-          <li>If the origin of the blocked-uri is not the same as the origin of
-          the protected resource, then replace the blocked-uri with the ASCII
-          serialization of the blocked-uri's origin.</li>
-
-          <li>If the origin of the blocked-uri is a
-          <a href="#dfn-globally-unique-identifier">globally unique identifier</a>
-          (for example, <code>data:</code> or <code>blob:</code>), then replace
-          the blocked-uri with the ASCII serialization of the blocked-uri's
-          scheme.</li>
-
-          <li>Let the <var>violation report</var> be the JSON stringification
-          of the <var>violation-object</var>.</li>
-
-          <li>For each <var>report URI</var> in the <a href="#dfn-set-of-report-uris">set of report URIs</a>:
-            <ol>
-              <li><a href="http://www.w3.org/TR/html5/urls.html#fetch">Fetch</a>
-              the <var>report URI</var> from origin of the protected
-              resource, with the synchronous flag <em>not</em> set, using HTTP
-              method <code>POST</code>, with a <code>Content-Type</code>
-              header field of <code>application/json</code> with an entity
-              body consisting of the <var>violation report</var>. The user
-              agent MUST NOT follow redirects when fetching this resource.
-              (Note: The user agent ignores the fetched resource.)</li>
-            </ol>
-          </li>
-        </ol>
+        <p>The process of sending violation reports to the URIs specified in
+        this directive's value is defined in this document's
+        <a href="#reporting">Reporting section</a></p>
       </section>
       <section>
         <h4><code>sandbox</code></h4>
@@ -1556,19 +1583,21 @@ directive-value   = source-list
         <a href="#parse-a-source-list">parsing the <code>script-src</code>
         directive's value as a source list</a> if the policy contains an
         explicit <code>script-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.
-        
+        <a href="#dfn-default-sources">default sources</a>.</p>
+
         <p>If <code>'unsafe-inline'</code> is <strong>not</strong> in
         <a href="#dfn-allowed-script-sources">allowed script sources</a>:</p>
         <ul>
           <li>Whenever the user agent would execute an inline script (either
           from a <code>script</code> element or from an inline event handler),
-          instead the user agent MUST NOT execute script.</li>
+          instead the user agent MUST NOT execute script, <em>and</em> MUST
+          <a href="#dfn-report-a-violation">report a violation</a>.</li>
 
           <li>Whenever the user agent would execute script contained in a
           <code>javascript</code> URI, instead the user agent MUST NOT execute
-          the script. (The user agent SHOULD execute script contained in
-          "bookmarklets" even when enforcing this restriction.)</li>
+          the script, <em>and</em> MUST <a href="#dfn-report-a-violation">report a violation</a>.
+          (The user agent SHOULD ignore this step when processing script
+          contained in "bookmarklets").</li>
         </ul>
 
         <p>If <code>'unsafe-eval'</code> is <strong>not</strong> in
@@ -1604,7 +1633,8 @@ directive-value   = source-list
         href="#matches-a-source-list">match</a> the <a
         href="#dfn-allowed-script-sources">allowed script sources</a>, the user
         agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
           <li>Requesting a script, such as when processing the
           <code>src</code> attribute of a <code>script</code> element or when
@@ -1663,7 +1693,8 @@ directive-value   = source-list
         href="#matches-a-source-list">match</a> the <a
         href="#dfn-allowed-style-sources">allowed style sources</a>, the user
         agent MUST act as if it had received an empty
-        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>:</p>
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
           <li>Requesting external style sheets, such as when processing the
           <code>href</code> attribute of a <code>link</code> element with a
@@ -1734,8 +1765,9 @@ directive-value   = source-list
           a URI (including when following redirects) in the course of one of the
           following activities, if the URI does not <a
           href="#matches-a-source-list">match</a> the <a href="#dfn-allowed-form-actions">allowed form
-          actions</a>, the user agent MUST act as if it had received an
-          empty HTTP 400 response:</p>
+          actions</a>, the user agent MUST act as if it had received an empty
+          <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+          <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
           <ul>
             <li>Processing an HTML <code>form</code> element.
           </ul>
@@ -1766,8 +1798,9 @@ directive-value   = media-type-list
           href="http://www.whatwg.org/specs/web-apps/current-work/#plugin">plugin</a>
           to handle <var>resource</var> while enforcing the
           <code>plugin-types</code> directive, the user agent MUST instead act as
-          though the plugin reported an error if any of the following conditions
-          hold:</p>
+          though the plugin reported an error <em>and</em>
+          <a href="#dfn-report-a-violation">report a violation</a> if any of
+          the following conditions hold:</p>
 
           <ul>
               <li>The plugin is embedded into the protected resource via an
@@ -1856,13 +1889,17 @@ directive-value   = "allow" / "block" / "filter"
             agent MUST enable its active protections against reflected cross-site
             scripting attacks for the protected resource. This might result in
             filtering script that is believed to be reflected being filtered or
-            selectively blocking script execution.</p>
+            selectively blocking script execution.</li>
             <li>If the value of the directive is <code>block</code>, the user
             agent MUST stop rendering the protected resource upon detection of
             reflected script, and instead act as though it received an empty
             <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP
             400 response</a> for the protected resource itself.</li>
           </ul>
+
+          <p>If the user agent's active protections against reflected cross-site
+          scripting attacks detect or prevent script execution, the user agent
+          MUST <a href="#dfn-report-a-violation">report a violation</a>.</p>
 
           <section class="informative">
             <h5>Relationship to <code>X-XSS-Protection</code></h5>
