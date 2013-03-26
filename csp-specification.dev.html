@@ -717,32 +717,32 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
             following keys and values:
 
               <dl>
-                <dt>blocked-uri</dt>
+                <dt id="violation-report-blocked-uri">blocked-uri</dt>
                 <dd>The URI of the resource that was prevented from loading,
                 <a href="#dfn-strip-uri-for-reporting">stripped for reporting</a>,
                 or the empty string if the resource has no URI (inline script and
                 inline style, for example).</dd>
 
-                <dt>document-uri</dt>
+                <dt id="violation-report-document-uri">document-uri</dt>
                 <dd>The <a href="http://www.w3.org/TR/html5/dom.html#the-document%27s-address">address</a>
                 of the protected resource, <a href="#dfn-strip-uri-for-reporting">stripped for reporting</a>.</dd>
 
-                <dt>effective-directive</dt>
+                <dt id="violation-report-effective-directive">effective-directive</dt>
                 <dd>The name of the policy directive that was violated. This will
                 contain the directive whose enforcement triggered the violation,
                 even if that directive does not explicitly appear in the policy,
                 but is implicitly activated via the <code>default-src</code>
                 directive.</dd>
 
-                <dt>original-policy</dt>
+                <dt id="violation-report-original-policy">original-policy</dt>
                 <dd>The original policy, as received by the user agent.</dd>
 
-                <dt>referrer</dt>
+                <dt id="violation-report-referrer">referrer</dt>
                 <dd>The <a href="http://www.w3.org/TR/html5/dom.html#dom-document-referrer">referrer</a>
                 attribute of the protected resource, or the empty string if the
                 protected resource has no referrer.</dd>
 
-                <dt>violated-directive</dt>
+                <dt id="violation-report-violated-directive">violated-directive</dt>
                 <dd>The policy directive that was violated, as it appears in the
                 policy. This will contain the <code>default-src</code> directive
                 in the case of violations caused by falling back to the
@@ -756,11 +756,11 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
             following keys and values to <var>violation</var>:
 
               <dl>
-                <dt>source-file</dt>
+                <dt id="violation-report-source-file">source-file</dt>
                 <dd>The URI of the resource where the violation occurred,
                 <a href="#dfn-strip-uri-for-reporting">stripped for reporting</a>.</dd>
 
-                <dt>line-number</dt>
+                <dt id="violation-report-line-number">line-number</dt>
                 <dd>The line number in <code>source-file</code> on which
                 the violation occurred.</dd>
               </dl>
@@ -917,24 +917,30 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
           <section>
             <h5>Firing events using the <code>SecurityPolicyViolationEvent</code> interface</h5>
 
-            <p>To <dfn>fire a violation event</dfn> means to <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a>
-            to <a href="http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-event-fire">fire an event</a>
-            named <code>securitypolicyviolation</code> using the <code>SecurityPolicyViolationEvent</code> interface
-            with the following initializations:</p>
+            <p>To <dfn>fire a violation event</dfn>, the user agent MUST use an algorithm equivalent to
+            the following:</p>
 
-            <ul>
-              <li><code>documentURI</code> MUST be initialized to the <a href="http://www.w3.org/TR/html5/dom.html#the-document%27s-address">address</a> of the protected resource.</li>
-              <li><code>referrer</code> MUST be initialized to the <a href="http://www.w3.org/TR/html5/dom.html#dom-document-referrer">referrer</a> of the protected resource, or the empty string if the protected resource has no referrer.</li>
-              <li><code>blockedURI</code> MUST be initialized to the URI of the resource that was prevented from loading, or the empty string if the resource has no URI.</li>
-              <li><code>violatedDirective</code> MUST be initialized to the policy directive that was violated. This will contain the default-src directive in the case of policy violations caused by falling back to the <a href="#dfn-default-sources">default sources</a> when enforcing a directive.</li>
-              <li><code>effectiveDirective</code> MUST be initialized to the name of the policy directive that was violated. This will contain the directive whose enforcement triggered the violation, even if that directive does not explicitly appear in the policy, but is implicitly activated via the <code>default-src</code> directive.</li>
-              <li><code>originalPolicy</code> MUST be initialized to the policy as received by the user-agent.</li>
-              <li><code>sourceFile</code> MUST be intialized to the <a href="http://www.w3.org/TR/html5/dom.html#the-document%27s-address">address</a> of the resource where the violation occurred. This might be the same as <code>documentURI</code>, or might point to an external script, stylesheet, etc.</li>
-              <li><code>lineNumber</code> MUST be initialized to the line number in <code>sourceFile</code> where the violation occurred, or to <code>0</code> if no line number can be determined.</li>
-            </ul>
+            <ol>
+              <li>Let <var>report object</var> be the result of
+              <a href="#dfn-generate-a-violation-report-object">generating a violation report object</a>.</li>
 
-            <p>If the origin of resource that was prevented from loading is not the same as the origin of the protected resource, then replace the <code>blockedURI</code> property's value with the ASCII serialization of the blocked resource's origin.</p>
-            <p>If the origin of resource that was prevented from loading is a <a href="#dfn-globally-unique-identifier">globally unique identifier</a> (for example, <code>data:</code> or <code>blob:</code>), then replace the <code>blockedURI</code> property's value with the ASCII serialization of the blocked resource's scheme.</p>
+              <li><a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">Queue a task</a>
+              to <a href="http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-event-fire">fire an event</a>
+              named <code>securitypolicyviolation</code> using the <code>SecurityPolicyViolationEvent</code> interface
+              with the following initializations:
+
+                <ul>
+                  <li><code>blockedURI</code> MUST be initialized to the value of <var>report object</var>'s <code>blocked-uri</code> key.</li>
+                  <li><code>documentURI</code> MUST be initialized to the value of <var>report object</var>'s <code>document-uri</code> key.</li>
+                  <li><code>effectiveDirective</code> MUST be initialized to the value of <var>report object</var>'s <code>effective-directive</code> key.</li>
+                  <li><code>originalPolicy</code> MUST be initialized to the value of <var>report object</var>'s <code>original-policy</code> key.</li>
+                  <li><code>referrer</code> MUST be initialized to the value of <var>report object</var>'s <code>referrer</code> key.</li>
+                  <li><code>violatedDirective</code> MUST be initialized to the value of <var>report object</var>'s <code>violated-directive</code> key.</li>
+                  <li><code>sourceFile</code> MUST be initialized to the value of <var>report object</var>'s <code>source-file</code> key.</li>
+                  <li><code>lineNumber</code> MUST be initialized to the value of <var>report object</var>'s <code>line-number</code> key.</li>
+                </ul>
+              </li>
+            </ol>
 
             <p>The <a href="http://www.w3.org/TR/html5/webappapis.html#task-source">task source</a>
             for the queued task is the <a href="http://www.w3.org/TR/html5/webappapis.html#dom-manipulation-task-source">DOM manipulation task source</a>.</p>
