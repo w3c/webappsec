@@ -644,6 +644,23 @@ port              = ":" ( 1*DIGIT / "*" )
               <code>https://example.com/file?notkey=notvalue</code>.</p>
             </section>
           </section>
+
+          <section>
+            <h5>Nonces</h5>
+
+            <p>An element has <dfn>a valid nonce</dfn> for a set of source expressions
+            if the following algorithm returns <code>true</code>:</p>
+            <ol>
+              <li>Let <var>nonce</var> be the value of the <code>nonce</code>
+              attribute of the element.</li>
+
+              <li>Let <var>nonce-source</var> be the string "<code>'nonce-</code>",
+              concatenated with <var>nonce</var>, concatenated with U+0027 APOSTROPHE
+              (<code>'</code>).</li>
+
+              <li>Return <code>true</code> if, and only if, <var>nonce-source</var>
+              is in the set of source expressions.</li>
+          </section>
         </section>
 
         <section>
@@ -1506,10 +1523,17 @@ directive-value   = source-list
         <p>If <code>'unsafe-inline'</code> is <strong>not</strong> in
         <a href="#dfn-allowed-script-sources">allowed script sources</a>:</p>
         <ul>
-          <li>Whenever the user agent would execute an inline script (either
-          from a <code>script</code> element or from an inline event handler),
+          <li>Whenever the user agent would execute an inline script from a
+          <code>script</code> element that lacks
+          <a href="#dfn-a-valid-nonce">a valid nonce</a> for the
+          <a href="#dfn-allowed-script-sources">allowed script sources</a>,
           instead the user agent MUST NOT execute script, <em>and</em> MUST
           <a href="#dfn-report-a-violation">report a violation</a>.</li>
+
+          <li>Whenever the user agent would execute an inline script from an
+          inline event handler, instead the user agent MUST NOT execute script,
+          <em>and</em> MUST <a href="#dfn-report-a-violation">report a
+          violation</a>.</li>
 
           <li>Whenever the user agent would execute script contained in a
           <code>javascript</code> URI, instead the user agent MUST NOT execute
@@ -1554,10 +1578,13 @@ directive-value   = source-list
         <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
         <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
-          <li>Requesting a script, such as when processing the
-          <code>src</code> attribute of a <code>script</code> element or when
-          processing the <code>Worker</code> or <code>SharedWorker</code>
-          constructors.</li>
+          <li>Requesting a script while processing the <code>src</code> attribute
+          of a <code>script</code> element that lacks
+          <a href="#dfn-a-valid-nonce">a valid nonce</a> for the
+          <a href="#dfn-allowed-script-sources">allowed script sources</a>.</li>
+
+          <li>Requesting a script while processing the
+          <code>Worker</code> or <code>SharedWorker</code> constructors.</li>
 
           <li>Requesting an Extensible Stylesheet Language Transformations
           (XSLT) [[!XSLT]], such as when processing the
@@ -1566,6 +1593,41 @@ directive-value   = source-list
           <code>&lt;xsl:include&gt;</code> element, or the <code>href</code>
           attributes on <code>&lt;xsl:import&gt;</code> element.</li>
         </ul>
+
+        <section class="informative">
+          <h5>Examples</h5>
+
+          <p>Consider a document that uses the following policy:</p>
+<pre>
+Content-Security-Policy: default-src 'self'; script-src 'self' https://example.com 'nonce-Nc3n83cnSAd3wc3Sasdfn939hc3'
+</pre>
+
+          <p>Script elements can be allowed either because their <code>src</code>
+          URLs are whitelisted or because they have an appropriate nonce.</p>
+<pre>
+&lt;script&gt;
+alert("Blocked because the policy doesn't have 'unsafe-inline'.")
+&lt;/script&gt;
+
+&lt;script nonce="EDNnf03nceIOfn39fn3e9h3sdfa"&gt;
+alert("Still blocked because nonce is wrong.")
+&lt;/script&gt;
+
+&lt;script nonce="Nc3n83cnSAd3wc3Sasdfn939hc3"&gt;
+alert("Allowed because nonce is valid.")
+&lt;/script&gt;
+
+&lt;script src="https://example.com/allowed-because-of-src.js"&gt;&lt;/script&gt;
+
+&lt;script nonce="EDNnf03nceIOfn39fn3e9h3sdfa"
+        src="https://elsewhere.com/blocked-because-nonce-is-wrong.js"&gt;&lt;/script&gt;
+
+&lt;script nonce="Nc3n83cnSAd3wc3Sasdfn939hc3"
+        src="https://elsewhere.com/allowed-because-nonce-is-valid.js"&gt;&lt;/script&gt;
+
+</pre>
+
+              </section>
       </section>
       <section>
         <h4><code>style-src</code></h4>
@@ -1590,12 +1652,18 @@ directive-value   = source-list
         <a href="#dfn-allowed-style-sources">allowed style sources</a>:</p>
         <ul>
           <li>Whenever the user agent would apply style from a
-          <code>style</code> element, instead the user agent <code>MUST</code>
-          ignore the style.</li>
+          <code>style</code> element that lacks
+          <a href="#dfn-a-valid-nonce">a valid nonce</a> for the
+          <a href="#dfn-allowed-script-sources">allowed style sources</a>,
+          instead the user agent <code>MUST</code> ignore the style,
+          <em>and</em> MUST <a href="#dfn-report-a-violation">report a
+          violation</a>.</li>
 
           <li>Whenever the user agent would apply style from a
           <code>style</code> attribute, instead the user agent
-          <code>MUST</code> ignore the style.</li>
+          <code>MUST</code> ignore the style,
+          <em>and</em> MUST <a href="#dfn-report-a-violation">report a
+          violation</a>.</li>
         </ul>
 
         <p>Note: These restrictions on inline do not prevent the user agent
