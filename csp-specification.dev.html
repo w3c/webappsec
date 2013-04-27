@@ -435,6 +435,12 @@ path              = &lt;path production from <a href="http://tools.ietf.org/html
 port              = ":" ( 1*DIGIT / "*" )
 </pre>
 
+          <p>If the policy contains a <code>nonce-source</code> expression, the
+          server MUST generate a fresh value for the <code>nonce-value</code>
+          directive at random and independently each time it transmits a policy.
+          This requirement ensures that the <code>nonce-value</code> is difficult 
+          or an attacker to predict.</p>
+
           <section>
             <h5>Parsing</h5>
 
@@ -646,20 +652,14 @@ port              = ":" ( 1*DIGIT / "*" )
           </section>
 
           <section>
-            <h5>Nonces</h5>
+            <h5>Valid Nonces</h5>
 
             <p>An element has <dfn>a valid nonce</dfn> for a set of source expressions
-            if the following algorithm returns <code>true</code>:</p>
-            <ol>
-              <li>Let <var>nonce</var> be the value of the <code>nonce</code>
-              attribute of the element.</li>
-
-              <li>Let <var>nonce-source</var> be the string "<code>'nonce-</code>",
-              concatenated with <var>nonce</var>, concatenated with U+0027 APOSTROPHE
-              (<code>'</code>).</li>
-
-              <li>Return <code>true</code> if, and only if, <var>nonce-source</var>
-              is in the set of source expressions.</li>
+            if the value of the <code>nonce</code> attribute of the element after <a
+            href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripping
+            leading and trailing whitespace</a> is a case-sensitive match for the
+            <code>nonce-value</code> component of at least one <code>nonce-source</code>
+            expression in the set of source expressions.</p>
           </section>
         </section>
 
@@ -1595,15 +1595,34 @@ directive-value   = source-list
         </ul>
 
         <section class="informative">
-          <h5>Examples</h5>
+          <h5>Usage</h5>
 
-          <p>Consider a document that uses the following policy:</p>
+          <p>The <code>script-src</code> directive lets developers specify exactly
+          which script elements on a page were intentionally included
+          for execution. Ideally, developers would avoid inline script entirely
+          and whitelist scripts by URL.  However, in some cases, removing inline
+          scripts can be difficult or impossible. For those cases, developers can
+          whitelist scripts using a randomly generated nonce.</p>
+
+          <p>Usage is straightforward. For <em>each</em> request, the server
+          generates a unique value at random, and includes it in the
+          <code>Content-Security-Policy</code> header:</p>
+
+<pre>
+Content-Security-Policy: default-src 'self'; script-src 'self' https://example.com 'nonce-<em>$RANDOM</em>'
+</pre>
+          <p>This same value is then applied as a <code>nonce</code> attribute
+          to each <code>script</code> element that ought to be executed. For example,
+          if the server generated the random value <code>Nc3n83cnSAd3wc3Sasdfn939hc3</code>,
+          the server would send the following policy:</p>
+
 <pre>
 Content-Security-Policy: default-src 'self'; script-src 'self' https://example.com 'nonce-Nc3n83cnSAd3wc3Sasdfn939hc3'
 </pre>
 
-          <p>Script elements can be allowed either because their <code>src</code>
-          URLs are whitelisted or because they have an appropriate nonce.</p>
+          <p>Script elements can then execute either because their <code>src</code>
+          URLs are whitelisted or because they have an appropriate nonce:</p>
+
 <pre>
 &lt;script&gt;
 alert("Blocked because the policy doesn't have 'unsafe-inline'.")
@@ -1624,10 +1643,21 @@ alert("Allowed because nonce is valid.")
 
 &lt;script nonce="Nc3n83cnSAd3wc3Sasdfn939hc3"
         src="https://elsewhere.com/allowed-because-nonce-is-valid.js"&gt;&lt;/script&gt;
-
 </pre>
 
-              </section>
+            <p>Note that the nonce's value is <em>not</em> a hash or signature
+            that verifies the contents of the script resources. It's quite simply
+            a random string that informs the user agent which scripts were
+            intentionally included in the page.</p>
+
+            <p>Script elements with the proper nonce execute, regardless of
+            whether they're inline or external. Script elements without the
+            proper nonce don't execute unless their URLs are whitelisted.
+            Even if an attacker is able to inject markup into the protected
+            resource, the attack will be blocked by the attacker's inability
+            to guess the random value.</p>
+          </section>
+        </section>
       </section>
       <section>
         <h4><code>style-src</code></h4>
@@ -1902,128 +1932,6 @@ directive-value   = "allow" / "block" / "filter"
             </ul>
           </section>
         </section>
-        <section>
-          <h4><code>script-nonce</code></h4>
-
-          <p>The <code>script-nonce</code> directive restricts script execution
-          by requiring the presence of the specified nonce on <code>script</code>
-          elements. The syntax for the name and value of the directive are
-          described by the following ABNF grammar:</p>
-
-<pre>
-directive-name    = "script-nonce"
-directive-value   = nonce
-nonce             = 1*( &lt;VCHAR except ";" and ","&gt; )
-</pre>
-
-          <p>If the directive's value is empty, consists solely of whitespace, or
-          contains invalid characters, let the <var>script nonce</var> be the empty
-          string. Otherwise, let the <var>script nonce</var> be the directive's
-          value, <a
-          href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripped
-          of leading and trailing whitespace</a>.</p>
-
-          <p>If the policy contains a <code>script-nonce</code> directive, the
-          server MUST generate a fresh value for the <code>script-nonce</code>
-          directive at random and independently each time it transmits a policy.
-          This requirement ensures that the nonce value is difficult for an
-          attacker to predict.</p>
-
-          <p>When enforcing the <code>script-nonce</code> directive:</p>
-          <ul>
-              <li>Whenever the user agent would execute a script from a
-              <code>script</code> element, the user agent MUST NOT execute
-              the script unless the <var>script nonce</var> is non-empty, and
-              that script element contains a <code>nonce</code> attribute whose
-              value, after <a
-              href="http://www.whatwg.org/specs/web-apps/current-work/#strip-leading-and-trailing-whitespace">stripping
-              leading and trailing whitespace</a>, is a case-sensitive match
-              for the <var>script nonce</var>.</li>
-              <li>Whenever the user agent would execute a script from an inline
-              event handler, instead the user agent MUST NOT execute the
-              script.</li>
-              <li>Whenever the user agent would execute script contained in a
-              <code>javascript</code> URI, instead the user agent MUST NOT execute
-              the script.</li>
-          </ul>
-
-          <section class="informative">
-            <h5>Usage</h5>
-            <p>The <code>script-nonce</code> directive is intended to allow
-            developers to strictly specify exactly which <code>script</code>
-            elements on a page were intentionally included for execution. This
-            is particularly useful when <code>'unsafe-inline'</code> is accepted
-            as a valid <code>script-src</code> (though any site is better off
-            avoiding inline script completely), but can also serve as a layer of
-            protection against the execution of otherwise trusted resources in a
-            context where they might be unexpected and potentially dangerous.</p>
-
-            <p>Usage is straightforward. For <em>each</em> request, the server
-            generates a unique value at random, and includes it in the CSP
-            header:</p>
-
-            <pre>Content-Security-Policy: script-nonce <em>random-value</em>;</pre>
-
-            <p>This same value is then applied as a <code>nonce</code> attribute
-            to each <code>script</code> tag that ought to be executed.</p>
-
-            <pre>&lt;script src="/path/to/script.js" nonce="<em>random-value</em>"&gt;&lt;/script&gt;
-&lt;script nonce="<em>random-value</em>"&gt;
-  alert("I execute! Hooray!");
-&lt;/script&gt;
-&lt;script&gt;
-  alert("I don't execute. Boo!");
-&lt;/script&gt;
-</pre>
-
-            <p>Note that the nonce's value is <em>not</em> a hash or signature
-            that verifies the contents of the script resources. It's quite simply
-            a random string that informs the user agent which scripts were
-            intentionally included in the page.</p>
-
-            <p><code>script</code> elements containing the proper nonce execute.
-            <code>script</code> elements that don't, don't. Even if an attacker
-            is able to inject markup into the protected resource, the attack
-            will be blocked by the attacker's inability to guess the random
-            value.</p>
-          </section>
-
-          <section class="informative">
-            <h5>Interaction with the <code>script-src</code> directive</h5>
-            <p>The <code>script-nonce</code> and <code>script-src</code>
-            directives' restrictions on code execution are non-exclusive: script
-            will not execute unless it satisfies <em>both</em> directives. For
-            example, inline event handlers will not execute given the following
-            policy:</p>
-            <pre>Content-Security-Policy: script-src 'self' 'unsafe-inline';
-                           script-nonce <em>nonce_value</em>;</pre>
-            <p>The <code>script-src</code> directive allows
-            <code>'unsafe-inline'</code>, but the event handler's execution is
-            blocked by the presence of the <code>script-nonce</code>
-            directive.</p>
-            <p>Similarly, script will not be executed given the following
-            policy:</p>
-            <pre>Content-Security-Policy: script-src https://cdn.example.com;
-                           script-nonce <em>nonce_value</em>;</pre>
-            <p>and the following <code>script</code> element:</p>
-            <pre>&lt;script nonce="<em>nonce_value</em>" src="https://not.example.com/script.js"&gt;&lt;/script&gt;</pre>
-            <p>The nonce value matches, but the source isn't included in the
-            <code>script-src</code> directive's source list. If the
-            <code>script</code> element was loading script from
-            <code>https://cdn.example.com/</code> instead, it would execute, as
-            its execution would violate neither the <code>script-nonce</code> nor
-            <code>script-src</code> directives.</p>
-            <p>Finally, and potentially surprisingly, script will not be executed
-            given the following policy:</p>
-            <pre>Content-Security-Policy: script-src https://cdn.example.com;
-                           script-nonce <em>nonce_value</em>;</pre>
-            <p>and the following <code>script</code> element:</p>
-            <pre>&lt;script src="https://cdn.example.com/script.js"&gt;&lt;/script&gt;</pre>
-            <p>The source matches the <code>script-src</code> directive's source
-            list, but no nonce is present. Its execution would therefore violate
-            the <code>script-nonce</code> directive's restrictions.</p>
-          </section>
-        </section>
       </section>
     </section>
 
@@ -2064,13 +1972,12 @@ nonce             = 1*( &lt;VCHAR except ";" and ","&gt; )
         executed from its own origin, and those elements it intentionally
         inserted inline:</p>
 
-        <pre>Content-Security-Policy: script-src 'self' 'unsafe-inline';
-                         script-nonce: <em>nonce_value</em>;</pre>
+        <pre>Content-Security-Policy: script-src 'self' 'nonce-<em>$RANDOM</em>';</pre>
 
         <p>The inline <code>script</code> elements would then only execute if
         they contained a matching <code>nonce</code> attribute:</p>
 
-        <pre>&lt;script nonce="<em>nonce_value</em>"&gt;...&lt;/script&gt;</pre>
+        <pre>&lt;script nonce="<em>$RANDOM</em>"&gt;...&lt;/script&gt;</pre>
       </section>
 
       <section class="informative">
