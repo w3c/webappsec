@@ -1684,7 +1684,7 @@ directive-value   = source-list
         </ul>
 
         <section class="informative">
-          <h5>Usage</h5>
+          <h5>Nonce usage</h5>
 
           <p>The <code>script-src</code> directive lets developers specify exactly
           which script elements on a page were intentionally included
@@ -1745,6 +1745,53 @@ alert("Allowed because nonce is valid.")
           Even if an attacker is able to inject markup into the protected
           resource, the attack will be blocked by the attacker's inability
           to guess the random value.</p>
+        </section>
+        <section class="informative">
+          <h5>Hash usage</h5>
+
+          <p>The <code>script-src</code> directive lets developers whitelist a
+          particular inline script by specifying its hash as an allowed source
+          of script.</p>
+
+          <p>Usage is straightforward. The server computes the hash of a
+          particular script block's contents, and includes the base64 encoding
+          of that value in the <code>Content-Security-Policy</code> header:</p>
+
+<pre>
+Content-Security-Policy: default-src 'self'; script-src 'self' https://example.com 'sha256-<var>base64 encoded hash</var>'
+</pre>
+
+          <p>Each inline script block's contents are hashed, and compared against
+          the whitelisted value. If there's a match, the script is executed. For
+          example, the SHA-256 digest of <code>alert('Hello, world.');</code> is
+          <code>YWIzOWNiNzJjNDRlYzc4MTgwMDhmZDlkOWI0NTAyMjgyY2MyMWJlMWUyNjc1ODJlYWJhNjU5MGU4NmZmNGU3OAo=</code>.
+          If the server sent the following header:</p>
+
+<pre>
+Content-Security-Policy: script-src 'sha256-YWIzOWNiNzJjNDRlYzc4MTgwMDhmZDlkOWI0NTAyMjgyY2MyMWJlMWUyNjc1ODJlYWJhNjU5MGU4NmZmNGU3OAo='
+</pre>
+
+          <p>Then the following script tag would result in script execution:</p>
+
+<pre>
+&lt;script&gt;alert('Hello, world.');&lt;/script&gt;
+</pre>
+
+          <p>Note that whitespace is significant. The following scripts blocks would
+          not hash to the same value, and would therefore <em>not</em> execute:</p>
+
+<pre>
+&lt;script&gt; alert('Hello, world.');&lt;/script&gt;
+&lt;script&gt;alert('Hello, world.'); &lt;/script&gt;
+&lt;script&gt; alert('Hello, world.'); &lt;/script&gt;
+&lt;script&gt;
+  alert('Hello, world.');
+&lt;/script&gt;
+</pre>
+
+          <p>Note also that the hash applies <em>only</em> to inline script. An externalized
+          script containing the value <code>alert('Hello, world.');</code> would <em>not</em>
+          execute if its origin was not whitelisted as a valid source of script.</p>
         </section>
       </section>
       <section>
