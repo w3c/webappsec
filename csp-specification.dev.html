@@ -429,7 +429,9 @@ scheme-source     = scheme ":"
 host-source       = [ scheme "://" ] host [ port ] [ path ]
 keyword-source    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'"
 base64-value      = 1*( ALPHA / DIGIT / "+" / "/" )*2( "=" )
-nonce-source      = "'nonce-" base64-value "'"
+nonce-value       = base64-value
+hash-value        = base64-value
+nonce-source      = "'nonce-" nonce-value "'"
 hash-algo         = "sha256" / "sha384" / "sha512"
 hash-source       = "'" hash-algo "-" base64-value "'"
 scheme            = &lt;scheme production from <a href="http://tools.ietf.org/html/rfc3986#section-3.1">RFC 3986, section 3.1</a>&gt;
@@ -700,13 +702,18 @@ port              = ":" ( 1*DIGIT / "*" )
                     <a href="http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf">defined by the NIST</a>)
                   </li>
                   <li>Let <var>expected</var> be the <code>hash-value</code> component of <var>hash</var>.</li>
-                  <li>If the <a href="#dfn-digest-of-an-elements-contents"><var>algorithm</var>
-                  digest of <var>element</var>'s contents</a> is a case-insensitive match for
+                  <li>Let <var>actual</var> be the <a href="http://tools.ietf.org/html/rfc4648#section-4">base64 encoding</a> of
+                      the binary <a href="#dfn-digest-of-an-elements-contents"><var>algorithm</var> digest of <var>element</var>'s
+                      contents</a>.</li>
+                  <li>If <var>actual</var> is a case-sensitive match for
                   <var>expected</var>, return true and abort these steps.</li>
                 </ol>
               </li>
               <li>Return false.</li>
             </ol>
+
+            <p>If the user agent fails to match <code>hash-value</code>, the user agent SHOULD report a warning message in the developer console
+               containing the <var>actual</var> hash value.</p>
         </section>
 
         <section>
