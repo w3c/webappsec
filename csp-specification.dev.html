@@ -236,14 +236,13 @@
         </section>
 
         <section>
-          <h4>HTML <code>meta</code> Element (Experimental)</h4>
+          <h4>HTML <code>meta</code> Element</h4>
 
-          <p>The server MAY supply a CSP policy in an HTML <code>meta</code>
+          <p>The server MAY supply a policy in an HTML <code>meta</code>
           element with an <code>http-equiv</code> attribute that is a case
-          insensitive match for either <code>Content-Security-Policy</code> or
-          <code>Content-Security-Policy-Report-Only</code>.</p>
+          insensitive match for either <code>Content-Security-Policy</code>.</p>
 
-          <p>Add the following entries to the <a
+          <p>Add the following entry to the <a
           href="http://www.w3.org/TR/html5/document-metadata.html#pragma-directives">pragma
           directives</a> for the <code>meta</code> element:</p>
 
@@ -251,30 +250,28 @@
             <dt>Content security policy (<code>http-equiv="content-security-policy"</code>)</dt>
             <dd>
               <ol>
-                <li>If the user agent is already enforcing a CSP policy for the
+                <li>If the user agent is already enforcing a policy for the
                 document, abort these steps.</li>
 
-                <li>If the <code>meta</code> element lacks a
-                <code>content</code> attribute, abort these steps.</li>
-
-                <li><a href="#enforce">Enforce</a> the CSP policy contained in
-                the <code>content</code> attribute of the <code>meta</code>
-                element.</li>
-              </ol>
-            </dd>
-
-            <dt>Content security policy, report only (<code>http-equiv="content-security-policy-report-only"</code>)</dt>
-            <dd>
-              <ol>
-                <li>If the user agent is already monitoring a CSP policy for
-                the document, abort these steps.</li>
+                <li>If the Document's <code>head</code> element is not an
+                ancestor of the <code>meta</code> element, abort these
+                steps.</li>
 
                 <li>If the <code>meta</code> element lacks a
                 <code>content</code> attribute, abort these steps.</li>
 
-                <li><a href="#monitor">Monitor</a> the CSP policy contained in
-                the <code>content</code> attribute of the <code>meta</code>
+                <li>Let <var>policy</var> be the value of the
+                <code>content</code> attribute of the <code>meta</code>
                 element.</li>
+
+                <li>Let <var>directive-set</var> be the result of
+                <a href="#parse-a-csp-policy">parsing <var>policy</var></a>.</li>
+
+                <li>Remove all occurances of <code>report-uri</code> and
+                <code>sandbox</code> directives from <var>directive-set</var>.</li>
+
+                <li>Enforce each of the directives in <var>directive-set</var>,
+                as <a href="#sec-directives">defined for each directive type</a>.</li>
               </ol>
             </dd>
           </dl>
@@ -284,30 +281,9 @@
           <code>meta</code> elements. Similarly, the above requirements entail
           that the first <code>meta</code> element containing a policy takes
           precedence over policies supplied in subsequent <code>meta</code>
-          elements.</p>
-
-          <p><em>TODO: Turn the bullets below into actual spec text.</em>
-          <ul>
-              <li>In order to work, the <code>meta</code> element needs to be
-              in document's head. This requirement makes it harder for folks to
-              inject CSP policies into vulnerable documents.</li>
-
-              <li>Ignore the <code>report-uri</code> directive in CSP policies
-              obtained from <code>meta</code> elements. This requirement
-              mitigates one attack that might result from an injected policy.
-              It also provides a carrot for supplying the policy in an HTTP
-              header, which is better for security.</li>
-
-              <li>Add some guidance that sites should put the <code>meta</code>
-              element as early as possible in their document to reduce the risk
-              of an attacker injecting another policy in front.</li>
-
-              <li>Ignore policies from <code>meta</code> elements that get
-              inserted after the document's readyState reaches "interactive".
-              This requirement further mitigates the risk of the
-              <code>meta</code> element being injected.  (Is this requirement
-              still useful in light of the above mitigations?)</li>
-          </ul>
+          elements. Authors SHOULD place the <code>meta</code> element as
+          early in the document as possible to reduce the risk of content
+          injection before a protective policy can be read and enforced.</p>
         </section>
         <section class="informative">
           <h4>Enforcing multiple policies.</h4>
@@ -1754,7 +1730,10 @@ uri-reference     = &lt;URI-reference from RFC 3986&gt;
 
         <p>The process of sending violation reports to the URIs specified in
         this directive's value is defined in this document's
-        <a href="#reporting">Reporting section</a></p>
+        <a href="#reporting">Reporting section</a>.</p>
+
+        <p>Note that the <code>report-uri</code> directive will be ignored if
+        contained within a <a href="#html-meta-element"><code>meta</code> element</a>.</p>
       </section>
       <section>
         <h4><code>sandbox</code></h4>
@@ -1776,6 +1755,9 @@ token             = &lt;token from RFC 2616&gt;
         as the <em>input</em> and protected resource's
         <a href="http://www.whatwg.org/specs/web-apps/current-work/#forced-sandboxing-flag-set">forced sandboxing flag set</a>
         as the output. [[!HTML5]]</p>
+
+        <p>Note that the <code>sandbox</code> directive will be ignored if
+        contained within a <a href="#html-meta-element"><code>meta</code> element</a>.</p>
 
         <section class="informative">
           <h5>Usage</h5>
