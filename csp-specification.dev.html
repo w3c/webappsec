@@ -119,7 +119,7 @@
 
         <p>The term <dfn id="origin">origin</dfn> is defined in the Origin specification. [[!RFC6454]]</p>
 
-        <p>The term <dfn>globally unique identifier</dfn> is defined in section 4 of the Origin specification. [[!RFC6454]]</p>
+        <p>The term <dfn>globally unique identifier</dfn> is defined in section 4 of the Origin specification. Note that URLs that do not use hierarchical elements as naming authorities have origins which are globally unique identifiers. [[!RFC6454]]</p>
 
         <p>The term <dfn>URI</dfn> is defined in the URI specification.  [[!URI]]</p>
 
@@ -925,13 +925,29 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
         [[!WEBWORKERS]]</p>
 
         <ul>
-          <li>If the user agent is enforcing a policy for the <var>owner
-          document</var>, the user agent MUST enforce the policy for the
-          worker.</li>
+          <li>If the worker's script's origin is a <a href="#dfn-globally-unique-identifier">globally unique identifier</a>
+          (for example, the worker's script's URL has a scheme of
+          <code>data</code>, <code>blob</code>, or <code>file</code>), then:
+          <ul>
+            <li>If the user agent is enforcing a CSP policy for the <var>owner
+            document</var>, the user agent MUST enforce the CSP policy for the
+            worker.</li>
 
-          <li>If the user agent is monitoring a policy for the <var>owner
-          document</var>, the user agent MUST monitor the policy for the
-          worker.</li>
+            <li>If the user agent is monitoring a CSP policy for the <var>owner
+            document</var>, the user agent MUST monitor the CSP policy for the
+            worker.</li>
+          </ul></li>
+          <li>Otherwise:
+          <ul>
+            <li>If the worker's script is delivered with a <code>Content-Security-Policy</code>
+            HTTP header containing the value <var>policy</var>, the user agent MUST
+            <a href="#enforce">enforce <var>policy</var></a> for the
+            worker.</li>
+            <li>If the worker's script is delivered with a <code>Content-Security-Policy-Report-Only</code>
+            HTTP header containing the value <var>policy</var>, the user agent MUST
+            <a href="#monitor">monitor <var>policy</var></a> for the
+            worker.</li>
+          </ul></li>
         </ul>
 
         <p>Whenever a user agent creates a <a
@@ -1898,7 +1914,10 @@ directive-value   = source-list
           <a href="#dfn-allowed-script-sources">allowed script sources</a>.</li>
 
           <li>Requesting a script while processing the
-          <code>Worker</code> or <code>SharedWorker</code> constructors.</li>
+          <code>Worker</code> or <code>SharedWorker</code> constructors. [[!WEBWORKERS]]</li>
+
+          <li>Requesting a script while invoking the <code>importScripts</code>
+          method on a WorkerGlobalScope object. [[!WEBWORKERS]]</li>
 
           <li>Requesting an HTML component, such as
           when processing the <code>href</code> attribute of a <code>link</code>
