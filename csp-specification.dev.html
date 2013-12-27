@@ -133,6 +133,11 @@
         <code>&lt;link&gt;</code>, <code>&lt;applet&gt;</code>, <code>&lt;frame&gt;</code>
         and <code>&lt;iframe&gt;</code> elements are defined in the HTML5 specification. [[!HTML5]]</p>
 
+        <p>The terms <a href="http://www.w3.org/TR/html5/browsers.html#auxiliary-browsing-context"><dfn>auxiliary browsing context</dfn></a>,
+        <a href="http://www.w3.org/TR/html5/browsers.html#opener-browsing-context"><dfn>opener browsing context</dfn></a>,
+        and <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context"><dfn>nested browsing context</dfn></a>
+        are defined in the HTML5 specification. [[!HTML5]]</p>
+
         <p>A <a href="http://www.w3.org/TR/html5/infrastructure.html#plugin">plugin</a> is defined
         in the HTML5 specification. [[!HTML5]]</p>
 
@@ -1101,6 +1106,40 @@ directive-value   = source-list
       </section>
 
       <section>
+        <h4><code>child-src</code></h4>
+
+        <p>The <code>child-src</code> sets a default source list for directives
+        which govern the creation of <a href="#dfn-nested-browsing-context">nested</a>
+        and <a href="#dfn-auxiliary-browsing-context">auxiliary browsing contexts</a>.
+        The syntax for the name and value of the directive are described by
+        the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "child-src"
+directive-value   = source-list
+</pre>
+
+        <p>The term <dfn>default context sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>child-src</code>
+        directive's value as a source list</a> if a <code>child-src</code>
+        directive is explicitly specified, and otherwise to the
+        <a href="#dfn-default-sources">default sources</a>.</p>
+
+        <p>To enforce the <code>child-src</code> directive, the user agent MUST
+        enforce the following directives:</p>
+
+        <ul>
+          <li><a href="#frame-src"><code>frame-src</code></a></li>
+          <li><a href="#popup-src"><code>popup-src</code></a></li>
+          <li><a href="#worker-src"><code>worker-src</code></a></li>
+        </ul>
+
+        <p>If not specified explicitly in the policy, the directives listed
+        above will use the
+        <a href="#dfn-default-context-sources">default context sources</a>.</p>
+      </section>
+
+      <section>
         <h4><code>connect-src</code></h4>
 
         <p>The <code>connect-src</code> directive restricts which URIs the
@@ -1198,8 +1237,10 @@ directive-value   = source-list
           <li><a href="#img-src"><code>img-src</code></a></li>
           <li><a href="#media-src"><code>media-src</code></a></li>
           <li><a href="#object-src"><code>object-src</code></a></li>
+          <li><a href="#popup-src"><code>popup-src</code></a></li>
           <li><a href="#script-src"><code>script-src</code></a></li>
           <li><a href="#style-src"><code>style-src</code></a></li>
+          <li><a href="#worker-src"><code>worker-src</code></a></li>
         </ul>
 
         <p>If not specified explicitly in the policy, the directives listed
@@ -1321,7 +1362,7 @@ directive-value   = source-list
         <a href="#parse-a-source-list">parsing the <code>frame-src</code>
         directive's value as a source list</a> if the policy contains an
         explicit <code>frame-src</code>, or otherwise to the
-        <a href="#dfn-default-sources">default sources</a>.</p>
+        <a href="#dfn-default-context-sources">default context sources</a>.</p>
 
         <p>Whenever the user agent <a
         href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
@@ -1332,14 +1373,15 @@ directive-value   = source-list
         <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
         <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
         <ul>
-          <li>Requesting data for display in a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a> in the
+          <li>Requesting data for display in a <a href="#dfn-nested-browsing-context">nested browsing context</a> in the
           protected resource created by an <code>iframe</code> or
           a <code>frame</code> element.</li>
 
           <li><a href="http://www.w3.org/TR/html5/browsers.html#navigate">Navigating</a>
-          such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
+          such a <a href="#dfn-nested-browsing-context">nested browsing context</a>.</li>
         </ul>
       </section>
+
       <section>
         <h4><code>img-src</code></h4>
 
@@ -1447,11 +1489,11 @@ directive-value   = source-list
           <code>applet</code> element.</li>
 
           <li>Requesting data for display in a
-          <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>
+          <a href="#dfn-nested-browsing-contexts">nested browsing context</a>
           in the protected resource created by an <code>object</code> or an
           <code>embed</code> element.</li>
 
-          <li>Navigating such a <a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-contexts">nested browsing context</a>.</li>
+          <li>Navigating such a <a href="#dfn-nested-browsing-contexts">nested browsing context</a>.</li>
         </ul>
 
         <p>It is not required that the consumer of the element's data be a
@@ -1471,6 +1513,45 @@ directive-value   = source-list
         <a href="#matches-a-source-list">match</a> the
         <a href="#dfn-allowed-object-sources">allowed object sources</a>, the
         user agent MUST NOT load the plugin.</p>
+      </section>
+
+      <section>
+        <h4><code>popup-src</code></h4>
+
+        <p>The <code>popup-src</code> directive restricts the URLs that may be
+        loaded in <a href="#dfn-auxiliary-browsing-context">auxiliary browsing contexts</a>
+        [[!HTML5]]. The syntax for the name and value of the directive are
+        described by the following ABNF grammar:</p>
+
+<pre>
+directive-name    = "popup-src"
+directive-value   = source-list
+</pre>
+
+        <p>The term <dfn>allowed popup sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>popup-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>popup-src</code>, or otherwise to the
+        <a href="#dfn-default-context-sources">default context sources</a>.
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+        a URL (including when following redirects) in the course of one of the
+        following activities, if the URL does not <a href="#matches-a-source-list">match</a>
+        the <a href="#dfn-allowed-popup-sources">allowed popup sources</a>, the
+        user agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>:</p>
+
+        <ul>
+          <li>Requesting data for display in an <a href="#dfn-auxiliary-browsing-context">auxiliary browsing context</a>
+          whose <a href="#dfn-opener-browsing-context">opener browsing context</a>
+          is the protected resource (for example, a popup window created by a
+          call to <code>window.open</code>).</li>
+
+          <li><a href="http://www.w3.org/TR/html5/browsers.html#navigate">Navigating</a>
+          such an <a href="#dfn-auxiliary-browsing-context">auxiliary browsing context</a>.</li>
+        </ul>
       </section>
 
       <section>
@@ -2128,6 +2209,36 @@ directive-value   = source-list
           to <code>style</code> elements is similar enough to avoid
           repetition here.</p>
         </section>
+      </section>
+      <section>
+        <h4><code>worker-src</code></h4>
+
+        <p>The <code>worker-src</code> directive restricts the scripts that
+        may be loaded when creating <code>Worker</code> and
+        <code>SharedWorker</code> objects.i The syntax for the name
+        and value of the directive are described by the following ABNF
+        grammar:</p>
+
+<pre>
+directive-name    = "worker-src"
+directive-value   = source-list
+</pre>
+
+        <p>The term <dfn>allowed worker sources</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>worker-src</code>
+        directive's value as a source list</a> if the policy contains an
+        explicit <code>worker-src</code>, or otherwise to the
+        <a href="#dfn-default-context-sources">default context sources</a>.</p>
+
+        <p>Whenever the user agent <a
+        href="http://www.w3.org/TR/html5/infrastructure.html#fetching-resources">fetches</a>
+        a URL (including when following redirects) while processing the <code>Worker</code>
+        or <code>SharedWorker</code> constructors [[!WEBWORKERS]], the user
+        agent MUST act as if it had received an empty
+        <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
+        <em>and</em> <a href="#dfn-report-a-violation">report a violation</a>
+        if the URI does not <a href="#matches-a-source-list">match</a>
+        the <a href="#dfn-allowed-worker-sources">allowed worker sources</a>.</p>
       </section>
     </section>
 
