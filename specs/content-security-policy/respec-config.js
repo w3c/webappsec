@@ -23,7 +23,7 @@ var respecConfig = {
     // previousMaturity:  "WD",
 
     // if there a publicly available Editor's Draft, this is the link
-    edDraftURI:           "http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html",
+    edDraftURI:           "http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html",
 
     // if this is a LCWD, uncomment and set the end of its review period
     // lcEnd: "2009-08-05",
@@ -42,15 +42,6 @@ var respecConfig = {
         { name: "Mike West", url: "mailto:mkwst@google.com",
           company: "Google, Inc.", companyURL: "http://www.google.com/" },
     ],
-
-    // authors, add as many as you like. 
-    // This is optional, uncomment if you have authors as well as editors.
-    // only "name" is required. Same format as editors.
-
-    //authors:  [
-    //    { name: "Your Name", url: "http://example.org/",
-    //      company: "Your Company", companyURL: "http://example.com/" },
-    //],
 
     // name of the WG
     wg:           "Web Application Security Working Group",
