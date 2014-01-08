@@ -534,24 +534,31 @@ information&#8221; (<code>ni</code>) URI. [[!RFC6920]]</p>
     <section class="todo">
       <h4 id="the-noncanonical-src-attribute">The <code>noncanonical-src</code> attribute</h4>
 
-      <p>The idea is that conformant browsers would first try to load resources from
-the <code>noncanonical-src</code> attribute&#8217;s URL iff a <code>integrity</code> attribute is present.
-Then, if the resource failed to match the digest, the user agent would
-fall back to the <code>src</code> attribute&#8217;s URL. That is:</p>
+      <p>Authors MAY opt-in to a fallback mechanism whereby user agents would initially
+attempt to load resources from a non-canonical source (perhaps over HTTP, for
+performance and caching reasons). If that fetch failed an integrity check, the
+user agent would <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>, and retry the fetch using a canonical
+URL (perhaps over HTTPS).</p>
+
+      <p>The non-canonical URL is specified via a <code>noncanonical-src</code> attribute. For
+example:</p>
 
       <pre><code>&lt;script src="http://example.com/script.js"
         noncanonical-src="http://cdn.example.com/script.js"
         integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq"&gt;&lt;/script&gt;
 </code></pre>
 
-      <p>The noncanonical resource would be fetched with its <a href="http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode">omit credentials
+      <p>The <code>noncanonicalSrc</code> IDL attribute MUST <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a> the <code>noncanonical-src</code>
+content attribute.</p>
+
+      <p>The noncanonical resource MUST be fetched with its <a href="http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode">omit credentials
 mode</a> set to <code>always</code>, to prevent leakage of cookies across insecure
 channels.</p>
 
-      <p>This only makes sense if we care about allowing cache-friendly (read &#8220;HTTP&#8221;)
-URLs to load in an HTTPS context without warnings. I&#8217;m not sure we do, so
-I&#8217;m not going to put too much thought into the details here before we
-discuss things a bit more. (mkwst)</p>
+      <p>TODO: This attribute (and fallback in general) only makes sense if we care
+about allowing cache-friendly (read &#8220;HTTP&#8221;) URLs to load in an HTTPS context
+without warnings. I&#8217;m not sure we do, so I&#8217;m not going to put too much
+thought into the details here before we discuss things a bit more. (mkwst)</p>
     </section>
     <!-- /Framework::HTML::noncanonical-src -->
 
@@ -600,7 +607,7 @@ attribute</a> for a strawman of how that might look).</p>
 
       <p class="todo">If the document&#8217;s integrity policy contains <code>require-for-all</code>, the user agent
 MUST treat the lack of <a href="#dfn-integrity-metadata">integrity metadata</a> for an resource as automatic
-failure.</p>
+failure, refuse to fetch the resource, and <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>.</p>
 
     </section>
 
@@ -661,6 +668,7 @@ browsing context owner <code>iframe</code> element&#8217;s Document, then
 <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the
 <code>iframe</code> element (this will not fire for cross-origin requests, to
 avoid leaking data about those resource&#8217;s content).</li>
+                  <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
                   <li><a href="http://www.w3.org/TR/html5/browsers.html#navigate">Navigate</a> the child browsing context to <code>about:blank</code>.</li>
                 </ol>
               </li>
@@ -715,12 +723,16 @@ requests, to avoid leaking data about those resource&#8217;s content).</li>
         <ol start="6">
           <li>Once the <a href="http://www.w3.org/TR/html5/infrastructure.html#fetch">fetching algorithm</a> has completed:
             <ol>
-              <li>If the response&#8217;s integrity state is <code>corrupt</code>, and the document&#8217;s
-<a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+              <li>If the response&#8217;s integrity state is <code>corrupt</code>:
                 <ol>
-                  <li>If <var>resource</var> is <a href="http://www.w3.org/TR/html5/infrastructure.html#cors-same-origin">CORS same-origin</a> with the <code>link</code>
+                  <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+                    <ol>
+                      <li>If <var>resource</var> is <a href="http://www.w3.org/TR/html5/infrastructure.html#cors-same-origin">CORS same-origin</a> with the <code>link</code>
 element&#8217;s Document, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple
 event</a> named <code>error</code> at the element, and abort these steps.</li>
+                    </ol>
+                  </li>
+                  <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
                 </ol>
               </li>
             </ol>
@@ -729,6 +741,35 @@ event</a> named <code>error</code> at the element, and abort these steps.</li>
 
       </section>
       <!-- /Framework::HTML::Elements::script -->
+
+      <section>
+        <h6 id="the-track-element">The <code>track</code> element</h6>
+
+        <p>A <code>track</code> element&#8217;s <dfn>track integrity metadata</dfn> is the value of
+the element&#8217;s <code>integrity</code> attribute.</p>
+
+        <p>When fetching the <a href="http://www.w3.org/TR/html5/embedded-content-0.html#track-url">track URL</a> in step 10 of the <a href="http://www.w3.org/TR/html5/embedded-content-0.html#start-the-track-processing-model">start the <code>track</code>
+processing model</a> algorithm, set the request&#8217;s
+<a href="#dfn-integrity-metadata">integrity metadata</a> to the track integrity metadata.</p>
+
+        <p>Additionally, perform the following steps before performing the steps
+specified for a successful <code>track</code> fetch:</p>
+
+        <ol>
+          <li>If the response&#8217;s integrity state is <code>corrupt</code>:
+            <ol>
+              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+                <ol>
+                  <li>Perform the steps specified for a failed <code>track</code> fetch.</li>
+                  <li>Abort the steps specified for a successful <code>track</code> fetch.</li>
+                </ol>
+              </li>
+              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
+            </ol>
+          </li>
+        </ol>
+
+      </section>
 
       <section>
         <h6 id="the-every-other-element">The <code>every-other</code> element</h6>
