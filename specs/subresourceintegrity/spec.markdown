@@ -399,25 +399,32 @@ The `integrity` IDL attribute must [reflect][] the `integrity` content attribute
 #### The `noncanonical-src` attribute
 [noncanonical]: #the-noncanonical-src-attribute
 
-The idea is that conformant browsers would first try to load resources from
-the `noncanonical-src` attribute's URL iff a `integrity` attribute is present.
-Then, if the resource failed to match the digest, the user agent would
-fall back to the `src` attribute's URL. That is:
+Authors MAY opt-in to a fallback mechanism whereby user agents would initially
+attempt to load resources from a non-canonical source (perhaps over HTTP, for
+performance and caching reasons). If that fetch failed an integrity check, the
+user agent would [report a violation][], and retry the fetch using a canonical
+URL (perhaps over HTTPS).
+
+The non-canonical URL is specified via a `noncanonical-src` attribute. For
+example:
 
     <script src="http://example.com/script.js"
             noncanonical-src="http://cdn.example.com/script.js"
             integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq"></script>
 
-The noncanonical resource would be fetched with its [omit credentials
+The `noncanonicalSrc` IDL attribute MUST [reflect][] the `noncanonical-src`
+content attribute.
+
+The noncanonical resource MUST be fetched with its [omit credentials
 mode][] set to `always`, to prevent leakage of cookies across insecure
 channels.
 
 [omit credentials mode]: http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode
 
-This only makes sense if we care about allowing cache-friendly (read "HTTP")
-URLs to load in an HTTPS context without warnings. I'm not sure we do, so
-I'm not going to put too much thought into the details here before we
-discuss things a bit more. (mkwst)
+TODO: This attribute (and fallback in general) only makes sense if we care
+about allowing cache-friendly (read "HTTP") URLs to load in an HTTPS context
+without warnings. I'm not sure we do, so I'm not going to put too much
+thought into the details here before we discuss things a bit more. (mkwst)
 </section><!-- /Framework::HTML::noncanonical-src -->
 
 <section>
