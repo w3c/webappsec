@@ -471,7 +471,7 @@ attribute][noncanonical] for a strawman of how that might look).
 
 If the document's integrity policy contains `require-for-all`, the user agent
 MUST treat the lack of [integrity metadata][] for an resource as automatic
-failure.
+failure, refuse to fetch the resource, and [report a violation][].
 {:.todo}
 
 [csp]: http://w3.org/TR/CSP11
@@ -531,7 +531,8 @@ value of the `iframe` element's `integrity` attribute. Moreover:
            [queue a task][] to [fire a simple event][] named `error` at the
            `iframe` element (this will not fire for cross-origin requests, to
            avoid leaking data about those resource's content).
-        2. [Navigate][] the child browsing context to `about:blank`.
+        2. [Report a violation][].
+        3. [Navigate][] the child browsing context to `about:blank`.
 
 How does this effect things like the preload scanner? How much work is it
 going to be for vendors to change the "display whatever we've got, ASAP!"
