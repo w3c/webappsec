@@ -602,8 +602,8 @@ A `track` element's <dfn>track integrity metadata</dfn> is the value of
 the element's `integrity` attribute.
 
 When fetching the [track URL][] in step 10 of the [start the `track`
-processing model][] algorithm, set the request's [integrity metadata][]
-to the track integrity metadata.
+processing model][track-process] algorithm, set the request's
+[integrity metadata][] to the track integrity metadata.
 
 Additionally, perform the following steps before performing the steps
 specified for a successful `track` fetch:
@@ -615,7 +615,7 @@ specified for a successful `track` fetch:
     2.  [Report a violation][].
 
 [track URL]: http://www.w3.org/TR/html5/embedded-content-0.html#track-url
-[start the track processing model]: http://www.w3.org/TR/html5/embedded-content-0.html#start-the-track-processing-model
+[track-process]: http://www.w3.org/TR/html5/embedded-content-0.html#start-the-track-processing-model
 </section>
 
 <section>
