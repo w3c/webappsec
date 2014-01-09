@@ -985,8 +985,18 @@ resource didn't match the hash, and thereby gain some insight into its
 contents. This might reveal, for example, whether or not a user is
 logged into a particular service.
 
-User agents SHOULD mitigate the risk by refusing to trigger elements'
-`error` handlers for cross-origin resources, but some side-channels
+Moreover, attackers can brute-force specific values in an otherwise
+static resource: consider a document that looks like this:
+
+    <html>{static content}<h1>Hello, $username!</h1>{static content}</html>
+
+An attacker can precompute hashes for the page with a variety of
+common usernames, and specify those hashes while repeatedly attempting
+to load the document. By examining the reported violations, the attacker
+can obtain a user's username.
+
+User agents SHOULD mitigate the risk by refusing to fire `error` events
+on elements which loaded cross-origin resources, but some side-channels
 will likely be difficult to avoid (image's `naturalHeight` and
 `naturalWidth` for instance).
 </section><!-- /Security::cross-origin -->
