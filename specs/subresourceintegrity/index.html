@@ -412,6 +412,31 @@ unclear that it&#8217;s what we want. See  <a href="http://lists.w3.org/Archives
     </section>
     <!-- Algorithms::apply -->
     <section>
+      <h4 id="is-varresourcevar-eligible-for-integrity-validation">Is <var>resource</var> eligible for integrity validation</h4>
+
+      <p>In order to mitigate an attackers ability to read data cross-origin by
+brute-forcing values via integrity checks, resources are only eligible
+for such checks if they are same-origin, publically cachable, or have
+granted the loading origin explicit access. The following algorithm
+details these restrictions:</p>
+
+      <ol>
+        <li>Let <var>origin</var> be the <a href="http://fetch.spec.whatwg.org/#concept-request-origin">origin</a> of the request
+which fetched <var>resource</var>.</li>
+        <li>If <var>resource</var> is <a href="http://www.w3.org/TR/html5/infrastructure.html#cors-same-origin">CORS same-origin</a> with <var>origin</var>,
+return <code>true</code>.</li>
+        <li>If <var>resource</var> is [cachable by a shared cache][], as defined in
+[[!HTTP11]], return <code>true</code>.</li>
+        <li>If <var>resource</var> would pass a <a href="http://www.w3.org/TR/cors/#resource-sharing-check-0">CORS resource sharing check</a>,
+return <code>true</code>. If <var>resource</var> does not have an
+<code>Access-Control-Allow-Credentials</code> header, add such a header with a
+value of <code>true</code> for the purposes of this check.</li>
+        <li>Return <code>false</code>.</li>
+      </ol>
+
+    </section>
+    <!-- Algorithms::eligible -->
+    <section>
       <h4 id="does-varresourcevar-match-varmetadatavar">Does <var>resource</var> match <var>metadata</var>?</h4>
 
       <ol>
@@ -419,6 +444,8 @@ unclear that it&#8217;s what we want. See  <a href="http://lists.w3.org/Archives
         <li>If <var>resource</var>&#8217;s scheme is <code>about</code>, return <code>true</code>.</li>
         <li>If <var>metadata</var> is not a valid &#8220;named information&#8221; (<code>ni</code>) URI,
 return <code>false</code>.</li>
+        <li>If <a href="#is-resource-eligible-for-integrity-validation"><var>resource</var> is not eligible for integrity
+valiation</a>, return <code>false</code>.</li>
         <li>Let <var>algorithm</var> be the <var>alg</var> component of
 <var>metadata</var>.</li>
         <li>Let <var>expectedValue</var> be the <var>val</var> component of

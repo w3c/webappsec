@@ -292,25 +292,53 @@ unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
 [apply-algorithm]: #apply-algorithm-to-resource
 </section><!-- Algorithms::apply -->
 <section>
+#### Is <var>resource</var> eligible for integrity validation
+[eligible]: #is-resource-eligible-for-integrity-validation
+
+In order to mitigate an attackers ability to read data cross-origin by
+brute-forcing values via integrity checks, resources are only eligible
+for such checks if they are same-origin, publically cachable, or have
+granted the loading origin explicit access. The following algorithm
+details these restrictions:
+
+1.  Let <var>origin</var> be the [origin][fetch-origin] of the request
+    which fetched <var>resource</var>.
+2.  If <var>resource</var> is [CORS same-origin][] with <var>origin</var>,
+    return `true`.
+3.  If <var>resource</var> is [cachable by a shared cache][], as defined in
+    [[!HTTP11]], return `true`.
+4.  If <var>resource</var> would pass a [CORS resource sharing check][],
+    return `true`. If <var>resource</var> does not have an
+    `Access-Control-Allow-Credentials` header, add such a header with a
+    value of `true` for the purposes of this check.
+5.  Return `false`.
+
+[fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
+[publicly cachable]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
+[CORS resource sharing check]: http://www.w3.org/TR/cors/#resource-sharing-check-0
+</section><!-- Algorithms::eligible -->
+<section>
 #### Does <var>resource</var> match <var>metadata</var>?
 
 1.  If <var>metadata</var> is the empty string, return `true`.
 2.  If <var>resource</var>'s scheme is `about`, return `true`.
 3.  If <var>metadata</var> is not a valid "named information" (`ni`) URI,
     return `false`.
-4.  Let <var>algorithm</var> be the <var>alg</var> component of
+4.  If [<var>resource</var> is not eligible for integrity
+    valiation][eligible], return `false`.
+5.  Let <var>algorithm</var> be the <var>alg</var> component of
     <var>metadata</var>.
-5.  Let <var>expectedValue</var> be the <var>val</var> component of
+6.  Let <var>expectedValue</var> be the <var>val</var> component of
     <var>metadata</var>.
-6.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
+7.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
     query string parameter.
-7.  If <var>expectedType</var> is not the empty string, and is not a
+8.  If <var>expectedType</var> is not the empty string, and is not a
     case-insensitive match for <var>resource</var>'s MIME type,
     return `false`.
 8.  Let <var>actualValue</var> be the result of [applying
     <var>algorithm</var> to <var>resource</var>][apply-algorithm].
-9.  If <var>actualValue</var> is `null`, return `false`.
-10. If <var>actualValue</var> is a case-sensitive match for
+10. If <var>actualValue</var> is `null`, return `false`.
+11. If <var>actualValue</var> is a case-sensitive match for
     <var>expectedValue</var>, return `true`. Otherwise, return `false`.
 
 If <var>expectedType</var> is the empty string in #6, it would
