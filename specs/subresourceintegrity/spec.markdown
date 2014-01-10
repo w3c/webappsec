@@ -24,7 +24,7 @@ has the ability to inject arbitrary content.
 Delivering resources over a secure channel mitigates some of this risk: with
 TLS, [HSTS][], and [pinned public keys][], a user agent can be fairly certain
 that it is indeed speaking with the server it believes it's talking to. The
-threat of a attacker (or admin!) manipulating content on a third-party server
+threat of an attacker (or admin!) manipulating content on a third-party server
 is very common in advertising networks, for instance. Ideally, authors would
 not only be able to pin the keys of a server, but also pin the _content_,
 ensuring that the exact resource, and _only_ that resource, loads.
@@ -139,7 +139,7 @@ benefits that such a fallback system would enable. (mkwst)
 *   The author of a mash-up wants to make sure her creation remains in a working
     state. Adding [integrity metadata][] to external subresources defines an
     expected revision of the included files. The author can then use the reporting
-    functionality to be notified of chanfes to the included resources.
+    functionality to be notified of changes to the included resources.
 
 *   An author wishes to load a resource over an insecure channel for performance
     reasons, but fall back to a secure channel if the insecurely-loaded resource
@@ -727,7 +727,7 @@ Following up with him for clarification.
 #### Workers
 
 To validate the integrity of scripts which are to be run as workers, a new
-constructor is added for `Worker` and `SharedWorker` which accpets a second
+constructor is added for `Worker` and `SharedWorker` which accepts a second
 argument containing integrity metadata. This information is used when
 [running a worker][runworker] to perform validation, as outlined in the
 following sections: [[!WEBWORKERS]]
