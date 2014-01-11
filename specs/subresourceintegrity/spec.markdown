@@ -807,15 +807,41 @@ Setting the `integrity` attribute MUST run these steps:
 </section><!-- /Framework::JS::XHR::integrity -->
 
 <section>
+##### Progress events
+
+Validation only takes place when the entire resource body has been
+downloaded. Data processed before the resource has completely
+loaded (or failed to load) is unvalidated, and potentially corrupt.
+For that reason, if the document's [integrity policy][]
+is `block`, progress events will not fire until the fetch has
+completed, one way or another.
+
+If the document's [integrity policy][] is not `block`, developers who
+care about integrity validation SHOULD still ignore progress events
+fired while the resource is downloading, and instead listen only for
+the `load`, `abort`, and `error` events.
+
+Whenever the user agent would [fire a progress event][] named `progress`
+for an XMLHttpRequest object, run the following steps:
+
+1.  If the object's `integrity` attribute is the empty string,
+    abort these steps, and proceed directly to firing the event.
+2.  If the document's [integrity policy][] is not `block`, abort
+    these steps, and proceed directly to firing the event.
+3.  Otherwise, the user agent MUST NOT fire the progress event.
+
+[fire a progress event]: https://dvcs.w3.org/hg/progress/raw-file/tip/Overview.html#concept-event-fire-progress
+</section><!-- /Framework::JS::XHR::integrity -->
+
+<section>
 ##### Validation
 
 Whenever the user agent would [switch an `XMLHttpRequest` object to the
 `DONE` state][switch-done], then perform the following steps before
 switching state:
 
-1.  If the `integrity` attribute is the empty string, or if the
-    [response entity body][] [matches the value of the `integrity`
-    attribute][match], then abort these steps, and continue to
+1.  If the response's integrity state is `intact` or `indeterminate`,
+    then abort these steps, and continue to
     [switch to the `DONE` state][switch-done].
 2.  Otherwise, [report a violation][], and run the following steps
     if the document's [integrity policy][] is `block`:
@@ -823,12 +849,6 @@ switching state:
     2. Run the [request error][] steps for exception
        [`NetworkError`][xhrnetworkerror] and event [`error`][xhrerror].
     3. Do not continue to [switch to the `DONE` state][switch-done].
-
-This validation only takes place when the entire resource body has been
-downloaded. For that reason, developers who care about integrity validation
-SHOULD ignore progress events fired while the resource is downloading, and
-instead listen only for the `load` and `error` events. Data processed
-before the `load` event fires is unvalidated, and potentially corrupt.
 
 [switch-done]: https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#switch-done
 [response entity body]: https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#response-entity-body
