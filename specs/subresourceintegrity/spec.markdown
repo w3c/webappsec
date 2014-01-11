@@ -320,7 +320,7 @@ details these restrictions:
 #### Does <var>resource</var> match <var>metadata</var>?
 
 1.  If <var>metadata</var> is the empty string, return `true`.
-2.  If <var>resource</var>'s scheme is `about`, return `true`.
+2.  If <var>resource</var>'s URL's scheme is `about`, return `true`.
 3.  If <var>metadata</var> is not a valid "named information" (`ni`) URI,
     return `false`.
 4.  If [<var>resource</var> is not eligible for integrity
