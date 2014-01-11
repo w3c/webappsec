@@ -312,6 +312,12 @@ details these restrictions:
     [[!HTTP11]], return `true`.
 4.  Return `false`.
 
+The "Access-Control-Allow-Credentials" addition in step #2 above exists
+because basic fetches would fail a CORS check due to steps 4 and 5 of
+the resource sharing check even if they contained a
+'Access-Control-Allow-Origin: *' header.
+{:.note}
+
 [fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
 [cachable by a shared cache]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
 [CORS resource sharing check]: http://www.w3.org/TR/cors/#resource-sharing-check-0
