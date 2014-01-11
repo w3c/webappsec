@@ -45,7 +45,7 @@ This example can be communicated to a user agent by adding the hash to a
 `script` element, like so:
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"
-            integrity="ni:///sha-256;C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg">
+            integrity="ni:///sha-256;C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg?ct=application/javascript">
 
 Scripts, of course, are not the only resource type which would benifit
 from integrity validation. The scheme specified here applies to all HTML
@@ -113,7 +113,7 @@ benefits that such a fallback system would enable. (mkwst)
     adding it to the `script` element she includes on her page:
 
         <script src="https://analytics-r-us.com/v1.0/include.js"
-                integrity="ni:///sha-256;SDfwewFAE...wefjijfE"></script>
+                integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"></script>
 
 *   An advertising network wishes to ensure that advertisements delivered via
     third-party servers matches the code which they reviewed in order to reduce
@@ -123,14 +123,14 @@ benefits that such a fallback system would enable. (mkwst)
     the agreed-upon content.
     
         <iframe src="https://awesome-ads.com/advertisement1.html"
-                integrity="ni:///sha-256;kasfdsaffs...eoirW-e"></iframe>
+                integrity="ni:///sha-256;kasfdsaffs...eoirW-e?ct=text/html"></iframe>
 
 *   A software distribution service wants to ensure that files are correctly
     downloaded. It can do so by adding [integrity metadata][] to the `a`
     elements which users click on to trigger a download:
 
         <a href="https://software-is-nice.com/awesome.exe"
-           integrity="ni:///sha-256;fkfrewFRFEFHJR...wfjfrErw"
+           integrity="ni:///sha-256;fkfrewFRFEFHJR...wfjfrErw?ct=application/octet-stream"
            download>...</a>
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
@@ -149,7 +149,7 @@ benefits that such a fallback system would enable. (mkwst)
 
         <script src="https://rockin-resources.com/script.js"
                 noncanonical-src="http://insecurity-is-inherent.net/script.js"
-                integrity="ni:///sha-256;asijfiqu4t12...woeji3W"></script>
+                integrity="ni:///sha-256;asijfiqu4t12...woeji3W?ct=application/javascript"></script>
 
 </section><!-- /Introduction::Use Cases -->
 </section><!-- /Introduction -->
@@ -437,7 +437,7 @@ example:
 
     <script src="http://example.com/script.js"
             noncanonical-src="http://cdn.example.com/script.js"
-            integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq"></script>
+            integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq?ct=application/javascript"></script>
 
 The `noncanonicalSrc` IDL attribute MUST [reflect][] the `noncanonical-src`
 content attribute.
@@ -534,7 +534,7 @@ Note that this should cover both downloads triggered by HTTP headers like
 on the `a` element. It might look like the following:
 
     <a href="https://example.com/file.zip"
-       integrity="ni:///sha256;skjdsfkafinqfb...ihja_gqg"
+       integrity="ni:///sha256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
        download>Download!</a>
 </div>
 
@@ -872,7 +872,7 @@ and reloaded from different locations as users browse the web:
 exactly the same file as
 `https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js`. Both
 files are identifiable via the `ni` URL
-`ni:///sha-256;iaFenEC8axSAnyNu6M0-0epCOTwfbKVceFXNd5s_ki4`.
+`ni:///sha-256;iaFenEC8axSAnyNu6M0-0epCOTwfbKVceFXNd5s_ki4?ct=application/javascript`.
 
 To reduce the performance impact of reloading the same data, user agents
 MAY use [integrity metadata][] as a new index to a local cache, meaning that
