@@ -304,15 +304,13 @@ details these restrictions:
 
 1.  Let <var>origin</var> be the [origin][fetch-origin] of the request
     which fetched <var>resource</var>.
-2.  If <var>resource</var> is [CORS same-origin][] with <var>origin</var>,
-    return `true`.
-3.  If <var>resource</var> is [cachable by a shared cache][], as defined in
-    [[!HTTP11]], return `true`.
-4.  If <var>resource</var> would pass a [CORS resource sharing check][],
+2.  If <var>resource</var> would pass a [CORS resource sharing check][],
     return `true`. If <var>resource</var> does not have an
     `Access-Control-Allow-Credentials` header, add such a header with a
     value of `true` for the purposes of this check.
-5.  Return `false`.
+3.  If <var>resource</var> is [cachable by a shared cache][], as defined in
+    [[!HTTP11]], return `true`.
+4.  Return `false`.
 
 [fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
 [cachable by a shared cache]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
