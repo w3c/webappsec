@@ -306,8 +306,9 @@ details these restrictions:
     which fetched <var>resource</var>.
 2.  If <var>resource</var> would pass a [CORS resource sharing check][],
     return `true`. If <var>resource</var> does not have an
-    `Access-Control-Allow-Credentials` header, add such a header with a
-    value of `true` for the purposes of this check.
+    `Access-Control-Allow-Credentials` header, and is the result
+    of a [basic fetch][], add such a header with a value of
+    `true` for the purposes of this check.
 3.  If <var>resource</var> is [cachable by a shared cache][], as defined in
     [[!HTTP11]], return `true`.
 4.  Return `false`.
@@ -321,6 +322,7 @@ the resource sharing check even if they contained a
 [fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
 [cachable by a shared cache]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
 [CORS resource sharing check]: http://www.w3.org/TR/cors/#resource-sharing-check-0
+[basic fetch]: http://fetch.spec.whatwg.org/#concept-basic-fetch
 </section><!-- Algorithms::eligible -->
 <section>
 #### Does <var>resource</var> match <var>metadata</var>?
