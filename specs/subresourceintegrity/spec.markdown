@@ -548,7 +548,8 @@ When content is to be loaded into the [child browsing context][] created
 by an `iframe`, perform fetches with the [integrity metadata][] set to the
 value of the `iframe` element's `integrity` attribute. Moreover:
 
-*   The user agent MUST delay rendering the content until the
+*   If the document's [integrity policy][] is `block`, then the user
+    agent MUST delay rendering the content until the
     [fetching algorithm][]'s task to [process request end-of-file][]
     completes.
 *   When the [process request end-of-file][] task completes:
