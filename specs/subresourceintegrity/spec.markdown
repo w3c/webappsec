@@ -115,10 +115,12 @@ benefits that such a fallback system would enable. (mkwst)
         <script src="https://analytics-r-us.com/v1.0/include.js"
                 integrity="ni:///sha-256;SDfwewFAE...wefjijfE"></script>
 
-*   An advertising network wishes to ensure that third-party content only
-    is pushed to users after review. They can ensure that only reviewed code is
-    delivered by adding [integrity metadata][] to the `iframe` element wrapping
-    the advertisement:
+*   An advertising network wishes to ensure that advertisements delivered via
+    third-party servers matches the code which they reviewed in order to reduce
+    the risk of accidental or malicious substitution of unreviewed content. By
+    adding [integrity metadata][] to the `iframe` element wrapping the
+    advertisement, they can ensure that the third-party server delivers only
+    the agreed-upon content.
     
         <iframe src="https://awesome-ads.com/advertisement1.html"
                 integrity="ni:///sha-256;kasfdsaffs...eoirW-e"></iframe>
@@ -133,8 +135,7 @@ benefits that such a fallback system would enable. (mkwst)
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
     HTML aren't manipulated before display. [Integrity metadata][] mitigates the
-    risk that altered JavaScript from the public web or from the local filesystem
-    will run in a high-privilege context.
+    risk that altered JavaScript will run in a high-privilege context.
 
 *   The author of a mash-up wants to make sure her creation remains in a working
     state. Adding [integrity metadata][] to external subresources defines an
