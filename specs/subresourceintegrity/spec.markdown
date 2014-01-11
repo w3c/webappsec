@@ -315,7 +315,7 @@ details these restrictions:
 5.  Return `false`.
 
 [fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
-[publicly cachable]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
+[cachable by a shared cache]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
 [CORS resource sharing check]: http://www.w3.org/TR/cors/#resource-sharing-check-0
 </section><!-- Algorithms::eligible -->
 <section>
