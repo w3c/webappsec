@@ -410,13 +410,16 @@ to enable the rest of this specification's work:
 A variety of HTML elements result in requests for resources that are to be
 embedded into the document, or executed in its context. To support integrity
 metadata for each of these, and new elements that are added in the future,
-a new `integrity` attribute is added to HTML5's list of
-[global attributes][global] that MAY be specified on any HTML element, and
-a corresponding attribute is added to the [<code>HTMLElement</code>
-interface][htmlelement].
+a new `integrity` attribute is added to the list of content attributes for
+the `a`, `audio`, `embed`, `iframe`, `link`, `object`, `script`, `source`,
+`track`, and `video` elements.
 
-[global]: http://www.w3.org/TR/html5/dom.html#global-attributes
-[htmlelement]: http://www.w3.org/TR/html5/dom.html#htmlelement
+A corresponding `integrity` IDL attribute which [reflects][reflect] the
+value each element's `integrity` content attribute is added to the
+`HTMLAnchorElement`, `HTMLMediaElement`, `HTMLEmbedElement`,
+`HTMLIframeElement`, `HTMLLinkElement`, `HTMLObjectElement`,
+`HTMLScriptElement`, `HTMLSourceElement`, and `HTMLTrackElement`
+interfaces.
 
 <section>
 #### The `integrity` attribute
