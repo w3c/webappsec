@@ -1023,10 +1023,16 @@ in its canonical form, without modification. A value of `0` means
 that integrity checking is irrelevant to this fetch, and modifications
 MAY be performed without violating integrity checks.
 
-This could be considered the request-side equivalent of a `Cache-Control`
-response header with a value of `no-transform`.
+Servers receiving a request containing a `CH-Integrity` HTTP header
+whose value is `1` SHOULD include a [`Cache-Control`][cachecontrol]
+HTTP header in the response with a value of [`no-transform`][notransform].
+
+This header could be considered the request-side equivalent of a
+`Cache-Control` response header with a value of `no-transform`.
 {:.note}
 
+[cachecontrol]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9
+[notransform]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5
 </section><!-- /Proxies::ClientHint -->
 
 </section><!-- /Implementation -->
