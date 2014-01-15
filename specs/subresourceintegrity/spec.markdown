@@ -106,6 +106,9 @@ benefits that such a fallback system would enable. (mkwst)
 <section>
 ### Use Cases/Examples
 
+<section>
+#### Resource Integrity
+
 *   An author wants to include JavaScript provided by a third-party
     analytics service on her site. She wants, however, to ensure that only
     the code she's carefully reviewed is executed. She can do so by generating
@@ -125,6 +128,20 @@ benefits that such a fallback system would enable. (mkwst)
         <iframe src="https://awesome-ads.com/advertisement1.html"
                 integrity="ni:///sha-256;kasfdsaffs...eoirW-e?ct=text/html"></iframe>
 
+*   A user agent wishes to ensure that pieces of its UI which are rendered via
+    HTML (for example, Chrome's New Tab Page) aren't manipulated before display.
+    [Integrity metadata][] mitigates the risk that altered JavaScript will run
+    in these page's high-privilege context.
+
+*   The author of a mash-up wants to make sure her creation remains in a working
+    state. Adding [integrity metadata][] to external subresources defines an
+    expected revision of the included files. The author can then use the reporting
+    functionality to be notified of changes to the included resources.
+
+</section><!-- Introduction::UseCases::Integrity -->
+<section>
+#### Downloads
+
 *   A software distribution service wants to ensure that files are correctly
     downloaded. It can do so by adding [integrity metadata][] to the `a`
     elements which users click on to trigger a download:
@@ -132,15 +149,10 @@ benefits that such a fallback system would enable. (mkwst)
         <a href="https://software-is-nice.com/awesome.exe"
            integrity="ni:///sha-256;fkfrewFRFEFHJR...wfjfrErw?ct=application/octet-stream"
            download>...</a>
-
-*   A user agent wishes to ensure that pieces of its UI which are rendered via
-    HTML aren't manipulated before display. [Integrity metadata][] mitigates the
-    risk that altered JavaScript will run in a high-privilege context.
-
-*   The author of a mash-up wants to make sure her creation remains in a working
-    state. Adding [integrity metadata][] to external subresources defines an
-    expected revision of the included files. The author can then use the reporting
-    functionality to be notified of changes to the included resources.
+           
+</section><!-- Introduction::UseCases::Downloads -->
+<section>
+#### Fallback
 
 *   An author wishes to load a resource over an insecure channel for performance
     reasons, but fall back to a secure channel if the insecurely-loaded resource
@@ -151,6 +163,7 @@ benefits that such a fallback system would enable. (mkwst)
                 noncanonical-src="http://insecurity-is-inherent.net/script.js"
                 integrity="ni:///sha-256;asijfiqu4t12...woeji3W?ct=application/javascript"></script>
 
+</section><!-- /Introduction::Use Cases::Fallback -->
 </section><!-- /Introduction::Use Cases -->
 </section><!-- /Introduction -->
 
