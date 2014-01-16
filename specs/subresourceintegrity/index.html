@@ -450,27 +450,25 @@ unclear that it&#8217;s what we want. See  <a href="http://lists.w3.org/Archives
 
       <p>In order to mitigate an attackers ability to read data cross-origin by
 brute-forcing values via integrity checks, resources are only eligible
-for such checks if they are same-origin, publically cachable, or have
-granted the loading origin explicit access. The following algorithm
-details these restrictions:</p>
+for such checks if they are same-origin, publically cachable, or is the
+result of a granted the loading origin explicit access via CORS. [<a href="http://www.w3.org/TR/html5/infrastructure.html#cors-cross-origin">CORS</a>]
+The following algorithm details these restrictions:</p>
 
       <ol>
-        <li>Let <var>origin</var> be the <a href="http://fetch.spec.whatwg.org/#concept-request-origin">origin</a> of the request
-which fetched <var>resource</var>.</li>
-        <li>If <var>resource</var> would pass a <a href="http://www.w3.org/TR/cors/#resource-sharing-check-0">CORS resource sharing check</a>,
-return <code>true</code>. If <var>resource</var> does not have an
-<code>Access-Control-Allow-Credentials</code> header, and is the result
-of a <a href="http://fetch.spec.whatwg.org/#concept-basic-fetch">basic fetch</a>, add such a header with a value of
-<code>true</code> for the purposes of this check.</li>
-        <li>If <var>resource</var> is <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability">cachable by a shared cache</a>, as defined in
-[[!HTTP11]], return <code>true</code>.</li>
+        <li>Let <var>request</var> be the request which fetched
+<var>resource</var>.</li>
+        <li>If the <a href="http://fetch.spec.whatwg.org/#concept-request-mode">mode</a> of <var>request</var> is <code>CORS</code>,
+return <code>true</code>.</li>
+        <li>If the <a href="http://fetch.spec.whatwg.org/#concept-request-origin">origin</a> of <var>request</var> is
+<var>resource</var>&#8217;s origin, return <code>true</code>.</li>
+        <li>If <var>resource</var> is <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability">cachable by a shared cache</a>, as defined
+in [[!HTTP11]], return <code>true</code>.</li>
         <li>Return <code>false</code>.</li>
       </ol>
 
-      <p class="note">The &#8220;Access-Control-Allow-Credentials&#8221; addition in step #2 above exists
-because basic fetches would fail a CORS check due to steps 4 and 5 of
-the resource sharing check even if they contained a
-&#8216;Access-Control-Allow-Origin: *&#8217; header.</p>
+      <p class="note">Step 2 returns <code>true</code> if the resource was a CORS-enabled request. If the
+resource failed the CORS checks, it won&#8217;t be available to us for integrity
+checking because it won&#8217;t have loaded successfully.</p>
 
     </section>
     <!-- Algorithms::eligible -->
@@ -735,8 +733,8 @@ completes.</li>
             <ol>
               <li>If the request&#8217;s integrity state is <code>corrupt</code>:
                 <ol>
-                  <li>If <var>resource</var> is <a href="http://www.w3.org/TR/html5/infrastructure.html#cors-same-origin">CORS same-origin</a> with the document&#8217;s
-browsing context owner <code>iframe</code> element&#8217;s Document, then
+                  <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the document&#8217;s
+browsing context owner <code>iframe</code> element&#8217;s Document&#8217;s origin, then
 <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the
 <code>iframe</code> element (this will not fire for cross-origin requests, to
 avoid leaking data about those resource&#8217;s content).</li>
@@ -765,20 +763,29 @@ what about other use-cases?</p>
         <h6 id="the-link-element">The <code>link</code> element</h6>
 
         <p>Whenever a user agent attempts to <a href="http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain">obtain a resource</a> pointed to by a
-<code>link</code> element, set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element&#8217;s <code>integrity</code> attribute. Additionally, perform the
-following steps before firing a <code>load</code> event at the element:</p>
+<code>link</code> element:</p>
 
         <ol>
-          <li>If the response&#8217;s integrity state is <code>corrupt</code>, and the document&#8217;s
-<a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+          <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
+of the element&#8217;s <code>integrity</code> attribute.</li>
+        </ol>
+
+        <p>Additionally, perform the following steps before firing a <code>load</code> event at
+the element:</p>
+
+        <ol>
+          <li>If the response&#8217;s integrity state is <code>corrupt</code>:
             <ol>
-              <li>Abort the <code>load</code> event, and treat the resource as having failed to
-load.</li>
-              <li>If <var>resource</var> is <a href="http://www.w3.org/TR/html5/infrastructure.html#cors-same-origin">CORS same-origin</a> with the <code>link</code>
-element&#8217;s Document, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a>
-named <code>error</code> at the <code>link</code> element (this will not fire for cross-origin
-requests, to avoid leaking data about those resource&#8217;s content).</li>
+              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+                <ol>
+                  <li>Abort the <code>load</code> event, and treat the resource as having failed
+to load.</li>
+                  <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the origin of
+the <code>link</code> element&#8217;s Document, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
+<a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the <code>link</code> element.</li>
+                </ol>
+              </li>
+              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
             </ol>
           </li>
         </ol>
@@ -788,6 +795,14 @@ requests, to avoid leaking data about those resource&#8217;s content).</li>
 
       <section>
         <h6 id="the-script-element">The <code>script</code> element</h6>
+
+        <p>When executing step 5 of step 14 of HTML5&#8217;s
+<a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">&#8220;prepare a script&#8221; algorithm</a>:</p>
+
+        <ol>
+          <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
+of the element&#8217;s <code>integrity</code> attribute.</li>
+        </ol>
 
         <p>Insert the following steps after step 5 of step 14 of HTML5&#8217;s
 <a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">&#8220;prepare a script&#8221; algorithm</a>:</p>
@@ -799,9 +814,10 @@ requests, to avoid leaking data about those resource&#8217;s content).</li>
                 <ol>
                   <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
                     <ol>
-                      <li>If <var>resource</var> is <a href="http://www.w3.org/TR/html5/infrastructure.html#cors-same-origin">CORS same-origin</a> with the <code>link</code>
-element&#8217;s Document, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple
-event</a> named <code>error</code> at the element, and abort these steps.</li>
+                      <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the <code>link</code>
+element&#8217;s Document&#8217;s origin, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
+<a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the element, and
+abort these steps.</li>
                     </ol>
                   </li>
                   <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
@@ -1104,7 +1120,9 @@ if the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is 
 <!-- /Framework -->
 
 <section>
-  <h3 id="caching">Caching</h3>
+  <h3 id="caching-optional">Caching (Optional)</h3>
+
+  <p>The caching mechanism described in this section is OPTIONAL.</p>
 
   <p>JavaScript libraries are a good example of resources that are often loaded
 and reloaded from different locations as users browse the web:
@@ -1221,6 +1239,8 @@ are all true:</p>
 header with a value of <code>*</code> [[!CORS]]</li>
       <li>The integrity metadata uses a hash function with very strong uniqueness
 characteristics: SHA-512 or better.</li>
+      <li>If a Content Security Policy is active in a context, the <code>script</code> or
+<code>link</code> element which triggered the resource&#8217;s fetch has a <a href="http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html#valid-nonces">valid nonce</a>.</li>
     </ul>
 
     <p class="todo">TODO: More ideas? Limiting to resources with wide-open CORS headers and strong
