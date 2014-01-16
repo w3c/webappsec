@@ -575,8 +575,8 @@ value of the `iframe` element's `integrity` attribute. Moreover:
     completes.
 *   When the [process request end-of-file][] task completes:
     3.  If the request's integrity state is `corrupt`:
-        1. If <var>resource</var> is [CORS same-origin][] with the document's
-           browsing context owner `iframe` element's Document, then
+        1. If <var>resource</var> is [same origin][] with the document's
+           browsing context owner `iframe` element's Document's origin, then
            [queue a task][] to [fire a simple event][] named `error` at the
            `iframe` element (this will not fire for cross-origin requests, to
            avoid leaking data about those resource's content).
@@ -640,9 +640,10 @@ Insert the following steps after step 5 of step 14 of HTML5's
 8.  Once the [fetching algorithm][] has completed:
     2.  If the response's integrity state is `corrupt`:
         1.  If the document's [integrity policy][] is `block`:
-            1.  If <var>resource</var> is [CORS same-origin][] with the `link`
-                element's Document, then [queue a task][] to [fire a simple
-                event][] named `error` at the element, and abort these steps.
+            1.  If <var>resource</var> is [same origin][] with the `link`
+                element's Document's origin, then [queue a task][] to
+                [fire a simple event][] named `error` at the element, and
+                abort these steps.
         2.  [Report a violation][].
 {:start="6"}
 
