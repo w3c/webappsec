@@ -311,31 +311,28 @@ unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
 
 In order to mitigate an attackers ability to read data cross-origin by
 brute-forcing values via integrity checks, resources are only eligible
-for such checks if they are same-origin, publically cachable, or have
-granted the loading origin explicit access. The following algorithm
-details these restrictions:
+for such checks if they are same-origin, publically cachable, or is the
+result of a granted the loading origin explicit access via CORS. [[CORS]]
+The following algorithm details these restrictions:
 
-1.  Let <var>origin</var> be the [origin][fetch-origin] of the request
-    which fetched <var>resource</var>.
-2.  If <var>resource</var> would pass a [CORS resource sharing check][],
-    return `true`. If <var>resource</var> does not have an
-    `Access-Control-Allow-Credentials` header, and is the result
-    of a [basic fetch][], add such a header with a value of
-    `true` for the purposes of this check.
-3.  If <var>resource</var> is [cachable by a shared cache][], as defined in
-    [[!HTTP11]], return `true`.
-4.  Return `false`.
+1.  Let <var>request</var> be the request which fetched
+    <var>resource</var>.
+2.  If the [mode][fetch-mode] of <var>request</var> is `CORS`,
+    return `true`.
+3.  If the [origin][fetch-origin] of <var>request</var> is
+    <var>resource</var>'s origin, return `true`.
+4.  If <var>resource</var> is [cachable by a shared cache][], as defined
+    in [[!HTTP11]], return `true`.
+5.  Return `false`.
 
-The "Access-Control-Allow-Credentials" addition in step #2 above exists
-because basic fetches would fail a CORS check due to steps 4 and 5 of
-the resource sharing check even if they contained a
-'Access-Control-Allow-Origin: *' header.
+Step 2 returns `true` if the resource was a CORS-enabled request. If the
+resource failed the CORS checks, it won't be available to us for integrity
+checking because it won't have loaded successfully.
 {:.note}
 
+[fetch-mode]: http://fetch.spec.whatwg.org/#concept-request-mode
 [fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
 [cachable by a shared cache]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
-[CORS resource sharing check]: http://www.w3.org/TR/cors/#resource-sharing-check-0
-[basic fetch]: http://fetch.spec.whatwg.org/#concept-basic-fetch
 </section><!-- Algorithms::eligible -->
 <section>
 #### Does <var>resource</var> match <var>metadata</var>?
