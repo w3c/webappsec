@@ -845,16 +845,27 @@ care about integrity validation SHOULD still ignore progress events
 fired while the resource is downloading, and instead listen only for
 the `load`, `abort`, and `error` events.
 
-Whenever the user agent would [fire a progress event][] named `progress`
-for an XMLHttpRequest object, run the following steps:
+If the document's [integrity policy][] is `block`, then:
 
-1.  If the object's `integrity` attribute is the empty string,
-    abort these steps, and proceed directly to firing the event.
-2.  If the document's [integrity policy][] is not `block`, abort
-    these steps, and proceed directly to firing the event.
-3.  Otherwise, the user agent MUST NOT fire the progress event.
+*   Before executing step 3.2 of the "process response" algorithm in
+    step 13 of XMLHttpRequest's [`send(data)`][xhrsend] method:
+    1. If the object's `integrity` attribute is not the empty string
+       the user agent MUST abort the "process response" algorithm, and
+       MUST NOT fire the `readystatechange` event.
 
-[fire a progress event]: https://dvcs.w3.org/hg/progress/raw-file/tip/Overview.html#concept-event-fire-progress
+*   Before executing step 2.2 of the "process response body" algorithm in
+    step 13 of XMLHttpRequest's [`send(data)`][xhrsend] method:
+    1. If the object's `integrity` attribute is not the empty string
+       the user agent MUST abort the "process response body" algorithm,
+       and MUST NOT fire the `readystatechange` event.
+
+*   Before executing step 4 of the "process response body" algorithm in
+    step 13 of XMLHttpRequest's [`send(data)`][xhrsend] method:
+    1. If the object's `integrity` attribute is not the empty string
+       the user agent MUST abort the "process response body" algorithm,
+       and MUST NOT fire the `progress` event.
+
+[xhrsend]: http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send
 </section><!-- /Framework::JS::XHR::integrity -->
 
 <section>
