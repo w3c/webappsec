@@ -604,25 +604,35 @@ what about other use-cases?
 ###### The `link` element
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
-`link` element, set the [integrity metadata][] of the request to the value
-of the element's `integrity` attribute. Additionally, perform the
-following steps before firing a `load` event at the element:
+`link` element:
 
-1.  If the response's integrity state is `corrupt`, and the document's
-    [integrity policy][] is `block`:
-    1.  Abort the `load` event, and treat the resource as having failed to
-        load.
-    2.  If <var>resource</var> is [CORS same-origin][] with the `link`
-        element's Document, then [queue a task][] to [fire a simple event][]
-        named `error` at the `link` element (this will not fire for cross-origin
-        requests, to avoid leaking data about those resource's content).
+1.  Set the [integrity metadata][] of the request to the value
+    of the element's `integrity` attribute.
+
+Additionally, perform the following steps before firing a `load` event at
+the element:
+
+1.  If the response's integrity state is `corrupt`:
+    1.  If the document's [integrity policy][] is `block`:
+        1.  Abort the `load` event, and treat the resource as having failed
+            to load.
+        2.  If <var>resource</var> is [same origin][] with the origin of
+            the `link` element's Document, then [queue a task][] to
+            [fire a simple event][] named `error` at the `link` element.
+    2.  [Report a violation][].
 
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
-[cors same-origin]: http://www.w3.org/TR/html5/infrastructure.html#cors-same-origin
+[same origin]: http://tools.ietf.org/html/rfc6454#section-5
 </section><!-- /Framework::HTML::link -->
 
 <section>
 ###### The `script` element
+
+When executing step 5 of step 14 of HTML5's
+["prepare a script" algorithm][prepare]:
+
+1.  Set the [integrity metadata][] of the request to the value
+    of the element's `integrity` attribute.
 
 Insert the following steps after step 5 of step 14 of HTML5's
 ["prepare a script" algorithm][prepare]:
