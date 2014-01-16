@@ -906,7 +906,9 @@ switching state:
 </section><!-- /Framework -->
 
 <section>
-### Caching
+### Caching (Optional)
+
+The caching mechanism described in this section is OPTIONAL.
 
 JavaScript libraries are a good example of resources that are often loaded
 and reloaded from different locations as users browse the web:
@@ -1012,6 +1014,10 @@ are all true:
     header with a value of `*` [[!CORS]]
 *   The integrity metadata uses a hash function with very strong uniqueness
     characteristics: SHA-512 or better.
+*   If a Content Security Policy is active in a context, the `script` or
+    `link` element which triggered the resource's fetch has a [valid nonce][].
+
+[valid nonce]: http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html#valid-nonces
 
 TODO: More ideas? Limiting to resources with wide-open CORS headers and strong
 hash functions seems like a reasonable start...
