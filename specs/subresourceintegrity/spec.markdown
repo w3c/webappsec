@@ -533,13 +533,32 @@ failure, refuse to fetch the resource, and [report a violation][].
 <section>
 ###### The `a` element
 
-Change step 6 of the [downloads a hyperlink][] algorithm to read:
+If an `a` element has both `integrity` and `download` attributes, the user
+agent has all the data it needs in order to verify the integrity of the
+downloaded resource. This is the only type of download we can safely make
+promises about, so it is the only type of download that we support. If
+integrity metadata is added to any `a` element that does not explicitly
+request that the resource it points to be downloaded, user agents MUST
+treat the link as broken.
 
-6. Fetch <var>URL</var> with [integrity metadata][] set to the value of the
+Before [following a hyperlink][], the user agent MUST run the following steps:
+
+1.  If <var>subject</var> has an `integrity` attribute whose value is not the
+    empty string, then:
+    1.  The user agent MAY report an error to the user in a
+        user-agent-specific manner.
+    2.  Abort the [following a hyperlink][] algorithm.
+
+Replace step 6 of the [downloads a hyperlink][] algorithm with the following:
+
+6. If the `integrity` attribute of that element is not the empty string, and
+   the element _does not_ have a `download` attribute, abort these steps.
+7. Fetch <var>URL</var> with [integrity metadata][] set to the value of the
    `integrity` attribute of that element, and handle the resulting resource
    [as a download][].
 {:start="6"}
 
+[following a hyperlink]: http://www.w3.org/TR/html5/links.html#following-hyperlinks
 [downloads a hyperlink]: http://www.w3.org/TR/html5/links.html#downloading-hyperlinks
 
 When handling a resource [as a download][], perform the following step before
@@ -550,9 +569,8 @@ providing a user with a way to save the resource for later use:
     <em>and</em> MUST abort the download.
 
 <div class="note">
-Note that this should cover both downloads triggered by HTTP headers like
-`Content-Disposition`, and also downloads triggered by a `download` attribute
-on the `a` element. It might look like the following:
+Note that this will cover _only_ downloads triggered explicitly by adding a
+`download` attribute to an `a` element. Such a link might look like the following:
 
     <a href="https://example.com/file.zip"
        integrity="ni:///sha256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
