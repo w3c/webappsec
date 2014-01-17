@@ -1376,18 +1376,18 @@ directive-value   = source-list
         <code>form-action</code> will still allow form submissions to any
         target.</p>
       </section>
-
+        
       <section>
         <h4><code>frame-ancestors</code></h4>
- 
-        <p>The <code>frame-ancestors</code> directive indicates whether the user agent 
-        should allow embedding the resource using a <code>frame</code>, <code>iframe</code>, 
-        <code>object</code>, <code>embed</code> or <code>applet</code> tag, or equivalent 
-        functionality in non-HTML resources.  Resources can use this directive to avoid 
-        many UI Redressing [[UIREDRESS]] attacks by avoiding being embedded into potentially 
+
+        <p>The <code>frame-ancestors</code> directive indicates whether the user agent
+        should allow embedding the resource using a <code>frame</code>, <code>iframe</code>,
+        <code>object</code>, <code>embed</code> or <code>applet</code> tag, or equivalent
+        functionality in non-HTML resources.  Resources can use this directive to avoid
+        many UI Redressing [[UIREDRESS]] attacks by avoiding being embedded into potentially
         hostile contexts. </p>
 
-        <p>The syntax for the name and value of the directive are described by the 
+        <p>The syntax for the name and value of the directive are described by the
         following ABNF grammar:</p>
 
         <pre>
@@ -1395,68 +1395,104 @@ directive-name  = "frame-ancestors"
 directive-value = source-list
         </pre>
 
-         <p>The effective directive-value for <code>frame-ancestors</code> is not influenced by 
-         <code>default-src</code>. If <code>frame-ancestors</code> is not explicitly stated 
-         in the policy its value is <code>"*"</code>.</p>
+        <p>The term <dfn>allowed frame ancestors</dfn> refers to the result of
+        <a href="#parse-a-source-list">parsing the <code>frame-ancestors</code>
+        directive's value as a source list</a>. Note that this directive is not
+        influenced by the <a href="#dfn-default-sourcs">default sources</a>. If
+        a <code>frame-ancestors</code> directive is not explicitly included in
+        the policy, the <a href="#dfn-allowed-frame-ancestors">allowed frame
+        ancestors</a> is "<code>*</code>".</p>
 
-         <p> An <dfn>ancestor</dfn> is any resource between the protected resource and 
-         the top of the window frame tree; for example, if A embeds B which embeds C, 
-         both A and B are ancestors of C. If A embeds both B and C, B is not an ancestor 
-         of C, but A still is.</p>
+        <p>To enforce the <code>frame-ancestors</code> directive, whenever the
+        user agent would load the protected resource into a
+        <a href="#dfn-nested-browsing-context">nested browsing context</a>, the
+        user agent MUST perform the following steps:</p>
 
-         <p>A value in the source-list indicates an allowable ancestor for the resource.</p> 
+        <ol>
+          <li>Let <var>nestedContext</var> be the nested browsing context into
+          which the protected resource is being loaded.</li>
+          <li>Let <var>ancestorList</var> be the list of all
+          <a href="http://www.w3.org/TR/html5/browsers.html#ancestor-browsing-context">ancestor browsing contexts</a>
+          of <var>nestedContext</var>.</li>
+          <li>For each <var>ancestorContext</var> in <var>ancestorList</var>:
+            <ol>
+              <li>Let <var>document</var> be <var>ancestorContext</var>'s
+              <a href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a>.</li>
+              <li>If <var>document</var>'s URL does not <a href="#matches-a-source-list">match</a>
+              the <a href="#dfn-allowed-frame-ancestors">allowed frame ancestors</a>,
+              the user agent MUST:
+                <ol>
+                  <li>Abort loading the protected resource.</li>
+                  <li>Act as if it received an empty
+                  <a href="https://tools.ietf.org/html/rfc2616#section-10.2.1">HTTP 200 response</a>.</li>
+                  <li><a href="http://www.whatwg.org/specs/web-apps/current-work/#parse-a-sandboxing-directive">Parse the sandboxing directive</a>
+                  using the empty string as the <em>input</em> and the newly
+                  created document's <a href="http://www.whatwg.org/specs/web-apps/current-work/#forced-sandboxing-flag-set">forced sandboxing flag set</a>
+                  as the <em>output</em>.</li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
 
-         <p>If the directive-value contains the keyword-source <code>'none'</code>,
-         the resource cannot be displayed in an embedded context, regardless of the origin 
-         attempting to do so, and all other source-list expressions are ignored.</p>
+        <p>Steps 2.3 and 2.3 ensure that the blocked frame appears to be a normal
+        cross-origin document's load. If these steps are ignored, leakage of a
+        document's policy state is possible.</p>
 
-         <p>If the directive-value contains the keyword-source <code>'self'</code>, 
-         ancestors are allowed from the same origin as the protected resource.</p>
+        <p>Note that the <code>frame-ancestors</code> directive will be ignored when
+        <a href="#monitor">monitoring</a> a policy, and when a contained in a
+        policy defined via a <a href="#html-meta-element"><code>meta</code>
+        element</a>.</p>
 
-         <p>When generating a violation report for a <code>frame-ancestors</code> violation,
-         the user agent MUST NOT include the value of the embedding ancestor as a
-         <code>blocked-uri</code> value unless it is same-origin with the protected resource, 
-         as disclosing the value of cross-origin ancestors is a violation of the Same-Origin Policy.
-         </p>
+        <p>Note that this directive is similar to the non-standard
+        <code>X-Frame-Options</code> header that several user agents
+        have implemented. The <code>'none'</code> source expression
+        is roughly equivilant to that header's <code>DENY</code>,
+        <code>'self'</code> to <code>SAMEORIGIN</code>, and so on.
+        The major difference is that many user agents implement
+        <code>SAMEORIGIN</code> such that it only matches against
+        the top-level document's location. This directive checks
+        each ancestor. If any ancestor doesn't match, the load
+        is cancelled.</p>
 
-        <p>When a violation prohibits embedding the resource, the user-agent
-         MAY immediately abort downloading or parsing of the document, and 
-         SHOULD redirect as soon as possible to an error document.  The error
-         document SHOULD explain the error condition and MAY provide the user
-         with the option to open the protected resource in a non-embedded context
-         in a new window.</p>
+        <p>When generating a violation report for a <code>frame-ancestors</code> violation,
+        the user agent MUST NOT include the value of the embedding ancestor as a
+        <code>blocked-uri</code> value unless it is same-origin with the protected resource,
+        as disclosing the value of cross-origin ancestors is a violation of the Same-Origin Policy.
+        </p>
 
-         <section id="multiple-host-source-values"  class=informative>
-            <h5>Multiple Host Source Values</h5>
+        <section id="multiple-host-source-values"  class="informative">
+          <h5>Multiple Host Source Values</h5>
 
-            <p>Multiple source-list espressions are allowed in a single policy (in contrast
-            to <code>X-Frame-Options</code>, which allows only one) to enable 
-            scenarios involving embedded application compoments that are multiple levels 
-            below the top-level browsing context.</p>
+          <p>Multiple source-list espressions are allowed in a single policy (in contrast
+          to <code>X-Frame-Options</code>, which allows only one) to enable
+          scenarios involving embedded application compoments that are multiple levels
+          below the top-level browsing context.</p>
 
-            <p>Many common scenarios for permissioned embedding (e.g. embeddable payment, 
-            sharing or social apps) involve potentially many hundreds or thousands of 
-            valid <code>source-list</code> expressions, but it is strongly recommended against 
-            accomodating such scenarios with a static <code>frame-ancestors</code> directive 
-            listing mulitple values. In such cases it is beneficial to generate this value 
-            dynamically, based on an HTTP Referer header or an explicitly passed-in value, 
-            to allow only the source(s) necessary for each given embedding of the resource.</p>  
+          <p>Many common scenarios for permissioned embedding (e.g. embeddable payment,
+          sharing or social apps) involve potentially many hundreds or thousands of
+          valid <code>source-list</code> expressions, but it is strongly recommended against
+          accomodating such scenarios with a static <code>frame-ancestors</code> directive
+          listing mulitple values. In such cases it is beneficial to generate this value
+          dynamically, based on an HTTP Referer header or an explicitly passed-in value,
+          to allow only the source(s) necessary for each given embedding of the resource.</p>
 
-            <p>Consider a service providing a payments application at 
-            <code>https://payments/makeEmbedded</code>.  The service allows this resource 
-            to be embedded by both merchant Alice and merchant Bob, who compete with each
-            other.  Sending: 
-            <pre>
+          <p>Consider a service providing a payments application at
+          <code>https://payments/makeEmbedded</code>.  The service allows this resource
+          to be embedded by both merchant Alice and merchant Bob, who compete with each
+          other.  Sending:</p>
+
+<pre>
 Content-Security-Policy: frame-options https://alice https://bob
-            </pre>
-            would allow Bob to re-frame Alice's resource and create fradulent clicks, 
-            perhaps discrediting Alice with her customers or the payments service.  If the 
-            payments service used additional information (e.g. as part of a URL like 
-            <code>https://payments/makeEmbedded?merchant=alice</code>) to send 
-            individually-tailored headers listing only the source-list expressions 
-            needed by each merchant, this attack would be eliminated.</p>
-        </section>
+</pre>
 
+          <p>would allow Bob to re-frame Alice's resource and create fradulent clicks,
+          perhaps discrediting Alice with her customers or the payments service.  If the
+          payments service used additional information (e.g. as part of a URL like
+          <code>https://payments/makeEmbedded?merchant=alice</code>) to send
+          individually-tailored headers listing only the source-list expressions
+          needed by each merchant, this attack would be eliminated.</p>
+        </section>
       </section>
 
       <section>
