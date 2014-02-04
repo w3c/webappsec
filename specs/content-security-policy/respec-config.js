@@ -28,10 +28,6 @@ var respecConfig = {
     // if this is a LCWD, uncomment and set the end of its review period
     // lcEnd: "2009-08-05",
 
-    // if you want to have extra CSS, append them to this list
-    // it is recommended that the respec.css stylesheet be kept
-    extraCSS:             ["css/respec.css"],
-
     // editors, add as many as you like
     // only "name" is required
     editors:  [
@@ -58,4 +54,40 @@ var respecConfig = {
     // document unless you know what you're doing. If in doubt ask your friendly neighbourhood
     // Team Contact.
     wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/49309/status",
+
+    localBiblio: {
+      "RFC3492": {
+        title: "Punycode: A Bootstring encoding of Unicode for Internationalized Domain Names in Applications (IDNA)",
+        href: "http://tools.ietf.org/html/rfc3492",
+        authors: [
+          "Adam M. Costello",
+        ],
+        status: "PROPOSED STANDARD",
+        publisher: "IETF",
+      },
+
+      "RFC7034": {
+        title: "HTTP Header Field X-Frame-Options",
+        href: "http://tools.ietf.org/html/rfc7034",
+        authors: [
+          "David Ross",
+          "Tobias Gondrom",
+          "Thames Stanley"
+        ],
+        status: "INFORMATIONAL",
+        publisher: "IETF",
+      },
+      "UIREDRESS": {
+        title: "User Interface Security Directives for Content Security Policy",
+        href: "https://dvcs.w3.org/hg/user-interface-safety/raw-file/tip/user-interface-safety.html",
+        authors: [
+          "Giorgio Maone",
+          "David Lin-Shung Huang",
+          "Tobias Gondrom",
+          "Brad Hill"
+        ],
+        status: "Working Draft",
+        publisher: "W3C",
+      },
+    },
 };
