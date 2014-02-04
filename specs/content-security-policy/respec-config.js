@@ -4,7 +4,7 @@ var respecConfig = {
     specStatus:           "ED",
 
     // the specification's short name, as in http://www.w3.org/TR/short-name/
-    shortName:            "CSP",
+    shortName:            "CSP11",
 
     // if your specification has a subtitle that goes below the main
     // formal title, define it here
@@ -19,8 +19,8 @@ var respecConfig = {
 
     // if there is a previously published draft, uncomment this and set its YYYY-MM-DD date
     // and its maturity status
-    // previousPublishDate:  "1977-03-15",
-    // previousMaturity:  "WD",
+    previousPublishDate:  "2013-06-04",
+    previousMaturity:  "WD",
 
     // if there a publicly available Editor's Draft, this is the link
     edDraftURI:           "http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html",
