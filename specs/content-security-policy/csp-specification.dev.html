@@ -1806,7 +1806,7 @@ directive-value   = media-type-list
 
 <pre>
 directive-name    = "referrer"
-directive-value   = "never" / "default" / "origin" / "always"
+directive-value   = "none" / "none-when-insecure" / "origin-always" / "origin-when-cross-origin" / "unsafe-url-always"
 </pre>
 
         <p>Note that the directive name does not share the HTTP header's
@@ -1828,16 +1828,22 @@ directive-value   = "never" / "default" / "origin" / "always"
         <ol start="7">
           <li>If <var>referrer</var> is null, or if the
           <a href="#dfn-referrer-policy">referrer policy</a> is
-          <code>never</code>, return null.</li>
+          <code>none</code>, return null.</li>:
 
           <li>If the <a href="#dfn-referrer-policy">referrer policy</a> is
-          <code>origin</code>, return the ASCII serialization of
-          <var>referrer</var>.</li>
+          <code>origin-always</code>, return the ASCII serialization of
+          <var>referrer</var>'s origin. [[!ORIGIN]]</li>
 
           <li>If the <a href="#dfn-referrer-policy">referrer policy</a> is
-          <code>always</code>, return <var>referrer</var>. Note that
-          this might cause HTTPS referrer information to be sent over the
-          network as part of unencrypted HTTP requests.</li>
+          <code>origin-when-cross-origin</code>, return <var>referrer</var>
+          if <var>referrer</var>'s origin is the same as the origin of the
+          resource being fetched, and otherwise the ASCII serialization of
+          <var>referrer</var>'s origin. [[!ORIGIN]]</li>
+
+          <li>If the <a href="#dfn-referrer-policy">referrer policy</a> is
+          <code>unsafe-url-always</code>, return <var>referrer</var>. Note
+          that this might cause HTTPS referrer information to be sent over
+          the network as part of unencrypted HTTP requests.</li>
 
           <li>Return null if the scheme component of <var>referrer</var>
           represents a protocol that uses transport-layer security and
@@ -1864,17 +1870,17 @@ directive-value   = "never" / "default" / "origin" / "always"
 
             <li>Otherwise, the protected resource's
             <a href="#dfn-referrer-policy">referrer policy</a> is
-            <code>never</code>.</li>
+            <code>none</code>.</li>
         </section>
 
         <section class="informative">
           <h5>Usage</h5>
           <p>A protected resource can prevent referrer leakage by specifying
-          <code>never</code> as the value of its policy's <code>referrer</code>
+          <code>none</code> as the value of its policy's <code>referrer</code>
           directive:</p>
 
 <pre>
-Content-Security-Policy: referrer never;
+Content-Security-Policy: referrer none;
 </pre>
 
           <p>This will cause all requests made from the protected resource's
