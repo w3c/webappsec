@@ -1783,15 +1783,15 @@ directive-value   = media-type-list
 
 <pre>
 directive-name    = "referrer"
-directive-value   = "none" / "none-when-insecure" / "origin" / "origin-when-cross-origin" / "unsafe-url"
+directive-value   = "none" / "none-when-downgrade" / "origin" / "origin-when-cross-origin" / "unsafe-url"
 </pre>
 
         <p>Note that the directive name does not share the HTTP header's
         misspelling.</p>
 
         <p>The term <dfn>referrer policy</dfn> refers to the value of the
-        <code>referrer</code> directive, or to the empty string if no
-        <code>referrer</code> directive is present in the protected
+        <code>referrer</code> directive, or to <code>none-when-downgrade</code>
+        if no <code>referrer</code> directive is present in the protected
         resource's policy.</p>
         
         <p>If the value of the <code>referrer</code> directive is invalid,
@@ -1805,7 +1805,7 @@ directive-value   = "none" / "none-when-insecure" / "origin" / "origin-when-cros
         <ol start="7">
           <li>If <var>referrer</var> is null, or if the
           <a href="#dfn-referrer-policy">referrer policy</a> is
-          <code>none</code>, return null.</li>:
+          <code>none</code>, return null.</li>
 
           <li>If the <a href="#dfn-referrer-policy">referrer policy</a> is
           <code>origin</code>, return the ASCII serialization of
@@ -1822,11 +1822,17 @@ directive-value   = "none" / "none-when-insecure" / "origin" / "origin-when-cros
           that this might cause HTTPS referrer information to be sent over
           the network as part of unencrypted HTTP requests.</li>
 
-          <li>Return null if the scheme component of <var>referrer</var>
-          represents a protocol that uses transport-layer security and
-          the scheme component of the resource being fetched does not.</li>
 
-          <li>Return <var>referrer</var>.</li>
+          <li>If the <a href="#dfn-referrer-policy">referrer policy</a> is
+          <code>none-when-downgrade</code>, then:
+            <ul>
+              <li>Return <code>null</code> if the scheme component of
+              <var>referrer</var> represents a protocol that uses
+              transport-layer security and the scheme component of the
+              resource being fetched does not</li>
+              <li>Otherwise return <var>referrer</var>.</li>
+            </ul>
+          </li>
         </ol>
 
         <p>Note: This specification should not be interpreted as limiting
