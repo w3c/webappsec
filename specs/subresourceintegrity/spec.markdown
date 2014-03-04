@@ -452,12 +452,23 @@ interfaces.
 #### The `integrity` attribute
 
 The `integrity` attribute represents [integrity metadata][] for an element.
-The value of the attribute MUST be either the empty string, or a valid "named
-information" (`ni`) URI. [[!RFC6920]]
+The value of the attribute MUST be either the empty string, or one
+valid "named information" (`ni`) URI [[!RFC6920]], as described by the
+following ABNF grammar:
+
+    integrity-metatata = "" / 1#( *WSP NI-URL ) *WSP ]
+
+The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
+
+[nuurl]: http://tools.ietf.org/html/rfc6920#section3
 
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
+
+We should consider supporting multiple `ni` URLs, which could allow migration
+between algorithms.
+{:.todo}
 </section><!-- /Framework::HTML::integrity -->
 
 <section class="todo">
