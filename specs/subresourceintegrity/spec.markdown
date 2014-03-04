@@ -840,54 +840,13 @@ TODO: Write this section? Might want to delay media elements until we have a sol
 <section>
 ### Verification of CSS-loaded subresources
 
-<div class="note">
-Two strawmen. We should poke someone like Tab about these; he'll have
-ideas. Or at least opinions.
-
-Idea #1: add an `@integrity` block at the beginning of a CSS file that
-contains a list of `@resource` rules, each containing a `url()` and a
-`integrity()`. Something like:
-
-    @integrity {
-        @resource: url(http://example.com/cat.gif)
-                   integrity(ni:///sha-256;3587cb776ce0e4...c838c423);
-        @resource: url(http://not-example.com/another-cat.gif)
-                   integrity(ni:///sha-256;kljhfigrregq34...298jndkd);
-    }
-
-Idea #2: add a `integrity()` to each instance where we load a URL (this
-is a poor general solution because repetition, but might work for
-one-offs if we think those are more likely). Something like:
-
-    .awesomeness {
-        background-image: url(http://example.com/cat.gif)
-                          integrity(ni:///sha-256;3587cb776ce0e4...c838c423);
-    }
-
-or
-
-    @font-face {
-        font-family: IntegralFont;
-        src: url(font.woff)
-             integrity(ni:///sha-256;3587cb776ce0e4...c838c423);
-    }
-
-Hope someone else has better ideas.
-
----
-
-Tab suggested that idea #1 is bad, as it would be quite fragile and easy
-for authors to add or change resources without updating the integrity
-section.
-
-I think he's suggested something like:
-
-    .awesomeness {
-        background-image: integrity(<url>, <metadata>);
-    }
-    
-Following up with him for clarification.
-</div>
+Tab and Anne are poking at adding `fetch()` to some spec somewhere
+which would allow CSS files to specify various arguments to the fetch
+algorithm while requesting resources. Detail on the proposal is at
+<http://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html>.
+Once that is specified, we can proceed defining an `integrity` argument
+that would allow integrity checks in CSS.
+{:.issue}
 
 </section><!-- /Framework::CSS -->
 
