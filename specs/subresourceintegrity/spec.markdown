@@ -794,23 +794,43 @@ specified for a successful `track` fetch:
 
 [track URL]: http://www.w3.org/TR/html5/embedded-content-0.html#track-url
 [track-process]: http://www.w3.org/TR/html5/embedded-content-0.html#start-the-track-processing-model
-</section>
-
+</section><!-- /Framework::HTML::Elements::track -->
 <section>
-###### The `every-other` element
+###### The `audio` element (TODO)
 
-<div class="todo">
-TODO: `script` is a good start, but at a minimum, we'll need to cover the
-following set of elements:
+TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
+{:.todo}
+</section><!-- /Framework::HTML::Elements::audio -->
+<section>
+###### The `embed` element (TODO)
 
-* audio
-* embed
-* img
-* object
-* source
-* video
-</div>
-</section><!-- /Framework::HTML::Elements::* -->
+TODO: Write this section.
+{:.todo}
+</section><!-- /Framework::HTML::Elements::embed -->
+<section>
+###### The `img` element (TODO)
+
+TODO: Write this section.
+{:.todo}
+</section><!-- /Framework::HTML::Elements::img -->
+<section>
+###### The `object` element (TODO)
+
+TODO: Write this section.
+{:.todo}
+</section><!-- /Framework::HTML::Elements::object -->
+<section>
+###### The `source` element (TODO)
+
+TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
+{:.todo}
+</section><!-- /Framework::HTML::Elements::source -->
+<section>
+###### The `video` element (TODO)
+
+TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
+{:.todo}
+</section><!-- /Framework::HTML::Elements::video -->
 
 </section><!-- /Framework::HTML::Elements -->
 
