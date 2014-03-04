@@ -16,7 +16,7 @@ only a single origin. Authors pull scripts, images, fonts, etc. from a
 wide variety of services and content delivery networks, and must trust
 that the delivered representation is, in fact, what they expected to
 load. If an attacker can trick a user into downloading content from
-a hostile server (via DNS poisioning, or other such means), the author has
+a hostile server (via DNS poisoning, or other such means), the author has
 no recourse. Likewise, an attacker who can replace the file on the CDN server
 has the ability to inject arbitrary content.
 
@@ -47,7 +47,7 @@ This example can be communicated to a user agent by adding the hash to a
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"
             integrity="ni:///sha-256;C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg?ct=application/javascript">
 
-Scripts, of course, are not the only resource type which would benifit
+Scripts, of course, are not the only resource type which would benefit
 from integrity validation. The scheme specified here applies to all HTML
 elements which trigger fetches, as well as to fetches triggered from CSS
 and JavaScript.
@@ -311,7 +311,7 @@ unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
 
 In order to mitigate an attackers ability to read data cross-origin by
 brute-forcing values via integrity checks, resources are only eligible
-for such checks if they are same-origin, publically cachable, or is the
+for such checks if they are same-origin, publicly cachable, or is the
 result of a granted the loading origin explicit access via CORS. [[CORS]]
 
 Certain HTTP headers can also change the way the resource behaves in
@@ -596,7 +596,7 @@ directive, defined by the following ABNF grammar:
     directive-value = 1#failure-mode [ "require-for-all" ]
     failure-mode    = ( "block" / "report" / "fallback" )
 
-A documents's <dfn>integrity policy</dfn> is the value of the
+A document's <dfn>integrity policy</dfn> is the value of the
 `integrity-policy` directive, if explicitly provided as part of the
 document's Content Security Policy, or `block` otherwise.
 
@@ -1091,7 +1091,7 @@ metadata to identify a resource are vulnerable to attacks which create
 resources that behave differently based on the context in which they are
 loaded. [Gifar][] is the canonical example of such an attack.
 
-Authors SHOULD mitigate this risk by specifing the expected content type
+Authors SHOULD mitigate this risk by specifying the expected content type
 along with the digest, as specified in [RFC 6920, section 3.1][contenttype].
 This means that the content type will be verified along with the digest when
 determining whether a [resource matches certain integrity
