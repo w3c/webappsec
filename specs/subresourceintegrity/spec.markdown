@@ -322,6 +322,10 @@ contains these headers, it is ineligible for integrity validation:
     resources are excluded from integrity checks.
 *   `Refresh` can cause IFrame contents to transparently redirect to an
     unintended target, bypassing the integrity check.
+
+Consider the impact of other headers: `Content-Length`, `Content-Range`,
+etc. Is there danger there?
+{:.todo}
   
 The following algorithm details these restrictions:
 
