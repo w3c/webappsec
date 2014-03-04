@@ -100,7 +100,7 @@ regardless of the URL from which they are loaded.
 
 I'm not sure about #5 and #6. Get more detail from the WG about the
 benefits that such a fallback system would enable. (mkwst)
-{:.todo}
+{:.issue}
 </section><!-- /Introduction::Goals -->
 
 <section>
@@ -299,9 +299,9 @@ cryptographic hash functions for use as part of a resource's
     <var>encodedResult</var>.
 5.  Return <var>encodedResult</var>.
 
-TODO: #2 is pulled from the `content-md5` definition in [[!HTTP11]]. It's
+#2 is pulled from the `content-md5` definition in [[!HTTP11]]. It's
 unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
-{:.todo}
+{:.issue}
 
 [apply-algorithm]: #apply-algorithm-to-resource
 </section><!-- Algorithms::apply -->
@@ -325,7 +325,7 @@ contains these headers, it is ineligible for integrity validation:
 
 Consider the impact of other headers: `Content-Length`, `Content-Range`,
 etc. Is there danger there?
-{:.todo}
+{:.issue}
   
 The following algorithm details these restrictions:
 
@@ -472,11 +472,11 @@ The `integrity` IDL attribute must [reflect][] the `integrity` content attribute
 
 We should consider supporting multiple `ni` URLs, which could allow migration
 between algorithms.
-{:.todo}
+{:.issue}
 </section><!-- /Framework::HTML::integrity -->
 
-<section class="todo">
-#### The `noncanonical-src` attribute
+<section>
+#### The `noncanonical-src` attribute (TODO)
 [noncanonical]: #the-noncanonical-src-attribute
 
 Authors MAY opt-in to a fallback mechanism whereby user agents would initially
@@ -501,10 +501,11 @@ channels.
 
 [omit credentials mode]: http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode
 
-TODO: This attribute (and fallback in general) only makes sense if we care
+This attribute (and fallback in general) only makes sense if we care
 about allowing cache-friendly (read "HTTP") URLs to load in an HTTPS context
 without warnings. I'm not sure we do, so I'm not going to put too much
 thought into the details here before we discuss things a bit more. (mkwst)
+{:.issue}
 </section><!-- /Framework::HTML::noncanonical-src -->
 
 <section>
@@ -615,12 +616,12 @@ resource fails an integrity check, the user agent MUST refuse to render or
 execute the resource, <em>and</em> MUST [report a(nother)
 violation][report a violation]. (See [the `noncanonical-src`
 attribute][noncanonical] for a strawman of how that might look).
-{:.todo}
+{:.issue}
 
 If the document's integrity policy contains `require-for-all`, the user agent
 MUST treat the lack of [integrity metadata][] for an resource as automatic
 failure, refuse to fetch the resource, and [report a violation][].
-{:.todo}
+{:.issue}
 
 [csp]: http://w3.org/TR/CSP11
 [report a violation]: http://www.w3.org/TR/CSP11/#dfn-report-a-violation
@@ -706,12 +707,12 @@ going to be for vendors to change the "display whatever we've got, ASAP!"
 behavior that makes things fast for users? How much impact will there be
 on user experience, especially for things like ads, where this kind of
 validation has the most value?
-{:.todo}
+{:.issue}
 
 How do we deal with navigations in the child browsing context? Are they
 simply disallowed? If so, does that make sense? It might for ads, but
 what about other use-cases?
-{:.todo}
+{:.issue}
 
 [child browsing context]: http://www.w3.org/TR/html5/browsers.html#child-browsing-context
 [navigate]: http://www.w3.org/TR/html5/browsers.html#navigate
@@ -799,37 +800,37 @@ specified for a successful `track` fetch:
 ###### The `audio` element (TODO)
 
 TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.todo}
+{:.issue}
 </section><!-- /Framework::HTML::Elements::audio -->
 <section>
 ###### The `embed` element (TODO)
 
 TODO: Write this section.
-{:.todo}
+{:.issue}
 </section><!-- /Framework::HTML::Elements::embed -->
 <section>
 ###### The `img` element (TODO)
 
 TODO: Write this section.
-{:.todo}
+{:.issue}
 </section><!-- /Framework::HTML::Elements::img -->
 <section>
 ###### The `object` element (TODO)
 
 TODO: Write this section.
-{:.todo}
+{:.issue}
 </section><!-- /Framework::HTML::Elements::object -->
 <section>
 ###### The `source` element (TODO)
 
 TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.todo}
+{:.issue}
 </section><!-- /Framework::HTML::Elements::source -->
 <section>
 ###### The `video` element (TODO)
 
 TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.todo}
+{:.issue}
 </section><!-- /Framework::HTML::Elements::video -->
 
 </section><!-- /Framework::HTML::Elements -->
@@ -1090,8 +1091,8 @@ For instance:
 
 * Content Security Policy performs origin-based security checks. [[!CSP]]
 
-TODO: Moar?
-{: .todo}
+More?
+{:.issue}
 
 <div class="note">
 The simple cache-poisoning version of this attack can be mitigated by
@@ -1158,9 +1159,9 @@ are all true:
 
 [valid nonce]: http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html#valid-nonces
 
-TODO: More ideas? Limiting to resources with wide-open CORS headers and strong
+More ideas? Limiting to resources with wide-open CORS headers and strong
 hash functions seems like a reasonable start...
-{:.todo}
+{:.issue}
 </section><!-- /Caching::Recommendations -->
 </section><!-- /Caching -->
 
@@ -1178,9 +1179,9 @@ support this latter option, user agents MAY send a
 [`Cache-Control`][cachecontrol] header with a value of
 [`no-transform`][notransform].
 
-TODO: think about how integrity checks would effect `vary` headers
+Think about how integrity checks would effect `vary` headers
 in general.
-{:.todo}
+{:.issue}
 
 [cachecontrol]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9
 [notransform]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5
