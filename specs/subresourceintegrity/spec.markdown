@@ -464,7 +464,7 @@ following ABNF grammar:
 
 The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
 
-[nuurl]: http://tools.ietf.org/html/rfc6920#section3
+[niurl]: http://tools.ietf.org/html/rfc6920#section3
 
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
