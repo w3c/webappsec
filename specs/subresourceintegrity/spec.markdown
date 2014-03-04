@@ -508,14 +508,82 @@ thought into the details here before we discuss things a bit more. (mkwst)
 </section><!-- /Framework::HTML::noncanonical-src -->
 
 <section>
-#### HTMLElement extension
+#### Element interface extensions
+
+<section>
+##### HTMLAnchorElement
 
 attribute DOMString integrity
 : The value of this element's `integrity` attribute
-{:title="partial interface HTMLElement"}
+{:title="partial interface HTMLAnchorElement"}
 {:.idl}
-</section><!-- /Framework::HTML::HTMLElement -->
+</section><!-- /Framework::HTML::Interface extensions::HTMLAnchorElement -->
+<section>
+##### HTMLEmbedElement
 
+attribute DOMString integrity
+: The value of this element's `integrity` attribute
+{:title="partial interface HTMLObjectElement"}
+{:.idl}
+</section><!-- /Framework::HTML::Interface extensions::HTMLEmbedElement -->
+<section>
+##### HTMLIFrameElement
+
+attribute DOMString integrity
+: The value of this element's `integrity` attribute
+{:title="partial interface HTMLIFrameElement"}
+{:.idl}
+</section><!-- /Framework::HTML::Interface extensions::HTMLIFrameElement -->
+<section>
+##### HTMLImageElement
+
+attribute DOMString integrity
+: The value of this element's `integrity` attribute
+{:title="partial interface HTMLImageElement"}
+{:.idl}
+</section><!-- /Framework::HTML::Interface extensions::HTMLImageElement -->
+<section>
+##### HTMLLinkElement
+
+attribute DOMString integrity
+: The value of this element's `integrity` attribute
+{:title="partial interface HTMLLinkElement"}
+{:.idl}
+</section><!-- /Framework::HTML::Interface extensions::HTMLLinkElement -->
+<section>
+##### HTMLMediaElement
+
+attribute DOMString integrity
+: The value of this element's `integrity` attribute
+{:title="partial interface HTMLMediaElement"}
+{:.idl}
+</section><!-- /Framework::HTML::Interface extensions::HTMLMediaElement -->
+<section>
+##### HTMLObjectElement
+
+attribute DOMString integrity
+: The value of this element's `integrity` attribute
+{:title="partial interface HTMLObjectElement"}
+{:.idl}
+</section><!-- /Framework::HTML::Interface extensions::HTMLObjectElement -->
+<section>
+##### HTMLScriptElement
+
+attribute DOMString integrity
+: The value of this element's `integrity` attribute
+{:title="partial interface HTMLScriptElement"}
+{:.idl}
+</section><!-- /Framework::HTML::Interface extensions::HTMLScriptElement -->
+<section>
+##### HTMLTrackElement
+
+attribute DOMString integrity
+: The value of this element's `integrity` attribute
+{:title="partial interface HTMLTrackElement"}
+{:.idl}
+</section><!-- /Framework::HTML::Interface extensions::HTMLTrackElement -->
+
+</section><!-- /Framework::HTML::Interface extensions -->
 <section>
 #### Handling integrity violations
 
