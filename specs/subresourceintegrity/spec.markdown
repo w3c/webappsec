@@ -313,17 +313,31 @@ In order to mitigate an attackers ability to read data cross-origin by
 brute-forcing values via integrity checks, resources are only eligible
 for such checks if they are same-origin, publically cachable, or is the
 result of a granted the loading origin explicit access via CORS. [[CORS]]
+
+Certain HTTP headers can also change the way the resource behaves in
+ways which integrity checking cannot account for. If the resource
+contains these headers, it is ineligible for integrity validation:
+
+*   `WWW-Authenticate` hides resources behind a login; such non-public
+    resources are excluded from integrity checks.
+*   `Refresh` can cause IFrame contents to transparently redirect to an
+    unintended target, bypassing the integrity check.
+  
 The following algorithm details these restrictions:
 
 1.  Let <var>request</var> be the request which fetched
     <var>resource</var>.
-2.  If the [mode][fetch-mode] of <var>request</var> is `CORS`,
+2.  If <var>resource</var> contains any of the following HTTP headers,
+    return `false`:
+    * `WWW-Authenticate`
+    * `Refresh`
+3.  If the [mode][fetch-mode] of <var>request</var> is `CORS`,
     return `true`.
-3.  If the [origin][fetch-origin] of <var>request</var> is
+4.  If the [origin][fetch-origin] of <var>request</var> is
     <var>resource</var>'s origin, return `true`.
-4.  If <var>resource</var> is [cachable by a shared cache][], as defined
+5.  If <var>resource</var> is [cachable by a shared cache][], as defined
     in [[!HTTP11]], return `true`.
-5.  Return `false`.
+6.  Return `false`.
 
 Step 2 returns `true` if the resource was a CORS-enabled request. If the
 resource failed the CORS checks, it won't be available to us for integrity
@@ -383,8 +397,8 @@ to enable the rest of this specification's work:
     is one of `indeterminate`, `pending`, `corrupt`, and `intact`. Unless
     stated otherwise, it is `indeterminate`.
 
-3.  Add the following steps to both the "basic fetch" and "CORS fetch with
-    preflight" algorithms:
+3.  Perform the following steps before executing both the "basic fetch" and
+    "CORS fetch with preflight" algorithms:
 
     1.  If <var>request</var>'s integrity metadata is the empty string, set
         <var>response</var>'s integrity state to `indeterminate`. Otherwise:
@@ -392,7 +406,14 @@ to enable the rest of this specification's work:
         1.  Set <var>response</var>'s integrity state to `pending`.
         2.  Include a `Cache-Control` header whose value is "no-transform".
 
-4.  Before firing the [process request end-of-file][] event for any
+4.  Add the following step before step #1 of the handling of 401 status
+    codes for both "basic fetch" and "CORS fetch with preflight" algorithms:
+
+    1.  If <var>request</var>'s integrity state is `pending`, set
+        <var>response</var>'s integrity state to `corrupt` and return
+        <var>response</var>.
+
+5.  Before firing the [process request end-of-file][] event for any
     <var>request</var>:
 
     1.  If the <var>request</var>'s integrity metadata is the empty string, set
