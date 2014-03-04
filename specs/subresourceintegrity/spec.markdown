@@ -894,7 +894,11 @@ Following up with him for clarification.
 <section>
 ### Verification of JS-loaded subresources
 
-<section class="todo">
+These sections are less fleshed out and debated than the HTML sections, where
+the WG has concentrated most of its time thus far.
+{:.issue}
+
+<section>
 #### Workers
 
 To validate the integrity of scripts which are to be run as workers, a new
@@ -953,7 +957,7 @@ algorithm:
 
 </section><!-- /Framework::JS::Workers -->
 
-<section class="todo">
+<section>
 #### XMLHttpRequest
 
 To validate the integrity of resources loaded via `XMLHttpRequest`, a new
