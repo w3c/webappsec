@@ -11,28 +11,28 @@ A list of changes to this document may be found at
 <section class="informative">
 ## Introduction
 
-It is rare indeed to find a self-contained document on the web. Instead, we
-interact with collages of resources loaded from a variety of origins. User
-agents fetch these resources blindly; data that comes in is accepted as
-canonical, rendered or executed, and cached. Authors must trust that the
-resource their content delivery network delivers is in fact the same resource
-they expect. If an attacker can trick a user into downloading content from
-a different server (via DNS poisioning, or other such means), the author has
+Sites and applications on the web are rarely composed of resources from
+only a single origin. Authors pull scripts, images, fonts, etc. from a
+wide variety of services and content delivery networks, and must trust
+that the delivered representation is, in fact, what they expected to
+load. If an attacker can trick a user into downloading content from
+a hostile server (via DNS poisioning, or other such means), the author has
 no recourse. Likewise, an attacker who can replace the file on the CDN server
 has the ability to inject arbitrary content.
 
 Delivering resources over a secure channel mitigates some of this risk: with
 TLS, [HSTS][], and [pinned public keys][], a user agent can be fairly certain
-that it is indeed speaking with the server it believes it's talking to. The
-threat of an attacker (or admin!) manipulating content on a third-party server
-is very common in advertising networks, for instance. Ideally, authors would
-not only be able to pin the keys of a server, but also pin the _content_,
-ensuring that the exact resource, and _only_ that resource, loads.
+that it is indeed speaking with the server it believes it's talking to. These
+mechanisms, however, authenticate _only_ the server, _not_ the content. An
+attacker (or admin!) with access to the server can manipulate content with
+impunity. Ideally, authors would not only be able to pin the keys of a
+server, but also pin the _content_, ensuring that an exact representation of
+a resource, and _only_ that representation, loads and executes.
 
 This document specifies such a validation scheme, extending several HTML
 elements with a `integrity` attribute that contains a cryptographic hash of
-the contents of the resource the author expects to load. For instance, an
-author may wish to load jQuery from a shared server rather than hosting it
+the representation of the resource the author expects to load. For instance,
+an author may wish to load jQuery from a shared server rather than hosting it
 on their own origin. Specifying that the _expected_ SHA-256 hash of
 `https://code.jquery.com/jquery-1.10.2.min.js`
 is `C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg` means
