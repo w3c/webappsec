@@ -383,19 +383,16 @@ to enable the rest of this specification's work:
     is one of `indeterminate`, `pending`, `corrupt`, and `intact`. Unless
     stated otherwise, it is `indeterminate`.
 
-3.  A "HTTP `CH-Integrity` header" section should be added to section
-    3, containing the contents of [section 5.1][5.1] of this specification.
-
-4.  Add the following steps to both the "basic fetch" and "CORS fetch with
+3.  Add the following steps to both the "basic fetch" and "CORS fetch with
     preflight" algorithms:
 
     1.  If <var>request</var>'s integrity metadata is the empty string, set
         <var>response</var>'s integrity state to `indeterminate`. Otherwise:
 
         1.  Set <var>response</var>'s integrity state to `pending`.
-        2.  Include a `CH-Integity` header whose value is "1".
+        2.  Include a `Cache-Control` header whose value is "no-transform".
 
-5.  Before firing the [process request end-of-file][] event for any
+4.  Before firing the [process request end-of-file][] event for any
     <var>request</var>:
 
     1.  If the <var>request</var>'s integrity metadata is the empty string, set
@@ -411,7 +408,6 @@ to enable the rest of this specification's work:
 
 [fetch-request]: http://fetch.spec.whatwg.org/#concept-request
 [fetch-response]: http://fetch.spec.whatwg.org/#concept-response
-[5.1]: #the-ch-integrity-client-hint
 </section>
 
 <section>
@@ -1054,43 +1050,16 @@ is to ensure that the [integrity metadata][] associated with
 resources is updated along with the resource itself. Another
 would be simply to deliver only the canonical version of resources
 for which a page author has requested integrity verification. To
-support this latter option, user agents MAY send an [HTTP Client
-Hint][], as described below:
+support this latter option, user agents MAY send a
+[`Cache-Control`][cachecontrol] header with a value of
+[`no-transform`][notransform].
 
 TODO: think about how integrity checks would effect `vary` headers
 in general.
 {:.todo}
 
-[HTTP Client Hint]: http://tools.ietf.org/html/draft-grigorik-http-client-hints
-
-<section>
-### The `CH-Integrity` client hint
-
-The `CH-Integrity` HTTP request header informs a server that a
-resource will only be accepted if delivered in its canonical form:
-in other words, the page author has placed a higher importance on
-integrity than other considerations (filesize, performance, etc).
-
-    "CH-Integrity:" integrity-value
-    integrity-value = 1#( 1 / 0 )
-    
-A value of `1` means that the requested resource SHOULD be delivered
-in its canonical form, without modification. A value of `0` means
-that integrity checking is irrelevant to this fetch, and modifications
-MAY be performed without violating integrity checks.
-
-Servers receiving a request containing a `CH-Integrity` HTTP header
-whose value is `1` SHOULD include a [`Cache-Control`][cachecontrol]
-HTTP header in the response with a value of [`no-transform`][notransform].
-
-This header could be considered the request-side equivalent of a
-`Cache-Control` response header with a value of `no-transform`.
-{:.note}
-
 [cachecontrol]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9
 [notransform]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5
-</section><!-- /Proxies::ClientHint -->
-
 </section><!-- /Implementation -->
 
 <section>
@@ -1146,34 +1115,6 @@ will likely be difficult to avoid (image's `naturalHeight` and
 </section><!-- /Security::cross-origin -->
 
 </section><!-- /Security -->
-
-<section>
-## IANA Considerations
-
-The permanent message header field registry (see [[!RFC3864]]) should be
-updated with the following registration:
-
-<section>
-### `CH-Integrity`
-
-Header field name
-: CH-Integrity
-
-Applicable protocol
-: http
-
-Status
-: standard
-
-Author/Change controller
-: W3C
-
-Specification document
-: this specification (See [The `CH-Integrity` client hint][hint])
-
-[hint]: #the-ch-integrity-client-hint
-</section><!-- /IANA::CH-Integrity -->
-</section><!-- /IANA -->
 
 <section>
 ## Acknowledgements
