@@ -688,7 +688,28 @@ Note that this will cover _only_ downloads triggered explicitly by adding a
 </div>
 
 [as a download]: http://www.w3.org/TR/html5/links.html#as-a-download
-</section><!-- /Framework::HTML::a -->
+</section><!-- /Framework::HTML::Elements::a -->
+
+<section>
+###### The `embed` element
+
+When fetching an URL via step 2 of the [`embed` element setup steps][embedsetup]
+algorithm:
+
+1.  Set the [integrity metadata][] of the request to the value
+    of the element's `integrity` attribute.
+
+Before running the task queued by the networking task source once the URL has
+been fetched, first perform the following steps:
+
+1.  If the response's integrity state is `corrupt`:
+    1.  If the document's [integrity policy][] is `block`:
+        1.  Set the element's `type` attribute to the empty string.
+        2.  Skip to step 4 of the algorithm.
+    2.  [Report a violation][].
+
+[embedsetup]: http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data
+</section><!-- /Framework::HTML::Elements::embed -->
 
 <section>
 ###### The `iframe` element
@@ -729,6 +750,28 @@ what about other use-cases?
 </section><!-- /Framework::HTML::iframe -->
 
 <section>
+###### The `img` element
+
+When fetching an image via step 12 of the [update the image data][]
+algorithm:
+
+1.  Set the [integrity metadata][] of the request to the value
+    of the element's `integrity` attribute.
+
+Before jumping one of the entries from the list in step 14 of the
+[update the image data][] algorithm, first perform the following
+steps:
+
+1.  If the response's integrity state is `corrupt`:
+    1.  If the document's [integrity policy][] is `block`:
+        1.  Abort the jump in progress.
+        2.  Perform the steps in the entry labeled "Otherwise" under step 14.
+    2.  [Report a violation][].
+
+[update the image data]: http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data
+</section><!-- /Framework::HTML::Elements::img -->
+
+<section>
 ###### The `link` element
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
@@ -752,6 +795,27 @@ the element:
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
 [same origin]: http://tools.ietf.org/html/rfc6454#section-5
 </section><!-- /Framework::HTML::link -->
+
+<section>
+###### The `object` element
+
+When fetching an image via step 4 of step 4 of the ["determine what the
+`object` element represents" algorithm][objectalgo]:
+
+1.  Set the [integrity metadata][] of the request to the value
+    of the element's `integrity` attribute.
+
+Before step 7 of the ["determine what the `object` element represents"
+algorithm][objectalgo], first perform the following steps:
+
+1.  If the response's integrity state is `corrupt`:
+    1.  If the document's [integrity policy][] is `block`:
+        1.  [Fire a simple event][] named `error` at the element.
+        2.  Jump to the step labeled <i>fallback</i>.
+    2.  [Report a violation][].
+
+[objectalgo]: http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data 
+</section><!-- /Framework::HTML::Elements::object -->
 
 <section>
 ###### The `script` element
@@ -786,12 +850,11 @@ Insert the following steps after step 5 of step 14 of HTML5's
 <section>
 ###### The `track` element
 
-A `track` element's <dfn>track integrity metadata</dfn> is the value of
-the element's `integrity` attribute.
-
 When fetching the [track URL][] in step 10 of the [start the `track`
-processing model][track-process] algorithm, set the request's
-[integrity metadata][] to the track integrity metadata.
+processing model][track-process] algorithm:
+
+1.  Set the [integrity metadata][] of the request to the value
+    of the element's `integrity` attribute.
 
 Additionally, perform the following steps before performing the steps
 specified for a successful `track` fetch:
@@ -811,24 +874,6 @@ specified for a successful `track` fetch:
 TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
 {:.issue}
 </section><!-- /Framework::HTML::Elements::audio -->
-<section>
-###### The `embed` element (TODO)
-
-TODO: Write this section.
-{:.issue}
-</section><!-- /Framework::HTML::Elements::embed -->
-<section>
-###### The `img` element (TODO)
-
-TODO: Write this section.
-{:.issue}
-</section><!-- /Framework::HTML::Elements::img -->
-<section>
-###### The `object` element (TODO)
-
-TODO: Write this section.
-{:.issue}
-</section><!-- /Framework::HTML::Elements::object -->
 <section>
 ###### The `source` element (TODO)
 
