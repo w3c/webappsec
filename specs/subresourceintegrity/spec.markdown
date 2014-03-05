@@ -46,6 +46,7 @@ This example can be communicated to a user agent by adding the hash to a
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"
             integrity="ni:///sha-256;C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg?ct=application/javascript">
+{:.example.highlight}
 
 Scripts, of course, are not the only resource type which would benefit
 from integrity validation. The scheme specified here applies to all HTML
@@ -117,6 +118,7 @@ benefits that such a fallback system would enable. (mkwst)
 
         <script src="https://analytics-r-us.com/v1.0/include.js"
                 integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"></script>
+    {:.example.highlight}
 
 *   An advertising network wishes to ensure that advertisements delivered via
     third-party servers matches the code which they reviewed in order to reduce
@@ -127,6 +129,7 @@ benefits that such a fallback system would enable. (mkwst)
     
         <iframe src="https://awesome-ads.com/advertisement1.html"
                 integrity="ni:///sha-256;kasfdsaffs...eoirW-e?ct=text/html"></iframe>
+    {:.example.highlight}
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
     HTML (for example, Chrome's New Tab Page) aren't manipulated before display.
@@ -149,6 +152,7 @@ benefits that such a fallback system would enable. (mkwst)
         <a href="https://software-is-nice.com/awesome.exe"
            integrity="ni:///sha-256;fkfrewFRFEFHJR...wfjfrErw?ct=application/octet-stream"
            download>...</a>
+    {:.example.highlight}
            
 </section><!-- Introduction::UseCases::Downloads -->
 <section>
@@ -162,6 +166,7 @@ benefits that such a fallback system would enable. (mkwst)
         <script src="https://rockin-resources.com/script.js"
                 noncanonical-src="http://insecurity-is-inherent.net/script.js"
                 integrity="ni:///sha-256;asijfiqu4t12...woeji3W?ct=application/javascript"></script>
+    {:.example.highlight}
 
 </section><!-- /Introduction::Use Cases::Fallback -->
 </section><!-- /Introduction::Use Cases -->
@@ -253,10 +258,12 @@ an author might choose [SHA-256][sha2] as a hash function.
 digest that results. This can be encoded as an `ni` URI as follows:
 
     ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8
+{:.example.highlight}
 
 Or, if the author further wishes to specify the content type (`text/plain`):
 
     ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+{:.example.highlight}
 
 <div class="note">
 Digests may be generated using any number of utilities. [OpenSSL][], for
@@ -491,6 +498,7 @@ example:
     <script src="http://example.com/script.js"
             noncanonical-src="http://cdn.example.com/script.js"
             integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq?ct=application/javascript"></script>
+{:.example.highlight}
 
 The `noncanonicalSrc` IDL attribute MUST [reflect][] the `noncanonical-src`
 content attribute.
@@ -676,6 +684,7 @@ Note that this will cover _only_ downloads triggered explicitly by adding a
     <a href="https://example.com/file.zip"
        integrity="ni:///sha256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
        download>Download!</a>
+{:.example.highlight}
 </div>
 
 [as a download]: http://www.w3.org/TR/html5/links.html#as-a-download
@@ -1065,6 +1074,7 @@ variants are more difficult to mitigate. Consider the following:
 1.  An attacker lures Alice to a page containing the following code:
 
         <script src="http://evil.com/evil.js" digest="ni://sha-256;123...789">
+    {:.example.highlight}
 
 2.  Alice's user agent loads `evil.js`, and stores it in her cache.
 
@@ -1073,6 +1083,7 @@ variants are more difficult to mitigate. Consider the following:
     in `bank.com` which allows the injection of:
 
         <script src="http://bank.com/awesome.js" digest="ni://sha-256;123...789">
+    {:.example.highlight}
 
     Since the script appears to come from `bank.com`, CSP allows it, even though
     it doesn't actually exist on that server.
@@ -1190,6 +1201,7 @@ Moreover, attackers can brute-force specific values in an otherwise
 static resource: consider a document that looks like this:
 
     <html>{static content}<h1>Hello, $username!</h1>{static content}</html>
+{:.example.highlight}
 
 An attacker can precompute hashes for the page with a variety of
 common usernames, and specify those hashes while repeatedly attempting
