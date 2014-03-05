@@ -299,7 +299,7 @@ cryptographic hash functions for use as part of a resource's
     <var>encodedResult</var>.
 5.  Return <var>encodedResult</var>.
 
-#2 is pulled from the `content-md5` definition in [[!HTTP11]]. It's
+Step 2 is pulled from the `content-md5` definition in [[!HTTP11]]. It's
 unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
 {:.issue}
 
