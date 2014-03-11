@@ -416,6 +416,10 @@ to enable the rest of this specification's work:
 
         1.  Set <var>response</var>'s integrity state to `pending`.
         2.  Include a `Cache-Control` header whose value is "no-transform".
+        3.  If <var>request</var>'s integrity metadata contains a content
+            type:
+            1.  Set <var>request</var>'s `Accept` header value to the value
+                of <var>request</var>'s integrity metadata's content type.
 
 4.  Add the following step before step #1 of the handling of 401 status
     codes for both "basic fetch" and "CORS fetch with preflight" algorithms:
