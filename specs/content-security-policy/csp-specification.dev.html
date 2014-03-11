@@ -488,7 +488,9 @@ port              = ":" ( 1*DIGIT / "*" )
               <li>Normalize the URI according to <a href="http://tools.ietf.org/html/rfc3986#section-6">RFC 3986, section 6</a>.</li>
 
               <li>If the source expression a consists of a single U+002A ASTERISK character
-              (<code>*</code>), then return <em>does match</em>.</li>
+              (<code>*</code>), and the URI's scheme is not of a type designating a 
+              <a href="#dfn-globally-unique-identifier">globally unique identifier</a>,
+               (such as blob:, data:, or filesystem:) then return <em>does match</em>.</li>
 
               <li>If the source expression matches the grammar for
               <code>scheme-source</code>:
@@ -611,6 +613,19 @@ port              = ":" ( 1*DIGIT / "*" )
             href="#parse-a-source-list">parsing the source list</a>. Notice that
             no URIs match an empty set of source expressions, such as the set
             obtained by parsing the source list <code>'none'</code>.</p>
+
+            <p class="note" title="Security Considerations for GUID URI schemes">
+	    As defined above, special URI schemes that refer to specific pieces of
+            unique content, such as "data:", "blob:" and "filesystem:" are
+            excluded from matching a policy of <code>*</code> and must be explicitly
+            listed.  Policy authors should note that the content of such
+            URIs is often derived from a response body or execution in a 
+            Document context, which may be unsafe.  Expecially for the 
+            <code>default-src</code> and <code>script-src</code> directives,
+            policy authors should be aware that allowing "data:" URIs is
+            equivalent to <code>unsafe-inline</code> and allowing "blob:" or
+            "filesystem:" URIs is equivalent to <code>unsafe-eval</code>.
+            </p>
 
             <section class="informative">
               <h6>Path Matching</h6>
@@ -763,7 +778,7 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
 
           <ol>
             <li>If the origin of <var>uri</var> is a <a href="#dfn-globally-unique-identifier">globally unique identifier</a>
-            (for example, <var>uri</var> has a scheme of <code>data</code>, <code>blob</code>, or <code>file</code>), then
+            (for example, <var>uri</var> has a scheme of <code>data</code>, <code>blob</code>, or <code>filesystem</code>), then
             abort these steps, and return the ASCII serialization of <var>uri</var>'s scheme.</li>
             <li>If the origin of <var>uri</var> is not the same as the origin
             of the protected resource, then abort these steps, and return the
@@ -954,7 +969,7 @@ media-type        = &lt;type from RFC 2045&gt; "/" &lt;subtype from RFC 2045&gt;
         <ul>
           <li>If the worker's script's origin is a <a href="#dfn-globally-unique-identifier">globally unique identifier</a>
           (for example, the worker's script's URL has a scheme of
-          <code>data</code>, <code>blob</code>, or <code>file</code>), then:
+          <code>data</code>, <code>blob</code>, or <code>filesystem</code>), then:
           <ul>
             <li>If the user agent is enforcing a CSP policy for the <var>owner
             document</var>, the user agent MUST enforce the CSP policy for the
