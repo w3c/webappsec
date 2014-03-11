@@ -101,7 +101,7 @@ regardless of the URL from which they are loaded.
 
 I'm not sure about #5 and #6. Get more detail from the WG about the
 benefits that such a fallback system would enable. (mkwst)
-{:.issue}
+{:.issue data-number="1"}
 </section><!-- /Introduction::Goals -->
 
 <section>
@@ -308,7 +308,7 @@ cryptographic hash functions for use as part of a resource's
 
 Step 2 is pulled from the `content-md5` definition in [[!HTTP11]]. It's
 unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
-{:.issue}
+{:.issue data-number="2"}
 
 [apply-algorithm]: #apply-algorithm-to-resource
 </section><!-- Algorithms::apply -->
@@ -332,7 +332,7 @@ contains these headers, it is ineligible for integrity validation:
 
 Consider the impact of other headers: `Content-Length`, `Content-Range`,
 etc. Is there danger there?
-{:.issue}
+{:.issue data-number="3"}
   
 The following algorithm details these restrictions:
 
@@ -479,7 +479,7 @@ The `integrity` IDL attribute must [reflect][] the `integrity` content attribute
 
 We should consider supporting multiple `ni` URLs, which could allow migration
 between algorithms.
-{:.issue}
+{:.issue data-number="4"}
 </section><!-- /Framework::HTML::integrity -->
 
 <section>
@@ -513,7 +513,7 @@ This attribute (and fallback in general) only makes sense if we care
 about allowing cache-friendly (read "HTTP") URLs to load in an HTTPS context
 without warnings. I'm not sure we do, so I'm not going to put too much
 thought into the details here before we discuss things a bit more. (mkwst)
-{:.issue}
+{:.issue data-number="5"}
 </section><!-- /Framework::HTML::noncanonical-src -->
 
 <section>
@@ -624,12 +624,12 @@ resource fails an integrity check, the user agent MUST refuse to render or
 execute the resource, <em>and</em> MUST [report a(nother)
 violation][report a violation]. (See [the `noncanonical-src`
 attribute][noncanonical] for a strawman of how that might look).
-{:.issue}
+{:.issue data-number="6"}
 
 If the document's integrity policy contains `require-for-all`, the user agent
 MUST treat the lack of [integrity metadata][] for an resource as automatic
 failure, refuse to fetch the resource, and [report a violation][].
-{:.issue}
+{:.issue data-number="7"}
 
 [csp]: http://w3.org/TR/CSP11
 [report a violation]: http://www.w3.org/TR/CSP11/#dfn-report-a-violation
@@ -737,12 +737,12 @@ going to be for vendors to change the "display whatever we've got, ASAP!"
 behavior that makes things fast for users? How much impact will there be
 on user experience, especially for things like ads, where this kind of
 validation has the most value?
-{:.issue}
+{:.issue data-number="8"}
 
 How do we deal with navigations in the child browsing context? Are they
 simply disallowed? If so, does that make sense? It might for ads, but
 what about other use-cases?
-{:.issue}
+{:.issue data-number="9"}
 
 [child browsing context]: http://www.w3.org/TR/html5/browsers.html#child-browsing-context
 [navigate]: http://www.w3.org/TR/html5/browsers.html#navigate
@@ -872,19 +872,19 @@ specified for a successful `track` fetch:
 ###### The `audio` element (TODO)
 
 TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.issue}
+{:.issue data-number="10"}
 </section><!-- /Framework::HTML::Elements::audio -->
 <section>
 ###### The `source` element (TODO)
 
 TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.issue}
+{:.issue data-number="11"}
 </section><!-- /Framework::HTML::Elements::source -->
 <section>
 ###### The `video` element (TODO)
 
 TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.issue}
+{:.issue data-number="12"}
 </section><!-- /Framework::HTML::Elements::video -->
 
 </section><!-- /Framework::HTML::Elements -->
@@ -900,7 +900,7 @@ algorithm while requesting resources. Detail on the proposal is at
 <http://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html>.
 Once that is specified, we can proceed defining an `integrity` argument
 that would allow integrity checks in CSS.
-{:.issue}
+{:.issue data-number="13"}
 
 </section><!-- /Framework::CSS -->
 
@@ -909,7 +909,7 @@ that would allow integrity checks in CSS.
 
 These sections are less fleshed out and debated than the HTML sections, where
 the WG has concentrated most of its time thus far.
-{:.issue}
+{:.issue data-number="14"}
 
 <section>
 #### Workers
@@ -1109,7 +1109,7 @@ For instance:
 * Content Security Policy performs origin-based security checks. [[!CSP]]
 
 More?
-{:.issue}
+{:.issue data-number="15"}
 
 <div class="note">
 The simple cache-poisoning version of this attack can be mitigated by
@@ -1180,7 +1180,7 @@ are all true:
 
 More ideas? Limiting to resources with wide-open CORS headers and strong
 hash functions seems like a reasonable start...
-{:.issue}
+{:.issue data-number="16"}
 </section><!-- /Caching::Recommendations -->
 </section><!-- /Caching -->
 
@@ -1200,7 +1200,7 @@ support this latter option, user agents MAY send a
 
 Think about how integrity checks would effect `vary` headers
 in general.
-{:.issue}
+{:.issue data-number="17"}
 
 [cachecontrol]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9
 [notransform]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5
