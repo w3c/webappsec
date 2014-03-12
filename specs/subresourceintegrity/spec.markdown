@@ -316,10 +316,10 @@ unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
 #### Is <var>resource</var> eligible for integrity validation
 [eligible]: #is-resource-eligible-for-integrity-validation
 
-In order to mitigate an attackers ability to read data cross-origin by
+In order to mitigate an attacker's ability to read data cross-origin by
 brute-forcing values via integrity checks, resources are only eligible
-for such checks if they are same-origin, publicly cachable, or is the
-result of a granted the loading origin explicit access via CORS. [[CORS]]
+for such checks if they are same-origin, publicly cachable, or are the
+result of explicit access granted to the loading origin via CORS. [[CORS]]
 
 Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
@@ -336,7 +336,7 @@ etc. Is there danger there?
   
 The following algorithm details these restrictions:
 
-1.  Let <var>request</var> be the request which fetched
+1.  Let <var>request</var> be the request that fetched
     <var>resource</var>.
 2.  If <var>resource</var> contains any of the following HTTP headers,
     return `false`:
