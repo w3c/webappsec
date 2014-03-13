@@ -739,8 +739,8 @@ value of the `iframe` element's `integrity` attribute. Moreover:
 <div class="note">
 Note that this will _only_ check the integrity of the `iframe`'s document source.
 No subsequent verification for the document's subresources is perfomed.
-The included document has to include [integrity metadata][] for its subresources,
-if additional integrity verification is required.
+If integrity checks for the document's subresources are desirable, the document
+loaded into the `iframe` needs to include [integrity metadata][] for its subresources.
 </div>
 
 How does this effect things like the preload scanner? How much work is it
