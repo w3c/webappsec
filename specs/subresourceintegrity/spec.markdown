@@ -319,7 +319,7 @@ unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
 In order to mitigate an attacker's ability to read data cross-origin by
 brute-forcing values via integrity checks, resources are only eligible
 for such checks if they are same-origin, publicly cachable, or are the
-result of explicit access granted to the loading origin via CORS. [[CORS]]
+result of explicit access granted to the loading origin via CORS. [[!CORS]]
 
 Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
