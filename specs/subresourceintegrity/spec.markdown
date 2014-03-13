@@ -736,6 +736,13 @@ value of the `iframe` element's `integrity` attribute. Moreover:
         2. [Report a violation][].
         3. [Navigate][] the child browsing context to `about:blank`.
 
+<div class="note">
+Note that this will _only_ check the integrity of the `iframe`'s document source.
+No subsequent verification for the document's subresources is perfomed.
+If integrity checks for the document's subresources are desirable, the document
+loaded into the `iframe` needs to include [integrity metadata][] for its subresources.
+</div>
+
 How does this effect things like the preload scanner? How much work is it
 going to be for vendors to change the "display whatever we've got, ASAP!"
 behavior that makes things fast for users? How much impact will there be
