@@ -475,7 +475,7 @@ following ABNF grammar:
 
 The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
 
-[niurl]: http://tools.ietf.org/html/rfc6920#section3
+[niurl]: http://tools.ietf.org/html/rfc6920#section-3
 
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
@@ -488,7 +488,7 @@ between algorithms.
 
 <section>
 #### The `noncanonical-src` attribute (TODO)
-[noncanonical]: #the-noncanonical-src-attribute
+[noncanonical]: #the-noncanonical-src-attribute-todo
 
 Authors MAY opt-in to a fallback mechanism whereby user agents would initially
 attempt to load resources from a non-canonical source (perhaps over HTTP, for
@@ -1187,7 +1187,7 @@ are all true:
 *   If a Content Security Policy is active in a context, the `script` or
     `link` element which triggered the resource's fetch has a [valid nonce][].
 
-[valid nonce]: http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html#valid-nonces
+[valid nonce]: http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html
 
 More ideas? Limiting to resources with wide-open CORS headers and strong
 hash functions seems like a reasonable start...
