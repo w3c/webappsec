@@ -396,20 +396,20 @@ dangers of MIME type confusion attacks via its developer console.
 ### Modifications to Fetch
 
 The Fetch specification should contain the following modifications in order
-to enable the rest of this specification's work:
+to enable the rest of this specification's work [[!FETCH]]:
 
-1.  The following text should be added to section 2.2: "A
+1.  The following text should be added to [section 2.2][fetch-2-2]: "A
     [request][fetch-request] has an associated [integrity metadata][].
     Unless stated otherwise, a request's integrity metadata is the empty
     string."
 
-2.  The following text should be added to section 2.3: "A
+2.  The following text should be added to [section 2.3][fetch-2-3]: "A
     [response][fetch-response] has an associated integrity state, which
     is one of `indeterminate`, `pending`, `corrupt`, and `intact`. Unless
     stated otherwise, it is `indeterminate`.
 
-3.  Perform the following steps before executing both the "basic fetch" and
-    "CORS fetch with preflight" algorithms:
+3.  Perform the following steps before executing both the "[basic fetch][]" and
+    "[CORS fetch with preflight][]" algorithms:
 
     1.  If <var>request</var>'s integrity metadata is the empty string, set
         <var>response</var>'s integrity state to `indeterminate`. Otherwise:
@@ -422,7 +422,8 @@ to enable the rest of this specification's work:
                 of <var>request</var>'s integrity metadata's content type.
 
 4.  Add the following step before step #1 of the handling of 401 status
-    codes for both "basic fetch" and "CORS fetch with preflight" algorithms:
+    codes for both "[basic fetch][]" and "[CORS fetch with preflight][]"
+    algorithms:
 
     1.  If <var>request</var>'s integrity state is `pending`, set
         <var>response</var>'s integrity state to `corrupt` and return
@@ -442,8 +443,12 @@ to enable the rest of this specification's work:
     3.  Set the <var>response</var>'s integrity state to `corrupt`
         and skip directly to firing the event.
 
+[fetch-2-2]: http://fetch.spec.whatwg.org/#requests
+[fetch-2-3]: http://fetch.spec.whatwg.org/#responses
 [fetch-request]: http://fetch.spec.whatwg.org/#concept-request
 [fetch-response]: http://fetch.spec.whatwg.org/#concept-response
+[basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
+[CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
 </section>
 
 <section>
