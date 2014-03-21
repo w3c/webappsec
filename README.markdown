@@ -18,4 +18,5 @@ Web Application Security Working Group
 
 * Subresource Integrity
     * Editor's Draft: <http://w3c.github.io/webappsec/specs/subresourceintegrity/>
+    * Working Draft: <http://w3.org/TR/SRI>
     * Source: <https://github.com/w3c/webappsec/tree/master/specs/subresourceintegrity>
