@@ -784,6 +784,10 @@ steps:
         2.  Perform the steps in the entry labeled "Otherwise" under step 14.
     2.  [Report a violation][].
 
+How do we want to deal with [the `srcset` attribute][srcset]?
+{:.issue data-number="18"}
+
+[srcset]: http://www.w3.org/html/wg/drafts/srcset/w3c-srcset/
 [update the image data]: http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data
 </section><!-- /Framework::HTML::Elements::img -->
 
