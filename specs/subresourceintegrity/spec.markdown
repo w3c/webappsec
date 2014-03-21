@@ -1210,9 +1210,11 @@ is to ensure that the [integrity metadata][] associated with
 resources is updated along with the resource itself. Another
 would be simply to deliver only the canonical version of resources
 for which a page author has requested integrity verification. To
-support this latter option, user agents MAY send a
+support this latter option, user agents MUST send a
 [`Cache-Control`][cachecontrol] header with a value of
-[`no-transform`][notransform].
+[`no-transform`][notransform] when requesting a resource with
+associated integrity metadata (see item 3 in the "[Modifications to
+Fetch][]" section).
 
 Think about how integrity checks would effect `vary` headers
 in general.
@@ -1220,6 +1222,7 @@ in general.
 
 [cachecontrol]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9
 [notransform]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5
+[Modifications to Fetch]: #modifications-to-fetch
 </section><!-- /Implementation -->
 
 <section>
