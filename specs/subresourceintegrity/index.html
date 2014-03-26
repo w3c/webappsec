@@ -403,7 +403,60 @@ result of the following command line:</p>
 
     <p>Conformant user agents MUST support the <a href="#dfn-sha-2">SHA-256</a> and <a href="#dfn-sha-2">SHA-512</a>
 cryptographic hash functions for use as part of a resource&#8217;s
-<a href="#dfn-integrity-metadata">integrity metadata</a>.</p>
+<a href="#dfn-integrity-metadata">integrity metadata</a>, and MAY support additional hash functions.</p>
+
+    <section>
+      <h4 id="agility">Agility</h4>
+
+      <p>Multiple sets of <a href="#dfn-integrity-metadata">integrity metadata</a> may be associated with a single
+resource in order to provide agility in the face of future discoveries.
+For example, the &#8220;Hello, world.&#8221; resource described above may be described
+either of the following <code>ni</code> URLs:</p>
+
+      <pre class="example highlight"><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==?ct=text/plain
+</code></pre>
+
+      <p>Authors may choose to specify both, for example:</p>
+
+      <pre><code>&lt;a href="hello_world.txt"
+   integrity="
+      ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+      ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==?ct=text/plain
+    "
+    download&gt;Hello, download!&lt;/a&gt;
+</code></pre>
+
+      <p>In this case, the user agent will choose the strongest hash function in the
+list, and use that metadata to validate the resource (as described below in
+the &#8220;<a href="#parse-metadata.x">parse metadata</a>&#8221; and &#8220;<a href="#get-the-strongest-metadata-from-set.x">get the strongest metadata from
+set</a>&#8221; algorithms).</p>
+
+      <p>When a hash function is determined to be insecure, user agents MUST deprecate
+and eventually remove support for integrity validation using that hash
+function.</p>
+
+      <p>Validation using unsupported hash functions always fails (see the &#8220;<a href="#does-resource-match-metadatalist">Does
+resource match metadataList</a>&#8221; algorithm below). Authors are therefore
+encouraged to use strong hash functions, and to begin migrating to stronger
+hash functions as they become available.</p>
+    </section>
+    <!-- /Framework::Cryptographic hash functions::Agility -->
+
+    <section>
+      <h4 id="priority">Priority</h4>
+
+      <p>User agents MUST provide a mechanism of determining the relative priority of
+two hash functions. That is, <dfn>getPrioritizedHashFunction(a, b)</dfn> MUST
+return the hash function the user agent considers the most collision-resistant.
+For example, <code>getPrioritizedHashFunction('SHA-256', 'SHA-512')</code> would return
+<code>SHA-512</code>.</p>
+
+      <p>If both algorithms are equally strong, the user agent SHOULD ensure that there
+is a consistent ordering.</p>
+    </section>
+    <!-- /Framework::Cryptographic hash functions::Priority -->
+
   </section>
   <!-- /Framework::Cryptographic hash functions -->
 
@@ -482,15 +535,70 @@ checking because it won&#8217;t have loaded successfully.</p>
     </section>
     <!-- Algorithms::eligible -->
     <section>
-      <h4 id="does-varresourcevar-match-varmetadatavar">Does <var>resource</var> match <var>metadata</var>?</h4>
+      <h4 id="parse-varmetadatavar">Parse <var>metadata</var>.</h4>
+
+      <p>This algorithm accepts a string, and returns either <code>no metadata</code>, or a set of
+valid &#8220;named information&#8221; (<code>ni</code>) URLs whose hash functions are understood by
+the user agent.</p>
 
       <ol>
-        <li>If <var>metadata</var> is the empty string, return <code>true</code>.</li>
+        <li>If <var>metadata</var> is the empty string, return <code>no metadata</code>.</li>
+        <li>Let <var>result</var> be the empty set.</li>
+        <li>For each <var>token</var> returned by <a href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">splitting <var>metadata</var> on
+spaces</a>:
+          <ol>
+            <li>If <var>token</var> is not a valid &#8220;named information&#8221; (<code>ni</code>) URI,
+skip the remaining steps, and proceed to the next token.</li>
+            <li>Let <var>algorithm</var> be the <var>alg</var> component of
+<var>token</var>.</li>
+            <li>If <var>algorithm</var> is a hash function recognized by the user
+agent, add <var>token</var> to <var>result</var>.</li>
+          </ol>
+        </li>
+        <li>Return <var>result</var>.</li>
+      </ol>
+
+    </section>
+    <!-- Algorithms::parse -->
+    <section>
+      <h4 id="get-the-strongest-metadata-from-varsetvar">Get the strongest metadata from <var>set</var>.</h4>
+
+      <ol>
+        <li>Let <var>strongest</var> be the empty string.</li>
+        <li>For each <var>item</var> in <var>set</var>:
+          <ol>
+            <li>If <var>item</var> is not a valid &#8220;named information&#8221; (<code>ni</code>) URL,
+skip to the next <var>item</var>.</li>
+            <li>If <var>strongest</var> is the empty string, set <var>strongest</var>
+to <var>item</var>, skip to the next
+<var>item</var>.</li>
+            <li>Let <var>currentAlgorithm</var> be the <var>alg</var> component of
+<var>strongest</var>.</li>
+            <li>Let <var>newAlgorithm</var> be the <var>alg</var> component of
+<var>item</var>.</li>
+            <li>If the result of <a href="#dfn-getprioritizedhashfunction-a-b"><code>getPrioritizedHashFunction(currentAlgorithm, newAlgorithm)</code></a>
+is <var>newAlgorithm</var>, set <var>strongest</var> to
+<var>item</var>.</li>
+          </ol>
+        </li>
+        <li>Return <var>strongest</var>.</li>
+      </ol>
+
+    </section>
+    <!-- /Algorithms::get the strongest metadata -->
+    <section>
+      <h4 id="does-varresourcevar-match-varmetadatalistvar">Does <var>resource</var> match <var>metadataList</var>?</h4>
+
+      <ol>
         <li>If <var>resource</var>&#8217;s URL&#8217;s scheme is <code>about</code>, return <code>true</code>.</li>
-        <li>If <var>metadata</var> is not a valid &#8220;named information&#8221; (<code>ni</code>) URI,
-return <code>false</code>.</li>
         <li>If <a href="#is-resource-eligible-for-integrity-validation"><var>resource</var> is not eligible for integrity
 valiation</a>, return <code>false</code>.</li>
+        <li>Let <var>parsedMetadata</var> be the result of
+<a href="#parse-metadata.x">parsing <var>metadataList</var></a>.</li>
+        <li>If <var>parsedMetadata</var> is <code>no metadata</code>, return <code>true</code>.</li>
+        <li>Let <var>metadata</var> be the result of <a href="#get-the-strongest-metadata-from-set.x">getting the strongest
+metadata from <var>parsedMetadata</var></a>.</li>
+        <li>If <var>metadata</var> is the empty string, return <code>false</code>.</li>
         <li>Let <var>algorithm</var> be the <var>alg</var> component of
 <var>metadata</var>.</li>
         <li>Let <var>expectedValue</var> be the <var>val</var> component of
@@ -507,7 +615,7 @@ return <code>false</code>.</li>
 <var>expectedValue</var>, return <code>true</code>. Otherwise, return <code>false</code>.</li>
       </ol>
 
-      <p class="note">If <var>expectedType</var> is the empty string in #6, it would
+      <p class="note">If <var>expectedType</var> is the empty string in #10, it would
 be reasonable for the user agent to warn the page&#8217;s author about the
 dangers of MIME type confusion attacks via its developer console.</p>
 
@@ -580,7 +688,7 @@ the <var>response</var>&#8217;s integrity state to <code>indeterminate</code> an
 skip directly to firing the event.</p>
           </li>
           <li>
-            <p>If <var>response</var> <a href="#does-resource-match-metadata">matches</a> the request&#8217;s integrity
+            <p>If <var>response</var> <a href="#does-resource-match-metadatalist">matches</a> the request&#8217;s integrity
 metadata, set the <var>response</var>&#8217;s integrity state to <code>intact</code>
 and skip directly to firing the event.</p>
           </li>
@@ -615,19 +723,17 @@ interfaces.</p>
       <h4 id="the-integrity-attribute">The <code>integrity</code> attribute</h4>
 
       <p>The <code>integrity</code> attribute represents <a href="#dfn-integrity-metadata">integrity metadata</a> for an element.
-The value of the attribute MUST be either the empty string, or one
+The value of the attribute MUST be either the empty string, or at least one
 valid &#8220;named information&#8221; (<code>ni</code>) URI [[!RFC6920]], as described by the
 following ABNF grammar:</p>
 
-      <pre><code>integrity-metatata = "" / 1#( *WSP NI-URL ) *WSP ]
+      <pre><code>integrity-metatata = "" / 1*( *WSP NI-URL ) *WSP ]
 </code></pre>
 
       <p>The <code>NI-URL</code> rule is defined in <a href="http://tools.ietf.org/html/rfc6920#section-3">RFC6920, section 3, figure 4</a>.</p>
 
       <p>The <code>integrity</code> IDL attribute must <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a> the <code>integrity</code> content attribute.</p>
 
-      <p class="issue" data-number="4">We should consider supporting multiple <code>ni</code> URLs, which could allow migration
-between algorithms.</p>
     </section>
     <!-- /Framework::HTML::integrity -->
 
@@ -1406,7 +1512,7 @@ loaded. <a href="http://en.wikipedia.org/wiki/Gifar">Gifar</a> is the canonical 
       <p>Authors SHOULD mitigate this risk by specifying the expected content type
 along with the digest, as specified in <a href="http://tools.ietf.org/html/rfc6920#section-3.1">RFC 6920, section 3.1</a>.
 This means that the content type will be verified along with the digest when
-determining whether a <a href="#does-resource-match-metadata">resource matches certain integrity
+determining whether a <a href="#does-resource-match-metadatalist">resource matches certain integrity
 metadata</a>.</p>
 
     </section>

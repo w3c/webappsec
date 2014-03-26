@@ -285,7 +285,57 @@ result of the following command line:
 
 Conformant user agents MUST support the [SHA-256][sha2] and [SHA-512][sha2]
 cryptographic hash functions for use as part of a resource's
-[integrity metadata][].
+[integrity metadata][], and MAY support additional hash functions.
+
+<section>
+#### Agility
+
+Multiple sets of [integrity metadata][] may be associated with a single
+resource in order to provide agility in the face of future discoveries.
+For example, the "Hello, world." resource described above may be described
+either of the following `ni` URLs:
+
+    ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+    ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==?ct=text/plain
+{:.example.highlight}
+
+Authors may choose to specify both, for example:
+
+    <a href="hello_world.txt"
+       integrity="
+          ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+          ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==?ct=text/plain
+        "
+        download>Hello, download!</a>
+
+In this case, the user agent will choose the strongest hash function in the
+list, and use that metadata to validate the resource (as described below in
+the "[parse metadata][parse]" and "[get the strongest metadata from
+set][get-the-strongest]" algorithms).
+
+When a hash function is determined to be insecure, user agents MUST deprecate
+and eventually remove support for integrity validation using that hash
+function.
+
+Validation using unsupported hash functions always fails (see the "[Does
+resource match metadataList][match]" algorithm below). Authors are therefore
+encouraged to use strong hash functions, and to begin migrating to stronger
+hash functions as they become available.
+</section><!-- /Framework::Cryptographic hash functions::Agility -->
+
+<section>
+#### Priority
+
+User agents MUST provide a mechanism of determining the relative priority of
+two hash functions. That is, <dfn>getPrioritizedHashFunction(a, b)</dfn> MUST
+return the hash function the user agent considers the most collision-resistant.
+For example, `getPrioritizedHashFunction('SHA-256', 'SHA-512')` would return
+`SHA-512`.
+
+If both algorithms are equally strong, the user agent SHOULD ensure that there
+is a consistent ordering.
+</section><!-- /Framework::Cryptographic hash functions::Priority -->
+
 </section><!-- /Framework::Cryptographic hash functions -->
 
 <section>
@@ -360,35 +410,82 @@ checking because it won't have loaded successfully.
 [cachable by a shared cache]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
 </section><!-- Algorithms::eligible -->
 <section>
-#### Does <var>resource</var> match <var>metadata</var>?
+#### Parse <var>metadata</var>.
 
-1.  If <var>metadata</var> is the empty string, return `true`.
-2.  If <var>resource</var>'s URL's scheme is `about`, return `true`.
-3.  If <var>metadata</var> is not a valid "named information" (`ni`) URI,
-    return `false`.
-4.  If [<var>resource</var> is not eligible for integrity
+This algorithm accepts a string, and returns either `no metadata`, or a set of
+valid "named information" (`ni`) URLs whose hash functions are understood by
+the user agent.
+
+1.  If <var>metadata</var> is the empty string, return `no metadata`.
+2.  Let <var>result</var> be the empty set.
+3.  For each <var>token</var> returned by [splitting <var>metadata</var> on
+    spaces][split-on-spaces]:
+    1.  If <var>token</var> is not a valid "named information" (`ni`) URI,
+        skip the remaining steps, and proceed to the next token.
+    2.  Let <var>algorithm</var> be the <var>alg</var> component of
+        <var>token</var>.
+    3.  If <var>algorithm</var> is a hash function recognized by the user
+        agent, add <var>token</var> to <var>result</var>.
+4.  Return <var>result</var>.
+
+[split-on-spaces]: http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces
+</section><!-- Algorithms::parse -->
+<section>
+#### Get the strongest metadata from <var>set</var>.
+
+1.  Let <var>strongest</var> be the empty string.
+2.  For each <var>item</var> in <var>set</var>:
+    1.  If <var>item</var> is not a valid "named information" (`ni`) URL,
+        skip to the next <var>item</var>.
+    2.  If <var>strongest</var> is the empty string, set <var>strongest</var>
+        to <var>item</var>, skip to the next
+        <var>item</var>.
+    3.  Let <var>currentAlgorithm</var> be the <var>alg</var> component of
+        <var>strongest</var>.
+    4.  Let <var>newAlgorithm</var> be the <var>alg</var> component of
+        <var>item</var>.
+    5.  If the result of [`getPrioritizedHashFunction(currentAlgorithm, newAlgorithm)`][getPrioritizedHashFunction]
+        is <var>newAlgorithm</var>, set <var>strongest</var> to
+        <var>item</var>.
+3.  Return <var>strongest</var>.
+
+[getPrioritizedHashFunction]: #dfn-getprioritizedhashfunction-a-b
+</section><!-- /Algorithms::get the strongest metadata -->
+<section>
+#### Does <var>resource</var> match <var>metadataList</var>?
+
+1.  If <var>resource</var>'s URL's scheme is `about`, return `true`.
+2.  If [<var>resource</var> is not eligible for integrity
     valiation][eligible], return `false`.
-5.  Let <var>algorithm</var> be the <var>alg</var> component of
+3.  Let <var>parsedMetadata</var> be the result of
+    [parsing <var>metadataList</var>][parse].
+4.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
+5.  Let <var>metadata</var> be the result of [getting the strongest
+    metadata from <var>parsedMetadata</var>][get-the-strongest].
+6.  If <var>metadata</var> is the empty string, return `false`.
+7.  Let <var>algorithm</var> be the <var>alg</var> component of
     <var>metadata</var>.
-6.  Let <var>expectedValue</var> be the <var>val</var> component of
+8.  Let <var>expectedValue</var> be the <var>val</var> component of
     <var>metadata</var>.
-7.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
+9.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
     query string parameter.
-8.  If <var>expectedType</var> is not the empty string, and is not a
+10. If <var>expectedType</var> is not the empty string, and is not a
     case-insensitive match for <var>resource</var>'s MIME type,
     return `false`.
-8.  Let <var>actualValue</var> be the result of [applying
+11. Let <var>actualValue</var> be the result of [applying
     <var>algorithm</var> to <var>resource</var>][apply-algorithm].
-10. If <var>actualValue</var> is `null`, return `false`.
-11. If <var>actualValue</var> is a case-sensitive match for
+12. If <var>actualValue</var> is `null`, return `false`.
+13. If <var>actualValue</var> is a case-sensitive match for
     <var>expectedValue</var>, return `true`. Otherwise, return `false`.
 
-If <var>expectedType</var> is the empty string in #6, it would
+If <var>expectedType</var> is the empty string in #10, it would
 be reasonable for the user agent to warn the page's author about the
 dangers of MIME type confusion attacks via its developer console.
 {:.note}
 
-[match]: #does-resource-match-metadata
+[parse]: #parse-metadata.x
+[get-the-strongest]: #get-the-strongest-metadata-from-set.x
+[match]: #does-resource-match-metadatalist
 </section><!-- Algorithms::Match -->
 </section><!-- Algorithms -->
 
@@ -472,11 +569,11 @@ interfaces.
 #### The `integrity` attribute
 
 The `integrity` attribute represents [integrity metadata][] for an element.
-The value of the attribute MUST be either the empty string, or one
+The value of the attribute MUST be either the empty string, or at least one
 valid "named information" (`ni`) URI [[!RFC6920]], as described by the
 following ABNF grammar:
 
-    integrity-metatata = "" / 1#( *WSP NI-URL ) *WSP ]
+    integrity-metatata = "" / 1*( *WSP NI-URL ) *WSP ]
 
 The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
 
@@ -485,10 +582,6 @@ The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
-
-We should consider supporting multiple `ni` URLs, which could allow migration
-between algorithms.
-{:.issue data-number="4"}
 </section><!-- /Framework::HTML::integrity -->
 
 <section>
