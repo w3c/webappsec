@@ -158,13 +158,13 @@ benefits that such a fallback system would enable. (mkwst)
 <section>
 #### Fallback
 
-*   An author wishes to load a resource over an insecure channel for performance
-    reasons, but fall back to a secure channel if the insecurely-loaded resource
-    is manipulated. She can do this by adding [integrity metadata][] and a
+*   An author wishes to ensure that her site is functional for users behind a
+    trusted proxy which unavoidably transcodes data for security, performance,
+    or other reasons. She can do this by adding [integrity metadata][] and a
     [non-canonical source][noncanonical] to the `script` element:
 
-        <script src="https://rockin-resources.com/script.js"
-                noncanonical-src="http://insecurity-is-inherent.net/script.js"
+        <script src="https://my-trusted-server.com/script.js"
+                noncanonical-src="https://my-cdn.net/script.js"
                 integrity="ni:///sha-256;asijfiqu4t12...woeji3W?ct=application/javascript"></script>
     {:.example.highlight}
 
@@ -596,16 +596,15 @@ The `integrity` IDL attribute must [reflect][] the `integrity` content attribute
 [noncanonical]: #the-noncanonical-src-attribute-todo
 
 Authors MAY opt-in to a fallback mechanism whereby user agents would initially
-attempt to load resources from a non-canonical source (perhaps over HTTP, for
-performance and caching reasons). If that fetch failed an integrity check, the
-user agent would [report a violation][], and retry the fetch using a canonical
-URL (perhaps over HTTPS).
+attempt to load resources from a non-canonical source. If that fetch fails an
+integrity check, the user agent would [report a violation][], and retry the
+fetch using a canonical URL.
 
 The non-canonical URL is specified via a `noncanonical-src` attribute. For
 example:
 
-    <script src="http://example.com/script.js"
-            noncanonical-src="http://cdn.example.com/script.js"
+    <script src="https://example.com/script.js"
+            noncanonical-src="https://cdn.example.com/script.js"
             integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq?ct=application/javascript"></script>
 {:.example.highlight}
 
@@ -613,15 +612,17 @@ The `noncanonicalSrc` IDL attribute MUST [reflect][] the `noncanonical-src`
 content attribute.
 
 The noncanonical resource MUST be fetched with its [omit credentials
-mode][] set to `always`, to prevent leakage of cookies across insecure
-channels.
+mode][] set to `always`.
 
 [omit credentials mode]: http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode
 
-This attribute (and fallback in general) only makes sense if we care
-about allowing cache-friendly (read "HTTP") URLs to load in an HTTPS context
-without warnings. I'm not sure we do, so I'm not going to put too much
-thought into the details here before we discuss things a bit more. (mkwst)
+More detailed discussion of the use-case and behavior here is probably necessary
+going forward. The goal is to have a fallback mechanism which would not be
+integrity checked. Perhaps it would be hosted on the same server as the page
+itself; you wouldn't get the benefits of your globally awesome CDN, but you'd
+trust (at least) the source of the file. This would enable your application to
+function correctly in environments that would be otherwise entirely broken
+(Global MegaCorp with its draconian IT department, for example).
 {:.issue data-number="5"}
 </section><!-- /Framework::HTML::noncanonical-src -->
 
