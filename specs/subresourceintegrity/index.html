@@ -216,6 +216,18 @@ benefits that such a fallback system would enable. (mkwst)</p>
 
       <ul>
         <li>
+          <p>An author wishes to use a content delivery network to improve performance
+for her globally-distributed users. She wishes to ensure, however, that
+the CDN&#8217;s servers deliver <em>only</em> the code she expects them to deliver. She
+can mitigate the risk that CDN compromise (or unexpectedly malicious
+behavior) would change her code in unfortunate ways by adding
+<a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>script</code> element included on her page:</p>
+
+          <pre class="example highlight"><code>&lt;script src="https://site53.cdn.net/include.js"
+        integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"&gt;&lt;/script&gt;
+</code></pre>
+        </li>
+        <li>
           <p>An author wants to include JavaScript provided by a third-party
 analytics service on her site. She wants, however, to ensure that only
 the code she&#8217;s carefully reviewed is executed. She can do so by generating
@@ -277,13 +289,13 @@ elements which users click on to trigger a download:</p>
 
       <ul>
         <li>
-          <p>An author wishes to load a resource over an insecure channel for performance
-reasons, but fall back to a secure channel if the insecurely-loaded resource
-is manipulated. She can do this by adding <a href="#dfn-integrity-metadata">integrity metadata</a> and a
+          <p>An author wishes to ensure that her site is functional for users behind a
+trusted proxy which unavoidably transcodes data for security, performance,
+or other reasons. She can do this by adding <a href="#dfn-integrity-metadata">integrity metadata</a> and a
 <a href="#the-noncanonical-src-attribute-todo">non-canonical source</a> to the <code>script</code> element:</p>
 
-          <pre class="example highlight"><code>&lt;script src="https://rockin-resources.com/script.js"
-        noncanonical-src="http://insecurity-is-inherent.net/script.js"
+          <pre class="example highlight"><code>&lt;script src="https://my-trusted-server.com/script.js"
+        noncanonical-src="https://my-cdn.net/script.js"
         integrity="ni:///sha-256;asijfiqu4t12...woeji3W?ct=application/javascript"&gt;&lt;/script&gt;
 </code></pre>
         </li>
@@ -747,16 +759,15 @@ following ABNF grammar:</p>
       <h4 id="the-noncanonical-src-attribute-todo">The <code>noncanonical-src</code> attribute (TODO)</h4>
 
       <p>Authors MAY opt-in to a fallback mechanism whereby user agents would initially
-attempt to load resources from a non-canonical source (perhaps over HTTP, for
-performance and caching reasons). If that fetch failed an integrity check, the
-user agent would <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>, and retry the fetch using a canonical
-URL (perhaps over HTTPS).</p>
+attempt to load resources from a non-canonical source. If that fetch fails an
+integrity check, the user agent would <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>, and retry the
+fetch using a canonical URL.</p>
 
       <p>The non-canonical URL is specified via a <code>noncanonical-src</code> attribute. For
 example:</p>
 
-      <pre class="example highlight"><code>&lt;script src="http://example.com/script.js"
-        noncanonical-src="http://cdn.example.com/script.js"
+      <pre class="example highlight"><code>&lt;script src="https://example.com/script.js"
+        noncanonical-src="https://cdn.example.com/script.js"
         integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq?ct=application/javascript"&gt;&lt;/script&gt;
 </code></pre>
 
@@ -764,13 +775,15 @@ example:</p>
 content attribute.</p>
 
       <p>The noncanonical resource MUST be fetched with its <a href="http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode">omit credentials
-mode</a> set to <code>always</code>, to prevent leakage of cookies across insecure
-channels.</p>
+mode</a> set to <code>always</code>.</p>
 
-      <p class="issue" data-number="5">This attribute (and fallback in general) only makes sense if we care
-about allowing cache-friendly (read &#8220;HTTP&#8221;) URLs to load in an HTTPS context
-without warnings. I&#8217;m not sure we do, so I&#8217;m not going to put too much
-thought into the details here before we discuss things a bit more. (mkwst)</p>
+      <p class="issue" data-number="5">More detailed discussion of the use-case and behavior here is probably necessary
+going forward. The goal is to have a fallback mechanism which would not be
+integrity checked. Perhaps it would be hosted on the same server as the page
+itself; you wouldn&#8217;t get the benefits of your globally awesome CDN, but you&#8217;d
+trust (at least) the source of the file. This would enable your application to
+function correctly in environments that would be otherwise entirely broken
+(Global MegaCorp with its draconian IT department, for example).</p>
     </section>
     <!-- /Framework::HTML::noncanonical-src -->
 
