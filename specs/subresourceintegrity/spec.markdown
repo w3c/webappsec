@@ -110,6 +110,17 @@ benefits that such a fallback system would enable. (mkwst)
 <section>
 #### Resource Integrity
 
+*   An author wishes to use a content delivery network to improve performance
+    for her globally-distributed users. She wishes to ensure, however, that
+    the CDN's servers deliver _only_ the code she expects them to deliver. She
+    can mitigate the risk that CDN compromise (or unexpectedly malicious
+    behavior) would change her code in unfortunate ways by adding
+    [integrity metadata][] to the `script` element included on her page:
+
+        <script src="https://site53.cdn.net/include.js"
+                integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"></script>
+    {:.example.highlight}
+
 *   An author wants to include JavaScript provided by a third-party
     analytics service on her site. She wants, however, to ensure that only
     the code she's carefully reviewed is executed. She can do so by generating
