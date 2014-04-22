@@ -573,7 +573,7 @@ A variety of HTML elements result in requests for resources that are to be
 embedded into the document, or executed in its context. To support integrity
 metadata for each of these, and new elements that are added in the future,
 a new `integrity` attribute is added to the list of content attributes for
-the `a`, `audio`, `embed`, `iframe`, `link`, `object`, `script`, `source`,
+the `a`, `audio`, `embed`, `iframe`, `img`, `link`, `object`, `script`, `source`,
 `track`, and `video` elements.
 
 A corresponding `integrity` IDL attribute which [reflects][reflect] the
