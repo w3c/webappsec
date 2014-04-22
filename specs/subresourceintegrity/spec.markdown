@@ -358,19 +358,19 @@ is a consistent ordering.
 1.  If <var>algorithm</var> is not a hash function recognized and supported
     by the user agent, return `null`.
 2.  Let <var>result</var> be the result of applying <var>algorithm</var> to
-    the content of the [entity body][] of <var>resource</var>, including any
-    content coding that has been applied, but not including any
-    transfer encoding applied to the message body.
+    the [representation][ietf-representation] without any content-codings
+    applied, except when the user agent intends to consumes the content with
+    content-encodings applied (e.g., saving a gzip’d file to disk). In the
+    latter case, let <var>result</var> be the result of applying
+    <var>algorithm</var> to the [representation][ietf-representation].
 3.  Let <var>encodedResult</var> be result of base64url-encoding
     <var>result</var>.
 4.  Strip any trailing U+003D EQUALS SIGN (`=`) characters from
     <var>encodedResult</var>.
 5.  Return <var>encodedResult</var>.
 
-Step 2 is pulled from the `content-md5` definition in [[!HTTP11]]. It's
-unclear that it's what we want. See  [bzbarsky's WG post on this topic][bz]
-{:.issue data-number="2"}
 
+[ietf-representation]: http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-26#section-3.1.1.5
 [apply-algorithm]: #apply-algorithm-to-resource
 </section><!-- Algorithms::apply -->
 <section>
