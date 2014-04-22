@@ -794,9 +794,10 @@ Replace step 6 of the [downloads a hyperlink][] algorithm with the following:
 When handling a resource [as a download][], perform the following step before
 providing a user with a way to save the resource for later use:
 
-*   If <var>response</var>'s integrity state is `corrupt` and the document's
-    [integrity policy][] is `block`, the user agent MUST [report a violation][],
-    <em>and</em> MUST abort the download.
+1.  If  <var>response</var>'s integrity state is `corrupt`:
+    1.  If the document's [integrity policy][] is `block`:
+        1.  Abort the download.
+    2.  [Report a violation][].
 
 <div class="note">
 Note that this will cover _only_ downloads triggered explicitly by adding a
