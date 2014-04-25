@@ -482,18 +482,17 @@ is a consistent ordering.</p>
         <li>If <var>algorithm</var> is not a hash function recognized and supported
 by the user agent, return <code>null</code>.</li>
         <li>Let <var>result</var> be the result of applying <var>algorithm</var> to
-the content of the <a href="#dfn-entity-body">entity body</a> of <var>resource</var>, including any
-content coding that has been applied, but not including any
-transfer encoding applied to the message body.</li>
+the <a href="http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-26#section-3.1.1.5">representation</a> without any content-codings
+applied, except when the user agent intends to consumes the content with
+content-encodings applied (e.g., saving a gzip’d file to disk). In the
+latter case, let <var>result</var> be the result of applying
+<var>algorithm</var> to the <a href="http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-26#section-3.1.1.5">representation</a>.</li>
         <li>Let <var>encodedResult</var> be result of base64url-encoding
 <var>result</var>.</li>
         <li>Strip any trailing U+003D EQUALS SIGN (<code>=</code>) characters from
 <var>encodedResult</var>.</li>
         <li>Return <var>encodedResult</var>.</li>
       </ol>
-
-      <p class="issue" data-number="2">Step 2 is pulled from the <code>content-md5</code> definition in [[!HTTP11]]. It&#8217;s
-unclear that it&#8217;s what we want. See  <a href="http://lists.w3.org/Archives/Public/public-webappsec/2013Dec/0048.html">bzbarsky&#8217;s WG post on this topic</a></p>
 
     </section>
     <!-- Algorithms::apply -->
@@ -727,7 +726,7 @@ and skip directly to firing the event.</p>
 embedded into the document, or executed in its context. To support integrity
 metadata for each of these, and new elements that are added in the future,
 a new <code>integrity</code> attribute is added to the list of content attributes for
-the <code>a</code>, <code>audio</code>, <code>embed</code>, <code>iframe</code>, <code>link</code>, <code>object</code>, <code>script</code>, <code>source</code>,
+the <code>a</code>, <code>audio</code>, <code>embed</code>, <code>iframe</code>, <code>img</code>, <code>link</code>, <code>object</code>, <code>script</code>, <code>source</code>,
 <code>track</code>, and <code>video</code> elements.</p>
 
     <p>A corresponding <code>integrity</code> IDL attribute which <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflects</a> the
@@ -953,11 +952,18 @@ the element <em>does not</em> have a <code>download</code> attribute, abort thes
         <p>When handling a resource <a href="http://www.w3.org/TR/html5/links.html#as-a-download">as a download</a>, perform the following step before
 providing a user with a way to save the resource for later use:</p>
 
-        <ul>
-          <li>If <var>response</var>&#8217;s integrity state is <code>corrupt</code> and the document&#8217;s
-<a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>, the user agent MUST <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>,
-<em>and</em> MUST abort the download.</li>
-        </ul>
+        <ol>
+          <li>If  <var>response</var>&#8217;s integrity state is <code>corrupt</code>:
+            <ol>
+              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+                <ol>
+                  <li>Abort the download.</li>
+                </ol>
+              </li>
+              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
+            </ol>
+          </li>
+        </ol>
 
         <div class="note">
           <p>Note that this will cover <em>only</em> downloads triggered explicitly by adding a
