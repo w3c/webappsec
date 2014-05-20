@@ -12,7 +12,7 @@ Web Application Security Working Group
     * 1.0:
         * Candidate Recommendation: <http://w3.org/TR/CSP>
     * 1.1:
-        * Editor's Draft: <http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html>
+        * Editor's Draft: <http://w3c.github.io/webappsec/specs/content-security-policy/>
         * Working Draft: <http://w3.org/TR/CSP11>
     * Source: <https://github.com/w3c/webappsec/tree/master/specs/content-security-policy/>
 
