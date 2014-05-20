@@ -573,7 +573,8 @@ Link Defaults: HTML5 (element) applet / audio / embed / iframe / img / link / me
             </li>
 
             <li>If the source expression contains a non-empty
-            <code><a>path-part</a></code>, then:
+            <code><a>path-part</a></code>, and the URI is <em>not</em> the
+            result of a redirect, then:
               <ol>
                 <li>Let <var>decoded-path</var> be the result of
                 <a title="percent decode" spec="HTML5">decoding
@@ -676,6 +677,39 @@ Link Defaults: HTML5 (element) applet / audio / embed / iframe / img / link / me
         <code>https://example.com/file?key=value</code>,
         <code>https://example.com/file?key=notvalue</code>, and
         <code>https://example.com/file?notkey=notvalue</code>.
+      </section>
+      <section class="informative">
+        <h5 id="source-list-paths-and-redirects">Paths and Redirects</h5>
+
+        To avoid leaking path information cross-origin (as discussed
+        in Egor Homakov's
+        <a href="http://homakov.blogspot.de/2014/01/using-content-security-policy-for-evil.html">Using Content-Security-Policy for Evil</a>,
+        the matching algorithm ignores the path component of a source
+        expression if the resource being loaded is the result of a
+        redirect. For example, given a page with an active policy of
+        <code><a>img-src</a> example.com not-example.com/path</code>:
+
+        <ul>
+          <li>Directly loading <code>https://not-example.com/not-path</code>
+          would fail, as it doesn't match the policy.</li>
+          <li>Directly loading <code>https://example.com/redirector</code>
+          would pass, as it matches <code>example.com</code>.</li>
+          <li>Assuming that <code>https://example.com/redirector</code>
+          delivered a redirect response pointing to <code>https://not-example.com/not-path</code>,
+          the load would succeed, as the initial URL matches <code>example.com</code>,
+          and the redirect target matches <code>not-example.com/path</code>
+          if we ignore its path component.</li>
+        </ul>
+
+        This restriction reduces the granularity of a document's
+        policy when redirects are in play, which isn't wonderful, but
+        given that we certainly don't want to allow brute-forcing paths
+        after redirects, it seems a reasonable compromise.
+
+        The relatively long thread
+        <a href="http://lists.w3.org/Archives/Public/public-webappsec/2014Feb/0036.html">"Remove paths from CSP?"</a>
+        from public-webappsec@w3.org has more detailed discussion around
+        alternate proposals.
       </section>
     </section>
 
