@@ -142,7 +142,8 @@
 			<li><a href=#match-source-expression><span class=secno>4.2.2</span>Matching Source Expressions</a>
 				<ul class=toc>
 				<li><a href=#source-list-guid-matching><span class=secno>4.2.2.1</span>Security Considerations for GUID URI schemes</a>
-				<li><a href=#source-list-path-patching><span class=secno>4.2.2.2</span>Path Matching</a></ul>
+				<li><a href=#source-list-path-patching><span class=secno>4.2.2.2</span>Path Matching</a>
+				<li><a href=#source-list-paths-and-redirects><span class=secno>4.2.2.3</span>Paths and Redirects</a></ul>
 			<li><a href=#script-src-the-nonce-attribute><span class=secno>4.2.3</span>         The <code>nonce</code> attribute       </a>
 			<li><a href=#source-list-valid-nonces><span class=secno>4.2.4</span>Valid Nonces</a>
 			<li><a href=#source-list-valid-hashes><span class=secno>4.2.5</span>Valid Hashes</a></ul>
@@ -771,7 +772,8 @@
             </li>
 
             <li>If the source expression contains a non-empty
-            <code><a data-link-type=dfn href=#path-part title=path-part>path-part</a></code>, then:
+            <code><a data-link-type=dfn href=#path-part title=path-part>path-part</a></code>, and the URI is <em>not</em> the
+            result of a redirect, then:
               <ol>
                 <li>Let <var>decoded-path</var> be the result of
                 <a data-link-spec=HTML5 data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#percent-decode title="percent decode">decoding
@@ -874,6 +876,39 @@
         <code>https://example.com/file?key=value</code>,
         <code>https://example.com/file?key=notvalue</code>, and
         <code>https://example.com/file?notkey=notvalue</code>.
+      </section>
+      <section class=informative>
+        <h5 class="heading settled heading" data-level=4.2.2.3 id=source-list-paths-and-redirects><span class=secno>4.2.2.3 </span><span class=content>Paths and Redirects</span><a class=self-link href=#source-list-paths-and-redirects></a></h5><p></p>
+
+<p>To avoid leaking path information cross-origin (as discussed
+        in Egor Homakov’s
+        <a href=http://homakov.blogspot.de/2014/01/using-content-security-policy-for-evil.html>Using Content-Security-Policy for Evil</a>,
+        the matching algorithm ignores the path component of a source
+        expression if the resource being loaded is the result of a
+        redirect. For example, given a page with an active policy of
+        <code><a data-link-type=dfn href=#img-src title=img-src>img-src</a> example.com not-example.com/path</code>:</p>
+
+        <ul>
+          <li>Directly loading <code>https://not-example.com/not-path</code>
+          would fail, as it doesn’t match the policy.</li>
+          <li>Directly loading <code>https://example.com/redirector</code>
+          would pass, as it matches <code>example.com</code>.</li>
+          <li>Assuming that <code>https://example.com/redirector</code>
+          delivered a redirect response pointing to <code>https://not-example.com/not-path</code>,
+          the load would succeed, as the initial URL matches <code>example.com</code>,
+          and the redirect target matches <code>not-example.com/path</code>
+          if we ignore its path component.</li>
+        </ul>
+
+<p>This restriction reduces the granularity of a document’s
+        policy when redirects are in play, which isn’t wonderful, but
+        given that we certainly don’t want to allow brute-forcing paths
+        after redirects, it seems a reasonable compromise.</p>
+
+<p>The relatively long thread
+        <a href=http://lists.w3.org/Archives/Public/public-webappsec/2014Feb/0036.html>"Remove paths from CSP?"</a>
+        from public-webappsec@w3.org has more detailed discussion around
+        alternate proposals.
       </section>
     </section><p></p>
 
