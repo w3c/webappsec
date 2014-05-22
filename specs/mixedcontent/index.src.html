@@ -7,8 +7,9 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how and why user agents disallow rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / nested browsing contexts / top-level browsing context
+Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set
 Link Defaults: HTML5 (interface) document
+Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 </pre>
 
 <!-- Big Text: Intro -->
@@ -25,7 +26,8 @@ Link Defaults: HTML5 (interface) document
     <li>
       The user's communications with example.com cannot be trivially
       eavesdropped upon or manipulated by middlemen, because the requests she
-      makes and the responses she receives are <strong>encrypted</strong>.
+      makes and the responses she receives are
+      <strong>encrypted</strong>.
     </li>
     <li>
       The user is communicating with a server that is allowed to claim to be
@@ -38,8 +40,8 @@ Link Defaults: HTML5 (interface) document
   Together, these assertions give the user a reasonable expectation of both
   privacy and data integrity in her communications. She can be confident that
   <code>example.com</code> is the only entity that can read and respond to her
-  requests, and that the bits she's receiving are indeed those that
-  <code>example.com</code> actually sent.
+  requests (caveat: without shocking amounts of work) and that the bits she's
+  receiving are indeed those that <code>example.com</code> actually sent.
 
   The strength of these assertions is substantially weakened, however, when
   the encrypted and authenticated document requests subresources (scripts,
@@ -56,87 +58,357 @@ Link Defaults: HTML5 (interface) document
 
 <!-- Big Text: Definitions -->
 <section>
-  <h2 id="key-concepts">Key Concepts and Terminology</h2>
+  <h2 id="terms">Key Concepts and Terminology</h2>
 
-  <!-- TODO: Drop the <dfn>s here once I can autolink to the RFCs. -->
-  The term <dfn>origin</dfn> is defined in the Origin specification.
-  [[!RFC6454]]
+  <h3 id="terms-defined-here">Terms defined by this specfication</h3>
+  <dl>
+    <dt>
+      <dfn export title="mixed content|mixed">mixed content</dfn>
+    </dt>
+    <dd>
+      A resource is said to be <strong>mixed content</strong> if its origin is
+      <a><em>a priori</em></a> or <a><em>a posteriori</em> unsecured</a>,
+      <strong>and</strong> the <a>browsing context</a> into which it is loaded
+      is a <a>secure browsing context</a>.
+    </dd>
 
-  The term <dfn>URI</dfn> is defined in the URI specification. [[!URI]]
+    <dt>
+      <dfn export title="a priori unsecured origin|a priori unsecured|a priori">
+        <em>a priori</em> unsecured origin
+      </dfn>
+    </dt>
+    <dd>
+      An origin is said to be <strong><em>a priori</em> unsecured</strong> if
+      the user agent can determine that resources loaded from that origin will
+      not be <a>TLS-protected</a> before actually requesting the resource. For
+      example, <a>origins</a> whose scheme component is "HTTP" or "WS" fall
+      into this category.
+    </dd>
 
-  The term <dfn>resource representation</dfn> is defined in the HTTP 1.1
-  specification. [[!HTTP11]]
+    <dt>
+      <dfn export title="a posteriori unsecured origin|a posteriori unsecured|a posteriori">
+        <em>a posteriori</em> unsecured origin
+      </dfn>
+    </dt>
+    <dd>
+      An origin is said to be <strong><em>a posteriori</em> unsecured</strong>
+      if the user agent can determine that resources loaded from that origin
+      will not be <a>TLS-protected</a> only after sending a request out over
+      the network. For example, an <a>origin</a> whose scheme component is
+      "HTTPS", but whose server presents an invalid certificate, or negotiates
+      an ineffective encryption algorithm.
+    </dd>
+  </dl>
 
-  A <a>plugin</a> is defined in the HTML5 specification. [[!HTML5]]
+  Issue: Is using both <em>a priori</em> and <em>a posteriori</em> in the same
+  specification too Kantian? I say never! Others may disagree.
 
-  The terms <dfn>TLS-protected</dfn> and <dfn>weakly TLS-protected</dfn> are
-  defined in [[!WSC-UI]]
+  <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
+  <dl>
+    <dt><dfn>plugin</dfn></dt>
+    <dd>
+      This term is <a title="plugin">defined in the HTML5 specification</a>
+      [[!HTML5]]
+    </dd>
 
-  The term <dfn>globally unique identifier</dfn> is defined in section 4 of
-  the Origin specification. Note that URLs that do not use hierarchical
-  elements as naming authorities have origins which are globally unique
-  identifiers. [[!RFC6454]]
+    <dt><dfn>TLS-protected</dfn></dt>
+    <dt><dfn>weakly TLS-protected</dfn></dt>
+    <dd>
+      These terms are defined in
+      <a href="http://www.w3.org/TR/2010/REC-wsc-ui-20100812/#typesoftls">Section
+      5.2 of "Web Security Context: User Interface Guidelines"</a>. [[!WSC-UI]].
 
-  The terms <dfn>request</dfn>, <dfn title="request client|client">client</dfn>
-  and <dfn title="request context|context">context</dfn> are defined in
-  <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the Fetch
-  specification. [[!FETCH]]
+      Issue: Are these reasonable definitions that we want to run with?
+    </dd>
+
+    <dt><dfn>origin</dfn></dt>
+    <dd>
+      An origin defines the scope of authority or privilige under which a
+      resource operates. It is defined in detail in the Origin specification.
+      [[!RFC6454]]
+    </dd>
+
+    <dt><dfn>globally unique identifier</dfn></dt>
+    <dd>
+      This term is defined in
+      <a href="http://tools.ietf.org/html/rfc6454#section-4">Section 4 of the
+      Origin specification</a>. Note that URLs that do not use
+      <a href="http://tools.ietf.org/html/rfc3986#section-3.2">hierarchical
+      elements</a> as naming authorities (for example: <code>blob:</code>, and
+      <code>data:</code>) have origins which are globally unique identifiers.
+      [[!RFC6454]] [[!URI]]
+    </dd>
+    
+    <dt><dfn>fetch</dfn></dt>
+    <dd>
+      "fetching" is the process by which a user agent requests resources, and
+      delivers responses. It is defined in detail in the Fetch living standard.
+      [[!FETCH]]
+    </dd>
+
+    <dt><dfn>request</dfn></dt>
+    <dt><dfn title="request client|client">request client</dfn></dt>
+    <dt><dfn title="request context|context">request context</dfn></dt>
+    <dd>
+      These terms are defined in 
+      <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the
+      Fetch living standard. [[!FETCH]]
+    </dd>
+
+    <dt><dfn>response</dfn></dt>
+    <dt><dfn>network error</dfn></dt>
+    <dd> 
+      These terms are defined in detail in
+      <a href="http://fetch.spec.whatwg.org/#responses">Section 2.3</a> of the
+      Fetch living standard. [[!FETCH]]
+    </dd>
+  </dl>
 </section>
 
 <section>
   <h2 id="categories">Categories of Content</h2>
 
-  In an ideal world, user agents would block all requests for unsecured
-  content from within a secured context. This would solve the problem of mixed
-  content completely. It would also,
-  <a href="http://www.securitee.org/files/mixedinc_isc2013.pdf">according to one 2013 survey</a>,
-  break ~43% of websites in one way or another. User agents need to distinguish,
-  therefore, between content that MUST be blocked, and content that may be
-  rendered despite its dubious origin.
-
-  Categories of content are defined informally directly below, and formally in
-  the <a section href="#categorize-content"></a> algorithm.
+  Categories of content are defined informally directly below. Note that the
+  lists in the following three sections attempt to be comprehensive, but are
+  <em>not</em> normative. The content types which user agents MUST block in a
+  <a>mixed</a> context are normatively defined via the
+  <a section href="#categorize-content"></a> algorithm.
 
   <section>
     <h3 id="categories-active">Active Content</h3>
 
     <dfn export title="active content|active">Active content</dfn> is content
-    which poses a distinct threat to the user viewing a website. Scripts are
-    the best example: if an active network attacker can manipulate the content
-    of a script, she can completely control the activity on a webpage, removing
-    any protection that encryption may have offered. Examples of active content
+    which can in some way directly manipulate the resource with which a user
+    is interacting. JavaScript and CSS are the clearest examples: if an attacker
+    can manipulate the script and style a page loads, she can completely control
+    the activity on a webpage and exfiltrate data at will. Active content
     include the following resource types:
 
     <ul>
-      <li>Scripts, including scripts loaded as Workers, SharedWorkers, and
-      ServiceWorkers</li>
-      <li>Stylesheets</li>
-      <li>Web Fonts [[!CSS3-WEBFONTS]]</li>
-      <li><a>Plugins</a></li>
-      <li>Data loaded via XMLHttpRequest [[!XMLHTTPREQUEST]]</li>
-      <li>EventSource targets [[!EVENTSOURCE]]</li>
-      <li>WebSocket targets [[!WEBSOCKETS]]</li>
-      <li>Documents rendered in <a element>iframe</a> elements</li>
+      <li>
+        Scripts (loaded, for example, via <a element>script</a> elements, as
+        well as scripts loaded as Workers and SharedWorkers [[!WORKERS]], or
+        ServiceWorkers [[!SERVICEWORKERS]]) [[!ECMA-262]]
+      </li>
+      <li>Stylesheets [[!CSS-2010]]</li>
+      <li>
+        <a>Plugin</a> data (loaded, for example, through
+        <a element>applet</a>, <a element>embed</a>, or <a element>object</a>
+        elements; or through a <a>plugin document</a> loaded into an
+        <a element>iframe</a> or <a>frame</a> element)
+      </li>
+      <li>SVG Documents [[!SVG2]]</li>
+      <li>XSL Transformations [[!XSLT]]</li>
       <li>HTML Imports [[!HTML-IMPORTS]]</li>
       <li>HTML Manifests [[!MANIFEST]]</li>
+      <li>Documents rendered in <a element>iframe</a> elements</li>
     </ul>
 
-    Note: Plugins themselves are certainly considered active content, but
-    requests made by plugins are not. It's impossible for the user agent to
-    determine how data loaded by a plugin will be used (and, as a practical
-    matter, plugins often bypass the user agent's network stack).
+    The contents of an <a element>iframe</a> are considered active content
+    because same-origin frames can reach up into their <a>parent browsing
+    context</a> via JavaScript, and even cross-origin frames can initiate
+    top-level navigations. User agents MAY decide to treat cross-origin
+    frames as <a>passive</a> content if that capability is removed by applying
+    a appropriate <a>sandboxing flag set</a> (e.g. one which does not include
+    the <a element-attr>allow-top-navigation</a> flag).
 
-    Issue: Is this list exhaustive enough, or are there examples we should add?
+    Note: Plugin data itself (e.g. a <code>flv</code> file loaded into the
+    Flash plugin) is certainly considered active content, but requests made by
+    plugins are not. It's impossible for the user agent to determine how data
+    loaded by a plugin will be used (and, as a practical matter, plugins often
+    bypass the user agent's network stack).
   </section>
 
   <section>
     <h3 id="categories-passive">Passive Content</h3>
-    
-    <dfn export title="passive content|passive">Passive content</dfn> covers
+
+    <dfn export title="passive content|passive">Passive content</dfn> includes
+    resources which cannot directly influence 
     resources which does not fall into one of the above categories: images,
     audio, video, and so on. This content cannot be used directly to attack
     users; the risk of rendering it is significantly lower than the risk of
-    executing or interpreting <a>active content</a>.
+    executing or interpreting <a>active content</a>. Passive content includes
+    the following resource types:
+   
+    <ul>
+      <li>
+        Data (loaded, for example, via XMLHttpRequest [[!XMLHTTPREQUEST]],
+        EventSource [[!EVENTSOURCE]], or WebSockets [[!WEBSOCKETS]])
+      </li>
+      <li>
+        Images (loaded via <a element>img</a> elements, or via constructs like
+        ''url()'' in stylesheets)</li>
+      <li>
+        Media (loaded, for example, through <a element>audio</a>,
+        <a element>video</a>, <a element>track</a>, or <a element>source</a>
+        elements)
+      </li>
+      <li>Web Fonts [[!CSS3-WEBFONTS]]</li>
+      <li>Custom Filters [[!FILTER-EFFECTS]]</li>
+      <li>
+        Resources which are not rendered directly in the browser, but downloaded
+        to a user's storage device (either as a result of a
+        <a element-attr>download</a> attribute, or
+        <code>Content-Disposition</code> headers)
+      </li>
+    </ul>
+
+    Issue: Should data loaded or sent via <code>postMessage()</code> be added to
+    this list?
+
+    <a>Active content</a> is clearly dangerous in a <a>mixed</a> context, and
+    must be blocked from executing in those contexts to protect both users and
+    site authors, regardless of the risk of breaking insecurely composed
+    websites. Passive <a>mixed</a> content is less directly dangerous to
+    users: if an attacker manipulates an image resource, the worst case is that
+    the attacker-controlled image is displayed to the user rather than the image
+    a site's author intended. That's bad, but not catastrophic.
+
+    In a perfect world, user agents would be required to block <em>all</em>
+    types of <a>mixed content</a>. Unfortunately, there exists a massive amount
+    of passive <a>mixed content</a> on the Internet today:
+    <a href="http://www.securitee.org/files/mixedinc_isc2013.pdf">according to a
+    survey in 2013</a> blocking passive mixed content would break around ~43% of
+    websites in one way or another. Draconian blocking policies applied to
+    passive mixed content are (for the moment) infeasible. User agents must be
+    more nuanced in their restrictions.
+
+    With that in mind, we'll split passive content into two categories:
+    resources user agents can safely block without breaking the web, and
+    resources whose usage in <a>mixed</a> contexts is simply too high to block
+    by default:
+
+    <section>
+      <h4 id="categories-passive-optionally-blockable">
+        Optionally-blockable Passive Content
+      </h4>
+
+      Passive content is
+      <dfn export title="optionally blockable passive content|optionally blockable passive|optionally blockable">
+      optionally blockable</dfn> when the risk of allowing its usage in a <a>mixed</a>
+      context is outweighed by the risk of breaking significant portions of the
+      web. This may be because usage of these resource types in <a>mixed</a>
+      contexts is sufficiently high, or because the feature is very clearly
+      low-risk in and of itself.
+
+      This category includes:
+      
+      <ul>
+        <li>Images loaded via <a element>img</a> or <code>picture</code></li>
+        <li>
+          Video loaded via <a element>video</a> and <a element>source</a>
+          elements
+        </li>
+        <li>
+          Audio loaded via <a element>audio</a> and <a element>source</a>
+          elements
+        </li>
+        <li>
+          Subtitles and captions loaded via <a element>track</a> elements
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h4 id="categories-passive-blockable">Blockable Passive Content</h4>
+
+      Passive content is
+      <dfn export title="blockable passive content|blockable passive|blockable">
+      blockable</dfn> when the risk of allowing its usage in a <a>mixed</a>
+      context outwighs the risk of temporary inconvinience for those site
+      authors delivering insecurely composed pages. This may be because usage
+      of these features in <a>mixed</a> contexts is sufficiently low, or
+      because the content is close to the boundry between <a>active</a> and
+      <a>passive</a>.
+
+      This category includes all passive content that is not
+      <a>optionally blockable</a>. In particular, note that this includes data
+      loaded via <code>XMLHttpRequest</code>, <code>EventSource</code>, or
+      <code>WebSockets</code>; as well as Web Fonts.
+    </section>
+  </section>
+</section>
+<section>
+  <h2 id="requirements">User Agent Requirements</h2>
+
+  <section>
+    <h3 id="requirements-fetching">Resource Fetching</h3>
+
+    If a <a interface>Document</a> is a <a>secure browsing context</a>, then
+    user agents MUST adhere to the following requirements when <a>fetching</a>
+    resources in response to its requests:
+
+    <ol>
+      <li>
+        <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
+        resources from an <a><em>a priori</em> unsecured origin</a> MUST not
+        generate network traffic, and MUST instead return a synthetically
+        generated <a>network error</a> response.
+      </li>
+
+      <li>
+        <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
+        resources from an <a><em>a posteriori</em> unsecured origin</a> MUST not
+        be delivered to the requesting <a interface>Document</a>, but instead
+        MUST return a synthetically generated <a>network error</a> response.
+      </li>
+
+      <li>
+        <a>Requests</a> for <a>optionally blockable passive</a> resources which
+        are <a>mixed content</a> MAY be treated as <a>active</a> (and therefore
+        blocked entirely or returned as a <a>network error</a> as described
+        above).
+
+        Note: For instance, a user agent could interpret the presence of a
+        <code>Strict-Transport-Security</code> header field as forcing all
+        content into the <a>active</a> category. [[RFC6797]]
+      </li>
+    </ol>
+
+    The <a section href="#fetch-integration"></a> and
+    <a section href="#algorithms"></a> sections detail how these fetching
+    requirements could be implemented.
+  </section>
+
+  <section>
+    <h3 id="requirements-ux">UI Requirements</h3>
+
+    If a <a>request</a> for <a>optionally blockable passive</a> resources
+    which are <a>mixed content</a> is <strong>not</strong> treated as <a>active
+    content</a> (per requirement #3 above), then the user agent MUST adhere to
+    the following requirements:
+
+    <ul>
+      <li>
+        The user agent MUST NOT provide the user with a visible indication that
+        the <a interface>Document</a> which loaded that resource is secure
+        (for instance, via a green lock icon). The user agent SHOULD instead
+        display a visible indication that <a>mixed content</a> is present.
+
+        This requirement explicitly includes any visible indication of the
+        <a interface>Document</a>'s
+        <a href="https://cabforum.org/about-ev-ssl/">EV status</a>.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h3 id="requirements-user-controls">User Controls</h3>
+
+    User agents MAY offer users the ability to directly decide whether or not to
+    treat <strong>all</strong> <a>mixed content</a> as <a>active</a> (meaning
+    that even <a>optionally blockable passive content</a> would be blocked in a
+    mixed context). 
+    
+    Note: It is <em>strongly recommended</em> that users take advantage of such
+    an option if provided.
+
+    User agents MAY offer users the ability to override its decision to block
+    <a>active</a> or <a>blockable passive</a> mixed content on a particular
+    page, as certain insecurely composed sites might otherwise be unusable.
+
+    Note: Practically, user agents probably can't get away with not offering
+    such a back door.
   </section>
 </section>
 
@@ -144,22 +416,25 @@ Link Defaults: HTML5 (interface) document
   <h2 id="algorithms">Algorithms</h2>
 
   <section>
-    <h3 id="categorize-content">Is <var>context</var> active or passive?</h3>
+    <h3 id="categorize-content">Is <var>context</var> blockable?</h3>
 
     Fetch defines a number of <a>request contexts</a> which reflect how a
-    request will be rendered or executed by a document. Some contexts which can
-    manipulate the page are considered <a>active</a>, others <a>passive</a>.
-   
-    Given a <a>request context</a> <var>context</a>, the user agent can
-    determine whether the result will be used as <a>active content</a> via the
-    following algorithm:
+    request will be rendered or executed by a document. Based on that
+    context, the user agent can determine whether the resource is either
+    <a>active content</a> or <a>blockable passive content</a>.
+
+    Given a <a>request context</a> <var>context</var>, the following algorithm
+    will return <strong><code>blockable</code></strong> if the content can be
+    blocked if loaded as <a>mixed content</a>, or
+    <strong><code>optionally blockable</code></strong> if the resource can be
+    delivered to the page regardless of its <a>mixed</a> status.
 
     <ol>
       <li>If <var>context</var> is one of <code>form</code>, <code>image</code>,
       <code>media</code>, <code>navigate</code>, or <code>popup</code>, return
-      <code><strong>passive</strong></code>.</li>
+      <code><strong>optionally blockable</strong></code>.</li>
 
-      <li>Return <code><strong>active</strong></code>.</li>
+      <li>Return <code><strong>blockable</strong></code>.</li>
     </ol>
   </section>
 
@@ -255,8 +530,8 @@ Link Defaults: HTML5 (interface) document
       </li>
       <li>
         If the result of the <a section href="#categorize-content"></a>
-        algorithm is <strong>active</strong>, or if the user agent is
-        configured to block <a>passive</a> mixed content, return
+        algorithm is <strong>blockable</strong>, or if the user agent is
+        configured to block <a>optionally blockable passive</a> mixed content, return
         <strong>blocked</strong>.
       </li>
       <li>
@@ -264,7 +539,7 @@ Link Defaults: HTML5 (interface) document
       </li>
     </ol>
 
-    Issue: Chrome doesn't currently process resources loaded via
+    Issue: This doesn't currently process resources loaded via
     <code>&lt;link rel="subresource" ...&gt;</code> or
     <code>Link: ...; prefetch</code>. Perhaps we should?
   </section>
@@ -278,17 +553,149 @@ Link Defaults: HTML5 (interface) document
     <a href="#should-block-fetch">If a request proceeds</a>, we still might want
     to block the response based on the state of the connection that generated
     the response (e.g. because the response would be used as <a>active
-    content</a>, but the server is unauthenticated).
+    content</a>, but the server is <a><em>a posteriori</em> unsecured</a>).
 
     Given a <a>response</a> <var>response</var>, and <a>request client</a>
-    <var>client</var> (as defined by Section 2.2 of Fetch), we can determine what response should be returned via the following algorithm: 
+    <var>client</var>, the user agent can determine what response should be
+    returned via the following algorithm:
 
-    Let document be the document with which client is associated.
-    If document is not secure, return allowed.
-    Let context be the context of the request to which response responds.
-    If context is active, or the user agent is configured to block passive mixed content:
-    If the response is weakly TLS-protected, return false.
-    If the scheme component of response's URL is "HTTP", return false.
-    TODO: Should we talk about things like mixed-pinning?
-    Return true.
+    <ol>
+      <li>
+        Let <var>document</var> be the <a interface>Document</a> with which
+        <var>client</var> is associated.
+      </li>
+      <li>
+        If <var>document</var> is not a <a>secure browsing context</a>, return
+        <strong>allowed</strong>.
+      </li>
+      <li>
+        Let <var>context</var> be the <a>request context</a> of the request
+        which generated <var>response</var>.
+      </li>
+      <li>
+        If the result of the <a section href="#categorize-content"></a>
+        algorithm is <strong>blockable</strong>, or if the user agent is
+        configured to block <a>optionally blockable passive</a> mixed content:
+       
+        <ol>
+          <li>
+            If the response is not <a>TLS-protected</a>, or only <a>weakly
+            TLS-protected</a>, return <strong>blocked</strong>.
+          </li>
+        </ol>
+      </li>
+      <li>Return <strong>allowed</strong>.</li>
+    </ol>
+
+    Issue: Does step 4.1 do enough to cover a response generated by a Service
+    Worker? We accept <code>blob:</code> and similar, should we accept content
+    synthesized into a Response object?
+
+    Issue: Should we discuss mixed-pinning?
   </section>
+</section>
+
+<section>
+  <h2 id="fetch-integration">Modifications to Fetch</h2>
+
+  Issue: Replace this section with some pointers to Fetch once we can get Fetch
+  updated accordingly.
+
+  When fetching resources, the mixed content checks described in the algorithms
+  above should be inserted at the top of the Fetch algorithm to block network
+  traffic to <a><em>a priori</em> unsecured origins</a>, and at the bottom of
+  the algorithm, to block responses from <a><em>a posteriori</em> unsecured
+  origins</a>.
+  
+  The Fetch algorithm MUST be updated as follows: [[!FETCH]]
+
+  <ul>
+    <li>
+      After <a href="http://fetch.spec.whatwg.org/#concept-fetch">step 1 of the
+      current Fetch algorithm</a>, perform the following steps:
+
+      <ol>
+        <li>
+          Let <var>context</var> be <var>request</var>'s <code>context</code>.
+        </li>
+        <li>
+          Let <var>client</var> be <var>request</var>'s <code>client</code>.
+        </li>
+        <li>
+          If the <a href="#should-block-fetch">Should a Fetch of <var>url</var>
+          as <var>context</var> for <var>client</var> be blocked as mixed
+          content?</a> algorithm returns <strong><code>blocked</code></strong>:
+
+          <ol>
+            <li>Set <var>response</var> to a <a>network error</a>.</li>
+            <li>Skip to step 7 of the current Fetch algorithm.</li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li>
+      After <a href="http://fetch.spec.whatwg.org/#concept-fetch">step 9 of the
+      current Fetch algorithm</a>, perform the following steps:
+
+      <ol>
+        <li>
+          Let <var>client</var> be <var>request</var>'s <code>client</code>.
+        </li>
+        <li>
+
+          If the <a href="#should-block-response">Should <var>response</var>
+          for <var>client</var> be blocked as mixed content?</a> algorithm
+          returns <strong><code>blocked</code></strong>:
+
+          <ol>
+            <li>Set <var>response</var> to a <a>network error</a>.</li>
+          </ol>
+      </ol>
+    </li>
+  </ul>
+
+  Note: Hooking into Fetch in this way ensures that we catch not only the
+  initial request, but all redirects as well. That is certainly the intent.
+</section>
+
+<section>
+  <h2 id="websockets-integration">Modifications to WebSockets</h2>
+
+  WebSocket connections don't go through the Fetch algorithm, they're defined
+  defined in the
+  <a href="http://tools.ietf.org/html/rfc6455#section-4.1">Establish a WebSocket
+  Connection</a> algorithm [[!WSP]], and in the 'WebSocket()' constructor
+  algorithm. Those algorithm MUST be modified as follows:
+
+  <ul>
+    <li>
+      Replace
+      <a href="http://www.w3.org/TR/2012/CR-websockets-20120920/#the-websocket-interface">
+        Step 2 of the <code>WebSocket()</code> constructor algorithm
+      </a> with the following step:
+
+      <ol>
+        <li>
+          If <var>secure</var> is false, but the <a>browsing context</a> which
+          the <var>entry script</var> is associated with is a <a>secure browsing
+          context</a>, then throw a <code>SecurityError</code> exception.
+        </li>
+      </ol>
+    </li>
+    <li>
+      After <a href="http://tools.ietf.org/html/rfc6455#section-4.1">step 5 of
+      the current Establish a WebSocket Connection algorithm</a>, perform the
+      following step:
+
+      <ol>
+        <li>
+          If secure is <strong>true</strong>, and the TLS handshake performed
+          in step 5 results in a <a>weakly TLS-protected</a> connection, then
+          the client MUST
+          <a href="http://tools.ietf.org/html/rfc6455#section-7.1.7">Fail the
+          WebSocket Connection</a> and abort the connection.
+        </li>
+      </ol>
+    </li>
+  </ul>
+</section>
