@@ -37,8 +37,8 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     </li>
   </ul>
 
-  Together, these assertions give the user a reasonable expectation of both
-  privacy and data integrity in her communications. She can be confident that
+  Together, these assertions give the user some expectation of both privacy and
+  data integrity in her communications. She can be somewhat confident that
   <code>example.com</code> is the only entity that can read and respond to her
   requests (caveat: without shocking amounts of work) and that the bits she's
   receiving are indeed those that <code>example.com</code> actually sent.
@@ -46,12 +46,12 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
   The strength of these assertions is substantially weakened, however, when
   the encrypted and authenticated document requests subresources (scripts,
   images, etc) over an insecure channel. Those resource requests result in a
-  document whose status is mixed, as unsecured requests are wide open for
+  document whose status is mixed, as insecure requests are wide open for
   man-in-the-middle attacks. This scenario is unfortunately quite common.
 
   This specification details how user agents can mitigate this risk to users'
   security and privacy by limiting a document's ability to inadvertently
-  communicate in the clear. At worst, resource requests for unsecured content
+  communicate in the clear. At worst, resource requests for insecure content
   should downgrade any visible security indicators presented to the user (e.g.
   no "green lock"). At best, these requests should be blocked entirely.
 </section>
@@ -67,18 +67,18 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     </dt>
     <dd>
       A resource is said to be <strong>mixed content</strong> if its origin is
-      <a><em>a priori</em></a> or <a><em>a posteriori</em> unsecured</a>,
+      <a><em>a priori</em></a> or <a><em>a posteriori</em> insecure</a>,
       <strong>and</strong> the <a>browsing context</a> into which it is loaded
       is a <a>secure browsing context</a>.
     </dd>
 
     <dt>
-      <dfn export title="a priori unsecured origin|a priori unsecured|a priori">
-        <em>a priori</em> unsecured origin
+      <dfn export title="a priori insecure origin|a priori insecure|a priori">
+        <em>a priori</em> insecure origin
       </dfn>
     </dt>
     <dd>
-      An origin is said to be <strong><em>a priori</em> unsecured</strong> if
+      An origin is said to be <strong><em>a priori</em> insecure</strong> if
       the user agent can determine that resources loaded from that origin will
       not be <a>TLS-protected</a> before actually requesting the resource. For
       example, <a>origins</a> whose scheme component is "HTTP" or "WS" fall
@@ -86,12 +86,12 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     </dd>
 
     <dt>
-      <dfn export title="a posteriori unsecured origin|a posteriori unsecured|a posteriori">
-        <em>a posteriori</em> unsecured origin
+      <dfn export title="a posteriori insecure origin|a posteriori insecure|a posteriori">
+        <em>a posteriori</em> insecure origin
       </dfn>
     </dt>
     <dd>
-      An origin is said to be <strong><em>a posteriori</em> unsecured</strong>
+      An origin is said to be <strong><em>a posteriori</em> insecure</strong>
       if the user agent can determine that resources loaded from that origin
       will not be <a>TLS-protected</a> only after sending a request out over
       the network. For example, an <a>origin</a> whose scheme component is
@@ -169,10 +169,18 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
   <h2 id="categories">Categories of Content</h2>
 
   Categories of content are defined informally directly below. Note that the
-  lists in the following three sections attempt to be comprehensive, but are
-  <em>not</em> normative. The content types which user agents MUST block in a
-  <a>mixed</a> context are normatively defined via the
-  <a section href="#categorize-content"></a> algorithm.
+  lists in the following three sections attempt to be comprehensive, but the
+  platform is huge: in practice, user agents will determine a resource's
+  category based on it's <a>request context</a>, which is much simpler to
+  exhaustively define.
+
+  Note: Fetch defines several <a>request contexts</a> that do not appear in
+  the following sections: <code>form</code>, <code>navigate</code>, and
+  <code>popup</code>. These <dfn>navigational request contexts</dfn> are
+  navigations, not content, and will not be blocked as mixed content. User
+  agents are free treat one or more of these categories as <a>blockable
+  passive</a> content if they choose to do so: there are reasonable arguments
+  for restricting mixed form submissions, for example.
 
   <section>
     <h3 id="categories-active">Active Content</h3>
@@ -204,6 +212,11 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       <li>Documents rendered in <a element>iframe</a> elements</li>
     </ul>
 
+    These resource types map to the following Fetch <a>request contexts</a>:
+    <code>script</code>, <code>worker</code>, <code>sharedworker</code>,
+    <code>serviceworker</code>, <code>style</code>, <code>object</code>, and
+    <code>child</code>. These contexts are <dfn>active request contexts</dfn>.
+
     The contents of an <a element>iframe</a> are considered active content
     because same-origin frames can reach up into their <a>parent browsing
     context</a> via JavaScript, and even cross-origin frames can initiate
@@ -211,6 +224,15 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     frames as <a>passive</a> content if that capability is removed by applying
     a appropriate <a>sandboxing flag set</a> (e.g. one which does not include
     the <a element-attr>allow-top-navigation</a> flag).
+
+    Note: <a element>iframe</a> elements, as currently implemented in user
+    agents do come with risks beyond those mentioned above. For example,
+    <a href="http://lcamtuf.blogspot.de/2012/05/yes-you-can-have-fun-with-downloads.html">a
+    downloaded file's origin is often difficult to pinpoint</a>, HTTP
+    authentication prompts are sometimes allowed (after a HTTP 401 response,
+    for instance), and modal prompts like <code>window.prompt()</code> can
+    confuse users. These risks exist, of course, even with secure frames, but
+    are easier for an attacker to inject over insecure channels.
   </section>
 
   <section>
@@ -254,10 +276,11 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         <a element-attr>download</a> attribute, or
         <code>Content-Disposition</code> headers)
       </li>
+      <li>
+        Beacon [[!BEACON]] and
+        <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing">hyperlink auditing pings</a>
+      </li>
     </ul>
-
-    Issue: Should data loaded or sent via <code>postMessage()</code> be added to
-    this list?
 
     <a>Active content</a> is clearly dangerous in a <a>mixed</a> context, and
     must be blocked from executing in those contexts to protect both users and
@@ -313,7 +336,14 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         <li>
           Subtitles and captions loaded via <a element>track</a> elements
         </li>
+        <li>
+          Beacon and hyperlink auditing pings
+        </li>
       </ul>
+
+      These resource types map to the following Fetch <a>request contexts</a>:
+      <code>image</code>, <code>media</code>, and <code>ping</code>.
+      These contexts are <dfn>optionally blockable passive request contexts</dfn>.
     </section>
 
     <section>
@@ -332,6 +362,10 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       <a>optionally blockable</a>. In particular, note that this includes data
       loaded via <code>XMLHttpRequest</code>, <code>EventSource</code>, or
       <code>WebSockets</code>; as well as Web Fonts.
+
+      These resource types map to the following Fetch <a>request contexts</a>:
+      <code>connect</code>, <code>download</code>, and <code>font</code>.
+      These contexts are <dfn>blockable passive request contexts</dfn>.
     </section>
   </section>
 </section>
@@ -348,14 +382,14 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     <ol>
       <li>
         <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
-        resources from an <a><em>a priori</em> unsecured origin</a> MUST not
+        resources from an <a><em>a priori</em> insecure origin</a> MUST not
         generate network traffic, and MUST instead return a synthetically
         generated <a>network error</a> response.
       </li>
 
       <li>
         <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
-        resources from an <a><em>a posteriori</em> unsecured origin</a> MUST not
+        resources from an <a><em>a posteriori</em> insecure origin</a> MUST not
         be delivered to the requesting <a interface>Document</a>, but instead
         MUST return a synthetically generated <a>network error</a> response.
       </li>
@@ -411,39 +445,22 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     an option if provided.
 
     User agents MAY offer users the ability to override its decision to block
-    <a>active</a> or <a>blockable passive</a> mixed content on a particular
-    page, as certain insecurely composed sites might otherwise be unusable.
+    <a>blockable passive</a> mixed content on a particular page.
+
+    User agents MAY also offer users the ability to override its decision to
+    block <a>active</a> mixed content on a page.    
 
     Note: Practically, user agents probably can't get away with not offering
-    such a back door.
+    such a back door. That said, allowing active mixed content is in
+    particular a very dangerous option, and user agents
+    <a href="http://tools.ietf.org/html/rfc6919#section-3">REALLY SHOULD
+    NOT</a> present such a choice to users without careful consideration and
+    communication of the risk involved.
   </section>
 </section>
 
 <section>
   <h2 id="algorithms">Algorithms</h2>
-
-  <section>
-    <h3 id="categorize-content">Is <var>context</var> blockable?</h3>
-
-    Fetch defines a number of <a>request contexts</a> which reflect how a
-    request will be rendered or executed by a document. Based on that
-    context, the user agent can determine whether the resource is either
-    <a>active content</a> or <a>blockable passive content</a>.
-
-    Given a <a>request context</a> <var>context</var>, the following algorithm
-    will return <strong><code>blockable</code></strong> if the content can be
-    blocked if loaded as <a>mixed content</a>, or
-    <strong><code>optionally blockable</code></strong> if the resource can be
-    delivered to the page regardless of its <a>mixed</a> status.
-
-    <ol>
-      <li>If <var>context</var> is one of <code>form</code>, <code>image</code>,
-      <code>media</code>, <code>navigate</code>, or <code>popup</code>, return
-      <code><strong>optionally blockable</strong></code>.</li>
-
-      <li>Return <code><strong>blockable</strong></code>.</li>
-    </ol>
-  </section>
 
   <section>
     <h3 id="categorize-document">
@@ -457,12 +474,12 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
     <ol>
       <li><code>http://a.com</code> frames <code>https://b.com</code>, which
-      loads <code>http://evil.com</code>. In this case, the unsecured request
+      loads <code>http://evil.com</code>. In this case, the insecure request
       to <code>evil.com</code> MUST be blocked, as <code>b.com</code> was
       loaded over a secure connection.</li>
 
       <li><code>https://a.com</code> frames <code>http://b.com</code>, which
-      loads <code>http://evil.com</code>. In this case, the unsecured request
+      loads <code>http://evil.com</code>. In this case, the insecure request
       to <code>evil.com</code> MUST not be allowed, as <code>a.com</code> was
       loaded in a secure context (and, hopefully <em>cannot</em> happen, as
       the <code>b.com</code> frame MUST not be loaded over an insecure channel
@@ -536,10 +553,13 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         return <strong>allowed</strong>.
       </li>
       <li>
-        If the result of the <a section href="#categorize-content"></a>
-        algorithm is <strong>blockable</strong>, or if the user agent is
-        configured to block <a>optionally blockable passive</a> mixed content, return
+        If <var>context</var> is an <a>active request context</a> or
+        <a>blockable passive request context</a>, return
         <strong>blocked</strong>.
+      </li>
+      <li>
+        If the user agent is configured to block <a>optionally blockable
+        passive</a> mixed content, return <strong>blocked</strong>.
       </li>
       <li>
         Return <strong>allowed</strong>.
@@ -560,7 +580,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     <a href="#should-block-fetch">If a request proceeds</a>, we still might want
     to block the response based on the state of the connection that generated
     the response (e.g. because the response would be used as <a>active
-    content</a>, but the server is <a><em>a posteriori</em> unsecured</a>).
+    content</a>, but the server is <a><em>a posteriori</em> insecure</a>).
 
     Given a <a>response</a> <var>response</var>, and <a>request client</a>
     <var>client</var>, the user agent can determine what response should be
@@ -580,23 +600,41 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         which generated <var>response</var>.
       </li>
       <li>
-        If the result of the <a section href="#categorize-content"></a>
-        algorithm is <strong>blockable</strong>, or if the user agent is
+        If <var>context</var> is an <a>active request context</a> or
+        <a>blockable passive request context</a>, or the user agent is
         configured to block <a>optionally blockable passive</a> mixed content:
        
         <ol>
           <li>
-            If the response is not <a>TLS-protected</a>, or only <a>weakly
-            TLS-protected</a>, return <strong>blocked</strong>.
+            If the response is not <a>TLS-protected</a>, return
+            <strong>blocked</strong>.
+
+            Issue: This is intended to cover cases in which a ServiceWorker
+            responds to a request with an insecure resource. It's not clear
+            that this is the correct place to do that, however, as the
+            integration with Fetch isn't fully specified. It's also not really
+            clear what "insecure" should mean in a ServiceWorker context. We
+            accept 'blob:' resources, for instance: should we accept responses
+            synthesized by the service worker?
+          </li>
+          <li>
+            If the response is only <a>weakly TLS-protected</a>, return
+            <strong>blocked</strong>.
+
+            Note: This covers cases in which the TLS handshake for a resource
+            request succeeded, but failed to agree upon a configuration that
+            the user agent considers secure. For instance, the server might
+            have negotiated down to an insecure protocol like SSL 2.0, chosen a
+            weak cipher suite like <code>SSL_RSA_WITH_NULL_MD5</code>,
+            or presented a weak certificate (for instance, one which doesn't
+            meet the
+            <a href="https://cabforum.org/baseline-requirements-documents/">CA/B
+            forum's baseline requirements</a>).
           </li>
         </ol>
       </li>
       <li>Return <strong>allowed</strong>.</li>
     </ol>
-
-    Issue: Does step 4.1 do enough to cover a response generated by a Service
-    Worker? We accept <code>blob:</code> and similar, should we accept content
-    synthesized into a Response object?
 
     Issue: Should we discuss mixed-pinning?
   </section>
@@ -610,8 +648,8 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
   When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a><em>a priori</em> unsecured origins</a>, and at the bottom of
-  the algorithm, to block responses from <a><em>a posteriori</em> unsecured
+  traffic to <a><em>a priori</em> insecure origins</a>, and at the bottom of
+  the algorithm, to block responses from <a><em>a posteriori</em> insecure
   origins</a>.
   
   The Fetch algorithm MUST be updated as follows: [[!FETCH]]
@@ -683,9 +721,10 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
       <ol>
         <li>
-          If <var>secure</var> is false, but the <a>browsing context</a> which
-          the <var>entry script</var> is associated with is a <a>secure browsing
-          context</a>, then throw a <code>SecurityError</code> exception.
+          If <var>secure</var> is <strong>false</strong>, but the <a>browsing
+          context</a> which the <var>entry script</var> is associated with is a
+          <a>secure browsing context</a>, then throw a
+          <code>SecurityError</code> exception.
         </li>
       </ol>
     </li>
@@ -705,4 +744,13 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       </ol>
     </li>
   </ul>
+</section>
+
+<section>
+  <h2 id="acknowledgements">Acknowledgements</h2>
+
+  This specification does not invent new behaviors, attempting instead to
+  document and rationalize existing behaviors. Everything covered here
+  has appeared in one or more user agents over the years: Internet Explorer led
+  the way, blocking mixed active content since at least version 6.
 </section>
