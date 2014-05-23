@@ -83,6 +83,10 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       not be <a>TLS-protected</a> before actually requesting the resource. For
       example, <a>origins</a> whose scheme component is "HTTP" or "WS" fall
       into this category.
+
+      Note: The mixed content checks will take place <em>after</em> Strict
+      Transport Security is applied to resource URLs, which should simplify
+      <em>a priori</em> determination of insecurity. [[RFC6797]]
     </dd>
 
     <dt>
@@ -677,6 +681,9 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
           </ol>
         </li>
       </ol>
+
+      Note: Hooking into Fetch here ensures that we catch not only the initial
+      request, but all redirects as well. That is certainly the intent.
     </li>
     <li>
       After <a href="http://fetch.spec.whatwg.org/#concept-fetch">step 9 of the
@@ -687,7 +694,6 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
           Let <var>client</var> be <var>request</var>'s <code>client</code>.
         </li>
         <li>
-
           If the <a href="#should-block-response">Should <var>response</var>
           for <var>client</var> be blocked as mixed content?</a> algorithm
           returns <strong><code>blocked</code></strong>:
@@ -695,12 +701,16 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
           <ol>
             <li>Set <var>response</var> to a <a>network error</a>.</li>
           </ol>
+
+        </li>
       </ol>
+
+      Note: This hook is necessary to detect resources modified or
+      synthesized by a ServiceWorker, as well as to determine whether a
+      resource is <a>a posteriori insecure</a> See steps 4.1 and 4.2 of
+      the <a section href="#should-block-response"></a> algorithm for detail.
     </li>
   </ul>
-
-  Note: Hooking into Fetch in this way ensures that we catch not only the
-  initial request, but all redirects as well. That is certainly the intent.
 </section>
 
 <section>

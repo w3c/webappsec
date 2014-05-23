@@ -187,7 +187,11 @@ Parts of this work may be from an existing specification document.  If so, those
       not be <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a> before actually requesting the resource. For
       example, <a data-link-type=dfn href=#origin title=origins>origins</a> whose scheme component is "HTTP" or "WS" fall
       into this category.
-    </dd>
+
+<p class=note>Note: The mixed content checks will take place <em>after</em> Strict
+      Transport Security is applied to resource URLs, which should simplify
+      <em>a priori</em> determination of insecurity. <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6797 title=biblio-rfc6797>[RFC6797]</a>
+    </dd><p></p>
 
     <dt>
       <dfn data-dfn-type=dfn data-export="" id=a-posteriori-insecure-origin title="a posteriori insecure origin|a posteriori insecure|a posteriori">
@@ -781,30 +785,39 @@ Parts of this work may be from an existing specification document.  If so, those
           </ol>
         </li>
       </ol>
+
+<p class=note>Note: Hooking into Fetch here ensures that we catch not only the initial
+      request, but all redirects as well. That is certainly the intent.
     </li>
     <li>
       After <a href=http://fetch.spec.whatwg.org/#concept-fetch>step 9 of the
-      current Fetch algorithm</a>, perform the following steps:
+      current Fetch algorithm</a>, perform the following steps:<p></p>
 
       <ol>
         <li>
           Let <var>client</var> be <var>request</var>’s <code>client</code>.
         </li>
         <li>
-
-<p>If the <a href=#should-block-response>Should <var>response</var>
+          If the <a href=#should-block-response>Should <var>response</var>
           for <var>client</var> be blocked as mixed content?</a> algorithm
-          returns <strong><code>blocked</code></strong>:</p>
+          returns <strong><code>blocked</code></strong>:
 
           <ol>
             <li>Set <var>response</var> to a <a data-link-type=dfn href=#network-error title="network error">network error</a>.</li>
           </ol>
+
+        </li>
       </ol>
+
+<p class=note>Note: This hook is necessary to detect resources modified or
+      synthesized by a ServiceWorker, as well as to determine whether a
+      resource is <a data-link-type=dfn href=#a-posteriori-insecure-origin title="a posteriori insecure">a posteriori insecure</a> See steps 4.1 and 4.2 of
+      the <a data-section="" href=#should-block-response>
+      Should response for client be blocked as mixed
+      content?
+    </a> algorithm for detail.
     </li>
   </ul>
-
-<p class=note>Note: Hooking into Fetch in this way ensures that we catch not only the
-  initial request, but all redirects as well. That is certainly the intent.
 </section><p></p>
 
 <section>
