@@ -70,45 +70,42 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     </dt>
     <dd>
       A resource is said to be <strong>mixed content</strong> if its origin is
-      <a><em>a priori</em></a> or <a><em>a posteriori</em> insecure</a>,
-      <strong>and</strong> the <a>browsing context</a> into which it is loaded
-      is a <a>secure browsing context</a>.
+      <a>assumed</a> or <a>proven</a> to be insecure, <strong>and</strong> the
+      <a>browsing context</a> into which it is loaded is a <a>secure browsing
+      context</a>.
     </dd>
 
     <dt>
-      <dfn export title="a priori insecure origin|a priori insecure|a priori">
-        <em>a priori</em> insecure origin
+      <dfn export title="assumed insecure origin|assumed insecure|assumed">
+        assumed insecure origin
       </dfn>
     </dt>
     <dd>
-      An origin is said to be <strong><em>a priori</em> insecure</strong> if
-      the user agent can determine that resources loaded from that origin will
-      not be <a>TLS-protected</a> before actually requesting the resource. For
-      example, <a>origins</a> whose scheme component is "HTTP" or "WS" fall
-      into this category.
+      An <a>origin</a> is said to be <strong>assumed insecure</strong> if the
+      user agent can determine that resources loaded from that origin will not
+      be <a>TLS-protected</a> before actually requesting the resource. For
+      example, origins whose scheme component is "HTTP" or "WS" fall into this
+      category.
 
       Note: The mixed content checks will take place <em>after</em> Strict
       Transport Security is applied to resource URLs, which should simplify
-      <em>a priori</em> determination of insecurity. [[RFC6797]]
+      assumptions of insecurity. [[RFC6797]]
     </dd>
 
     <dt>
-      <dfn export title="a posteriori insecure origin|a posteriori insecure|a posteriori">
-        <em>a posteriori</em> insecure origin
+      <dfn export title="proven insecure origin|proven insecure|proven">
+        proven insecure origin
       </dfn>
     </dt>
     <dd>
-      An origin is said to be <strong><em>a posteriori</em> insecure</strong>
-      if the user agent can determine that resources loaded from that origin
-      will not be <a>TLS-protected</a> only after sending a request out over
-      the network. For example, an <a>origin</a> whose scheme component is
-      "HTTPS", but whose server presents an invalid certificate, or negotiates
-      an ineffective encryption algorithm.
+      An origin is said to be <strong>proven insecure</strong> if the user
+      agent determines that resources loaded from that origin are not
+      <a>TLS-protected</a> only after sending a request out over the network.
+      For example, this would include an <a>origin</a> whose scheme component
+      is "HTTPS", but whose server presents an invalid certificate, or
+      negotiates an ineffective encryption algorithm.
     </dd>
   </dl>
-
-  Issue: Is using both <em>a priori</em> and <em>a posteriori</em> in the same
-  specification too Kantian? I say never! Others may disagree.
 
   <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
   <dl>
@@ -406,16 +403,16 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     <ol>
       <li>
         <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
-        resources from an <a><em>a priori</em> insecure origin</a> MUST not
-        generate network traffic, and MUST instead return a synthetically
-        generated <a>network error</a> response.
+        resources from an <a>assumed insecure origin</a> MUST not generate
+        network traffic, and MUST instead return a synthetically generated
+        <a>network error</a> response.
       </li>
 
       <li>
         <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
-        resources from an <a><em>a posteriori</em> insecure origin</a> MUST not
-        be delivered to the requesting <a interface>Document</a>, but instead
-        MUST return a synthetically generated <a>network error</a> response.
+        resources from an <a>proven insecure origin</a> MUST not be delivered to
+        the requesting <a interface>Document</a>, but instead MUST return a
+        synthetically generated <a>network error</a> response.
       </li>
 
       <li>
@@ -550,7 +547,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     User agents should entirely block requests to <a>active</a> mixed content;
     the Fetch specification will hook into this algorithm to determine whether a
     request should be entirely blocked (e.g. because the request would be used
-    as <a>active content</a>, and we know <em>a priori</em> that it won't be
+    as <a>active content</a>, and we can <em>assume</em> that it won't be
     loaded over a secure connection).
 
     Given a request's URL <var>url</var>, <a>request context</a>
@@ -604,7 +601,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     <a href="#should-block-fetch">If a request proceeds</a>, we still might want
     to block the response based on the state of the connection that generated
     the response (e.g. because the response would be used as <a>active
-    content</a>, but the server is <a><em>a posteriori</em> insecure</a>).
+    content</a>, but the server is <a>proven insecure</a>).
 
     Given a <a>response</a> <var>response</var>, and <a>request client</a>
     <var>client</var>, the user agent can determine what response should be
@@ -674,9 +671,8 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
   When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a><em>a priori</em> insecure origins</a>, and at the bottom of
-  the algorithm, to block responses from <a><em>a posteriori</em> insecure
-  origins</a>.
+  traffic to <a>assumed insecure origins</a>, and at the bottom of the
+  algorithm, to block responses from <a>proven insecure origins</a>.
   
   The Fetch algorithm MUST be updated as follows: [[!FETCH]]
 
@@ -729,8 +725,8 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
       Note: This hook is necessary to detect resources modified or
       synthesized by a ServiceWorker, as well as to determine whether a
-      resource is <a>a posteriori insecure</a> See steps 4.1 and 4.2 of
-      the <a section href="#should-block-response"></a> algorithm for detail.
+      resource is <a>proven insecure</a> See steps 4.1 and 4.2 of the
+      <a section href="#should-block-response"></a> algorithm for detail.
     </li>
   </ul>
 </section>
