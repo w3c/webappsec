@@ -79,6 +79,8 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       <dfn export title="assumed secure origin|assumed secure">
         assumed secure origin
       </dfn>
+    </dt>
+    <dt>
       <dfn export title="assumed insecure origin|assumed insecure|assumed">
         assumed insecure origin
       </dfn>
@@ -97,7 +99,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         </li>
         <li>
           The origin's host component matches the CIDR notations
-          <code>127.0.0.0/8</code> or <code>::1/128</code>.
+          <code>127.0.0.0/8</code> or <code>::1/128</code>. [[!RFC4632]]
         </li>
       </ul>
 
@@ -201,13 +203,13 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
   category based on it's <a>request context</a>, which is much simpler to
   exhaustively define.
 
-  Note: Fetch defines several <a>request contexts</a> that do not appear in
-  the following sections: <code>form</code>, <code>navigate</code>, and
+  Fetch defines several <a>request contexts</a> that do not appear in the
+  following sections: <code>form</code>, <code>navigate</code>, and
   <code>popup</code>. These <dfn>navigational request contexts</dfn> are
   navigations, not content, and will not be blocked as mixed content. User
-  agents are free treat one or more of these categories as <a>blockable
-  passive</a> content if they choose to do so: there are reasonable arguments
-  for restricting mixed form submissions, for example.
+  agents MAY treat one or more of these contexts as either <a>active</a> or
+  <a>blockable passive</a>content if they choose to do so: there are reasonable
+  arguments for restricting mixed form submissions, for example.
 
   <section>
     <h3 id="categories-active">Active Content</h3>
@@ -241,8 +243,9 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
     These resource types map to the following Fetch <a>request contexts</a>:
     <code>script</code>, <code>worker</code>, <code>sharedworker</code>,
-    <code>serviceworker</code>, <code>style</code>, <code>object</code>, and
-    <code>child</code>. These contexts are <dfn>active request contexts</dfn>.
+    <code>serviceworker</code>, <code>style</code>, <code>object</code>,
+    <code>manifest</code> and <code>child</code>. These contexts are
+    <dfn>active request contexts</dfn>.
 
     The contents of an <a element>iframe</a> are considered active content
     because same-origin frames can reach up into their <a>parent browsing
@@ -338,11 +341,16 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
           Beacon [[!BEACON]] and
           <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing">hyperlink auditing pings</a>
         </li>
+        <li>
+          <a href="http://www.w3.org/TR/html5/links.html#link-type-prefetch">Prefetched</a>
+          content
+        </li>
       </ul>
 
       These resource types map to the following Fetch <a>request contexts</a>:
-      <code>image</code>, <code>media</code>, and <code>ping</code>.
-      These contexts are <dfn>optionally blockable passive request contexts</dfn>.
+      <code>image</code>, <code>media</code>, <code>prefetch</code> and
+      <code>ping</code>. These contexts are <dfn>optionally blockable passive
+      request contexts</dfn>.
       
       Note: The fact that these resource types are on the "optionally blockable"
       list does not mean that they are <em>safe</em>, simply that they're less
@@ -592,10 +600,6 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         Return <strong>allowed</strong>.
       </li>
     </ol>
-
-    Issue: This doesn't currently process resources loaded via
-    <code>&lt;link rel="subresource" ...&gt;</code> or
-    <code>Link: ...; prefetch</code>. Perhaps we should?
   </section>
 
   <section>

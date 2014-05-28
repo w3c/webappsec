@@ -50,14 +50,14 @@
   <p data-fill-with=logo></p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140526>26 May 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140528>28 May 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=http://projects.mikewest.org/webappsec/specs/mixedcontent/>http://projects.mikewest.org/webappsec/specs/mixedcontent/</a><dt>Editor’s Draft:<dd><a href=http://projects.mikewest.org/webappsec/specs/mixedcontent/>http://projects.mikewest.org/webappsec/specs/mixedcontent/</a><dt>Test Suite:<dd>None Yet<dt>Editors:
 <dd class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)</dl></div>
   <div data-fill-with=warning></div>
   <p class=copyright data-fill-with=copyright><a href=http://creativecommons.org/publicdomain/zero/1.0/ rel=license><img alt=CC0 src=https://i.creativecommons.org/p/zero/1.0/80x15.png></a>
 To the extent possible under law, the editors have waived all copyright 
 and related or neighboring rights to this work. 
-In addition, as of 26 May 2014, 
+In addition, as of 28 May 2014, 
 the editors have made this specification available under the
 <a href=http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0 rel=license>Open Web Foundation Agreement Version 1.0</a>,
 which is available at http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0.
@@ -174,22 +174,47 @@ Parts of this work may be from an existing specification document.  If so, those
     </dt>
     <dd>
       A resource is said to be <strong>mixed content</strong> if its origin is
-      <a data-link-type=dfn href=#assumed-insecure-origin title=assumed>assumed</a> or <a data-link-type=dfn href=#proven-insecure-origin title=proven>proven</a> to be insecure, <strong>and</strong> the
-      <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> into which it is loaded is a <a data-link-type=dfn href=#secure-browsing-context title="secure browsing context">secure browsing
-      context</a>.
+      <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure">assumed insecure</a> or <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure">proven insecure</a>, <strong>and</strong>
+      the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> into which it is loaded is a <a data-link-type=dfn href=#secure-browsing-context title="secure browsing context">secure
+      browsing context</a>.
     </dd>
 
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" id=assumed-secure-origin title="assumed secure origin|assumed secure">
+        assumed secure origin
+      <a class=self-link href=#assumed-secure-origin></a></dfn>
+    </dt>
     <dt>
       <dfn data-dfn-type=dfn data-export="" id=assumed-insecure-origin title="assumed insecure origin|assumed insecure|assumed">
         assumed insecure origin
       <a class=self-link href=#assumed-insecure-origin></a></dfn>
     </dt>
     <dd>
-      An <a data-link-type=dfn href=#origin title=origin>origin</a> is said to be <strong>assumed insecure</strong> if the
-      user agent can determine that resources loaded from that origin will not
-      be <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a> before actually requesting the resource. For
-      example, origins whose scheme component is "HTTP" or "WS" fall into this
-      category.
+      An <a data-link-type=dfn href=#origin title=origin>origin</a> is said to be <strong>assumed secure</strong> if one or
+      more of the following is true:
+
+      <ul>
+        <li>
+          The origin’s scheme component is <code>HTTPS</code> or
+          <code>WSS</code>, <code>file</code>.
+        </li>
+        <li>
+          The origin’s host component is <code>localhost</code>.
+        </li>
+        <li>
+          The origin’s host component matches the CIDR notations
+          <code>127.0.0.0/8</code> or <code>::1/128</code>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=biblio-rfc4632>[RFC4632]</a>
+        </li>
+      </ul>
+
+<p class=note>Note: `file://*` is considered secure as no traffic is sent across the
+      network. The loopback addresses <code>localhost</code>,
+      <code>127.0.0.1</code> and so on are secure for the same reason. If a user
+      agent supports other such URLs (Chrome’s "chrome-extension:" scheme, for
+      instance), they may also be considered secure.</p>
+
+<p>Any <a data-link-type=dfn href=#origin title=origin>origin</a> which does not meet one of the requirements above is
+      said to be <strong>assumed insecure</strong>.</p>
 
 <p class=note>Note: The mixed content checks will take place <em>after</em> Strict
       Transport Security is applied to resource URLs, which should simplify
@@ -282,13 +307,13 @@ Parts of this work may be from an existing specification document.  If so, those
   category based on it’s <a data-link-type=dfn href=#request-context title="request context">request context</a>, which is much simpler to
   exhaustively define.</p>
 
-<p class=note>Note: Fetch defines several <a data-link-type=dfn href=#request-context title="request contexts">request contexts</a> that do not appear in
-  the following sections: <code>form</code>, <code>navigate</code>, and
+<p>Fetch defines several <a data-link-type=dfn href=#request-context title="request contexts">request contexts</a> that do not appear in the
+  following sections: <code>form</code>, <code>navigate</code>, and
   <code>popup</code>. These <dfn data-dfn-type=dfn data-noexport="" id=navigational-request-contexts>navigational request contexts<a class=self-link href=#navigational-request-contexts></a></dfn> are
   navigations, not content, and will not be blocked as mixed content. User
-  agents are free treat one or more of these categories as <a data-link-type=dfn href=#blockable-passive-content title="blockable passive">blockable
-  passive</a> content if they choose to do so: there are reasonable arguments
-  for restricting mixed form submissions, for example.</p>
+  agents MAY treat one or more of these contexts as either <a data-link-type=dfn href=#active-content title=active>active</a> or
+  <a data-link-type=dfn href=#blockable-passive-content title="blockable passive">blockable passive</a>content if they choose to do so: there are reasonable
+  arguments for restricting mixed form submissions, for example.</p>
 
   <section>
     <h3 class="heading settled heading" data-level=3.1 id=categories-active><span class=secno>3.1 </span><span class=content>Active Content</span><a class=self-link href=#categories-active></a></h3>
@@ -322,8 +347,9 @@ Parts of this work may be from an existing specification document.  If so, those
 
 <p>These resource types map to the following Fetch <a data-link-type=dfn href=#request-context title="request contexts">request contexts</a>:
     <code>script</code>, <code>worker</code>, <code>sharedworker</code>,
-    <code>serviceworker</code>, <code>style</code>, <code>object</code>, and
-    <code>child</code>. These contexts are <dfn data-dfn-type=dfn data-noexport="" id=active-request-contexts>active request contexts<a class=self-link href=#active-request-contexts></a></dfn>.</p>
+    <code>serviceworker</code>, <code>style</code>, <code>object</code>,
+    <code>manifest</code> and <code>child</code>. These contexts are
+    <dfn data-dfn-type=dfn data-noexport="" id=active-request-contexts>active request contexts<a class=self-link href=#active-request-contexts></a></dfn>.</p>
 
 <p>The contents of an <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-iframe-element title=iframe>iframe</a> are considered active content
     because same-origin frames can reach up into their <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#parent-browsing-context title="parent browsing context">parent browsing
@@ -341,6 +367,10 @@ Parts of this work may be from an existing specification document.  If so, those
     for instance), and modal prompts like <code>window.prompt()</code> can
     confuse users. These risks exist even with secure iframes, but attackers
     can more easily inject malicious code into innocent but insecure iframes.</p>
+
+<p class=issue id=issue-967b8a81><a class=self-link href=#issue-967b8a81></a>Should form submissions to an insecure origin be considered active
+    content? I suspect they should, though I’m not sure we can get away with
+    it in a web-compatible way.</p>
   </section>
 
   <section>
@@ -415,11 +445,16 @@ Parts of this work may be from an existing specification document.  If so, those
           Beacon <a data-biblio-type=normative data-link-type=biblio href=#biblio-beacon title=biblio-beacon>[BEACON]</a> and
           <a href=http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing>hyperlink auditing pings</a>
         </li>
+        <li>
+          <a href=http://www.w3.org/TR/html5/links.html#link-type-prefetch>Prefetched</a>
+          content
+        </li>
       </ul>
 
 <p>These resource types map to the following Fetch <a data-link-type=dfn href=#request-context title="request contexts">request contexts</a>:
-      <code>image</code>, <code>media</code>, and <code>ping</code>.
-      These contexts are <dfn data-dfn-type=dfn data-noexport="" id=optionally-blockable-passive-request-contexts>optionally blockable passive request contexts<a class=self-link href=#optionally-blockable-passive-request-contexts></a></dfn>.</p>
+      <code>image</code>, <code>media</code>, <code>prefetch</code> and
+      <code>ping</code>. These contexts are <dfn data-dfn-type=dfn data-noexport="" id=optionally-blockable-passive-request-contexts>optionally blockable passive
+      request contexts<a class=self-link href=#optionally-blockable-passive-request-contexts></a></dfn>.</p>
 
 <p class=note>Note: The fact that these resource types are on the "optionally blockable"
       list does not mean that they are <em>safe</em>, simply that they’re less
@@ -669,10 +704,6 @@ Parts of this work may be from an existing specification document.  If so, those
         Return <strong>allowed</strong>.
       </li>
     </ol>
-
-<p class=issue id=issue-9a86d6f9><a class=self-link href=#issue-9a86d6f9></a>This doesn’t currently process resources loaded via
-    <code>&lt;link rel="subresource" ...&gt;</code> or
-    <code>Link: ...; prefetch</code>. Perhaps we should?</p>
   </section>
 
   <section>
@@ -885,6 +916,7 @@ Normative References</span><a class=self-link href=#normative></a></h3>
 <dt id=biblio-html-imports title=HTML-IMPORTS><a class=self-link href=#biblio-html-imports></a>[HTML-IMPORTS]<dd>Dmitri Glazkov; Hajime Morrita. <a href=http://www.w3.org/TR/html-imports/>HTML Imports</a>. WD. URL: <a href=http://www.w3.org/TR/html-imports/>http://www.w3.org/TR/html-imports/</a></dd>
 <dt id=biblio-html5 title=HTML5><a class=self-link href=#biblio-html5></a>[HTML5]<dd>Robin Berjon; et al. <a href=http://www.w3.org/TR/2013/CR-html5-20130806/>HTML5</a>. 6 August 2013. W3C Candidate Recommendation. (Work in progress.) URL: <a href=http://www.w3.org/TR/2013/CR-html5-20130806/>http://www.w3.org/TR/2013/CR-html5-20130806/</a></dd>
 <dt id=biblio-manifest title=MANIFEST><a class=self-link href=#biblio-manifest></a>[MANIFEST]<dd>Marcos Caceres; Anssi Kostiainen; Kenneth Rohde Christiansen. <a href=http://w3c.github.io/manifest/>Manifest for web application</a>. WD. URL: <a href=http://w3c.github.io/manifest/>http://w3c.github.io/manifest/</a></dd>
+<dt id=biblio-rfc4632 title=RFC4632><a class=self-link href=#biblio-rfc4632></a>[RFC4632]<dd>Vince Fuller; Tony Li. <a href=http://www.ietf.org/rfc/rfc4632.txt>Classless Inter-domain Routing (CIDR): The Internet Address Assignment and Aggregation Plan</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc4632.txt>http://www.ietf.org/rfc/rfc4632.txt</a></dd>
 <dt id=biblio-rfc6454 title=RFC6454><a class=self-link href=#biblio-rfc6454></a>[RFC6454]<dd>Adam Barth. <a href=http://www.ietf.org/rfc/rfc6454.txt>The Web Origin Concept</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6454.txt>http://www.ietf.org/rfc/rfc6454.txt</a></dd>
 <dt id=biblio-serviceworkers title=SERVICEWORKERS><a class=self-link href=#biblio-serviceworkers></a>[SERVICEWORKERS]<dd>Alex Russell; Jungkee Song. <a href=http://www.w3.org/TR/service-workers/>Service Workers</a>. WD. URL: <a href=http://www.w3.org/TR/service-workers/>http://www.w3.org/TR/service-workers/</a></dd>
 <dt id=biblio-svg2 title=SVG2><a class=self-link href=#biblio-svg2></a>[SVG2]<dd>Nikos Andronikos; et al. <a href=http://www.w3.org/TR/2013/WD-SVG2-20130618/>Scalable Vector Graphics (SVG) 2</a>. 18 June 2013. W3C Working Draft. (Work in progress.) URL: <a href=http://www.w3.org/TR/2013/WD-SVG2-20130618/>http://www.w3.org/TR/2013/WD-SVG2-20130618/</a></dd>
@@ -912,6 +944,8 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>assumed, <a href=#assumed-insecure-origin title="section 2.1">2.1</a>
 <li>assumed insecure, <a href=#assumed-insecure-origin title="section 2.1">2.1</a>
 <li>assumed insecure origin, <a href=#assumed-insecure-origin title="section 2.1">2.1</a>
+<li>assumed secure, <a href=#assumed-secure-origin title="section 2.1">2.1</a>
+<li>assumed secure origin, <a href=#assumed-secure-origin title="section 2.1">2.1</a>
 <li>blockable, <a href=#blockable-passive-content title="section 3.2.2">3.2.2</a>
 <li>blockable passive, <a href=#blockable-passive-content title="section 3.2.2">3.2.2</a>
 <li>blockable passive content, <a href=#blockable-passive-content title="section 3.2.2">3.2.2</a>
@@ -927,7 +961,8 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>optionally blockable, <a href=#optionally-blockable-passive-content title="section 3.2.1">3.2.1</a>
 <li>optionally blockable passive, <a href=#optionally-blockable-passive-content title="section 3.2.1">3.2.1</a>
 <li>optionally blockable passive content, <a href=#optionally-blockable-passive-content title="section 3.2.1">3.2.1</a>
-<li>optionally blockable passive request contexts, <a href=#optionally-blockable-passive-request-contexts title="section 3.2.1">3.2.1</a>
+<li>optionally blockable passive
+      request contexts, <a href=#optionally-blockable-passive-request-contexts title="section 3.2.1">3.2.1</a>
 <li>origin, <a href=#origin title="section 2.2">2.2</a>
 <li>passive, <a href=#passive-content title="section 3.2">3.2</a>
 <li>passive content, <a href=#passive-content title="section 3.2">3.2</a>
@@ -950,9 +985,9 @@ Property index</span><a class=self-link href=#property-index></a></h2>
 
 
 <h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style="counter-reset: issue"><div class=issue>Are these reasonable definitions that we want to run with?<a href=#issue-3c75cc41> ↵ </a></div>
-    <div class=issue>This doesn’t currently process resources loaded via
-    <code>&lt;link rel="subresource" ...&gt;</code> or
-    <code>Link: ...; prefetch</code>. Perhaps we should?<a href=#issue-9a86d6f9> ↵ </a></div>
+    <div class=issue>Should form submissions to an insecure origin be considered active
+    content? I suspect they should, though I’m not sure we can get away with
+    it in a web-compatible way.<a href=#issue-967b8a81> ↵ </a></div>
   <div class=issue>This is intended to cover cases in which a ServiceWorker
             responds to a request with an insecure resource. It’s not clear
             that this is the correct place to do that, however, as the
