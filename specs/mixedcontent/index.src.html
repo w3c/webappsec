@@ -70,22 +70,45 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     </dt>
     <dd>
       A resource is said to be <strong>mixed content</strong> if its origin is
-      <a>assumed</a> or <a>proven</a> to be insecure, <strong>and</strong> the
-      <a>browsing context</a> into which it is loaded is a <a>secure browsing
-      context</a>.
+      <a>assumed insecure</a> or <a>proven insecure</a>, <strong>and</strong>
+      the <a>browsing context</a> into which it is loaded is a <a>secure
+      browsing context</a>.
     </dd>
 
     <dt>
+      <dfn export title="assumed secure origin|assumed secure">
+        assumed secure origin
+      </dfn>
       <dfn export title="assumed insecure origin|assumed insecure|assumed">
         assumed insecure origin
       </dfn>
     </dt>
     <dd>
-      An <a>origin</a> is said to be <strong>assumed insecure</strong> if the
-      user agent can determine that resources loaded from that origin will not
-      be <a>TLS-protected</a> before actually requesting the resource. For
-      example, origins whose scheme component is "HTTP" or "WS" fall into this
-      category.
+      An <a>origin</a> is said to be <strong>assumed secure</strong> if one or
+      more of the following is true:
+
+      <ul>
+        <li>
+          The origin's scheme component is <code>HTTPS</code> or
+          <code>WSS</code>, <code>file</code>.
+        </li>
+        <li>
+          The origin's host component is <code>localhost</code>.
+        </li>
+        <li>
+          The origin's host component matches the CIDR notations
+          <code>127.0.0.0/8</code> or <code>::1/128</code>.
+        </li>
+      </ul>
+
+      Note: `file://*` is considered secure as no traffic is sent across the
+      network. The loopback addresses <code>localhost</code>,
+      <code>127.0.0.1</code> and so on are secure for the same reason. If a user
+      agent supports other such URLs (Chrome's "chrome-extension:" scheme, for
+      instance), they may also be considered secure.
+
+      Any <a>origin</a> which does not meet one of the requirements above is
+      said to be <strong>assumed insecure</strong>.
 
       Note: The mixed content checks will take place <em>after</em> Strict
       Transport Security is applied to resource URLs, which should simplify
@@ -237,6 +260,10 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     for instance), and modal prompts like <code>window.prompt()</code> can
     confuse users. These risks exist even with secure iframes, but attackers
     can more easily inject malicious code into innocent but insecure iframes.
+
+    Issue: Should form submissions to an insecure origin be considered active
+    content? I suspect they should, though I'm not sure we can get away with
+    it in a web-compatible way.
   </section>
 
   <section>
