@@ -146,6 +146,22 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       is "HTTPS", but whose server presents an invalid certificate, or
       negotiates an ineffective encryption algorithm.
     </dd>
+    
+    <dt>
+      <dfn export title="disqualified TLS-protection|disqualified">
+        disqualified TLS-protection
+      </dfn>
+    </dt>
+    <dd>
+      A resource's TLS-protection is said to be <strong>disqualified</strong>
+      if it is not <a>weakly TLS-protected</a>, but the user agent choose to
+      refuse it anyway. This definition is vendor-specific, and might include
+      situations in which the server presented a certificate for an intranet
+      name, or a certificate with an overly-long validity period, or which
+      otherwise fails to meet the
+      <a href="https://cabforum.org/baseline-requirements-documents/">CA/B
+      forum's baseline requirements</a>.
+    </dd>
   </dl>
 
   <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
@@ -712,12 +728,27 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
             Note: This covers cases in which the TLS handshake for a resource
             request succeeded, but failed to agree upon a configuration that
             the user agent considers secure. For instance, the server might
-            have negotiated down to an insecure protocol like SSL 2.0, chosen a
-            weak cipher suite like <code>SSL_RSA_WITH_NULL_MD5</code>,
-            or presented a weak certificate (for instance, one which doesn't
-            meet the
+            have negotiated down to an insecure protocol like SSL 2.0 or chosen a
+            weak cipher suite like <code>SSL_RSA_WITH_NULL_MD5</code>.
+            
+            Note: Some user agents treat <a>weakly TLS-protected</a> resources
+            as network errors by failing the connection entirely (or presenting
+            the user with an interstitial to click through before gaining access
+            to the resource. In that case, we'd never hit this step, because the
+            Fetch algorithm would have received a network error in step 6.
+          </li>
+          <li>
+            If the response's TLS-protection is <a>disqualified</a>, return
+            <strong>blocked</strong>.
+            
+            Note: This covers cases in which the TLS handshake succeeds, and the
+            resource exceeds the definition of <a>weakly TLS-protected</a>, but
+            the user agent chooses to hold it to a higher standard. For instance,
+            the server might have presented a certificate for an intranet name,
+            with an overly-long validity period, or which otherwise fails to meet
+            the
             <a href="https://cabforum.org/baseline-requirements-documents/">CA/B
-            forum's baseline requirements</a>).
+            forum's baseline requirements</a>
           </li>
         </ol>
       </li>
@@ -849,8 +880,8 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       <ol>
         <li>
           If secure is <strong>true</strong>, and the TLS handshake performed
-          in step 5 results in a <a>weakly TLS-protected</a> connection, then
-          the client MUST
+          in step 5 results in a <a>weakly TLS-protected</a> connection, or the
+          TLS-protection is <a>disqualified</a>,then the client MUST
           <a href="http://tools.ietf.org/html/rfc6455#section-7.1.7">Fail the
           WebSocket Connection</a> and abort the connection.
         </li>
