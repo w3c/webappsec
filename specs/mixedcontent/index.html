@@ -50,14 +50,14 @@
   <p data-fill-with=logo></p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140528>28 May 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140530>30 May 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=http://projects.mikewest.org/webappsec/specs/mixedcontent/>http://projects.mikewest.org/webappsec/specs/mixedcontent/</a><dt>Editor’s Draft:<dd><a href=http://projects.mikewest.org/webappsec/specs/mixedcontent/>http://projects.mikewest.org/webappsec/specs/mixedcontent/</a><dt>Test Suite:<dd>None Yet<dt>Editors:
 <dd class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)</dl></div>
   <div data-fill-with=warning></div>
   <p class=copyright data-fill-with=copyright><a href=http://creativecommons.org/publicdomain/zero/1.0/ rel=license><img alt=CC0 src=https://i.creativecommons.org/p/zero/1.0/80x15.png></a>
 To the extent possible under law, the editors have waived all copyright 
 and related or neighboring rights to this work. 
-In addition, as of 28 May 2014, 
+In addition, as of 30 May 2014, 
 the editors have made this specification available under the
 <a href=http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0 rel=license>Open Web Foundation Agreement Version 1.0</a>,
 which is available at http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0.
@@ -184,26 +184,25 @@ Parts of this work may be from an existing specification document.  If so, those
         assumed secure origin
       <a class=self-link href=#assumed-secure-origin></a></dfn>
     </dt>
-    <dt>
-      <dfn data-dfn-type=dfn data-export="" id=assumed-insecure-origin title="assumed insecure origin|assumed insecure|assumed">
-        assumed insecure origin
-      <a class=self-link href=#assumed-insecure-origin></a></dfn>
-    </dt>
     <dd>
       An <a data-link-type=dfn href=#origin title=origin>origin</a> is said to be <strong>assumed secure</strong> if one or
       more of the following is true:
 
       <ul>
         <li>
-          The origin’s scheme component is <code>HTTPS</code> or
-          <code>WSS</code>, <code>file</code>.
+          The origin’s scheme component is one of <code>HTTPS</code>,
+          <code>WSS</code>, or <code>file</code>.
         </li>
         <li>
           The origin’s host component is <code>localhost</code>.
         </li>
         <li>
-          The origin’s host component matches the CIDR notations
+          The origin’s host component matches one of the CIDR notations
           <code>127.0.0.0/8</code> or <code>::1/128</code>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=biblio-rfc4632>[RFC4632]</a>
+        </li>
+        <li>
+          The origin is a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a> (for example,
+          a <code>blob</code> URL).
         </li>
       </ul>
 
@@ -213,12 +212,19 @@ Parts of this work may be from an existing specification document.  If so, those
       agent supports other such URLs (Chrome’s "chrome-extension:" scheme, for
       instance), they may also be considered secure.</p>
 
-<p>Any <a data-link-type=dfn href=#origin title=origin>origin</a> which does not meet one of the requirements above is
-      said to be <strong>assumed insecure</strong>.</p>
-
 <p class=note>Note: The mixed content checks will take place <em>after</em> Strict
       Transport Security is applied to resource URLs, which should simplify
       assumptions of insecurity. <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6797 title=biblio-rfc6797>[RFC6797]</a></p>
+    </dd>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" id=assumed-insecure-origin title="assumed insecure origin|assumed insecure|assumed">
+        assumed insecure origin
+      <a class=self-link href=#assumed-insecure-origin></a></dfn>
+    </dt>
+    <dd>
+      Any <a data-link-type=dfn href=#origin title=origin>origin</a> which is not <a data-link-type=dfn href=#assumed-secure-origin title="assumed secure">assumed secure</a> is said to be
+      <strong>assumed insecure</strong>.
     </dd>
 
     <dt>
@@ -230,9 +236,28 @@ Parts of this work may be from an existing specification document.  If so, those
       An origin is said to be <strong>proven insecure</strong> if the user
       agent determines that resources loaded from that origin are not
       <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a> only after sending a request out over the network.
-      For example, this would include an <a data-link-type=dfn href=#origin title=origin>origin</a> whose scheme component
-      is "HTTPS", but whose server presents an invalid certificate, or
-      negotiates an ineffective encryption algorithm.
+
+<p>This includes origins which are either <a data-link-type=dfn href=#weakly-tls-protected title="weakly tls-protected">weakly TLS-protected</a> or
+      whose TLS-protection is <a data-link-type=dfn href=#deprecated-tls-protection title=deprecated>deprecated</a>.</p>
+    </dd>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" id=deprecated-tls-protection title="deprecated TLS-protection|deprecated">
+        deprecated TLS-protection
+      <a class=self-link href=#deprecated-tls-protection></a></dfn>
+    </dt>
+    <dd>
+      A resource’s TLS-protection is said to be <strong>deprecated</strong>
+      if it is not <a data-link-type=dfn href=#weakly-tls-protected title="weakly tls-protected">weakly TLS-protected</a>, but the user agent chooses to
+      refuse it anyway. This determination is vendor-specific.
+
+<p>For example, a user agent may choose to reject resources for which the
+      server presented a publicly-trusted certificate for an intranet name
+      (e.g. <code>https://intranet/</code>), a certificate with an overly-long
+      validity period, a certificate signed with SHA-1, or a certificate which
+      otherwise fails to meet the
+      <a href=https://cabforum.org/baseline-requirements-documents/>
+      CA/Browser Forum’s Baseline Requirements</a>.</p>
     </dd>
   </dl>
 
@@ -250,8 +275,6 @@ Parts of this work may be from an existing specification document.  If so, those
       These terms are defined in
       <a href=http://www.w3.org/TR/2010/REC-wsc-ui-20100812/#typesoftls>Section
       5.2 of "Web Security Context: User Interface Guidelines"</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-wsc-ui title=biblio-wsc-ui>[WSC-UI]</a>.
-
-<p class=issue id=issue-3c75cc41><a class=self-link href=#issue-3c75cc41></a>Are these reasonable definitions that we want to run with?</p>
     </dd>
 
     <dt><dfn data-dfn-type=dfn data-noexport="" id=origin>origin<a class=self-link href=#origin></a></dfn></dt>
@@ -298,6 +321,7 @@ Parts of this work may be from an existing specification document.  If so, those
   </dl>
 </section>
 
+
 <section>
   <h2 class="heading settled heading" data-level=3 id=categories><span class=secno>3 </span><span class=content>Categories of Content</span><a class=self-link href=#categories></a></h2>
 
@@ -312,7 +336,7 @@ Parts of this work may be from an existing specification document.  If so, those
   <code>popup</code>. These <dfn data-dfn-type=dfn data-noexport="" id=navigational-request-contexts>navigational request contexts<a class=self-link href=#navigational-request-contexts></a></dfn> are
   navigations, not content, and will not be blocked as mixed content. User
   agents MAY treat one or more of these contexts as either <a data-link-type=dfn href=#active-content title=active>active</a> or
-  <a data-link-type=dfn href=#blockable-passive-content title="blockable passive">blockable passive</a>content if they choose to do so: there are reasonable
+  <a data-link-type=dfn href=#blockable-passive-content title="blockable passive">blockable passive</a> content if they choose to do so: there are reasonable
   arguments for restricting mixed form submissions, for example.</p>
 
   <section>
@@ -409,6 +433,10 @@ Parts of this work may be from an existing specification document.  If so, those
     the intent of moving towards a world where all <a data-link-type=dfn href=#mixed-content title=mixed>mixed</a> content is
     blocked; that is the end goal, but this is the best we can do for now.</p>
 
+<p class=issue id=issue-6fc1504b><a class=self-link href=#issue-6fc1504b></a>Should the presence of a form with an <a data-link-type=element-attr href=http://www.w3.org/html/wg/drafts/html/CR/forms.html#attr-fs-action title=action>action</a>
+    attribute representing an <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origin">assumed insecure origin</a> be considered
+    passive mixed content?</p>
+
     <section>
       <h4 class="heading settled heading" data-level=3.2.1 id=categories-passive-optionally-blockable><span class=secno>3.2.1 </span><span class=content>
         Optionally-blockable Passive Content
@@ -499,7 +527,7 @@ Parts of this work may be from an existing specification document.  If so, those
         <code>XMLHttpRequest</code>, <code>EventSource</code>, or
         <code>WebSockets</code>. While these communication mechanism are
         <em>technically</em> passive, developers very often use them to gather
-        data that effects program control flow (consider a missile silo UI
+        data that effects program control flow. Consider a missile silo UI
         that grabs JSON to determine whether to reveal the Big Red Launch Button:
 
         <pre>  {
@@ -519,6 +547,8 @@ Parts of this work may be from an existing specification document.  If so, those
     </section>
   </section>
 </section>
+
+
 <section>
   <h2 class="heading settled heading" data-level=4 id=requirements><span class=secno>4 </span><span class=content>User Agent Requirements</span><a class=self-link href=#requirements></a></h2>
 
@@ -609,6 +639,7 @@ Parts of this work may be from an existing specification document.  If so, those
   </section>
 </section>
 
+
 <section>
   <h2 class="heading settled heading" data-level=5 id=algorithms><span class=secno>5 </span><span class=content>Algorithms</span><a class=self-link href=#algorithms></a></h2>
 
@@ -616,25 +647,6 @@ Parts of this work may be from an existing specification document.  If so, those
     <h3 class="heading settled heading" data-level=5.1 id=categorize-document><span class=secno>5.1 </span><span class=content>
       Is <var>document</var> a secure browsing context?
     </span><a class=self-link href=#categorize-document></a></h3>
-
-<p>User agents MUST ensure that nested browsing contexts are checked against
-    the top-level parent context, as that is the context which controls the
-    user’s expectations regarding the security status of the resource she’s
-    loaded. The following nested-framing scenarios are interesting: </p>
-
-    <ol>
-      <li><code>http://a.com</code> frames <code>https://b.com</code>, which
-      loads <code>http://evil.com</code>. In this case, the insecure request
-      to <code>evil.com</code> MUST be blocked, as <code>b.com</code> was
-      loaded over a secure connection.</li>
-
-      <li><code>https://a.com</code> frames <code>http://b.com</code>, which
-      loads <code>http://evil.com</code>. In this case, the insecure request
-      to <code>evil.com</code> MUST not be allowed, as <code>a.com</code> was
-      loaded in a secure context (and, hopefully <em>cannot</em> happen, as
-      the <code>b.com</code> frame MUST not be loaded over an insecure channel
-      in the first place).</li>
-    </ol>
 
 <p>Given a <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> <var>document</var>, the user agent can
     determine if <var>document</var> is a <dfn data-dfn-type=dfn data-noexport="" id=secure-browsing-context>secure browsing context<a class=self-link href=#secure-browsing-context></a></dfn>
@@ -646,11 +658,6 @@ Parts of this work may be from an existing specification document.  If so, those
       <li>
         If <var>document</var> is <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, return
         <strong>true</strong>.
-      </li>
-      <li>
-        If the scheme component of <var>document</var>’s URL is of a type
-        designating a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a> (such as "blob" or
-        "data"), return <strong>true</strong>.
       </li>
       <li>
         If <var>document</var> is a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#nested-browsing-context title="nested browsing context">nested browsing context</a>:
@@ -665,6 +672,38 @@ Parts of this work may be from an existing specification document.  If so, those
 
       <li>Return <strong>false</strong>.</li>
     </ol>
+
+<p>If the document is framed, user agents need to check not only the document
+    itself, but also the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a> in which the
+    document is nested, as that is the context which controls the user’s
+    expectations regarding the security status of the resource she’s loaded.
+    For example:</p>
+
+    <div class=example>
+      <code>http://a.com</code> loads <code>http://evil.com</code>. The
+      insecure request will be allowed, as <code>a.com</code> was not loaded
+      over a secure connection.
+    </div>
+
+    <div class=example>
+      <code>https://a.com</code> loads <code>http://evil.com</code>. The
+      insecure request will be blocked, as <code>a.com</code> was loaded over
+      a secure connection.
+    </div>
+
+    <div class=example>
+      <code>http://a.com</code> frames <code>https://b.com</code>, which
+      loads <code>http://evil.com</code>. In this case, the insecure request
+      to <code>evil.com</code> will be blocked, as <code>b.com</code> was
+      loaded over a secure connection, even though <code>a.com</code> was not.
+    </div>
+
+    <div class=example>
+      <code>https://a.com</code> frames a <code>data:</code> URL, which loads
+      <code>http://evil.com</code>. In this case, the insecure request to
+      <code>evil.com</code> will be blocked, as <code>a.com</code> was loaded
+      over a secure connection, even though the framed data URL was not.
+    </div>
   </section>
 
   <section>
@@ -694,25 +733,23 @@ Parts of this work may be from an existing specification document.  If so, those
         <strong>allowed</strong>.
       </li>
       <li>
-        If the scheme component of <var>url</var> is "HTTPS", return
+        If <var>url</var> can be <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure">assumed insecure</a>:
+
+        <ol>
+          <li>
+            If <var>context</var> is an <a data-link-type=dfn href=#active-request-contexts title="active request context">active request context</a> or
+            <a data-link-type=dfn href=#blockable-passive-request-contexts title="blockable passive request context">blockable passive request context</a>, return
+            <strong>blocked</strong>.
+          </li>
+          <li>
+            If the user agent is configured to block <a data-link-type=dfn href=#optionally-blockable-passive-content title="optionally blockable passive">optionally blockable
+            passive</a> mixed content, return <strong>blocked</strong>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Otherwise, <var>url</var> can be <a data-link-type=dfn href=#assumed-secure-origin title="assumed secure">assumed secure</a>, so return
         <strong>allowed</strong>.
-      </li>
-      <li>
-        If the scheme component of <var>url</var> is of a type designating a
-        <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a>, (such as "blob" or "data") then
-        return <strong>allowed</strong>.
-      </li>
-      <li>
-        If <var>context</var> is an <a data-link-type=dfn href=#active-request-contexts title="active request context">active request context</a> or
-        <a data-link-type=dfn href=#blockable-passive-request-contexts title="blockable passive request context">blockable passive request context</a>, return
-        <strong>blocked</strong>.
-      </li>
-      <li>
-        If the user agent is configured to block <a data-link-type=dfn href=#optionally-blockable-passive-content title="optionally blockable passive">optionally blockable
-        passive</a> mixed content, return <strong>blocked</strong>.
-      </li>
-      <li>
-        Return <strong>allowed</strong>.
       </li>
     </ol>
   </section>
@@ -755,27 +792,35 @@ Parts of this work may be from an existing specification document.  If so, those
             If the response is not <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, return
             <strong>blocked</strong>.
 
-<p class=issue id=issue-7f528e67><a class=self-link href=#issue-7f528e67></a>This is intended to cover cases in which a ServiceWorker
+<p class=issue id=issue-7701a1bf><a class=self-link href=#issue-7701a1bf></a>This is intended to cover cases in which a ServiceWorker
             responds to a request with an insecure resource. It’s not clear
             that this is the correct place to do that, however, as the
             integration with Fetch isn’t fully specified. It’s also not really
             clear what "insecure" should mean in a ServiceWorker context. We
-            accept 'blob:' resources, for instance: should we accept responses
-            synthesized by the service worker?</p>
+            accept <code>blob</code> resources, for instance: should we accept
+            responses synthesized by the service worker?</p>
           </li>
           <li>
             If the response is only <a data-link-type=dfn href=#weakly-tls-protected title="weakly tls-protected">weakly TLS-protected</a>, return
             <strong>blocked</strong>.
 
-<p class=note>Note: This covers cases in which the TLS handshake for a resource
-            request succeeded, but failed to agree upon a configuration that
-            the user agent considers secure. For instance, the server might
-            have negotiated down to an insecure protocol like SSL 2.0, chosen a
-            weak cipher suite like <code>SSL_RSA_WITH_NULL_MD5</code>,
-            or presented a weak certificate (for instance, one which doesn’t
-            meet the
-            <a href=https://cabforum.org/baseline-requirements-documents/>CA/B
-            forum’s baseline requirements</a>).</p>
+<p class=note>Note: User agents are <em>strongly recommended</em> to reject
+            <a data-link-type=dfn href=#weakly-tls-protected title="weakly tls-protected">weakly TLS-protected</a> resources entirely by failing the TLS
+            connection, or by requiring explicit user acceptance of the risk
+            (for instance, by presenting the user with an interstitial to click
+            through). If a user agent is so configured, we’ll never hit this
+            condition, as <a href=http://fetch.spec.whatwg.org/#fetching>step
+            6 of the Fetch algorithm</a> would have returned a network error.</p>
+          </li>
+          <li>
+            If the response’s TLS-protection is <a data-link-type=dfn href=#deprecated-tls-protection title=deprecated>deprecated</a>, return
+            <strong>blocked</strong>.
+
+<p class=note>Note: This covers cases in which the TLS handshake succeeds, and the
+            resource exceeds the definition of <a data-link-type=dfn href=#weakly-tls-protected title="weakly tls-protected">weakly TLS-protected</a>, but
+            the user agent chooses to hold it to a higher standard. The definition
+            of <a data-link-type=dfn href=#deprecated-tls-protection title="deprecated tls-protection">deprecated TLS-protection</a> has some examples of these kinds
+            of scenarios.</p>
           </li>
         </ol>
       </li>
@@ -787,6 +832,7 @@ Parts of this work may be from an existing specification document.  If so, those
     for context).</p>
   </section>
 </section>
+
 
 <section>
   <h2 class="heading settled heading" data-level=6 id=fetch-integration><span class=secno>6 </span><span class=content>Modifications to Fetch</span><a class=self-link href=#fetch-integration></a></h2>
@@ -859,6 +905,7 @@ Parts of this work may be from an existing specification document.  If so, those
   </ul>
 </section>
 
+
 <section>
   <h2 class="heading settled heading" data-level=7 id=websockets-integration><span class=secno>7 </span><span class=content>Modifications to WebSockets</span><a class=self-link href=#websockets-integration></a></h2>
 
@@ -892,8 +939,8 @@ Parts of this work may be from an existing specification document.  If so, those
       <ol>
         <li>
           If secure is <strong>true</strong>, and the TLS handshake performed
-          in step 5 results in a <a data-link-type=dfn href=#weakly-tls-protected title="weakly tls-protected">weakly TLS-protected</a> connection, then
-          the client MUST
+          in step 5 results in a <a data-link-type=dfn href=#weakly-tls-protected title="weakly tls-protected">weakly TLS-protected</a> connection, or the
+          TLS-protection is <a data-link-type=dfn href=#deprecated-tls-protection title=deprecated>deprecated</a>,then the client MUST
           <a href=http://tools.ietf.org/html/rfc6455#section-7.1.7>Fail the
           WebSocket Connection</a> and abort the connection.
         </li>
@@ -902,13 +949,14 @@ Parts of this work may be from an existing specification document.  If so, those
   </ul>
 </section>
 
+
 <section>
   <h2 class="heading settled heading" data-level=8 id=acknowledgements><span class=secno>8 </span><span class=content>Acknowledgements</span><a class=self-link href=#acknowledgements></a></h2>
 
 <p>This specification does not invent new behaviors, attempting instead to
   document and rationalize existing behaviors. Everything covered here
   has appeared in one or more user agents over the years: Internet Explorer led
-  the way, blocking mixed active content since at least version 6.</p>
+  the way, alerting users to mixed active content since at least version 4.</p>
 </section>
 
 <h2 class="no-num no-ref heading settled heading" id=references><span class=content>
@@ -963,6 +1011,8 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>blockable passive request contexts, <a href=#blockable-passive-request-contexts title="section 3.2.2">3.2.2</a>
 <li>client, <a href=#request-client title="section 2.2">2.2</a>
 <li>context, <a href=#request-context title="section 2.2">2.2</a>
+<li>deprecated, <a href=#deprecated-tls-protection title="section 2.1">2.1</a>
+<li>deprecated TLS-protection, <a href=#deprecated-tls-protection title="section 2.1">2.1</a>
 <li>fetch, <a href=#fetch title="section 2.2">2.2</a>
 <li>globally unique identifier, <a href=#globally-unique-identifier title="section 2.2">2.2</a>
 <li>mixed, <a href=#mixed-content title="section 2.1">2.1</a>
@@ -995,17 +1045,20 @@ Property index</span><a class=self-link href=#property-index></a></h2>
 <div data-fill-with=property-index><p>No properties defined.</div>
 
 
-<h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style="counter-reset: issue"><div class=issue>Are these reasonable definitions that we want to run with?<a href=#issue-3c75cc41> ↵ </a></div>
-    <div class=issue>Should form submissions to an insecure origin be considered active
+<h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style="counter-reset: issue"><div class=issue>Should form submissions to an insecure origin be considered active
     content? I suspect they should, though I’m not sure we can get away with
     it in a web-compatible way.<a href=#issue-967b8a81> ↵ </a></div>
-  <div class=issue>This is intended to cover cases in which a ServiceWorker
+  <div class=issue>Should the presence of a form with an <a data-link-type=element-attr href=http://www.w3.org/html/wg/drafts/html/CR/forms.html#attr-fs-action title=action>action</a>
+    attribute representing an <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origin">assumed insecure origin</a> be considered
+    passive mixed content?<a href=#issue-6fc1504b> ↵ </a></div>
+
+    <div class=issue>This is intended to cover cases in which a ServiceWorker
             responds to a request with an insecure resource. It’s not clear
             that this is the correct place to do that, however, as the
             integration with Fetch isn’t fully specified. It’s also not really
             clear what "insecure" should mean in a ServiceWorker context. We
-            accept 'blob:' resources, for instance: should we accept responses
-            synthesized by the service worker?<a href=#issue-7f528e67> ↵ </a></div>
+            accept <code>blob</code> resources, for instance: should we accept
+            responses synthesized by the service worker?<a href=#issue-7701a1bf> ↵ </a></div>
           <div class=issue>Should we discuss mixed-pinning? (See
     <a href="https://code.google.com/p/chromium/issues/detail?id=259961">crbug.com/259961</a>
     for context).<a href=#issue-f2454bf1> ↵ </a></div>

@@ -96,26 +96,25 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         assumed secure origin
       </dfn>
     </dt>
-    <dt>
-      <dfn export title="assumed insecure origin|assumed insecure|assumed">
-        assumed insecure origin
-      </dfn>
-    </dt>
     <dd>
       An <a>origin</a> is said to be <strong>assumed secure</strong> if one or
       more of the following is true:
 
       <ul>
         <li>
-          The origin's scheme component is <code>HTTPS</code> or
-          <code>WSS</code>, <code>file</code>.
+          The origin's scheme component is one of <code>HTTPS</code>,
+          <code>WSS</code>, or <code>file</code>.
         </li>
         <li>
           The origin's host component is <code>localhost</code>.
         </li>
         <li>
-          The origin's host component matches the CIDR notations
+          The origin's host component matches one of the CIDR notations
           <code>127.0.0.0/8</code> or <code>::1/128</code>. [[!RFC4632]]
+        </li>
+        <li>
+          The origin is a <a>globally unique identifier</a> (for example,
+          a <code>blob</code> URL).
         </li>
       </ul>
 
@@ -125,12 +124,19 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       agent supports other such URLs (Chrome's "chrome-extension:" scheme, for
       instance), they may also be considered secure.
 
-      Any <a>origin</a> which does not meet one of the requirements above is
-      said to be <strong>assumed insecure</strong>.
-
       Note: The mixed content checks will take place <em>after</em> Strict
       Transport Security is applied to resource URLs, which should simplify
       assumptions of insecurity. [[RFC6797]]
+    </dd>
+
+    <dt>
+      <dfn export title="assumed insecure origin|assumed insecure|assumed">
+        assumed insecure origin
+      </dfn>
+    </dt>
+    <dd>
+      Any <a>origin</a> which is not <a>assumed secure</a> is said to be
+      <strong>assumed insecure</strong>.
     </dd>
 
     <dt>
@@ -142,9 +148,9 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       An origin is said to be <strong>proven insecure</strong> if the user
       agent determines that resources loaded from that origin are not
       <a>TLS-protected</a> only after sending a request out over the network.
-      For example, this would include an <a>origin</a> whose scheme component
-      is "HTTPS", but whose server presents an invalid certificate, or
-      negotiates an ineffective encryption algorithm.
+
+      This includes origins which are either <a>weakly TLS-protected</a> or
+      whose TLS-protection is <a>deprecated</a>.
     </dd>
     
     <dt>
@@ -154,11 +160,14 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     </dt>
     <dd>
       A resource's TLS-protection is said to be <strong>deprecated</strong>
-      if it is not <a>weakly TLS-protected</a>, but the user agent choose to
-      refuse it anyway. This definition is vendor-specific, and might include
-      situations in which the server presented a publicly-trusted certificate
-      for an intranet name, or a certificate with an overly-long validity
-      period, or a certificate which otherwise fails to meet the
+      if it is not <a>weakly TLS-protected</a>, but the user agent chooses to
+      refuse it anyway. This determination is vendor-specific.
+     
+      For example, a user agent may choose to reject resources for which the
+      server presented a publicly-trusted certificate for an intranet name
+      (e.g. <code>https://intranet/</code>), a certificate with an overly-long
+      validity period, a certificate signed with SHA-1, or a certificate which
+      otherwise fails to meet the
       <a href="https://cabforum.org/baseline-requirements-documents/">
       CA/Browser Forum's Baseline Requirements</a>.
     </dd>
@@ -178,8 +187,6 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       These terms are defined in
       <a href="http://www.w3.org/TR/2010/REC-wsc-ui-20100812/#typesoftls">Section
       5.2 of "Web Security Context: User Interface Guidelines"</a>. [[!WSC-UI]].
-
-      Issue: Are these reasonable definitions that we want to run with?
     </dd>
 
     <dt><dfn>origin</dfn></dt>
@@ -249,7 +256,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
   <code>popup</code>. These <dfn>navigational request contexts</dfn> are
   navigations, not content, and will not be blocked as mixed content. User
   agents MAY treat one or more of these contexts as either <a>active</a> or
-  <a>blockable passive</a>content if they choose to do so: there are reasonable
+  <a>blockable passive</a> content if they choose to do so: there are reasonable
   arguments for restricting mixed form submissions, for example.
 
   <section>
@@ -345,6 +352,10 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     Future versions of this specification will update these subcategories with
     the intent of moving towards a world where all <a>mixed</a> content is
     blocked; that is the end goal, but this is the best we can do for now.
+
+    Issue: Should the presence of a form with an <a element-attr>action</a>
+    attribute representing an <a>assumed insecure origin</a> be considered
+    passive mixed content?
 
     <section>
       <h4 id="categories-passive-optionally-blockable">
@@ -575,25 +586,6 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       Is <var>document</var> a secure browsing context?
     </h3>
 
-    User agents MUST ensure that nested browsing contexts are checked against
-    the top-level parent context, as that is the context which controls the
-    user's expectations regarding the security status of the resource she's
-    loaded. The following nested-framing scenarios are interesting: 
-
-    <ol>
-      <li><code>http://a.com</code> frames <code>https://b.com</code>, which
-      loads <code>http://evil.com</code>. In this case, the insecure request
-      to <code>evil.com</code> MUST be blocked, as <code>b.com</code> was
-      loaded over a secure connection.</li>
-
-      <li><code>https://a.com</code> frames <code>http://b.com</code>, which
-      loads <code>http://evil.com</code>. In this case, the insecure request
-      to <code>evil.com</code> MUST not be allowed, as <code>a.com</code> was
-      loaded in a secure context (and, hopefully <em>cannot</em> happen, as
-      the <code>b.com</code> frame MUST not be loaded over an insecure channel
-      in the first place).</li>
-    </ol>
-
     Given a <a interface>Document</a> <var>document</var>, the user agent can
     determine if <var>document</var> is a <dfn>secure browsing context</dfn>
     via the following algorithm, which returns <strong>true</strong> if the
@@ -604,11 +596,6 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       <li>
         If <var>document</var> is <a>TLS-protected</a>, return
         <strong>true</strong>.
-      </li>
-      <li>
-        If the scheme component of <var>document</var>'s URL is of a type
-        designating a <a>globally unique identifier</a> (such as "blob" or
-        "data"), return <strong>true</strong>.
       </li>
       <li>
         If <var>document</var> is a <a>nested browsing context</a>:
@@ -623,6 +610,38 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       
       <li>Return <strong>false</strong>.</li>
     </ol>
+
+    If the document is framed, user agents need to check not only the document
+    itself, but also the <a>top-level browsing context</a> in which the
+    document is nested, as that is the context which controls the user's
+    expectations regarding the security status of the resource she's loaded.
+    For example:
+
+    <div class="example">
+      <code>http://a.com</code> loads <code>http://evil.com</code>. The
+      insecure request will be allowed, as <code>a.com</code> was not loaded
+      over a secure connection.
+    </div>
+   
+    <div class="example">
+      <code>https://a.com</code> loads <code>http://evil.com</code>. The
+      insecure request will be blocked, as <code>a.com</code> was loaded over
+      a secure connection.
+    </div>
+
+    <div class="example">
+      <code>http://a.com</code> frames <code>https://b.com</code>, which
+      loads <code>http://evil.com</code>. In this case, the insecure request
+      to <code>evil.com</code> will be blocked, as <code>b.com</code> was
+      loaded over a secure connection, even though <code>a.com</code> was not.
+    </div>
+
+    <div class="example">
+      <code>https://a.com</code> frames a <code>data:</code> URL, which loads
+      <code>http://evil.com</code>. In this case, the insecure request to
+      <code>evil.com</code> will be blocked, as <code>a.com</code> was loaded
+      over a secure connection, even though the framed data URL was not.
+    </div>
   </section>
 
   <section>
@@ -652,25 +671,23 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         <strong>allowed</strong>.
       </li>
       <li>
-        If the scheme component of <var>url</var> is "HTTPS", return
+        If <var>url</var> can be <a>assumed insecure</a>:
+        
+        <ol>
+          <li>
+            If <var>context</var> is an <a>active request context</a> or
+            <a>blockable passive request context</a>, return
+            <strong>blocked</strong>.
+          </li>
+          <li>
+            If the user agent is configured to block <a>optionally blockable
+            passive</a> mixed content, return <strong>blocked</strong>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Otherwise, <var>url</var> can be <a>assumed secure</a>, so return
         <strong>allowed</strong>.
-      </li>
-      <li>
-        If the scheme component of <var>url</var> is of a type designating a
-        <a>globally unique identifier</a>, (such as "blob" or "data") then
-        return <strong>allowed</strong>.
-      </li>
-      <li>
-        If <var>context</var> is an <a>active request context</a> or
-        <a>blockable passive request context</a>, return
-        <strong>blocked</strong>.
-      </li>
-      <li>
-        If the user agent is configured to block <a>optionally blockable
-        passive</a> mixed content, return <strong>blocked</strong>.
-      </li>
-      <li>
-        Return <strong>allowed</strong>.
       </li>
     </ol>
   </section>
@@ -718,24 +735,20 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
             that this is the correct place to do that, however, as the
             integration with Fetch isn't fully specified. It's also not really
             clear what "insecure" should mean in a ServiceWorker context. We
-            accept 'blob:' resources, for instance: should we accept responses
-            synthesized by the service worker?
+            accept <code>blob</code> resources, for instance: should we accept
+            responses synthesized by the service worker?
           </li>
           <li>
             If the response is only <a>weakly TLS-protected</a>, return
             <strong>blocked</strong>.
-
-            Note: This covers cases in which the TLS handshake for a resource
-            request succeeded, but failed to agree upon a configuration that
-            the user agent considers secure. For instance, the server might
-            have negotiated down to an insecure protocol like SSL 2.0 or chosen a
-            weak cipher suite like <code>SSL_RSA_WITH_NULL_MD5</code>.
             
-            Note: Some user agents treat <a>weakly TLS-protected</a> resources
-            as network errors by failing the connection entirely, or by presenting
-            the user with an interstitial to click through before gaining access
-            to the resource. In that case, we'd never hit this step, because the
-            Fetch algorithm would have received a network error in step 6.
+            Note: User agents are <em>strongly recommended</em> to reject
+            <a>weakly TLS-protected</a> resources entirely by failing the TLS
+            connection, or by requiring explicit user acceptance of the risk
+            (for instance, by presenting the user with an interstitial to click
+            through). If a user agent is so configured, we'll never hit this
+            condition, as <a href="http://fetch.spec.whatwg.org/#fetching">step
+            6 of the Fetch algorithm</a> would have returned a network error.
           </li>
           <li>
             If the response's TLS-protection is <a>deprecated</a>, return
@@ -902,5 +915,5 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
   This specification does not invent new behaviors, attempting instead to
   document and rationalize existing behaviors. Everything covered here
   has appeared in one or more user agents over the years: Internet Explorer led
-  the way, blocking mixed active content since at least version 6.
+  the way, alerting users to mixed active content since at least version 4.
 </section>
