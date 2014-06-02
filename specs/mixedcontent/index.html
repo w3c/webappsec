@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140601>1 June 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140602>2 June 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a><dt>Editor’s Draft:<dd><a href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a>
     <dt>Feedback:</dt>
         <dd><a href="mailto:public-webappsec@w3.org?subject=%5BMIX%5D%20feedback">public-webappsec@w3.org</a>
@@ -140,8 +140,8 @@
 	<li><a href=#algorithms><span class=secno>5</span>Algorithms</a>
 		<ul class=toc>
 		<li><a href=#categorize-document><span class=secno>5.1</span>       Is <var>document</var> a secure browsing context?     </a>
-		<li><a href=#should-block-fetch><span class=secno>5.2</span>       Should a fetch of <var>url</var> as <var>context</var> for       <var>client</var> be blocked as mixed content?     </a>
-		<li><a href=#should-block-response><span class=secno>5.3</span>       Should <var>response</var> for <var>client</var> be blocked as mixed       content?     </a></ul>
+		<li><a href=#should-block-fetch><span class=secno>5.2</span>       Should fetching <var>request</var> be blocked as mixed content?     </a>
+		<li><a href=#should-block-response><span class=secno>5.3</span>       Should <var>response</var> to <var>request</var> be blocked as mixed       content?     </a></ul>
 	<li><a href=#fetch-integration><span class=secno>6</span>Modifications to Fetch</a>
 	<li><a href=#websockets-integration><span class=secno>7</span>Modifications to WebSockets</a>
 	<li><a href=#acknowledgements><span class=secno>8</span>Acknowledgements</a>
@@ -583,14 +583,14 @@
         data that affects program control flow. Consider a missile silo UI
         that grabs JSON to determine whether to reveal the Big Red Launch Button:
 
-        <pre>  {
-    showLaunchButton: false
-  }
+        <pre>{
+  showLaunchButton: false
+}
 </pre>
 
 <p>Or the ever-popular:</p>
 
-        <pre>  document.write("&lt;script&gt;" + xhr.responseText + "&lt;/script&gt;");
+        <pre>document.write("&lt;script&gt;" + xhr.responseText + "&lt;/script&gt;");
 </pre>
       </div>
 
@@ -761,8 +761,7 @@
 
   <section>
     <h3 class="heading settled heading" data-level=5.2 id=should-block-fetch><span class=secno>5.2 </span><span class=content>
-      Should a fetch of <var>url</var> as <var>context</var> for
-      <var>client</var> be blocked as mixed content?
+      Should fetching <var>request</var> be blocked as mixed content?
     </span><a class=self-link href=#should-block-fetch></a></h3>
 
 <p>User agents should entirely block requests to <a data-link-type=dfn href=#active-content title=active>active</a> mixed content;
@@ -771,12 +770,16 @@
     as <a data-link-type=dfn href=#active-content title="active content">active content</a>, and we can <em>assume</em> that it won’t be
     loaded over a secure connection).</p>
 
-<p>Given a request’s URL <var>url</var>, <a data-link-type=dfn href=#request-context title="request context">request context</a>
-    <var>context</var>, and <a data-link-type=dfn href=#request-client title="request client">request client</a> <var>client</var>, a user
-    agent can determine whether the request should proceed or not via the
-    following algorithm</p>
+<p>Given a <a data-link-type=dfn href=#request title=request>request</a> <var>request</var>, a user agent can determine
+    whether the  should proceed or not via the following algorithm</p>
 
     <ol>
+      <li>
+        Let <var>context</var> be <var>request</var>’s <code>context</code>.
+      </li>
+      <li>
+        Let <var>client</var> be <var>request</var>’s <code>client</code>.
+      </li>
       <li>
         Let <var>document</var> be the <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> with which
         <var>client</var> is associated.
@@ -809,7 +812,7 @@
 
   <section>
     <h3 class="heading settled heading" data-level=5.3 id=should-block-response><span class=secno>5.3 </span><span class=content>
-      Should <var>response</var> for <var>client</var> be blocked as mixed
+      Should <var>response</var> to <var>request</var> be blocked as mixed
       content?
     </span><a class=self-link href=#should-block-response></a></h3>
 
@@ -818,11 +821,13 @@
     the response (e.g. because the response would be used as <a data-link-type=dfn href=#active-content title="active content">active
     content</a>, but the server is <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure">proven insecure</a>).</p>
 
-<p>Given a <a data-link-type=dfn href=#response title=response>response</a> <var>response</var>, and <a data-link-type=dfn href=#request-client title="request client">request client</a>
-    <var>client</var>, the user agent can determine what response should be
+<p>Given a <a data-link-type=dfn href=#request title=request>request</a> <var>request</var> and <a data-link-type=dfn href=#response title=response>response</a>
+    <var>response</var>, the user agent can determine what response should be
     returned via the following algorithm:</p>
 
     <ol>
+      <li>
+        Let <var>client</var> be <var>request</var>’s <code>client</code>.
       <li>
         Let <var>document</var> be the <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> with which
         <var>client</var> is associated.
@@ -832,8 +837,8 @@
         <strong>allowed</strong>.
       </li>
       <li>
-        Let <var>context</var> be the <a data-link-type=dfn href=#request-context title="request context">request context</a> of the request
-        which generated <var>response</var>.
+        Let <var>context</var> be the <a data-link-type=dfn href=#request-context title="request context">request context</a> of
+        <var>request</var>.
       </li>
       <li>
         If <var>context</var> is an <a data-link-type=dfn href=#active-request-contexts title="active request context">active request context</a> or
@@ -903,15 +908,10 @@
 
       <ol>
         <li>
-          Let <var>context</var> be <var>request</var>’s <code>context</code>.
-        </li>
-        <li>
-          Let <var>client</var> be <var>request</var>’s <code>client</code>.
-        </li>
-        <li>
-          If the <a href=#should-block-fetch>Should a Fetch of <var>url</var>
-          as <var>context</var> for <var>client</var> be blocked as mixed
-          content?</a> algorithm returns <strong><code>blocked</code></strong>:
+          If the <a href=#should-block-fetch>Should fetching
+          <var>request</var> be blocked as mixed content?</a> algorithm returns
+          <strong><code>blocked</code></strong> when executed using
+          <var>request</var>:
 
           <ol>
             <li>Set <var>response</var> to a <a data-link-type=dfn href=#network-error title="network error">network error</a>.</li>
@@ -929,12 +929,10 @@
 
       <ol>
         <li>
-          Let <var>client</var> be <var>request</var>’s <code>client</code>.
-        </li>
-        <li>
           If the <a href=#should-block-response>Should <var>response</var>
-          for <var>client</var> be blocked as mixed content?</a> algorithm
-          returns <strong><code>blocked</code></strong>:
+          to <var>request</var> be blocked as mixed content?</a> algorithm
+          returns <strong><code>blocked</code></strong> when executed using
+          <var>request</var> and <var>response</var>:
 
           <ol>
             <li>Set <var>response</var> to a <a data-link-type=dfn href=#network-error title="network error">network error</a>.</li>
@@ -947,7 +945,7 @@
       synthesized by a ServiceWorker, as well as to determine whether a
       resource is <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure">proven insecure</a> See steps 4.1 and 4.2 of the
       <a data-section="" href=#should-block-response>
-      Should response for client be blocked as mixed
+      Should response to request be blocked as mixed
       content?
     </a> algorithm for detail.</p>
     </li>

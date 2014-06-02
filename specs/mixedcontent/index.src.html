@@ -655,8 +655,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
   <section>
     <h3 id="should-block-fetch">
-      Should a fetch of <var>url</var> as <var>context</var> for
-      <var>client</var> be blocked as mixed content?
+      Should fetching <var>request</var> be blocked as mixed content?
     </h3>
 
     User agents should entirely block requests to <a>active</a> mixed content;
@@ -665,12 +664,16 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     as <a>active content</a>, and we can <em>assume</em> that it won't be
     loaded over a secure connection).
 
-    Given a request's URL <var>url</var>, <a>request context</a>
-    <var>context</var>, and <a>request client</a> <var>client</var>, a user
-    agent can determine whether the request should proceed or not via the
-    following algorithm
+    Given a <a>request</a> <var>request</var>, a user agent can determine
+    whether the  should proceed or not via the following algorithm
 
     <ol>
+      <li>
+        Let <var>context</var> be <var>request</var>'s <code>context</code>.
+      </li>
+      <li>
+        Let <var>client</var> be <var>request</var>'s <code>client</code>.
+      </li>
       <li>
         Let <var>document</var> be the <a interface>Document</a> with which
         <var>client</var> is associated.
@@ -703,7 +706,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
   <section>
     <h3 id="should-block-response">
-      Should <var>response</var> for <var>client</var> be blocked as mixed
+      Should <var>response</var> to <var>request</var> be blocked as mixed
       content?
     </h3>
 
@@ -712,11 +715,13 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     the response (e.g. because the response would be used as <a>active
     content</a>, but the server is <a>proven insecure</a>).
 
-    Given a <a>response</a> <var>response</var>, and <a>request client</a>
-    <var>client</var>, the user agent can determine what response should be
+    Given a <a>request</a> <var>request</var> and <a>response</a>
+    <var>response</var>, the user agent can determine what response should be
     returned via the following algorithm:
 
     <ol>
+      <li>
+        Let <var>client</var> be <var>request</var>'s <code>client</code>.
       <li>
         Let <var>document</var> be the <a interface>Document</a> with which
         <var>client</var> is associated.
@@ -726,8 +731,8 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         <strong>allowed</strong>.
       </li>
       <li>
-        Let <var>context</var> be the <a>request context</a> of the request
-        which generated <var>response</var>.
+        Let <var>context</var> be the <a>request context</a> of
+        <var>request</var>.
       </li>
       <li>
         If <var>context</var> is an <a>active request context</a> or
@@ -805,15 +810,10 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
       <ol>
         <li>
-          Let <var>context</var> be <var>request</var>'s <code>context</code>.
-        </li>
-        <li>
-          Let <var>client</var> be <var>request</var>'s <code>client</code>.
-        </li>
-        <li>
-          If the <a href="#should-block-fetch">Should a Fetch of <var>url</var>
-          as <var>context</var> for <var>client</var> be blocked as mixed
-          content?</a> algorithm returns <strong><code>blocked</code></strong>:
+          If the <a href="#should-block-fetch">Should fetching
+          <var>request</var> be blocked as mixed content?</a> algorithm returns
+          <strong><code>blocked</code></strong> when executed using
+          <var>request</var>:
 
           <ol>
             <li>Set <var>response</var> to a <a>network error</a>.</li>
@@ -831,12 +831,10 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
       <ol>
         <li>
-          Let <var>client</var> be <var>request</var>'s <code>client</code>.
-        </li>
-        <li>
           If the <a href="#should-block-response">Should <var>response</var>
-          for <var>client</var> be blocked as mixed content?</a> algorithm
-          returns <strong><code>blocked</code></strong>:
+          to <var>request</var> be blocked as mixed content?</a> algorithm
+          returns <strong><code>blocked</code></strong> when executed using
+          <var>request</var> and <var>response</var>:
 
           <ol>
             <li>Set <var>response</var> to a <a>network error</a>.</li>
