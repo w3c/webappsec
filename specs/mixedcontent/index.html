@@ -139,7 +139,7 @@
 		<li><a href=#requirements-user-controls><span class=secno>4.3</span>User Controls</a></ul>
 	<li><a href=#algorithms><span class=secno>5</span>Algorithms</a>
 		<ul class=toc>
-		<li><a href=#categorize-document><span class=secno>5.1</span>       Is <var>document</var> a secure browsing context?     </a>
+		<li><a href=#categorize-environment><span class=secno>5.1</span>       Is <var>environment</var> a secure context?     </a>
 		<li><a href=#should-block-fetch><span class=secno>5.2</span>       Should fetching <var>request</var> be blocked as mixed content?     </a>
 		<li><a href=#should-block-response><span class=secno>5.3</span>       Should <var>response</var> to <var>request</var> be blocked as mixed       content?     </a></ul>
 	<li><a href=#fetch-integration><span class=secno>6</span>Modifications to Fetch</a>
@@ -166,7 +166,7 @@
 
 <p><em>This section is not normative.</em></p>
 
-<p>When a user successfully loads a document from example.com over a secure
+<p>When a user successfully loads a resource from example.com over a secure
   channel (HTTPS, for example), the user agent is able to make three assertions
   critical to the user’s security and privacy:</p>
 
@@ -195,13 +195,13 @@
   receiving are indeed those that <code>example.com</code> actually sent.</p>
 
 <p>The strength of these assertions is substantially weakened, however, when
-  the encrypted and authenticated document requests subresources (scripts,
+  the encrypted and authenticated resource requests subresources (scripts,
   images, etc) over an insecure channel. Those resource requests result in a
-  document whose status is mixed, as insecure requests are wide open for
+  resource whose status is mixed, as insecure requests are wide open for
   man-in-the-middle attacks. This scenario is unfortunately quite common.</p>
 
 <p>This specification details how user agents can mitigate this risk to users'
-  security and privacy by limiting a document’s ability to inadvertently
+  security and privacy by limiting a resource’s ability to inadvertently
   communicate in the clear. At worst, resource requests for insecure content
   should downgrade any visible security indicators presented to the user (e.g.
   no "green lock"). At best, these requests should be blocked entirely.</p>
@@ -219,8 +219,8 @@
     <dd>
       A resource is said to be <strong>mixed content</strong> if its origin is
       <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure">assumed insecure</a> or <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure">proven insecure</a>, <strong>and</strong>
-      the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> into which it is loaded is a <a data-link-type=dfn href=#secure-browsing-context title="secure browsing context">secure
-      browsing context</a>.
+      the <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global environment</a> into which it is loaded is a
+      <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>.
     </dd>
 
     <dt>
@@ -370,6 +370,12 @@
       These terms are defined in detail in
       <a href=http://fetch.spec.whatwg.org/#responses>Section 2.3</a> of the
       Fetch living standard. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=biblio-fetch>[FETCH]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=javascript-global-environment title="JavaScript global environment|global environment">JavaScript global environment<a class=self-link href=#javascript-global-environment></a></dfn></dt>
+    <dd>
+      This term is defined in <a data-link-spec=HTML5 data-link-type=dfn href=#javascript-global-environment title="javascript global environment">Section
+      2.2.2</a> of the HTML5 specification. <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=biblio-html5>[HTML5]</a>
     </dd>
   </dl>
 </section>
@@ -608,9 +614,13 @@
   <section>
     <h3 class="heading settled heading" data-level=4.1 id=requirements-fetching><span class=secno>4.1 </span><span class=content>Resource Fetching</span><a class=self-link href=#requirements-fetching></a></h3>
 
-<p>If a <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> is a <a data-link-type=dfn href=#secure-browsing-context title="secure browsing context">secure browsing context</a>, then
-    user agents MUST adhere to the following requirements when <a data-link-type=dfn href=#fetch title=fetching>fetching</a>
-    resources in response to its requests:</p>
+<p>If a <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> is a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, then user agents
+    MUST adhere to the following requirements when <a data-link-type=dfn href=#fetch title=fetching>fetching</a> resources in
+    response to its requests:</p>
+
+<p class=note>Note: This includes not only requests for a <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a>’s
+    subresources, but also requests made from Workers, SharedWorkers,
+    ServiceWorkers and so on.</p>
 
     <ol>
       <li>
@@ -623,7 +633,7 @@
       <li>
         <a data-link-type=dfn href=#request title=requests>Requests</a> for <a data-link-type=dfn href=#active-content title=active>active</a> resources and <a data-link-type=dfn href=#blockable-passive-content title="blockable passive">blockable passive</a>
         resources from an <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure origin">proven insecure origin</a> MUST not be delivered to
-        the requesting <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a>, but instead MUST return a
+        the requesting <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>, but instead MUST return a
         synthetically generated <a data-link-type=dfn href=#network-error title="network error">network error</a> response.
       </li>
 
@@ -655,12 +665,13 @@
     <ul>
       <li>
         The user agent MUST NOT provide the user with a visible indication that
-        the <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> which loaded that resource is secure
-        (for instance, via a green lock icon). The user agent SHOULD instead
-        display a visible indication that <a data-link-type=dfn href=#mixed-content title="mixed content">mixed content</a> is present.
+        the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a> which loaded that resource is
+        secure (for instance, via a green lock icon). The user agent SHOULD
+        instead display a visible indication that <a data-link-type=dfn href=#mixed-content title="mixed content">mixed content</a> is
+        present.
 
 <p>This requirement explicitly includes any visible indication of the
-        <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a>’s
+        <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a>’s
         <a href=https://cabforum.org/about-ev-ssl/>EV status</a>.</p>
       </li>
     </ul>
@@ -697,28 +708,29 @@
   <h2 class="heading settled heading" data-level=5 id=algorithms><span class=secno>5 </span><span class=content>Algorithms</span><a class=self-link href=#algorithms></a></h2>
 
   <section>
-    <h3 class="heading settled heading" data-level=5.1 id=categorize-document><span class=secno>5.1 </span><span class=content>
-      Is <var>document</var> a secure browsing context?
-    </span><a class=self-link href=#categorize-document></a></h3>
+    <h3 class="heading settled heading" data-level=5.1 id=categorize-environment><span class=secno>5.1 </span><span class=content>
+      Is <var>environment</var> a secure context?
+    </span><a class=self-link href=#categorize-environment></a></h3>
 
-<p>Given a <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> <var>document</var>, the user agent can
-    determine if <var>document</var> is a <dfn data-dfn-type=dfn data-export="" id=secure-browsing-context>secure browsing
-    context<a class=self-link href=#secure-browsing-context></a></dfn> via the following algorithm, which returns
-    <strong>true</strong> if the <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> is a secure browsing
-    context, and <strong>false</strong> otherwise.</p>
+<p>Given a <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global environment</a> <var>environment</var>, the
+    user agent can determine if <var>environment</var> is a
+    <dfn data-dfn-type=dfn data-export="" id=secure-context>secure context<a class=self-link href=#secure-context></a></dfn> via the following algorithm, which returns
+    <strong>true</strong> if <var>environment</var> is a secure context, and
+    <strong>false</strong> otherwise.</p>
 
     <ol>
       <li>
-        If <var>document</var> is <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, return
+        If <var>environment</var> is <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, return
         <strong>true</strong>.
       </li>
       <li>
-        If <var>document</var> is a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#nested-browsing-context title="nested browsing context">nested browsing context</a>:
+        If <var>environment</var> is a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#nested-browsing-context title="nested browsing context">nested browsing context</a>:
 
         <ol>
           <li>
-            If the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a> is a <a data-link-type=dfn href=#secure-browsing-context title="secure browsing context">secure
-            browsing context</a>, return <strong>true</strong>.
+            If the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a>’s <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global
+            environment</a> is a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, return
+            <strong>true</strong>.
           </li>
         </ol>
       </li>
@@ -726,7 +738,7 @@
       <li>Return <strong>false</strong>.</li>
     </ol>
 
-<p>If the document is framed, user agents need to check not only the document
+<p>If a document is framed, user agents need to check not only the document
     itself, but also the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a> in which the
     document is nested, as that is the context which controls the user’s
     expectations regarding the security status of the resource she’s loaded.
@@ -781,11 +793,11 @@
         Let <var>client</var> be <var>request</var>’s <code>client</code>.
       </li>
       <li>
-        Let <var>document</var> be the <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> with which
-        <var>client</var> is associated.
+        Let <var>environment</var> be the <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global environment</a>
+        with which <var>client</var> is associated.
       </li>
       <li>
-        If <var>document</var> is not a <a data-link-type=dfn href=#secure-browsing-context title="secure browsing context">secure browsing context</a>, return
+        If <var>environment</var> is not a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, return
         <strong>allowed</strong>.
       </li>
       <li>
@@ -828,12 +840,13 @@
     <ol>
       <li>
         Let <var>client</var> be <var>request</var>’s <code>client</code>.
-      <li>
-        Let <var>document</var> be the <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=document>Document</a> with which
-        <var>client</var> is associated.
       </li>
       <li>
-        If <var>document</var> is not a <a data-link-type=dfn href=#secure-browsing-context title="secure browsing context">secure browsing context</a>, return
+        Let <var>environment</var> be the <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global environment</a>
+        with which <var>client</var> is associated.
+      </li>
+      <li>
+        If <var>environment</var> is not a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, return
         <strong>allowed</strong>.
       </li>
       <li>
@@ -971,9 +984,9 @@
 
       <ol>
         <li>
-          If <var>secure</var> is <strong>false</strong>, but the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing
-          context</a> which the <var>entry script</var> is associated with is a
-          <a data-link-type=dfn href=#secure-browsing-context title="secure browsing context">secure browsing context</a>, then throw a
+          If <var>secure</var> is <strong>false</strong>, but the <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript
+          global environment</a> which the <var>entry script</var> is associated
+          with is a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, then throw a
           <code>SecurityError</code> exception.
         </li>
       </ol>
@@ -1114,7 +1127,9 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>deprecated, <a href=#deprecated-tls-protection title="section 2.1">2.1</a>
 <li>deprecated TLS-protection, <a href=#deprecated-tls-protection title="section 2.1">2.1</a>
 <li>fetch, <a href=#fetch title="section 2.2">2.2</a>
+<li>global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a>
 <li>globally unique identifier, <a href=#globally-unique-identifier title="section 2.2">2.2</a>
+<li>JavaScript global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a>
 <li>mixed, <a href=#mixed-content title="section 2.1">2.1</a>
 <li>mixed content, <a href=#mixed-content title="section 2.1">2.1</a>
 <li>navigational request contexts, <a href=#navigational-request-contexts title="section 3">3</a>
@@ -1135,8 +1150,7 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>request client, <a href=#request-client title="section 2.2">2.2</a>
 <li>request context, <a href=#request-context title="section 2.2">2.2</a>
 <li>response, <a href=#response title="section 2.2">2.2</a>
-<li>secure browsing
-    context, <a href=#secure-browsing-context title="section 5.1">5.1</a>
+<li>secure context, <a href=#secure-context title="section 5.1">5.1</a>
 <li>TLS-protected, <a href=#tls-protected title="section 2.2">2.2</a>
 <li>weakly TLS-protected, <a href=#weakly-tls-protected title="section 2.2">2.2</a>
 </ul></div>

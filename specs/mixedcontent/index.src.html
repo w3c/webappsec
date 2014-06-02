@@ -26,7 +26,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
   <em>This section is not normative.</em>
 
-  When a user successfully loads a document from example.com over a secure
+  When a user successfully loads a resource from example.com over a secure
   channel (HTTPS, for example), the user agent is able to make three assertions
   critical to the user's security and privacy:
 
@@ -55,13 +55,13 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
   receiving are indeed those that <code>example.com</code> actually sent.
 
   The strength of these assertions is substantially weakened, however, when
-  the encrypted and authenticated document requests subresources (scripts,
+  the encrypted and authenticated resource requests subresources (scripts,
   images, etc) over an insecure channel. Those resource requests result in a
-  document whose status is mixed, as insecure requests are wide open for
+  resource whose status is mixed, as insecure requests are wide open for
   man-in-the-middle attacks. This scenario is unfortunately quite common.
 
   This specification details how user agents can mitigate this risk to users'
-  security and privacy by limiting a document's ability to inadvertently
+  security and privacy by limiting a resource's ability to inadvertently
   communicate in the clear. At worst, resource requests for insecure content
   should downgrade any visible security indicators presented to the user (e.g.
   no "green lock"). At best, these requests should be blocked entirely.
@@ -87,8 +87,8 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     <dd>
       A resource is said to be <strong>mixed content</strong> if its origin is
       <a>assumed insecure</a> or <a>proven insecure</a>, <strong>and</strong>
-      the <a>browsing context</a> into which it is loaded is a <a>secure
-      browsing context</a>.
+      the <a>JavaScript global environment</a> into which it is loaded is a
+      <a>secure context</a>.
     </dd>
 
     <dt>
@@ -238,6 +238,12 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       These terms are defined in detail in
       <a href="http://fetch.spec.whatwg.org/#responses">Section 2.3</a> of the
       Fetch living standard. [[!FETCH]]
+    </dd>
+
+    <dt><dfn title="JavaScript global environment|global environment">JavaScript global environment</dfn></dt>
+    <dd>
+      This term is defined in <a title="JavaScript global environment" spec="HTML5">Section
+      2.2.2</a> of the HTML5 specification. [[!HTML5]]
     </dd>
   </dl>
 </section>
@@ -494,9 +500,13 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
   <section>
     <h3 id="requirements-fetching">Resource Fetching</h3>
 
-    If a <a interface>Document</a> is a <a>secure browsing context</a>, then
-    user agents MUST adhere to the following requirements when <a>fetching</a>
-    resources in response to its requests:
+    If a <a>global environment</a> is a <a>secure context</a>, then user agents
+    MUST adhere to the following requirements when <a>fetching</a> resources in
+    response to its requests:
+
+    Note: This includes not only requests for a <a interface>Document</a>'s
+    subresources, but also requests made from Workers, SharedWorkers,
+    ServiceWorkers and so on.
 
     <ol>
       <li>
@@ -509,7 +519,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       <li>
         <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
         resources from an <a>proven insecure origin</a> MUST not be delivered to
-        the requesting <a interface>Document</a>, but instead MUST return a
+        the requesting <a>global environment</a>, but instead MUST return a
         synthetically generated <a>network error</a> response.
       </li>
 
@@ -541,12 +551,13 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     <ul>
       <li>
         The user agent MUST NOT provide the user with a visible indication that
-        the <a interface>Document</a> which loaded that resource is secure
-        (for instance, via a green lock icon). The user agent SHOULD instead
-        display a visible indication that <a>mixed content</a> is present.
+        the <a>top-level browsing context</a> which loaded that resource is
+        secure (for instance, via a green lock icon). The user agent SHOULD
+        instead display a visible indication that <a>mixed content</a> is
+        present.
 
         This requirement explicitly includes any visible indication of the
-        <a interface>Document</a>'s
+        <a>top-level browsing context</a>'s
         <a href="https://cabforum.org/about-ev-ssl/">EV status</a>.
       </li>
     </ul>
@@ -591,28 +602,29 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
   <h2 id="algorithms">Algorithms</h2>
 
   <section>
-    <h3 id="categorize-document">
-      Is <var>document</var> a secure browsing context?
+    <h3 id="categorize-environment">
+      Is <var>environment</var> a secure context?
     </h3>
 
-    Given a <a interface>Document</a> <var>document</var>, the user agent can
-    determine if <var>document</var> is a <dfn export>secure browsing
-    context</dfn> via the following algorithm, which returns
-    <strong>true</strong> if the <a interface>Document</a> is a secure browsing
-    context, and <strong>false</strong> otherwise.
+    Given a <a>JavaScript global environment</a> <var>environment</var>, the
+    user agent can determine if <var>environment</var> is a
+    <dfn export>secure context</dfn> via the following algorithm, which returns
+    <strong>true</strong> if <var>environment</var> is a secure context, and
+    <strong>false</strong> otherwise.
 
     <ol>
       <li>
-        If <var>document</var> is <a>TLS-protected</a>, return
+        If <var>environment</var> is <a>TLS-protected</a>, return
         <strong>true</strong>.
       </li>
       <li>
-        If <var>document</var> is a <a>nested browsing context</a>:
+        If <var>environment</var> is a <a>nested browsing context</a>:
 
         <ol>
           <li>
-            If the <a>top-level browsing context</a> is a <a>secure
-            browsing context</a>, return <strong>true</strong>.
+            If the <a>top-level browsing context</a>'s <a>JavaScript global
+            environment</a> is a <a>secure context</a>, return
+            <strong>true</strong>.
           </li>
         </ol>
       </li>
@@ -620,7 +632,7 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
       <li>Return <strong>false</strong>.</li>
     </ol>
 
-    If the document is framed, user agents need to check not only the document
+    If a document is framed, user agents need to check not only the document
     itself, but also the <a>top-level browsing context</a> in which the
     document is nested, as that is the context which controls the user's
     expectations regarding the security status of the resource she's loaded.
@@ -675,11 +687,11 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         Let <var>client</var> be <var>request</var>'s <code>client</code>.
       </li>
       <li>
-        Let <var>document</var> be the <a interface>Document</a> with which
-        <var>client</var> is associated.
+        Let <var>environment</var> be the <a>JavaScript global environment</a>
+        with which <var>client</var> is associated.
       </li>
       <li>
-        If <var>document</var> is not a <a>secure browsing context</a>, return
+        If <var>environment</var> is not a <a>secure context</a>, return
         <strong>allowed</strong>.
       </li>
       <li>
@@ -722,12 +734,13 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
     <ol>
       <li>
         Let <var>client</var> be <var>request</var>'s <code>client</code>.
-      <li>
-        Let <var>document</var> be the <a interface>Document</a> with which
-        <var>client</var> is associated.
       </li>
       <li>
-        If <var>document</var> is not a <a>secure browsing context</a>, return
+        Let <var>environment</var> be the <a>JavaScript global environment</a>
+        with which <var>client</var> is associated.
+      </li>
+      <li>
+        If <var>environment</var> is not a <a>secure context</a>, return
         <strong>allowed</strong>.
       </li>
       <li>
@@ -878,9 +891,9 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 
       <ol>
         <li>
-          If <var>secure</var> is <strong>false</strong>, but the <a>browsing
-          context</a> which the <var>entry script</var> is associated with is a
-          <a>secure browsing context</a>, then throw a
+          If <var>secure</var> is <strong>false</strong>, but the <a>JavaScript
+          global environment</a> which the <var>entry script</var> is associated
+          with is a <a>secure context</a>, then throw a
           <code>SecurityError</code> exception.
         </li>
       </ol>
