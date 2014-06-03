@@ -7,7 +7,7 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how and why user agents disallow rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set
+Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 !Version History: <a href="https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html">https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html</a>
@@ -619,13 +619,24 @@ Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
         <strong>true</strong>.
       </li>
       <li>
-        If <var>environment</var> is a <a>nested browsing context</a>:
+        If <var>environment</var> is a <a>nested browsing context</a>, then:
 
         <ol>
+          <li>Let <var>ancestorList</var> be the list of all
+          <a>ancestors</a> of <var>environment</var>'s <a>browsing
+          context</a>.</li>
+
           <li>
-            If the <a>top-level browsing context</a>'s <a>JavaScript global
-            environment</a> is a <a>secure context</a>, return
-            <strong>true</strong>.
+            For each <var>ancestorContext</var> in <var>ancestorList</var>:
+
+            <ol>
+              <li>Let <var>ancestorEnvironment</var> be the <a>JavaScript
+              global environment</a> associated with
+              <var>ancestorContext</var></li>
+
+              <li>If <var>ancestorEnvironment</var> is <a>TLS-protected</a>,
+              return <strong>true</strong>.</li>
+            </ol>
           </li>
         </ol>
       </li>
