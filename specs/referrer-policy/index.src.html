@@ -50,10 +50,15 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
       <dfn export local-title="policy">referrer policy</dfn>
     </dt>
     <dd>
-      A resource's <strong>referrer policy</strong> is a property of a
-      <a>JavaScript global environment</a> that defines the algorithm used
-      to populate the <code>referer</code>[sic] HTTP header when <a>fetching</a>
+      A <strong>referrer policy</strong> is a property of a <a>JavaScript
+      global environment</a> that defines the algorithm used to populate the
+      <code>referer</code>[sic] HTTP header when <a>fetching</a>
       subresources or performing navigations.
+
+      If no referrer policy is explicitly set for a <a>global environment</a>,
+      then the value of the property is the empty string. Otherwise, the value
+      is whatever has been explicitly set, as explained in the
+      <a section href="#set-referrer-policy"></a> algorithm.
     </dd>
   </dl>
 
@@ -132,12 +137,14 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 
   Every <a>global environment</a> has a <a>referrer policy</a> which governs
   the referrer information sent along with requests made for subresources, and
-  for navigations. The <a>policy</a> will be one of the following five values:
+  for navigations. The <a>policy</a> will be the empty string if no policy has
+  been set, otherwise it will be one of the following five values:
   <code><a>None</a></code>, <code><a>None when downgrade</a></code>,
   <code><a>Origin Only</a></code>, <code><a>Origin when cross-origin</a></code>,
   and <code><a>Unsafe URL</a></code>. Each is explained below, and a detailed
-  algorithm is given in the <a section href="#modifications-to-fetch"></a>
-  and <a section href="#algorithms"></a> sections:
+  algorithm for evaluating their effect is given in the
+  <a section href="#modifications-to-fetch"></a> and
+  <a section href="#algorithms"></a> sections:
 
   <h3 id="referrer-policy-state-none">None</h3>
 
@@ -237,6 +244,50 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 </section>
 
 <section>
+  <h2 id="referrer-policy-delivery">Referrer Policy Delivery</h2>
+
+  A <a>JavaScript global environment</a>'s <a>referrer policy</a> is delivered
+  in one of four ways:
+
+  <ul>
+    <li>
+      Via the
+      <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer"><code>referrer</code>
+      Content Security Policy directive</a>, delivered via the
+      <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#content-security-policy-header-field"><code>Content-Security-Policy</code></a>
+      HTTP header. [[!CSP]]
+    </li>
+    <li>
+      Via the
+      <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer"><code>referrer</code>
+      Content Security Policy directive</a>, delivered via a
+      <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#delivery-html-meta-element"><code>&lt;meta&gt;</code> element</a>
+      [[!CSP]]
+    </li>
+    <li>
+      Via a <a element>meta</a> element with a <a element-attr>name</a> of
+      <code>referrer</code>.
+    </li>
+    <li>
+      Implicitly, via inheritance.
+    </li>
+  </ul>
+
+  The CSP-based delivery mechanisms are defined in the Content Security Policy
+  specification. [[!CSP]] The <a element>meta</a> and implicit mechansims are
+  defined below.
+
+  <h3 id="referrer-policy-delivery-meta">Delivery via <a element>meta</a></h3>
+
+  TODO
+
+  <h3 id="referrer-policy-delivery-implicit">Implicit Delivery</h3>
+
+  TODO
+
+</section>
+
+<section>
   <h2 id="modifications-to-fetch">Modifications to Fetch</h2>
 
   Issue: Change this section to point to Fetch once we agree on how the
@@ -246,6 +297,48 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 <section>
   <h2 id="algorithms">Algorithms</h2>
 
+  <h3 id="set-referrer-policy">
+    Set <var>environment</var>'s referrer policy to <var>policy</var>.
+  </h3>
+
+  If no referrer policy has been set for a <a>global environment</a>, then
+  setting its value is straightforward. If a policy has previously been set,
+  however, then we need to deal with potential conflict. We handle conflict
+  in a draconian fashion: conflicts resolve to <code>None</code>, as described
+  below.
+
+  <ol>
+    <li>If <var>policy</var> is not one of <code><a>None</a></code>,
+    <code><a>None when downgrade</a></code>, <code><a>Origin Only</a></code>,
+    <code><a>Origin when cross-origin</a></code>, or
+    <code><a>Unsafe URL</a></code>, then set <var>policy</var> to
+    <code><a>None</a></code>.</li>
+
+    <li>
+      Let <var>currentPolicy</var> be the value of <var>environment</var>'s
+      <a>referrer policy</a>.
+    </li>
+
+    <li>
+      If <var>currentPolicy</var> is the empty string (that is, if no policy has
+      been explicitly set), then:
+
+      <ol>
+        <li>
+          Set <var>environment</var>'s <a>referrer policy</a> to
+          <var>policy</var>.
+        </li>
+        <li>
+          Skip the remaining steps.
+        </li>
+      </ol>
+    </li>
+
+    <li>
+      If <var>currentPolicy</var> is not <var>policy</var>, then set
+      <var>environment</var>'s <a>referrer policy</a> to <code>Never</code>.
+    </li>
+  </ol>
 </section>
 
 <!--
