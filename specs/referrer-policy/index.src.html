@@ -339,6 +339,96 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
       <var>environment</var>'s <a>referrer policy</a> to <code>Never</code>.
     </li>
   </ol>
+
+  <h3 id="set-request-referrer">
+    Set <var>request</var>'s <code>referrer</code>.
+  </h3>
+
+  Given a <a>Request</a> <var>request</var>, we can determine the correct
+  referrer information to send by examining the <a>policy</a> associated with
+  its <code>client</code>'s <a>global environment</a>, as detailed in the
+  following steps:
+
+  <ol>
+    <li>
+      Let <var>environment</var> be <var>request</var>'s <code>client</code>.
+    </li>
+    <li>
+      Let <var>policy</var> be the value of <var>environment</var>'s
+      <a>referrer policy</a>.
+    </li>
+    <!-- None -->
+    <li>
+      If <var>policy</var> is <code><a>None</a></code>, set <var>request</var>'s
+      <code>referrer</code> to the empty string.
+    </li>
+    <!-- Origin -->
+    <li>
+      If <var>policy</var> is <code><a>Origin</a></code>, set
+      <var>request</var>'s <code>referrer</code> to the
+      <a title="ASCII serialization of an origin">ASCII serialization</a> of
+      <var>request</var>'s <code>origin</code>.
+    </li>
+    <!-- Origin When Cross-Origin -->
+    <li>
+      If <var>policy</var> is <code><a>Origin When Cross-Origin</a></code>,
+      then:
+      
+      <ol>
+        <li>
+          If <var>request</var> is a <a>cross-origin request</a>, then set
+          <var>request</var>'s <code>referrer</code> to the
+          <a title="ASCII serialization of an origin">ASCII serialization</a> of
+          <var>request</var>'s <code>origin</code>.
+        </li>
+
+        <li>
+          Otherwise, set <var>request</var>'s <code>referrer</code> to the
+          <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
+          of <var>environment</var>'s URL.
+        </li>
+      </ol>
+    </li>
+    <!-- Unsafe URL -->
+    <li>
+      If <var>policy</var> is <code><a>Unsafe URL</a></code>, set
+      <var>request</var>'s <code>referrer</code> to the
+      <a href="http://url.spec.whatwg.org/#serializing">serialization</a> of
+      <var>environment</var>'s URL.
+    </li>
+    <!-- None When Downgrade -->
+    <li>
+      If <var>policy</var> is <code><a>None When Downgrade</a></code>, or the
+      empty string, then:
+      
+      <ol>
+        <li>
+          If <var>environment</var> is not <a>TLS-protected</a>, then set
+          <var>request</var>'s <code>referrer</code> to the
+          <a href="http://url.spec.whatwg.org/#serializing">serialization</a> of
+          <var>environment</var>'s URL.
+        </li>
+        <li>
+          Otherwise, <var>environment</var> is <a>TLS-protected</a>, so:
+         
+          <ol>
+            <li>
+              If the <a>origin</a> of <var>request</var>'s <code>URL</code> is
+              an <a>assumed insecure origin</a>, then set <var>request</var>'s
+              <code>referrer</code> to the empty string.
+            </li>
+            <li>
+              Otherwise, the <a>origin</a> of <var>request</var>'s
+              <code>URL</code> is an <a>assumed secure origin</a>, so set
+              <var>request</var>'s <code>referrer</code> to the
+              <a href="http://url.spec.whatwg.org/#serializing">serialization</a> of
+              <var>environment</var>'s URL.
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
 </section>
 
 <!--

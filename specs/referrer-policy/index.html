@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Referrer Policy</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140603>3 June 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140604>4 June 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/referrerpolicy/>https://w3c.github.io/webappsec/specs/referrerpolicy/</a><dt>Editor’s Draft:<dd><a href=https://w3c.github.io/webappsec/specs/referrerpolicy/>https://w3c.github.io/webappsec/specs/referrerpolicy/</a><dt>Version History:<dd><a href=https://github.com/w3c/webappsec/commits/master/specs/referrerpolicy/index.src.html>https://github.com/w3c/webappsec/commits/master/specs/referrerpolicy/index.src.html</a>
     <dt>Feedback:</dt>
         <dd><a href="mailto:public-webappsec@w3.org?subject=%5BREFERRER%5D%20feedback">public-webappsec@w3.org</a>
@@ -139,7 +139,8 @@
 	<li><a href=#modifications-to-fetch><span class=secno>5</span>Modifications to Fetch</a>
 	<li><a href=#algorithms><span class=secno>6</span>Algorithms</a>
 		<ul class=toc>
-		<li><a href=#set-referrer-policy><span class=secno>6.1</span>     Set <var>environment</var>’s referrer policy to <var>policy</var>.   </a></ul>
+		<li><a href=#set-referrer-policy><span class=secno>6.1</span>     Set <var>environment</var>’s referrer policy to <var>policy</var>.   </a>
+		<li><a href=#set-request-referrer><span class=secno>6.2</span>     Set <var>request</var>’s <code>referrer</code>.   </a></ul>
 	<li><a href=#acknowledgements><span class=secno>7</span>Acknowledgements</a>
 	<li><a href=#conformance><span class=secno></span>Conformance</a>
 		<ul class=toc>
@@ -464,6 +465,96 @@
     <li>
       If <var>currentPolicy</var> is not <var>policy</var>, then set
       <var>environment</var>’s <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> to <code>Never</code>.
+    </li>
+  </ol>
+
+  <h3 class="heading settled heading" data-level=6.2 id=set-request-referrer><span class=secno>6.2 </span><span class=content>
+    Set <var>request</var>’s <code>referrer</code>.
+  </span><a class=self-link href=#set-request-referrer></a></h3>
+
+<p>Given a <a data-link-type=dfn href=#request title=request>Request</a> <var>request</var>, we can determine the correct
+  referrer information to send by examining the <a data-link-type=dfn href=#referrer-policy title=policy>policy</a> associated with
+  its <code>client</code>’s <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>, as detailed in the
+  following steps:</p>
+
+  <ol>
+    <li>
+      Let <var>environment</var> be <var>request</var>’s <code>client</code>.
+    </li>
+    <li>
+      Let <var>policy</var> be the value of <var>environment</var>’s
+      <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a>.
+    </li>
+    
+    <li>
+      If <var>policy</var> is <code><a data-link-type=dfn href=#none title=none>None</a></code>, set <var>request</var>’s
+      <code>referrer</code> to the empty string.
+    </li>
+    
+    <li>
+      If <var>policy</var> is <code><a data-link-type=dfn href=#origin title=origin>Origin</a></code>, set
+      <var>request</var>’s <code>referrer</code> to the
+      <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of
+      <var>request</var>’s <code>origin</code>.
+    </li>
+    
+    <li>
+      If <var>policy</var> is <code><a data-link-type=dfn href=#origin-when-cross-origin title="origin when cross-origin">Origin When Cross-Origin</a></code>,
+      then:
+
+      <ol>
+        <li>
+          If <var>request</var> is a <a data-link-type=dfn href=#cross-origin-request title="cross-origin request">cross-origin request</a>, then set
+          <var>request</var>’s <code>referrer</code> to the
+          <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of
+          <var>request</var>’s <code>origin</code>.
+        </li>
+
+        <li>
+          Otherwise, set <var>request</var>’s <code>referrer</code> to the
+          <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
+          of <var>environment</var>’s URL.
+        </li>
+      </ol>
+    </li>
+    
+    <li>
+      If <var>policy</var> is <code><a data-link-type=dfn href=#unsafe-url title="unsafe url">Unsafe URL</a></code>, set
+      <var>request</var>’s <code>referrer</code> to the
+      <a href=http://url.spec.whatwg.org/#serializing>serialization</a> of
+      <var>environment</var>’s URL.
+    </li>
+    
+    <li>
+      If <var>policy</var> is <code><a data-link-type=dfn href=#none-when-downgrade title="none when downgrade">None When Downgrade</a></code>, or the
+      empty string, then:
+
+      <ol>
+        <li>
+          If <var>environment</var> is not <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, then set
+          <var>request</var>’s <code>referrer</code> to the
+          <a href=http://url.spec.whatwg.org/#serializing>serialization</a> of
+          <var>environment</var>’s URL.
+        </li>
+        <li>
+          Otherwise, <var>environment</var> is <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, so:
+
+          <ol>
+            <li>
+              If the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s <code>URL</code> is
+              an <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origin">assumed insecure origin</a>, then set <var>request</var>’s
+              <code>referrer</code> to the empty string.
+            </li>
+            <li>
+              Otherwise, the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s
+              <code>URL</code> is an <a data-link-type=dfn href=#assumed-secure-origin title="assumed secure origin">assumed secure origin</a>, so set
+              <var>request</var>’s <code>referrer</code> to the
+              <a href=http://url.spec.whatwg.org/#serializing>serialization</a> of
+              <var>environment</var>’s URL.
+            </li>
+          </ol>
+        </li>
+      </ol>
     </li>
   </ol>
 </section>
