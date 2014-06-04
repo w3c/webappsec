@@ -292,6 +292,16 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 
   Issue: Change this section to point to Fetch once we agree on how the
   integration should look.
+
+  Replace Step 1 of <a href="http://fetch.spec.whatwg.org/#http-fetch">Fetch's
+  'HTTP Fetch' algorithm</a> with the following step:
+
+  <ol>
+    <li>
+      Execute the <a href="#set-request-referrer">Set <var>request</var>'s
+      `<code>Referer</code>` header</a> algorithm on <var>request</var>.
+    </li>
+  </ol>
 </section>
 
 <section>
@@ -341,7 +351,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
   </ol>
 
   <h3 id="set-request-referrer">
-    Set <var>request</var>'s <code>referrer</code>.
+    Set <var>request</var>'s `<code>Referer</code>` header.
   </h3>
 
   Given a <a>Request</a> <var>request</var>, we can determine the correct
@@ -357,17 +367,29 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
       Let <var>policy</var> be the value of <var>environment</var>'s
       <a>referrer policy</a>.
     </li>
+    <li>
+      Let <var>headerValue</var> be the empty string.
+    </li>
+    <li>
+      Let <var>referrerURL</var> be the URL of <var>request</var>'s
+      <code>referrer</code> if <var>request</var>'s <code>referrer</code> is
+      not <code>null</code>, and otherwise the URL of <var>environment</var>.
+    </li>
+    <li>
+      Let <var>referrerOrigin</var> be the
+      <a title="ASCII serialization of an origin">ASCII serialization</a> of
+      the <a>origin</a> of <var>referrerURL</var>.
+    </li>
+
     <!-- None -->
     <li>
-      If <var>policy</var> is <code><a>None</a></code>, set <var>request</var>'s
-      <code>referrer</code> to the empty string.
+      If <var>policy</var> is <code><a>None</a></code>, set
+      <var>headerValue</var> to the empty string.
     </li>
     <!-- Origin -->
     <li>
       If <var>policy</var> is <code><a>Origin</a></code>, set
-      <var>request</var>'s <code>referrer</code> to the
-      <a title="ASCII serialization of an origin">ASCII serialization</a> of
-      <var>request</var>'s <code>origin</code>.
+      <var>headerValue</var> to <var>referrerOrigin</var>.
     </li>
     <!-- Origin When Cross-Origin -->
     <li>
@@ -377,24 +399,22 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
       <ol>
         <li>
           If <var>request</var> is a <a>cross-origin request</a>, then set
-          <var>request</var>'s <code>referrer</code> to the
-          <a title="ASCII serialization of an origin">ASCII serialization</a> of
-          <var>request</var>'s <code>origin</code>.
+          <var>headerValue</var> to <var>referrerOrigin</var>.
         </li>
 
         <li>
-          Otherwise, set <var>request</var>'s <code>referrer</code> to the
+          Otherwise, set <var>headerValue</code> to the 
           <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
-          of <var>environment</var>'s URL.
+          of <var>referrerURL</var>.
         </li>
       </ol>
     </li>
     <!-- Unsafe URL -->
     <li>
       If <var>policy</var> is <code><a>Unsafe URL</a></code>, set
-      <var>request</var>'s <code>referrer</code> to the
-      <a href="http://url.spec.whatwg.org/#serializing">serialization</a> of
-      <var>environment</var>'s URL.
+      <var>headerValue</var> to the
+      <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
+      of <var>referrerURL</var>.
     </li>
     <!-- None When Downgrade -->
     <li>
@@ -404,9 +424,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
       <ol>
         <li>
           If <var>environment</var> is not <a>TLS-protected</a>, then set
-          <var>request</var>'s <code>referrer</code> to the
-          <a href="http://url.spec.whatwg.org/#serializing">serialization</a> of
-          <var>environment</var>'s URL.
+          <var>headerValue</var> to the
+          <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
+          of <var>referrerURL</var>.
         </li>
         <li>
           Otherwise, <var>environment</var> is <a>TLS-protected</a>, so:
@@ -414,21 +434,32 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
           <ol>
             <li>
               If the <a>origin</a> of <var>request</var>'s <code>URL</code> is
-              an <a>assumed insecure origin</a>, then set <var>request</var>'s
-              <code>referrer</code> to the empty string.
+              an <a>assumed insecure origin</a>, then set <var>headerValue</var>
+              to the empty string.
             </li>
             <li>
               Otherwise, the <a>origin</a> of <var>request</var>'s
-              <code>URL</code> is an <a>assumed secure origin</a>, so set
-              <var>request</var>'s <code>referrer</code> to the
-              <a href="http://url.spec.whatwg.org/#serializing">serialization</a> of
-              <var>environment</var>'s URL.
+              <code>URL</code> is an <a>assumed secure origin</a>, then set
+              <var>headerValue</var> to the
+              <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
+              of <var>referrerURL</var>.
             </li>
           </ol>
         </li>
       </ol>
     </li>
+
+    <li>
+      Set `<code>Referer</code>` to <var>headerValue</var> in
+      <var>request</var>'s
+      <a href="http://fetch.spec.whatwg.org/#concept-request-headers">headers</a>.
+    </li>
   </ol>
+
+  User agents MAY choose to be more limited with regard to referrer information
+  than this algorithm specifies. For instance, user agents MAY choose to strip
+  query paramaters from a request's referrer, or to send an empty referrer
+  header regardless of the <a>referrer policy</a> specified.
 </section>
 
 <!--

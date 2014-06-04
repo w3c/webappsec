@@ -140,7 +140,7 @@
 	<li><a href=#algorithms><span class=secno>6</span>Algorithms</a>
 		<ul class=toc>
 		<li><a href=#set-referrer-policy><span class=secno>6.1</span>     Set <var>environment</var>’s referrer policy to <var>policy</var>.   </a>
-		<li><a href=#set-request-referrer><span class=secno>6.2</span>     Set <var>request</var>’s <code>referrer</code>.   </a></ul>
+		<li><a href=#set-request-referrer><span class=secno>6.2</span>     Set <var>request</var>’s `<code>Referer</code>` header.   </a></ul>
 	<li><a href=#acknowledgements><span class=secno>7</span>Acknowledgements</a>
 	<li><a href=#conformance><span class=secno></span>Conformance</a>
 		<ul class=toc>
@@ -420,6 +420,16 @@
 
 <p class=issue id=issue-7c1aab62><a class=self-link href=#issue-7c1aab62></a>Change this section to point to Fetch once we agree on how the
   integration should look.</p>
+
+<p>Replace Step 1 of <a href=http://fetch.spec.whatwg.org/#http-fetch>Fetch’s
+  'HTTP Fetch' algorithm</a> with the following step:</p>
+
+  <ol>
+    <li>
+      Execute the <a href=#set-request-referrer>Set <var>request</var>’s
+      `<code>Referer</code>` header</a> algorithm on <var>request</var>.
+    </li>
+  </ol>
 </section>
 
 <section>
@@ -469,7 +479,7 @@
   </ol>
 
   <h3 class="heading settled heading" data-level=6.2 id=set-request-referrer><span class=secno>6.2 </span><span class=content>
-    Set <var>request</var>’s <code>referrer</code>.
+    Set <var>request</var>’s `<code>Referer</code>` header.
   </span><a class=self-link href=#set-request-referrer></a></h3>
 
 <p>Given a <a data-link-type=dfn href=#request title=request>Request</a> <var>request</var>, we can determine the correct
@@ -485,17 +495,30 @@
       Let <var>policy</var> be the value of <var>environment</var>’s
       <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a>.
     </li>
+    <li>
+      Let <var>headerValue</var> be the empty string.
+    </li>
+    <li>
+      Let <var>referrerURL</var> be the URL of <var>request</var>’s
+      <code>referrer</code> if <var>request</var>’s <code>referrer</code> is
+      not <code>null</code>, and otherwise the URL of <var>request</var>’s
+      <code>client</code>.
+    </li>
+    <li>
+      Let <var>referrerOrigin</var> be the
+      <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of
+      the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>referrerURL</var>.
+    </li>
+
     
     <li>
-      If <var>policy</var> is <code><a data-link-type=dfn href=#none title=none>None</a></code>, set <var>request</var>’s
-      <code>referrer</code> to the empty string.
+      If <var>policy</var> is <code><a data-link-type=dfn href=#none title=none>None</a></code>, set
+      <var>headerValue</var> to the empty string.
     </li>
     
     <li>
       If <var>policy</var> is <code><a data-link-type=dfn href=#origin title=origin>Origin</a></code>, set
-      <var>request</var>’s <code>referrer</code> to the
-      <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of
-      <var>request</var>’s <code>origin</code>.
+      <var>headerValue</var> to <var>referrerOrigin</var>.
     </li>
     
     <li>
@@ -505,24 +528,22 @@
       <ol>
         <li>
           If <var>request</var> is a <a data-link-type=dfn href=#cross-origin-request title="cross-origin request">cross-origin request</a>, then set
-          <var>request</var>’s <code>referrer</code> to the
-          <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of
-          <var>request</var>’s <code>origin</code>.
+          <var>headerValue</var> to <var>referrerOrigin</var>.
         </li>
 
         <li>
-          Otherwise, set <var>request</var>’s <code>referrer</code> to the
+          Otherwise, set <var>headerValue to the 
           <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
-          of <var>environment</var>’s URL.
-        </li>
+          of <var>referrerURL</var>.
+        </var></li>
       </ol>
     </li>
     
     <li>
       If <var>policy</var> is <code><a data-link-type=dfn href=#unsafe-url title="unsafe url">Unsafe URL</a></code>, set
-      <var>request</var>’s <code>referrer</code> to the
-      <a href=http://url.spec.whatwg.org/#serializing>serialization</a> of
-      <var>environment</var>’s URL.
+      <var>headerValue</var> to the
+      <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
+      of <var>referrerURL</var>.
     </li>
     
     <li>
@@ -532,9 +553,9 @@
       <ol>
         <li>
           If <var>environment</var> is not <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, then set
-          <var>request</var>’s <code>referrer</code> to the
-          <a href=http://url.spec.whatwg.org/#serializing>serialization</a> of
-          <var>environment</var>’s URL.
+          <var>headerValue</var> to the
+          <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
+          of <var>referrerURL</var>.
         </li>
         <li>
           Otherwise, <var>environment</var> is <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, so:
@@ -542,21 +563,32 @@
           <ol>
             <li>
               If the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s <code>URL</code> is
-              an <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origin">assumed insecure origin</a>, then set <var>request</var>’s
-              <code>referrer</code> to the empty string.
+              an <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origin">assumed insecure origin</a>, then set <var>headerValue</var>
+              to the empty string.
             </li>
             <li>
               Otherwise, the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s
-              <code>URL</code> is an <a data-link-type=dfn href=#assumed-secure-origin title="assumed secure origin">assumed secure origin</a>, so set
-              <var>request</var>’s <code>referrer</code> to the
-              <a href=http://url.spec.whatwg.org/#serializing>serialization</a> of
-              <var>environment</var>’s URL.
+              <code>URL</code> is an <a data-link-type=dfn href=#assumed-secure-origin title="assumed secure origin">assumed secure origin</a>, then set
+              <var>headerValue</var> to the
+              <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
+              of <var>referrerURL</var>.
             </li>
           </ol>
         </li>
       </ol>
     </li>
+
+    <li>
+      Set `<code>Referer</code>` to <var>headerValue</var> in
+      <var>request</var>’s
+      <a href=http://fetch.spec.whatwg.org/#concept-request-headers>headers</a>.
+    </li>
   </ol>
+
+<p>User agents MAY choose to be more limited with regard to referrer information
+  than this algorithm specifies. For instance, user agents MAY choose to strip
+  query paramaters from a request’s referrer, or to send an empty referrer
+  header regardless of the <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> specified.</p>
 </section>
 
 
@@ -673,4 +705,5 @@ Index</span><a class=self-link href=#index></a></h2>
 
 <h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style="counter-reset: issue"><div class=issue>Change this section to point to Fetch once we agree on how the
   integration should look.<a href=#issue-7c1aab62> ↵ </a></div>
+
 </div>
