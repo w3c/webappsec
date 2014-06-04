@@ -56,7 +56,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
       subresources or performing navigations.
 
       If no referrer policy is explicitly set for a <a>global environment</a>,
-      then the value of the property is the empty string. Otherwise, the value
+      then the value of the property is <code>null</code>. Otherwise, the value
       is whatever has been explicitly set, as explained in the
       <a section href="#set-referrer-policy"></a> algorithm.
     </dd>
@@ -137,7 +137,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 
   Every <a>global environment</a> has a <a>referrer policy</a> which governs
   the referrer information sent along with requests made for subresources, and
-  for navigations. The <a>policy</a> will be the empty string if no policy has
+  for navigations. The <a>policy</a> will be <code>null</code> if no policy has
   been set, otherwise it will be one of the following five values:
   <code><a>None</a></code>, <code><a>None when downgrade</a></code>,
   <code><a>Origin Only</a></code>, <code><a>Origin when cross-origin</a></code>,
@@ -151,13 +151,13 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
   The simplest policy is <dfn>None</dfn>, which specifies that no referrer
   information is to be sent along with requests made from a particular <a>global
   environment</a> to any <a>origin</a>. A <code>referer</code>[sic] HTTP will
-  still be sent, but it will contain the empty string.
+  still be sent, but it will contain the empty byte sequence.
 
   <div class="example">
     If a document at <code>https://example.com/page.html</code> sets a policy of
     <code>None</code>, then navigations to <code>https://example.com/</code>
     (and every other origin) would send a <code>referer</code> HTTP header with
-    a value of the empty string.
+    a value of the empty byte sequence.
   </div>
 
   <h3 id="referrer-policy-state-none-when-downgrade">None When Downgrade</h3>
@@ -170,7 +170,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
   Requests from <a>TLS-protected</a> <a>global environments</a> to <a>assumed
   insecure origins</a>, on the other hand, will contain no referrer
   information. A <code>referer</code>[sic] HTTP will still be sent, but it will
-  contain the empty string.
+  contain the empty byte sequence.
 
   <div class="example">
     If a document at <code>https://example.com/page.html</code> sets a policy of
@@ -181,7 +181,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 
     Navigations from that same page to
     <code><strong>http</strong>://not.example.com/</code> would send a
-    <code>referer</code> HTTP header with a value of the empty string.
+    <code>referer</code> HTTP header with a value of the empty byte sequence.
   </div>
 
   This is a user agent's default behavior, if no policy is otherwise specified.
@@ -330,7 +330,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
     </li>
 
     <li>
-      If <var>currentPolicy</var> is the empty string (that is, if no policy has
+      If <var>currentPolicy</var> is <code>null</code> (that is, if no policy has
       been explicitly set), then:
 
       <ol>
@@ -368,7 +368,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
       <a>referrer policy</a>.
     </li>
     <li>
-      Let <var>headerValue</var> be the empty string.
+      Let <var>headerValue</var> be the empty byte sequence.
     </li>
     <li>
       Let <var>referrerURL</var> be the URL of <var>request</var>'s
@@ -376,15 +376,16 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
       not <code>null</code>, and otherwise the URL of <var>environment</var>.
     </li>
     <li>
-      Let <var>referrerOrigin</var> be the
+      Let <var>referrerOrigin</var> be the result of appending a U+002F SOLIDUS
+      code point to the
       <a title="ASCII serialization of an origin">ASCII serialization</a> of
-      the <a>origin</a> of <var>referrerURL</var>.
+      the <a>origin</a> of <var>referrerURL</var> .
     </li>
 
     <!-- None -->
     <li>
       If <var>policy</var> is <code><a>None</a></code>, set
-      <var>headerValue</var> to the empty string.
+      <var>headerValue</var> to the empty byte sequence.
     </li>
     <!-- Origin -->
     <li>
@@ -419,7 +420,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
     <!-- None When Downgrade -->
     <li>
       If <var>policy</var> is <code><a>None When Downgrade</a></code>, or the
-      empty string, then:
+      <code>null</code>, then:
       
       <ol>
         <li>
@@ -435,7 +436,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
             <li>
               If the <a>origin</a> of <var>request</var>'s <code>URL</code> is
               an <a>assumed insecure origin</a>, then set <var>headerValue</var>
-              to the empty string.
+              to the empty byte sequence.
             </li>
             <li>
               Otherwise, the <a>origin</a> of <var>request</var>'s
