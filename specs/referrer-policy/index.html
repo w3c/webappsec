@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Referrer Policy</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140604>4 June 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140605>5 June 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/referrerpolicy/>https://w3c.github.io/webappsec/specs/referrerpolicy/</a><dt>Editor’s Draft:<dd><a href=https://w3c.github.io/webappsec/specs/referrerpolicy/>https://w3c.github.io/webappsec/specs/referrerpolicy/</a><dt>Version History:<dd><a href=https://github.com/w3c/webappsec/commits/master/specs/referrerpolicy/index.src.html>https://github.com/w3c/webappsec/commits/master/specs/referrerpolicy/index.src.html</a>
     <dt>Feedback:</dt>
         <dd><a href="mailto:public-webappsec@w3.org?subject=%5BREFERRER%5D%20feedback">public-webappsec@w3.org</a>
@@ -121,6 +121,11 @@
 <h2 class="no-num no-toc no-ref heading settled heading" id=contents><span class=content>Table of Contents</span></h2>
 <div data-fill-with=table-of-contents><ul class=toc>
 	<li><a href=#intro><span class=secno>1</span>Introduction</a>
+		<ul class=toc>
+		<li><a href=#privacy><span class=secno>1.1</span>Privacy</a>
+		<li><a href=#security><span class=secno>1.2</span>Security</a>
+		<li><a href=#trackback><span class=secno>1.3</span>Trackback</a>
+		<li><a href=#object-capability-discipline><span class=secno>1.4</span>Object-Capability Discipline</a></ul>
 	<li><a href=#terms><span class=secno>2</span>Key Concepts and Terminology</a>
 		<ul class=toc>
 		<li><a href=#terms-defined-here><span class=secno>2.1</span>Terms defined by this specification</a>
@@ -163,7 +168,35 @@
 
 <p><em>This section is not normative.</em></p>
 
-<p>Blah blah blah.</p>
+<p>An author might wish to control the <code>Referer</code> header omitted by a
+  document for a number of reasons.</p>
+
+  <h3 class="heading settled heading" data-level=1.1 id=privacy><span class=secno>1.1 </span><span class=content>Privacy</span><a class=self-link href=#privacy></a></h3>
+    A social networking site has a profile page for each of its users, and users
+    add hyperlinks from their profile page to their favorite bands. The social
+    networking site might not wish to leak the user’s profile URL to the band web
+    sites when other users follow those hyperlinks (because the profile URLs might
+    reveal the identity of the owner of the profile).
+
+<p>Some social networking sites, however, might wish to inform the band web sites
+    that the links originated from the social networking site but not reveal which
+    specific user’s profile contained the links.</p>
+
+  <h3 class="heading settled heading" data-level=1.2 id=security><span class=secno>1.2 </span><span class=content>Security</span><a class=self-link href=#security></a></h3>
+    A web application uses HTTPS and a URL-based session identifier. The web
+    application might wish to link to HTTPS resources on other web sites without
+    leaking the user’s session identifier in the URL.
+
+  <h3 class="heading settled heading" data-level=1.3 id=trackback><span class=secno>1.3 </span><span class=content>Trackback</span><a class=self-link href=#trackback></a></h3>
+    A blog hosted over HTTPS might wish to link to a blog hosted over HTTP and
+    receive trackback links.
+
+  <h3 class="heading settled heading" data-level=1.4 id=object-capability-discipline><span class=secno>1.4 </span><span class=content>Object-Capability Discipline</span><a class=self-link href=#object-capability-discipline></a></h3>
+    Some web applications wish to follow an object-capability discipline. The
+    Referer header constitutes an ambient authority, contrary to an
+    object-capability discipline. Having the ability to disable the Referer header
+    makes it easier for these web applications to follow this discipline.
+
 </section>
 
 
@@ -182,7 +215,7 @@
       subresources or performing navigations.
 
 <p>If no referrer policy is explicitly set for a <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>,
-      then the value of the property is the empty string. Otherwise, the value
+      then the value of the property is <code>null</code>. Otherwise, the value
       is whatever has been explicitly set, as explained in the
       <a data-section="" href=#set-referrer-policy>
     Set environment’s referrer policy to policy.
@@ -265,7 +298,7 @@
 
 <p>Every <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> has a <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> which governs
   the referrer information sent along with requests made for subresources, and
-  for navigations. The <a data-link-type=dfn href=#referrer-policy title=policy>policy</a> will be the empty string if no policy has
+  for navigations. The <a data-link-type=dfn href=#referrer-policy title=policy>policy</a> will be <code>null</code> if no policy has
   been set, otherwise it will be one of the following five values:
   <code><a data-link-type=dfn href=#none title=none>None</a></code>, <code><a data-link-type=dfn href=#none-when-downgrade title="none when downgrade">None when downgrade</a></code>,
   <code><a data-link-type=dfn href=#origin-only title="origin only">Origin Only</a></code>, <code><a data-link-type=dfn href=#origin-when-cross-origin title="origin when cross-origin">Origin when cross-origin</a></code>,
@@ -279,13 +312,13 @@
 <p>The simplest policy is <dfn data-dfn-type=dfn data-noexport="" id=none>None<a class=self-link href=#none></a></dfn>, which specifies that no referrer
   information is to be sent along with requests made from a particular <a data-link-type=dfn href=#javascript-global-environment title="global environment">global
   environment</a> to any <a data-link-type=dfn href=#origin title=origin>origin</a>. A <code>referer</code>[sic] HTTP will
-  still be sent, but it will contain the empty string.</p>
+  still be sent, but it will contain the empty byte sequence.</p>
 
   <div class=example>
     If a document at <code>https://example.com/page.html</code> sets a policy of
     <code>None</code>, then navigations to <code>https://example.com/</code>
     (and every other origin) would send a <code>referer</code> HTTP header with
-    a value of the empty string.
+    a value of the empty byte sequence.
   </div>
 
   <h3 class="heading settled heading" data-level=3.2 id=referrer-policy-state-none-when-downgrade><span class=secno>3.2 </span><span class=content>None When Downgrade</span><a class=self-link href=#referrer-policy-state-none-when-downgrade></a></h3>
@@ -298,7 +331,7 @@
 <p>Requests from <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a> <a data-link-type=dfn href=#javascript-global-environment title="global environments">global environments</a> to <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origins">assumed
   insecure origins</a>, on the other hand, will contain no referrer
   information. A <code>referer</code>[sic] HTTP will still be sent, but it will
-  contain the empty string.</p>
+  contain the empty byte sequence.</p>
 
   <div class=example>
     If a document at <code>https://example.com/page.html</code> sets a policy of
@@ -309,7 +342,7 @@
 
 <p>Navigations from that same page to
     <code><strong>http</strong>://not.example.com/</code> would send a
-    <code>referer</code> HTTP header with a value of the empty string.</p>
+    <code>referer</code> HTTP header with a value of the empty byte sequence.</p>
   </div>
 
 <p>This is a user agent’s default behavior, if no policy is otherwise specified.</p>
@@ -458,7 +491,7 @@
     </li>
 
     <li>
-      If <var>currentPolicy</var> is the empty string (that is, if no policy has
+      If <var>currentPolicy</var> is <code>null</code> (that is, if no policy has
       been explicitly set), then:
 
       <ol>
@@ -496,24 +529,24 @@
       <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a>.
     </li>
     <li>
-      Let <var>headerValue</var> be the empty string.
+      Let <var>headerValue</var> be the empty byte sequence.
     </li>
     <li>
       Let <var>referrerURL</var> be the URL of <var>request</var>’s
       <code>referrer</code> if <var>request</var>’s <code>referrer</code> is
-      not <code>null</code>, and otherwise the URL of <var>request</var>’s
-      <code>client</code>.
+      not <code>null</code>, and otherwise the URL of <var>environment</var>.
     </li>
     <li>
-      Let <var>referrerOrigin</var> be the
+      Let <var>referrerOrigin</var> be the result of appending a U+002F SOLIDUS
+      code point to the
       <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of
-      the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>referrerURL</var>.
+      the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>referrerURL</var> .
     </li>
 
     
     <li>
       If <var>policy</var> is <code><a data-link-type=dfn href=#none title=none>None</a></code>, set
-      <var>headerValue</var> to the empty string.
+      <var>headerValue</var> to the empty byte sequence.
     </li>
     
     <li>
@@ -532,7 +565,7 @@
         </li>
 
         <li>
-          Otherwise, set <var>headerValue to the 
+          Otherwise, set <var>headerValue to the
           <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
           of <var>referrerURL</var>.
         </var></li>
@@ -548,7 +581,7 @@
     
     <li>
       If <var>policy</var> is <code><a data-link-type=dfn href=#none-when-downgrade title="none when downgrade">None When Downgrade</a></code>, or the
-      empty string, then:
+      <code>null</code>, then:
 
       <ol>
         <li>
@@ -564,7 +597,7 @@
             <li>
               If the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s <code>URL</code> is
               an <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origin">assumed insecure origin</a>, then set <var>headerValue</var>
-              to the empty string.
+              to the empty byte sequence.
             </li>
             <li>
               Otherwise, the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s
