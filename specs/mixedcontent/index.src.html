@@ -61,11 +61,16 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   resource whose status is mixed, as insecure requests are wide open for
   man-in-the-middle attacks. This scenario is unfortunately quite common.
 
-  This specification details how user agents can mitigate this risk to users'
+  Regardless of <code>example.com</code>'s own privacy, users' privacy and
+  security can be further impacted if a public resource can generate requests
+  to private resources on a local network. For example, public resources must
+  not be allowed to generate requests to a user's router, or an enterprise's
+  internal file server.
+
+  This specification details how user agents can mitigate these risks to
   security and privacy by limiting a resource's ability to inadvertently
-  communicate in the clear. At worst, resource requests for insecure content
-  should downgrade any visible security indicators presented to the user (e.g.
-  no "green lock"). At best, these requests should be blocked entirely.
+  communicate in the clear, or to expose non-public resources to the web at
+  large.
 </section>
 
 <!--
@@ -83,50 +88,88 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   <h3 id="terms-defined-here">Terms defined by this specification</h3>
   <dl>
     <dt>
-      <dfn export title="mixed content|mixed">mixed content</dfn>
+      <dfn export local-title="mixed">mixed content</dfn>
     </dt>
     <dd>
-      A resource is said to be <strong>mixed content</strong> if its origin is
-      <a>assumed insecure</a> or <a>proven insecure</a>, <strong>and</strong>
-      the <a>JavaScript global environment</a> into which it is loaded is a
-      <a>secure context</a>.
+      A resource is said to be <strong>mixed content</strong> if either of the
+      following conditions holds:
+
+      <ul>
+        <li>
+          The resource's <a>origin</a> is <a>assumed insecure</a> or <a>proven
+          insecure</a>, <strong>and</strong> the <a>JavaScript global
+          environment</a> into which it is loaded is a <a>secure context</a>.
+        </li>
+        <li>
+          The resource's <a>origin</a> is <a>private</a> <strong>and</strong>
+          the <a>origin</a> of the <a>JavaScript global environment</a> into
+          which it is loaded is <a>public</a>.
+        </li>
+      </ul>
+
+      <div class="example">
+        The image <code>http://example.com/image.png</code> is <strong>mixed
+        content</strong> when loaded by
+        <code>https://not.example.com/</code>.
+
+        The image <code>http://127.0.0.1/image.png</code> is <strong>mixed
+        content</strong> when loaded by <code>http://example.com/</code>.
+      </div>
     </dd>
 
     <dt>
-      <dfn export title="assumed secure origin|assumed secure">
+      <dfn export local-title="private">private origin</dfn>
+    </dt>
+    <dd>
+      An <a>origin</a> is considered a <strong>private origin</strong> if any
+      of the following conditions holds:
+
+      <ul>
+        <li>
+          The origin's <code>scheme</code> component is <code>file</code>.
+        </li>
+        <li>
+          The origin's <code>host</code> component is <code>localhost</code>,
+          or matches one of the CIDR notations <code>127.0.0.0/8</code> or
+          <code>::1/128</code> [[!RFC4632]]
+        </li>
+        <li>
+          The origin's <code>host</code> component matches one of the
+          <dfn>private address space</dfn> patterns defined in
+          <a href="http://tools.ietf.org/html/rfc1918#section-3">Section 3 of
+          RFC1918</a> (<code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>,
+          <code>192.168.0.0/16</code>) [[!RFC1918]].
+        </li>
+        <li>
+          The origin's <code>host</code> component is an <dfn>Internal
+          Name</dfn>, as defined by the
+          <a href="https://cabforum.org/baseline-requirements-documents/">
+          CA/Browser Forum's Baseline Requirements</a>.
+        </li>
+      </ul>
+    </dd>
+
+    <dt>
+      <dfn export local-title="public">public origin</dfn>
+    </dt>
+    <dd>
+      Any <a>origin</a> which is not <a>private</a> is said to be a
+      <strong>public origin</strong>.
+    </dd>
+
+    <dt>
+      <dfn export local-title="assumed secure">
         assumed secure origin
       </dfn>
     </dt>
     <dd>
-      An <a>origin</a> is said to be <strong>assumed secure</strong> if one or
-      more of the following is true:
+      An <a>origin</a> is said to be <strong>assumed secure</strong> if one of
+      the following is true:
 
       <ul>
         <li>
           The origin's scheme component is <code>HTTPS</code> or
           <code>WSS</code>.
-        </li>
-        <li>
-          The origin's scheme component is <code>file</code>.
-
-          Note: <code>file:</code> URLs are considered secure as the local
-          filesystem is part of the trusted computing base that the user agent
-          is obliged to trust.
-
-          Issue: Do we need to care about Windows' UNC paths that point to a
-          non-local resource (e.g.
-          <code>\\server.example.com\share\file</code>)?
-        </li>
-        <li>
-          The origin's host component is <code>localhost</code> or matches one
-          of the CIDR notations <code>127.0.0.0/8</code> or
-          <code>::1/128</code>. [[!RFC4632]]
-
-          Note: The loopback addresses <code>localhost</code>,
-          <code>127.0.0.1</code> and so on are considered secure as no traffic
-          is sent over the network. If a user agent supports other such URLs
-          (Chrome's <code>chrome-extension:</code> scheme, for instance), they
-          may also be considered secure.
         </li>
         <li>
           The origin is a <a>globally unique identifier</a> (for example,
@@ -140,7 +183,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     </dd>
 
     <dt>
-      <dfn export title="assumed insecure origin|assumed insecure|assumed">
+      <dfn export local-title="assumed insecure">
         assumed insecure origin
       </dfn>
     </dt>
@@ -150,7 +193,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     </dd>
 
     <dt>
-      <dfn export title="proven insecure origin|proven insecure|proven">
+      <dfn export local-title="proven insecure">
         proven insecure origin
       </dfn>
     </dt>
@@ -164,7 +207,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     </dd>
 
     <dt>
-      <dfn export title="deprecated TLS-protection|deprecated">
+      <dfn export local-title="deprecated">
         deprecated TLS-protection
       </dfn>
     </dt>
@@ -174,10 +217,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       refuse it anyway. This determination is vendor-specific.
 
       For example, a user agent may choose to reject resources for which the
-      server presented a publicly-trusted certificate for an intranet name
-      (e.g. <code>https://intranet/</code>), a certificate with an overly-long
-      validity period, a certificate signed with SHA-1, or a certificate which
-      otherwise fails to meet the
+      server presented a publicly-trusted certificate for an <a>Internal
+      Name</a> (e.g. <code>https://intranet/</code>), a certificate with an
+      overly-long validity period, a certificate signed with SHA-1, or a
+      certificate which otherwise fails to meet the
       <a href="https://cabforum.org/baseline-requirements-documents/">
       CA/Browser Forum's Baseline Requirements</a>.
     </dd>
@@ -544,6 +587,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         <code>Strict-Transport-Security</code> header field as forcing all
         content into the <a>active</a> category. [[RFC6797]]
       </li>
+
       <li>
         <a>Requests</a> for <a>optionally blockable passive</a> resources which
         are <a>mixed content</a>, but which are <strong>not</strong> treated
@@ -551,6 +595,18 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         For example, cookies and other authentication tokens could be stripped
         from the requests, or the user agent could automatically change the
         protocol of the requested URL to <code>HTTPS</code> in certain cases.
+      </li>
+    </ol>
+
+    If a <a>global environment</a>'s origin is a <a>public origin</a>, then user
+    agents MUST adhere to the following requirements when <a>fetching</a>
+    resources in response to the environment's requests:
+
+    <ol>
+      <li>
+        <a>Requests</a> to <a>private origins</a> from <a>public origins</a>
+        MUST not generate network traffic, and MUST instead return a
+        synthetically generated <a>network error</a> response.
       </li>
     </ol>
 
@@ -721,11 +777,20 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         with which <var>client</var> is associated.
       </li>
       <li>
+        Let <var>origin</var> be the <a>origin</a> of <var>request</var>'s
+        <strong>URL</strong>.
+      </li>
+      <li>
+        If <var>origin</var> is a <a>private origin</a>, and
+        <var>environment</var>'s <a>origin</a> is a <a>public origin</a>,
+        return <strong>blocked</strong>.
+      </li>
+      <li>
         If <var>environment</var> is not a <a>secure context</a>, return
         <strong>allowed</strong>.
       </li>
       <li>
-        If <var>url</var> can be <a>assumed insecure</a>:
+        If <var>origin</var> is <a>assumed insecure</a>:
 
         <ol>
           <li>
@@ -740,7 +805,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         </ol>
       </li>
       <li>
-        Otherwise, <var>url</var> can be <a>assumed secure</a>, so return
+        Otherwise, <var>origin</var> is <a>assumed secure</a>, so return
         <strong>allowed</strong>.
       </li>
     </ol>
@@ -841,8 +906,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 
   When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a>assumed insecure origins</a>, and at the bottom of the
-  algorithm, to block responses from <a>proven insecure origins</a>.
+  traffic to <a>assumed insecure origins</a> and <a>private origins</a>, and at
+  the bottom of the algorithm, to block responses from <a>proven insecure
+  origins</a>.
 
   The Fetch algorithm MUST be updated as follows: [[!FETCH]]
 
@@ -924,6 +990,13 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
           global environment</a> which the <var>entry script</var> is associated
           with is a <a>secure context</a>, then throw a
           <code>SecurityError</code> exception.
+        </li>
+        <li>
+          If the <a>origin</a> of the <a>JavaScript global environment</a> with
+          which the <var>entry script</var> is associated is a <a>public
+          origin</a>, and the <a>origin</a> of the <var>url</var> argument is a
+          <a>private origin</a>, then throw a <code>SecurityError</code>
+          exception.
         </li>
       </ol>
     </li>

@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140604>4 June 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140605>5 June 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a><dt>Editor’s Draft:<dd><a href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a><dt>Version History:<dd><a href=https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html>https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html</a>
     <dt>Feedback:</dt>
         <dd><a href="mailto:public-webappsec@w3.org?subject=%5BMIX%5D%20feedback">public-webappsec@w3.org</a>
@@ -201,11 +201,16 @@
   resource whose status is mixed, as insecure requests are wide open for
   man-in-the-middle attacks. This scenario is unfortunately quite common.</p>
 
-<p>This specification details how user agents can mitigate this risk to users'
+<p>Regardless of <code>example.com</code>’s own privacy, users' privacy and
+  security can be further impacted if a public resource can generate requests
+  to private resources on a local network. For example, public resources must
+  not be allowed to generate requests to a user’s router, or an enterprise’s
+  internal file server.</p>
+
+<p>This specification details how user agents can mitigate these risks to
   security and privacy by limiting a resource’s ability to inadvertently
-  communicate in the clear. At worst, resource requests for insecure content
-  should downgrade any visible security indicators presented to the user (e.g.
-  no "green lock"). At best, these requests should be blocked entirely.</p>
+  communicate in the clear, or to expose non-public resources to the web at
+  large.</p>
 </section>
 
 
@@ -215,50 +220,88 @@
   <h3 class="heading settled heading" data-level=2.1 id=terms-defined-here><span class=secno>2.1 </span><span class=content>Terms defined by this specification</span><a class=self-link href=#terms-defined-here></a></h3>
   <dl>
     <dt>
-      <dfn data-dfn-type=dfn data-export="" id=mixed-content title="mixed content|mixed">mixed content<a class=self-link href=#mixed-content></a></dfn>
+      <dfn data-dfn-type=dfn data-export="" data-local-title=mixed id=mixed-content>mixed content<a class=self-link href=#mixed-content></a></dfn>
     </dt>
     <dd>
-      A resource is said to be <strong>mixed content</strong> if its origin is
-      <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure">assumed insecure</a> or <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure">proven insecure</a>, <strong>and</strong>
-      the <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global environment</a> into which it is loaded is a
-      <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>.
+      A resource is said to be <strong>mixed content</strong> if either of the
+      following conditions holds:
+
+      <ul>
+        <li>
+          The resource’s <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure">assumed insecure</a> or <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure">proven
+          insecure</a>, <strong>and</strong> the <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global
+          environment</a> into which it is loaded is a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>.
+        </li>
+        <li>
+          The resource’s <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#private-origin title=private>private</a> <strong>and</strong>
+          the <a data-link-type=dfn href=#origin title=origin>origin</a> of the <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global environment</a> into
+          which it is loaded is <a data-link-type=dfn href=#public-origin title=public>public</a>.
+        </li>
+      </ul>
+
+      <div class=example>
+        The image <code>http://example.com/image.png</code> is <strong>mixed
+        content</strong> when loaded by
+        <code>https://not.example.com/</code>.
+
+<p>The image <code>http://127.0.0.1/image.png</code> is <strong>mixed
+        content</strong> when loaded by <code>http://example.com/</code>.</p>
+      </div>
     </dd>
 
     <dt>
-      <dfn data-dfn-type=dfn data-export="" id=assumed-secure-origin title="assumed secure origin|assumed secure">
+      <dfn data-dfn-type=dfn data-export="" data-local-title=private id=private-origin>private origin<a class=self-link href=#private-origin></a></dfn>
+    </dt>
+    <dd>
+      An <a data-link-type=dfn href=#origin title=origin>origin</a> is considered a <strong>private origin</strong> if any
+      of the following conditions holds:
+
+      <ul>
+        <li>
+          The origin’s <code>scheme</code> component is <code>file</code>.
+        </li>
+        <li>
+          The origin’s <code>host</code> component is <code>localhost</code>,
+          or matches one of the CIDR notations <code>127.0.0.0/8</code> or
+          <code>::1/128</code> <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=biblio-rfc4632>[RFC4632]</a>
+        </li>
+        <li>
+          The origin’s <code>host</code> component matches one of the
+          <dfn data-dfn-type=dfn data-noexport="" id=private-address-space>private address space<a class=self-link href=#private-address-space></a></dfn> patterns defined in
+          <a href=http://tools.ietf.org/html/rfc1918#section-3>Section 3 of
+          RFC1918</a> (<code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>,
+          <code>192.168.0.0/16</code>) <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc1918 title=biblio-rfc1918>[RFC1918]</a>.
+        </li>
+        <li>
+          The origin’s <code>host</code> component is an <dfn data-dfn-type=dfn data-noexport="" id=internal-name>Internal
+          Name<a class=self-link href=#internal-name></a></dfn>, as defined by the
+          <a href=https://cabforum.org/baseline-requirements-documents/>
+          CA/Browser Forum’s Baseline Requirements</a>.
+        </li>
+      </ul>
+    </dd>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" data-local-title=public id=public-origin>public origin<a class=self-link href=#public-origin></a></dfn>
+    </dt>
+    <dd>
+      Any <a data-link-type=dfn href=#origin title=origin>origin</a> which is not <a data-link-type=dfn href=#private-origin title=private>private</a> is said to be a
+      <strong>public origin</strong>.
+    </dd>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" data-local-title="assumed secure" id=assumed-secure-origin>
         assumed secure origin
       <a class=self-link href=#assumed-secure-origin></a></dfn>
     </dt>
     <dd>
-      An <a data-link-type=dfn href=#origin title=origin>origin</a> is said to be <strong>assumed secure</strong> if one or
-      more of the following is true:
+      An <a data-link-type=dfn href=#origin title=origin>origin</a> is said to be <strong>assumed secure</strong> if one of
+      the following is true:
 
       <ul>
         <li>
           The origin’s scheme component is <code>HTTPS</code> or
           <code>WSS</code>.
-        </li>
-        <li>
-          The origin’s scheme component is <code>file</code>.
-
-<p class=note>Note: <code>file:</code> URLs are considered secure as the local
-          filesystem is part of the trusted computing base that the user agent
-          is obliged to trust.</p>
-
-<p class=issue id=issue-a1301df2><a class=self-link href=#issue-a1301df2></a>Do we need to care about Windows' UNC paths that point to a
-          non-local resource (e.g.
-          <code>\\server.example.com\share\file</code>)?</p>
-        </li>
-        <li>
-          The origin’s host component is <code>localhost</code> or matches one
-          of the CIDR notations <code>127.0.0.0/8</code> or
-          <code>::1/128</code>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=biblio-rfc4632>[RFC4632]</a>
-
-<p class=note>Note: The loopback addresses <code>localhost</code>,
-          <code>127.0.0.1</code> and so on are considered secure as no traffic
-          is sent over the network. If a user agent supports other such URLs
-          (Chrome’s <code>chrome-extension:</code> scheme, for instance), they
-          may also be considered secure.</p>
         </li>
         <li>
           The origin is a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a> (for example,
@@ -272,7 +315,7 @@
     </dd>
 
     <dt>
-      <dfn data-dfn-type=dfn data-export="" id=assumed-insecure-origin title="assumed insecure origin|assumed insecure|assumed">
+      <dfn data-dfn-type=dfn data-export="" data-local-title="assumed insecure" id=assumed-insecure-origin>
         assumed insecure origin
       <a class=self-link href=#assumed-insecure-origin></a></dfn>
     </dt>
@@ -282,7 +325,7 @@
     </dd>
 
     <dt>
-      <dfn data-dfn-type=dfn data-export="" id=proven-insecure-origin title="proven insecure origin|proven insecure|proven">
+      <dfn data-dfn-type=dfn data-export="" data-local-title="proven insecure" id=proven-insecure-origin>
         proven insecure origin
       <a class=self-link href=#proven-insecure-origin></a></dfn>
     </dt>
@@ -306,10 +349,10 @@
       refuse it anyway. This determination is vendor-specific.
 
 <p>For example, a user agent may choose to reject resources for which the
-      server presented a publicly-trusted certificate for an intranet name
-      (e.g. <code>https://intranet/</code>), a certificate with an overly-long
-      validity period, a certificate signed with SHA-1, or a certificate which
-      otherwise fails to meet the
+      server presented a publicly-trusted certificate for an <a data-link-type=dfn href=#internal-name title="internal name">Internal
+      Name</a> (e.g. <code>https://intranet/</code>), a certificate with an
+      overly-long validity period, a certificate signed with SHA-1, or a
+      certificate which otherwise fails to meet the
       <a href=https://cabforum.org/baseline-requirements-documents/>
       CA/Browser Forum’s Baseline Requirements</a>.</p>
     </dd>
@@ -651,13 +694,33 @@
 
       <li>
         <a data-link-type=dfn href=#request title=requests>Requests</a> for <a data-link-type=dfn href=#optionally-blockable-passive-content title="optionally blockable passive">optionally blockable passive</a> resources which
-        are <a data-link-type=dfn href=#mixed-content title="mixed content">mixed content</a> MAY be treated as <a data-link-type=dfn href=#active-content title=active>active</a> (and therefore
-        blocked entirely or returned as a <a data-link-type=dfn href=#network-error title="network error">network error</a> as described
-        above).
+        are <a data-link-type=dfn href=#mixed-content title="mixed content">mixed content</a> SHOULD be treated as <a data-link-type=dfn href=#active-content title=active>active</a> (and
+        therefore returned as a <a data-link-type=dfn href=#network-error title="network error">network error</a> as described above).
 
 <p class=note>Note: For instance, a user agent could interpret the presence of a
         <code>Strict-Transport-Security</code> header field as forcing all
         content into the <a data-link-type=dfn href=#active-content title=active>active</a> category. <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6797 title=biblio-rfc6797>[RFC6797]</a></p>
+      </li>
+
+      <li>
+        <a data-link-type=dfn href=#request title=requests>Requests</a> for <a data-link-type=dfn href=#optionally-blockable-passive-content title="optionally blockable passive">optionally blockable passive</a> resources which
+        are <a data-link-type=dfn href=#mixed-content title="mixed content">mixed content</a>, but which are <strong>not</strong> treated
+        as <a data-link-type=dfn href=#active-content title="active content">active content</a> MAY be modified to reduce the risk to users.
+        For example, cookies and other authentication tokens could be stripped
+        from the requests, or the user agent could automatically change the
+        protocol of the requested URL to <code>HTTPS</code> in certain cases.
+      </li>
+    </ol>
+
+<p>If a <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>’s origin is a <a data-link-type=dfn href=#public-origin title="public origin">public origin</a>, then user
+    agents MUST adhere to the following requirements when <a data-link-type=dfn href=#fetch title=fetching>fetching</a>
+    resources in response to the environment’s requests:</p>
+
+    <ol>
+      <li>
+        <a data-link-type=dfn href=#request title=requests>Requests</a> to <a data-link-type=dfn href=#private-origin title="private origins">private origins</a> from <a data-link-type=dfn href=#public-origin title="public origins">public origins</a>
+        MUST not generate network traffic, and MUST instead return a
+        synthetically generated <a data-link-type=dfn href=#network-error title="network error">network error</a> response.
       </li>
     </ol>
 
@@ -820,11 +883,20 @@
         with which <var>client</var> is associated.
       </li>
       <li>
+        Let <var>origin</var> be the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s
+        <strong>URL</strong>.
+      </li>
+      <li>
+        If <var>origin</var> is a <a data-link-type=dfn href=#private-origin title="private origin">private origin</a>, and
+        <var>environment</var>’s <a data-link-type=dfn href=#origin title=origin>origin</a> is a <a data-link-type=dfn href=#public-origin title="public origin">public origin</a>,
+        return <strong>blocked</strong>.
+      </li>
+      <li>
         If <var>environment</var> is not a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, return
         <strong>allowed</strong>.
       </li>
       <li>
-        If <var>url</var> can be <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure">assumed insecure</a>:
+        If <var>origin</var> is <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure">assumed insecure</a>:
 
         <ol>
           <li>
@@ -839,7 +911,7 @@
         </ol>
       </li>
       <li>
-        Otherwise, <var>url</var> can be <a data-link-type=dfn href=#assumed-secure-origin title="assumed secure">assumed secure</a>, so return
+        Otherwise, <var>origin</var> is <a data-link-type=dfn href=#assumed-secure-origin title="assumed secure">assumed secure</a>, so return
         <strong>allowed</strong>.
       </li>
     </ol>
@@ -932,8 +1004,9 @@
 
 <p>When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origins">assumed insecure origins</a>, and at the bottom of the
-  algorithm, to block responses from <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure origins">proven insecure origins</a>.</p>
+  traffic to <a data-link-type=dfn href=#assumed-insecure-origin title="assumed insecure origins">assumed insecure origins</a> and <a data-link-type=dfn href=#private-origin title="private origins">private origins</a>, and at
+  the bottom of the algorithm, to block responses from <a data-link-type=dfn href=#proven-insecure-origin title="proven insecure origins">proven insecure
+  origins</a>.</p>
 
 <p>The Fetch algorithm MUST be updated as follows: <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=biblio-fetch>[FETCH]</a></p>
 
@@ -993,10 +1066,9 @@
   <h2 class="heading settled heading" data-level=7 id=websockets-integration><span class=secno>7 </span><span class=content>Modifications to WebSockets</span><a class=self-link href=#websockets-integration></a></h2>
 
 <p>WebSocket connections don’t go through the Fetch algorithm, they’re defined
-  defined in the
-  <a href=http://tools.ietf.org/html/rfc6455#section-4.1>Establish a WebSocket
-  Connection</a> algorithm <a data-biblio-type=normative data-link-type=biblio href=#biblio-wsp title=biblio-wsp>[WSP]</a>, and in the 'WebSocket()' constructor
-  algorithm. Those algorithm MUST be modified as follows:</p>
+  in the <a href=http://tools.ietf.org/html/rfc6455#section-4.1>Establish a
+  WebSocket Connection</a> algorithm <a data-biblio-type=normative data-link-type=biblio href=#biblio-wsp title=biblio-wsp>[WSP]</a>, and in the 'WebSocket()'
+  constructor algorithm. Those algorithms MUST be modified as follows:</p>
 
   <ul>
     <li>
@@ -1011,6 +1083,13 @@
           global environment</a> which the <var>entry script</var> is associated
           with is a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, then throw a
           <code>SecurityError</code> exception.
+        </li>
+        <li>
+          If the <a data-link-type=dfn href=#origin title=origin>origin</a> of the <a data-link-type=dfn href=#javascript-global-environment title="javascript global environment">JavaScript global environment</a> with
+          which the <var>entry script</var> is associated is a <a data-link-type=dfn href=#public-origin title="public origin">public
+          origin</a>, and the <a data-link-type=dfn href=#origin title=origin>origin</a> of the <var>url</var> argument is a
+          <a data-link-type=dfn href=#private-origin title="private origin">private origin</a>, then throw a <code>SecurityError</code>
+          exception.
         </li>
       </ol>
     </li>
@@ -1108,6 +1187,7 @@ Normative References</span><a class=self-link href=#normative></a></h3>
 <dt id=biblio-html-imports title=HTML-IMPORTS><a class=self-link href=#biblio-html-imports></a>[HTML-IMPORTS]<dd>Dmitri Glazkov; Hajime Morrita. <a href=http://www.w3.org/TR/html-imports/>HTML Imports</a>. WD. URL: <a href=http://www.w3.org/TR/html-imports/>http://www.w3.org/TR/html-imports/</a></dd>
 <dt id=biblio-html5 title=HTML5><a class=self-link href=#biblio-html5></a>[HTML5]<dd>Robin Berjon; et al. <a href=http://www.w3.org/TR/2013/CR-html5-20130806/>HTML5</a>. 6 August 2013. W3C Candidate Recommendation. (Work in progress.) URL: <a href=http://www.w3.org/TR/2013/CR-html5-20130806/>http://www.w3.org/TR/2013/CR-html5-20130806/</a></dd>
 <dt id=biblio-manifest title=MANIFEST><a class=self-link href=#biblio-manifest></a>[MANIFEST]<dd>Marcos Caceres; Anssi Kostiainen; Kenneth Rohde Christiansen. <a href=http://w3c.github.io/manifest/>Manifest for web application</a>. WD. URL: <a href=http://w3c.github.io/manifest/>http://w3c.github.io/manifest/</a></dd>
+<dt id=biblio-rfc1918 title=RFC1918><a class=self-link href=#biblio-rfc1918></a>[RFC1918]<dd>Yakov Rekhter; et al. <a href=http://www.ietf.org/rfc/rfc1918.txt>Address Allocation for Private Internets</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc1918.txt>http://www.ietf.org/rfc/rfc1918.txt</a></dd>
 <dt id=biblio-rfc2119 title=RFC2119><a class=self-link href=#biblio-rfc2119></a>[RFC2119]<dd>S. Bradner. <a href=http://www.ietf.org/rfc/rfc2119.txt>Key words for use in RFCs to Indicate Requirement Levels</a>. URL: <a href=http://www.ietf.org/rfc/rfc2119.txt>http://www.ietf.org/rfc/rfc2119.txt</a></dd>
 <dt id=biblio-rfc4632 title=RFC4632><a class=self-link href=#biblio-rfc4632></a>[RFC4632]<dd>Vince Fuller; Tony Li. <a href=http://www.ietf.org/rfc/rfc4632.txt>Classless Inter-domain Routing (CIDR): The Internet Address Assignment and Aggregation Plan</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc4632.txt>http://www.ietf.org/rfc/rfc4632.txt</a></dd>
 <dt id=biblio-rfc6454 title=RFC6454><a class=self-link href=#biblio-rfc6454></a>[RFC6454]<dd>Adam Barth. <a href=http://www.ietf.org/rfc/rfc6454.txt>The Web Origin Concept</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6454.txt>http://www.ietf.org/rfc/rfc6454.txt</a></dd>
@@ -1134,7 +1214,6 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>active, <a href=#active-content title="section 3.1">3.1</a>
 <li>active content, <a href=#active-content title="section 3.1">3.1</a>
 <li>active request contexts, <a href=#active-request-contexts title="section 3.1">3.1</a>
-<li>assumed, <a href=#assumed-insecure-origin title="section 2.1">2.1</a>
 <li>assumed insecure, <a href=#assumed-insecure-origin title="section 2.1">2.1</a>
 <li>assumed insecure origin, <a href=#assumed-insecure-origin title="section 2.1">2.1</a>
 <li>assumed secure, <a href=#assumed-secure-origin title="section 2.1">2.1</a>
@@ -1152,6 +1231,8 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>fetch, <a href=#fetch title="section 2.2">2.2</a>
 <li>global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a>
 <li>globally unique identifier, <a href=#globally-unique-identifier title="section 2.2">2.2</a>
+<li>Internal
+          Name, <a href=#internal-name title="section 2.1">2.1</a>
 <li>JavaScript global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a>
 <li>mixed, <a href=#mixed-content title="section 2.1">2.1</a>
 <li>mixed content, <a href=#mixed-content title="section 2.1">2.1</a>
@@ -1167,9 +1248,13 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>passive, <a href=#passive-content title="section 3.2">3.2</a>
 <li>passive content, <a href=#passive-content title="section 3.2">3.2</a>
 <li>plugin, <a href=#plugin title="section 2.2">2.2</a>
-<li>proven, <a href=#proven-insecure-origin title="section 2.1">2.1</a>
+<li>private, <a href=#private-origin title="section 2.1">2.1</a>
+<li>private address space, <a href=#private-address-space title="section 2.1">2.1</a>
+<li>private origin, <a href=#private-origin title="section 2.1">2.1</a>
 <li>proven insecure, <a href=#proven-insecure-origin title="section 2.1">2.1</a>
 <li>proven insecure origin, <a href=#proven-insecure-origin title="section 2.1">2.1</a>
+<li>public, <a href=#public-origin title="section 2.1">2.1</a>
+<li>public origin, <a href=#public-origin title="section 2.1">2.1</a>
 <li>request, <a href=#request title="section 2.2">2.2</a>
 <li>request client, <a href=#request-client title="section 2.2">2.2</a>
 <li>request context, <a href=#request-context title="section 2.2">2.2</a>
@@ -1181,10 +1266,7 @@ Index</span><a class=self-link href=#index></a></h2>
 
 
 
-<h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style="counter-reset: issue"><div class=issue>Do we need to care about Windows' UNC paths that point to a
-          non-local resource (e.g.
-          <code>\\server.example.com\share\file</code>)?<a href=#issue-a1301df2> ↵ </a></div>
-        <div class=issue>Should form submissions to an insecure origin be considered active
+<h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style="counter-reset: issue"><div class=issue>Should form submissions to an insecure origin be considered active
     content? I suspect they should, though I’m not sure we can get away with
     it in a web-compatible way.<a href=#issue-967b8a81> ↵ </a></div>
   <div class=issue>Should the presence of a form with an <a data-link-type=element-attr href=http://www.w3.org/html/wg/drafts/html/CR/forms.html#attr-fs-action title=action>action</a>
