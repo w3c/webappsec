@@ -61,7 +61,7 @@
         padding: 0.5em;
       }
 
-      th:first-child, td:first-child {
+      td:first-child {
         width: 30%;
         padding-right: 1em;
       }
@@ -69,6 +69,16 @@
       td {
         vertical-align: top;
         padding: 0.5em;
+      }
+
+      tbody th {
+        border: 0;
+        background-color: #FFF;
+      }
+
+      tr.section {
+        border-top: 1px solid #999;
+        vertical-align: top;
       }
     </style>
 
@@ -606,14 +616,63 @@ Content-Security-Policy: <a data-link-type=dfn href=#connect-src title=connect-s
     <table>
       <thead>
         <tr>
-          <th>Resource Type</th>
+          <th colspan=2>Resource Type</th>
           <th>What <a data-link-type=dfn href=#security-policy title=policy>policy</a> applies?</th>
         <tr>
       </thead>
       <tbody>
-        <tr>
+        <tr class=section>
+          <th rowspan=2>Top-level Contexts</th>
+
           <td>HTML as a new, top-level browsing context</td>
           <td>The policy delivered with the resource</td>
+        </tr>
+        <tr>
+          <td>SVG, as a top-level document</td>
+          <td>Policy delivered with the resource</td>
+        </tr>
+
+        <tr class=section>
+          <th rowspan=3>Embedded Contexts</th>
+
+          <td>
+            Any resource included via <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-iframe-element title=iframe>iframe</a>,
+            <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-object-element title=object>object</a>, or <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-embed-element title=embed>embed</a>
+          </td>
+          <td>
+            The policy of the embedding resource controls <em>what</em> may be
+            embedded. The embedded resource, however, is controlled by the
+            policy delivered with the resource, or the policy of the embedding
+            resource if the embedded resource is a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique
+            identifier</a> (or a <a data-link-type=element-attr href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#attr-iframe-srcdoc title=srcdoc>srcdoc</a> frame).
+          </td>
+        </tr>
+        <tr>
+          <td>SVG, as an embedded document</td>
+          <td>
+            The policy delivered with the resource, or policy of the creating
+            context if created from a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a>.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            JavaScript, as a Worker, Shared Worker or Service Worker
+          </td>
+          <td>
+            The policy delivered with the resource, or policy of the creating
+            context if created from a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a>
+          </td>
+        </tr>
+
+        <tr class=section>
+          <th rowspan=7>Subresources</th>
+
+          <td>SVG, inlined via <a data-link-type=element href=https://svgwg.org/svg2-draft/struct.html#elementdef-svg title=svg>svg</a></td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>SVG, as a resource document</td>
+          <td>Policy of the including context</td>
         </tr>
         <tr>
           <td>HTML via XMLHttpRequest</td>
@@ -628,53 +687,12 @@ Content-Security-Policy: <a data-link-type=dfn href=#connect-src title=connect-s
           <td>Policy of the including context</td>
         </tr>
         <tr>
-          <td>
-            JavaScript, as a Worker, Shared Worker or Service Worker
-          </td>
-          <td>
-            The policy delivered with the resource, or policy of the creating
-            context if created from a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a>
-          </td>
-        </tr>
-        <tr>
-          <td>SVG, inlined via <a data-link-type=element href=https://svgwg.org/svg2-draft/struct.html#elementdef-svg title=svg>svg</a></td>
-          <td>Policy of the including context</td>
-        </tr>
-        <tr>
-          <td>SVG, as a top-level document</td>
-          <td>Policy delivered with the resource</td>
-        </tr>
-        <tr>
-          <td>SVG, as an embedded document</td>
-          <td>
-            The policy delivered with the resource, or policy of the creating
-            context if created from a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a>.
-          </td>
-        </tr>
-        <tr>
           <td>SVG, via <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-img-element title=img>img</a></td>
           <td>???</td>
         </tr>
         <tr>
-          <td>SVG, as a resource document</td>
-          <td>Policy of the including context</td>
-        </tr>
-        <tr>
           <td>SVG, as a WebFont</td>
           <td>???</td>
-        </tr>
-        <tr>
-          <td>
-            Any resource included via <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-iframe-element title=iframe>iframe</a>,
-            <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-object-element title=object>object</a>, or <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-embed-element title=embed>embed</a>
-          </td>
-          <td>
-            The policy of the embedding resource controls <em>what</em> may be
-            embedded. The embedded resource, however, is controlled by the
-            policy delivered with the resource, or the policy of the embedding
-            resource if the embedded resource is a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique
-            identifier</a> (or a <a data-link-type=element-attr href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#attr-iframe-srcdoc title=srcdoc>srcdoc</a> frame).
-          </td>
         </tr>
       </tbody>
     </table>
