@@ -11,7 +11,8 @@ Editor: Dan Veditz, Mozilla Corporation, dveditz@mozilla.com
 Former Editor: Brandon Sterne, formerly of Mozilla Corporation, brandon@hackmill.com
 Abstract: This document defines a policy language used to declare a set of content restrictions for a web resource, and a mechanism for transmitting the policy from a server to a client where the policy is enforced.
 Group: webappsec
-Link Defaults: HTML5 (element) applet / audio / embed / iframe / img / link / meta / object / script / source / style / track / video, HTML5 (dfn) auxiliary browsing contexts / opener browsing context / nested browsing contexts / plugin / fetch
+Link Defaults: HTML5 (element) applet / audio / embed / iframe / img / link / meta / object / script / source / style / track / video
+Link Defaults: HTML5 (dfn) auxiliary browsing contexts / opener browsing context / nested browsing contexts / plugin / fetch / 
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element-attr) rel / type / href / src
 Link Defaults: dom-core-ls (interface) event
@@ -358,6 +359,124 @@ Link Defaults: dom-core-ls (interface) event
     will only load if it meets both policy's criteria: in this case, the only
     origin that can match is <code>http://example.com</code>, as both
     policies allow it.
+  </section>
+
+  <section>
+    <h3 id="which-policy-applies">Policy applicability</h3>
+
+    <em>This section is not normative.</em>
+
+    Policies are associated with an <a>protected resource</a>, and
+    <a title="enforce">enforced</a> or <a>monitored</a> for for that resource.
+    If a resource does not create a new execution context (for example, when
+    including a script, image, or stylesheet into a document), then any policies
+    delivered with that resource are discarded without effect. Its execution is
+    subject to the policy or policies of the including context. The following
+    table outlines examples of these relationships:
+
+    <style>
+      table {
+        text-align: left;
+        margin: 20px;
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      tbody tr:nth-child(odd) {
+        background-color: #EEE;
+      }
+
+      th {
+        border-bottom: 1px solid #999;
+        padding: 0.5em;
+      }
+
+      th:first-child, td:first-child {
+        width: 30%;
+        padding-right: 1em;
+      }
+
+      td {
+        vertical-align: top;
+        padding: 0.5em;
+      }
+    </style>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Resource Type</th>
+          <th>What <a>policy</a> applies?</th>
+        <tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>HTML as a new, top-level browsing context</td>
+          <td>The policy delivered with the resource</td>
+        </tr>
+        <tr>
+          <td>HTML via XMLHttpRequest</td>
+          <td>Policy of the context that performed the fetch</td>
+        </tr>
+        <tr>
+          <td>Image via <a element>img</a> element</td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>JavaScript via a <a element>script</a> element</td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>
+            JavaScript, as a Worker, Shared Worker or Service Worker
+          </td>
+          <td>
+            The policy delivered with the resource, or policy of the creating
+            context if created from a <a>globally unique identifier</a>
+          </td>
+        </tr>
+        <tr>
+          <td>SVG, inlined via <a element>svg</a></td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>SVG, as a top-level document</td>
+          <td>Policy delivered with the resource</td>
+        </tr>
+        <tr>
+          <td>SVG, as an embedded document</td>
+          <td>
+            The policy delivered with the resource, or policy of the creating
+            context if created from a <a>globally unique identifier</a>.
+          </td>
+        </tr>
+        <tr>
+          <td>SVG, via <a element>img</a></td>
+          <td>???</td>
+        </tr>
+        <tr>
+          <td>SVG, as a resource document</td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>SVG, as a WebFont</td>
+          <td>???</td>
+        </tr>
+        <tr>
+          <td>
+            Any resource included via <a element>iframe</a>,
+            <a element>object</a>, or <a element>embed</a>
+          </td>
+          <td>
+            The policy of the embedding resource controls <em>what</em> may be
+            embedded. The embedded resource, however, is controlled by the
+            policy delivered with the resource, or the policy of the embedding
+            resource if the embedded resource is a <a>globally unique
+            identifier</a> (or a <a element-attr>srcdoc</a> frame).
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </section>
 
