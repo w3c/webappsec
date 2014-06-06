@@ -96,9 +96,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 
       <ul>
         <li>
-          The resource's <a>origin</a> is <a>assumed insecure</a> or <a>proven
-          insecure</a>, <strong>and</strong> the <a>JavaScript global
-          environment</a> into which it is loaded is a <a>secure context</a>.
+          The resource's <a>origin</a> is <a>insecure</a>, <strong>and</strong>
+          the <a>JavaScript global environment</a> into which it is loaded is a
+          <a>secure context</a>.
         </li>
         <li>
           The resource's <a>origin</a> is <a>private</a> <strong>and</strong>
@@ -158,13 +158,13 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     </dd>
 
     <dt>
-      <dfn export local-title="assumed secure">
-        assumed secure origin
+      <dfn export local-title="potentially secure">
+        potentially secure origin
       </dfn>
     </dt>
     <dd>
-      An <a>origin</a> is said to be <strong>assumed secure</strong> if one of
-      the following is true:
+      An <a>origin</a> is said to be <strong>potentially secure</strong>
+      if one of the following is true:
 
       <ul>
         <li>
@@ -183,27 +183,28 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     </dd>
 
     <dt>
-      <dfn export local-title="assumed insecure">
-        assumed insecure origin
+      <dfn export local-title="a priori insecure">
+        <em>a priori</em> insecure origin
       </dfn>
     </dt>
     <dd>
-      Any <a>origin</a> which is not <a>assumed secure</a> is said to be
-      <strong>assumed insecure</strong>.
+      Any <a>origin</a> which is not <a>potentially secure</a> is said to
+      be <strong><em>a priori</em> insecure</strong>. We know, for example, that
+      <code>http://example.com/</code> is an insecure origin just by looking at
+      its scheme component.
     </dd>
 
     <dt>
-      <dfn export local-title="proven insecure">
-        proven insecure origin
+      <dfn export local-title="insecure">
+        insecure origin
       </dfn>
     </dt>
     <dd>
-      An origin is said to be <strong>proven insecure</strong> if the user
-      agent determines that resources loaded from that origin are not
-      <a>TLS-protected</a> only after sending a request out over the network.
-
-      This includes origins which are either <a>weakly TLS-protected</a> or
-      whose TLS-protection is <a>deprecated</a>.
+      An origin is said to be <strong>insecure</strong> if it is either
+      <a><em>a priori</em> insecure</a>, or the user agent discovers only after
+      performing a TLS-handshake that resources from that origin are either
+      <a>weakly TLS-protected</a> or that the TLS-protection it offers is
+      <a>deprecated</a>.
     </dd>
 
     <dt>
@@ -413,8 +414,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     blocked; that is the end goal, but this is the best we can do for now.
 
     Issue: Should the presence of a form with an <a element-attr>action</a>
-    attribute representing an <a>assumed insecure origin</a> be considered
-    passive mixed content?
+    attribute representing an <a><em>a priori</em> insecure origin</a> be
+    considered passive mixed content?
 
     <section>
       <h4 id="categories-passive-optionally-blockable">
@@ -566,15 +567,15 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     <ol>
       <li>
         <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
-        resources from an <a>assumed insecure origin</a> MUST not generate
-        network traffic, and MUST instead return a synthetically generated
-        <a>network error</a> response.
+        resources from an <a><em>a priori</em> insecure origin</a> MUST not
+        generate network traffic, and MUST instead return a synthetically
+        generated <a>network error</a> response.
       </li>
 
       <li>
         <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
-        resources from an <a>proven insecure origin</a> MUST not be delivered to
-        the requesting <a>global environment</a>, but instead MUST return a
+        resources from an <a>insecure origin</a> MUST not be delivered to the
+        requesting <a>global environment</a>, but instead MUST return a
         synthetically generated <a>network error</a> response.
       </li>
 
@@ -790,7 +791,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         <strong>allowed</strong>.
       </li>
       <li>
-        If <var>origin</var> is <a>assumed insecure</a>:
+        If <var>origin</var> is <a><em>a priori</em> insecure</a>:
 
         <ol>
           <li>
@@ -805,8 +806,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         </ol>
       </li>
       <li>
-        Otherwise, <var>origin</var> is <a>assumed secure</a>, so return
-        <strong>allowed</strong>.
+        Otherwise, <var>origin</var> is <a>potentially secure</a>, so
+        return <strong>allowed</strong>.
       </li>
     </ol>
   </section>
@@ -820,7 +821,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     <a href="#should-block-fetch">If a request proceeds</a>, we still might want
     to block the response based on the state of the connection that generated
     the response (e.g. because the response would be used as <a>active
-    content</a>, but the server is <a>proven insecure</a>).
+    content</a>, but the server is <a>insecure</a>).
 
     Given a <a>request</a> <var>request</var> and <a>response</a>
     <var>response</var>, the user agent can determine what response should be
@@ -906,9 +907,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 
   When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a>assumed insecure origins</a> and <a>private origins</a>, and at
-  the bottom of the algorithm, to block responses from <a>proven insecure
-  origins</a>.
+  traffic to <a><em>a priori</em> insecure origins</a> and <a>private
+  origins</a>, and at the bottom of the algorithm, to block responses from
+  <a>insecure origins</a>.
 
   The Fetch algorithm MUST be updated as follows: [[!FETCH]]
 
@@ -954,8 +955,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 
       Note: This hook is necessary to detect resources modified or
       synthesized by a ServiceWorker, as well as to determine whether a
-      resource is <a>proven insecure</a> See steps 4.1 and 4.2 of the
-      <a section href="#should-block-response"></a> algorithm for detail.
+      resource is <a>insecure</a> once the TLS-handshake has finished. See
+      steps 4.1 and 4.2 of the <a section href="#should-block-response"></a>
+      algorithm for detail.
     </li>
   </ul>
 </section>
