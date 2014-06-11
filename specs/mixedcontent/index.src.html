@@ -240,7 +240,23 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     <dd>
       These terms are defined in
       <a href="http://www.w3.org/TR/2010/REC-wsc-ui-20100812/#typesoftls">Section
-      5.2 of "Web Security Context: User Interface Guidelines"</a>. [[!WSC-UI]].
+      5.2 of "Web Security Context: User Interface Guidelines"</a>. In short, a
+      resource is <strong>TLS-protected</strong> when it is delivered over an
+      encrypted channel. <strong>Weakly TLS-protected</strong> refers to a
+      subset of those resources delivered over a channel that doesn't offer
+      strong protection of the content. [[!WSC-UI]]
+
+      For example, resources would be considered weakly TLS-protected when
+      delivered by a server presenting a self-signed certificate, as such a
+      certificate only weakly authenticates the server. Similarly, a server
+      which negotiates down to a weak cipher suite (such as
+      <code>TLS_RSA_WITH_NULL_MD5</code>) would only weakly protect resources
+      it serves.
+
+      Note: User agents are <em>strongly recommended</em> to reject <a>weakly
+      TLS-protected</a> resources entirely by failing the TLS handshake, or by
+      requiring explicit user acceptance of the risk (for instance, presenting
+      the user with an interstitial to click through).
     </dd>
 
     <dt><dfn>origin</dfn></dt>
@@ -865,13 +881,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
             If the response is only <a>weakly TLS-protected</a>, return
             <strong>blocked</strong>.
 
-            Note: User agents are <em>strongly recommended</em> to reject
-            <a>weakly TLS-protected</a> resources entirely by failing the TLS
-            connection, or by requiring explicit user acceptance of the risk
-            (for instance, by presenting the user with an interstitial to click
-            through). If a user agent is so configured, we'll never hit this
-            condition, as <a href="http://fetch.spec.whatwg.org/#fetching">step
-            6 of the Fetch algorithm</a> would have returned a network error.
+            Note: If a user agent is configured to reject <a>weakly
+            TLS-protected</a> resources, we'll never hit this condition, as
+            <a href="http://fetch.spec.whatwg.org/#fetching">step 6 of the Fetch
+            algorithm</a> would have returned a network error.
           </li>
           <li>
             If the response's TLS-protection is <a>deprecated</a>, return
