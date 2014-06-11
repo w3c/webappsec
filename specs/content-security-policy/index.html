@@ -788,7 +788,7 @@ Content-Security-Policy: <a data-link-type=dfn href=#connect-src title=connect-s
 <dfn data-dfn-type=dfn data-noexport="" id=source-expression>source-expression<a class=self-link href=#source-expression></a></dfn> = <a data-link-type=dfn href=#scheme-source title=scheme-source>scheme-source</a> / <a data-link-type=dfn href=#host-source title=host-source>host-source</a> / <a data-link-type=dfn href=#keyword-source title=keyword-source>keyword-source</a> / <a data-link-type=dfn href=#nonce-source title=nonce-source>nonce-source</a> / <a data-link-type=dfn href=#hash-source title=hash-source>hash-source</a>
 <dfn data-dfn-type=dfn data-noexport="" id=scheme-source>scheme-source<a class=self-link href=#scheme-source></a></dfn>     = <a data-link-type=dfn href=#scheme-part title=scheme-part>scheme-part</a> ":"
 <dfn data-dfn-type=dfn data-noexport="" id=host-source>host-source<a class=self-link href=#host-source></a></dfn>       = [ <a data-link-type=dfn href=#scheme-part title=scheme-part>scheme-part</a> "://" ] <a data-link-type=dfn href=#host-part title=host-part>host-part</a> [ <a data-link-type=dfn href=#port-part title=port-part>port-part</a> ] [ <a data-link-type=dfn href=#path-part title=path-part>path-part</a> ]
-<dfn data-dfn-type=dfn data-noexport="" id=keyword-source>keyword-source<a class=self-link href=#keyword-source></a></dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'"
+<dfn data-dfn-type=dfn data-noexport="" id=keyword-source>keyword-source<a class=self-link href=#keyword-source></a></dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'" / "'unsafe-redirect'"
 <dfn data-dfn-type=dfn data-noexport="" id=base64-value>base64-value<a class=self-link href=#base64-value></a></dfn>      = 1*( ALPHA / DIGIT / "+" / "/" )*2( "=" )
 <dfn data-dfn-type=dfn data-noexport="" id=nonce-value>nonce-value<a class=self-link href=#nonce-value></a></dfn>       = <a data-link-type=dfn href=#base64-value title=base64-value>base64-value</a>
 <dfn data-dfn-type=dfn data-noexport="" id=hash-value>hash-value<a class=self-link href=#hash-value></a></dfn>        = <a data-link-type=dfn href=#base64-value title=base64-value>base64-value</a>
@@ -983,10 +983,33 @@ Content-Security-Policy: <a data-link-type=dfn href=#connect-src title=connect-s
         <li>Otherwise, return <em>does not match</em>.</li>
       </ol>
 
-<p>A URI is said to <dfn data-dfn-type=dfn data-noexport="" id=match-a-source-list>match a source list<a class=self-link href=#match-a-source-list></a></dfn> if, and only if, the URI
-      <a data-link-type=dfn href=#match-a-source-expression title="match a source expression">matches at least one source
-        expression</a> in the set of source expressions obtained by
-      <a data-link-type=dfn href=#parse-a-source-list title="parse a source list">parsing the source list</a>.</p>
+<p>A URI is said to <dfn data-dfn-type=dfn data-noexport="" id=match-a-source-list>match a source list<a class=self-link href=#match-a-source-list></a></dfn> if the following
+      conditions are met:</p>
+
+      <ol>
+        <li>
+          The URI <a data-link-type=dfn href=#match-a-source-expression title="match a source expression">matches at least one
+          source expression</a> in the set of source expressions obtained by
+          <a data-link-type=dfn href=#parse-a-source-list title="parse a source list">parsing the source list</a>.
+        </li>
+        <li>
+          At least one of the following is true:
+
+          <ol>
+            <li>
+              The URI is one of  <strong>not</strong> the result of a redirect.
+            </li>
+            <li>
+              The set of source expressions obtained by
+              <a data-link-type=dfn href=#parse-a-source-list title="parse a source list">parsing the source list</a>
+              contains the source expression <code>'unsafe-redirect'</code>.
+            </li>
+            <li>
+              The source list is the U+002A ASTERISK character (<code>*</code>).
+            </li>
+          </ol>
+        </li>
+      </ol>
 
 <p class=note>Note: No URIs match an empty set of source expressions, such as the set
       obtained by parsing the source list <code>'none'</code>.</p>
@@ -1637,6 +1660,13 @@ interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global
   <code>'unsafe-inline'</code> or <code>data:</code> as valid sources in
   their policies. Both enable XSS attacks by allowing code to be included
   directly in the document itself; they are best avoided completely.</p>
+
+<p>Redirects are another area of potential concern. Authors SHOULD NOT include
+  <code>'unsafe-redirect'</code> as valid sources in their policies. It makes
+  it more difficult to reason about the complete set of resources that a policy
+  allows, especially given the path behavior outlined in the
+  <a data-section="" href=#source-list-paths-and-redirects>Paths and Redirects</a> section.</p>
+
 
   <section>
     <h3 class="heading settled heading" data-level=7.1 id=directive-base-uri><span class=secno>7.1 </span><span class=content><code>base-uri</code></span><a class=self-link href=#directive-base-uri></a></h3>
