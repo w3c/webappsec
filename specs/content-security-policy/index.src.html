@@ -182,7 +182,9 @@ Link Defaults: dom-core-ls (interface) event
   <h2 id="policy-delivery">Policy Delivery</h2>
 
   The server delivers the policy to the user agent via an HTTP
-  response header or an HTML <a element>meta</a> element.
+  response header or an HTML <a element>meta</a> element. Servers are
+  informed that requests are subject to a policy via an HTTP request
+  header.
 
   <section>
     <h3 id="content-security-policy-header-field">
@@ -333,6 +335,39 @@ Link Defaults: dom-core-ls (interface) event
     Note: The <code><a>Content-Security-Policy-Report-Only</a></code>
     header is <em>not</em> supported inside a <code><a element>meta</a></code>
     element.
+  </section>
+
+  <section>
+    <h3 id="ch-csp-client-hint">The <code>CH-CSP</code> Client Hint</h3>
+
+    The <code><dfn>CH-CSP</dfn></code> header field indicates that a particular
+    request is subject to a <a>policy</a>, and its value is defined by the
+    following ABNF grammar:
+
+    <pre>
+      "CH-CSP:" 1#<a>hint-value</a>
+
+      <dfn>hint-value</dfn> = *WSP "active"
+    </pre>
+
+    If the user agent is <a>monitoring</a> or <a>enforcing</a> a <a>policy</a>
+    that includes directives whose value is a <a>source list</a>, then the
+    user agents MUST send a header field named <code>CH-CSP</code> along with
+    requests for resources whose <a>origin</a> does not match the <a>protected
+    resource</a>'s origin. The value of this header MUST be <code>active</code>.
+
+    The user agent MAY choose to send this header only if the request is for a
+    resource type which the active policy would effect. That is, given a policy
+    of <code>img-src example.com</code>, the user agent would send
+    <code>CH-CSP: active</code> along with requests for images, but might choose
+    not to send the header with requests for script.
+
+    Note: The central reason for including this header is that it hints to a
+    server that information about redirects might be leaked as a side-effect
+    of a page's active policy. If this header is present, a server might decline
+    to redirect a logged-out user from <code>example.com</code> to
+    <code>accounts.example.com</code>, for example, as a malicious embedder
+    might otherwise be able to determine the user's logged-in status.
   </section>
 
   <section>
@@ -1274,6 +1309,12 @@ Link Defaults: dom-core-ls (interface) event
   If the user agent <a>monitors</a> or <a>enforces</a> a policy that contains
   an unrecognized directive, the user agent SHOULD report a warning message
   in the developer console indicating the name of the unrecognized directive.
+
+  If the user agent <a>monitors</a> or <a>enforces</a> a policy that contains
+  a directive that contains a <a>source list</a>, then the user agent MUST set
+  a <code><a>CH-CSP</a></code> Client Hint when requesting cross-origin
+  resources, as described in the <a section href="#ch-csp-client-hint"></a>
+  section.
 
   <section>
     <h3 id="processing-model-workers">Workers</h3>
@@ -3213,6 +3254,28 @@ Link Defaults: dom-core-ls (interface) event
       <dt>Specification document</dt>
       <dd>This specification (See
       <code><a>Content-Security-Policy-Report-Only</a></code> Header Field)</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h3 id="iana-ch-csp">CH-CSP</h3>
+
+    <dl>
+      <dt>Header field name</dt>
+      <dd>CH-CSP</dd>
+
+      <dt>Applicable protocol</dt>
+      <dd>http</dd>
+
+      <dt>Status</dt>
+      <dd>standard</dd>
+
+      <dt>Author/Change controller</dt>
+      <dd>W3C</dd>
+
+      <dt>Specification document</dt>
+      <dd>This specification (See
+      <code><a>CH-CSP</a></code> Client Hint)</dd>
     </dl>
   </section>
 </section>
