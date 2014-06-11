@@ -11,7 +11,8 @@ Editor: Dan Veditz, Mozilla Corporation, dveditz@mozilla.com
 Former Editor: Brandon Sterne, formerly of Mozilla Corporation, brandon@hackmill.com
 Abstract: This document defines a policy language used to declare a set of content restrictions for a web resource, and a mechanism for transmitting the policy from a server to a client where the policy is enforced.
 Group: webappsec
-Link Defaults: HTML5 (element) applet / audio / embed / iframe / img / link / meta / object / script / source / style / track / video, HTML5 (dfn) auxiliary browsing contexts / opener browsing context / nested browsing contexts / plugin / fetch
+Link Defaults: HTML5 (element) applet / audio / embed / iframe / img / link / meta / object / script / source / style / track / video
+Link Defaults: HTML5 (dfn) auxiliary browsing contexts / opener browsing context / nested browsing contexts / plugin / fetch / 
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element-attr) rel / type / href / src
 Link Defaults: dom-core-ls (interface) event
@@ -101,8 +102,9 @@ Link Defaults: dom-core-ls (interface) event
 
   The term <dfn>URI</dfn> is defined in the URI specification. [[!URI]]
 
-  The term <dfn>resource representation</dfn> is defined in the HTTP 1.1
-  specification. [[!HTTP11]]
+  The term <dfn>resource representation</dfn> is defined
+  <a href="http://tools.ietf.org/html/rfc7231#section-3">Section 3</a>
+  of HTTP/1.1 -- Semantics and Content [[!RFC7231]]
 
   The terms <dfn>JSON object</dfn> and <dfn>JSON stringification</dfn> are
   defined in the JSON specification. [[!RFC4627]]
@@ -136,8 +138,9 @@ Link Defaults: dom-core-ls (interface) event
   The Augmented Backus-Naur Form (ABNF) notation used in this document is
   specified in RFC5234. [[!ABNF]]
 
-  This document also uses the ABNF extension "#rule" as defined in HTTP 1.1.
-  [[!HTTP11]]
+  This document also uses the ABNF extension "#rule" as defined in
+  <a href="http://tools.ietf.org/html/rfc7230#section-7">Section 7</a>
+  of HTTP/1.1 -- Message Syntax and Routing. [[!RFC7230]]
 
   The following core rules are included by reference, as defined in
   <a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">Appendix B.1</a>
@@ -156,6 +159,10 @@ Link Defaults: dom-core-ls (interface) event
   has one or more <dfn>callers</dfn> as defined in the <a
   href="http://www.w3.org/TR/2010/WD-WebIDL-20101021/#idl-callers">Web
   IDL</a> specification [[!WEBIDL]].
+
+  An <dfn>HTTP 200 response</dfn> is defined in
+  <a href="http://tools.ietf.org/html/rfc7231#section-6.3.1">Section 6.3.1</a>
+  of HTTP/1.1 -- Semantics and Content [[!RFC7231]]
 </section>
 
 <!--
@@ -171,7 +178,9 @@ Link Defaults: dom-core-ls (interface) event
   <h2 id="policy-delivery">Policy Delivery</h2>
 
   The server delivers the policy to the user agent via an HTTP
-  response header or an HTML <a element>meta</a> element.
+  response header or an HTML <a element>meta</a> element. Servers are
+  informed that requests are subject to a policy via an HTTP request
+  header.
 
   <section>
     <h3 id="content-security-policy-header-field">
@@ -278,9 +287,6 @@ Link Defaults: dom-core-ls (interface) event
       </dt>
       <dd>
         <ol>
-          <li>If the user agent is already enforcing a <a>policy</a> for the
-          document, abort these steps.</li>
-
           <li>If the Document's <code><a element>head</a></code> element is
           not an ancestor of the <code><a element>meta</a></code> element, abort
           these steps.</li>
@@ -305,22 +311,61 @@ Link Defaults: dom-core-ls (interface) event
         </ol>
       </dd>
     </dl>
-
-    As a consequence of these requirements, a policy supplied in an
-    HTTP header field takes precedence over policies supplied in
-    <code><a element>meta</a></code> elements. Similarly, the above
-    requirements entail that the first <code><a element>meta</a></code>
-    element containing a policy takes precedence over policies supplied
-    in subsequent <code><a element>meta</a></code> elements, and that
-    modifications to the <code><a element-attr>content</a></code> attribute
-    after it is parsed will be ignored. Authors SHOULD place the
+    
+    Authors are <em>strongly encouraged</em> to place the
     <code><a element>meta</a></code> element as early in the document as
     possible to reduce the risk of content injection before a protective
     policy can be read and enforced.
 
+    Note: A <a>policy</a> specified via a <code><a element>meta</a></code>
+    element will be enforced along with any other policies active for the
+    protected resource, regardless of where they're specified. The general
+    mechanism for determining the effect of enforcing multiple policies is
+    detailed in the <a section href="#enforcing-multiple-policies"></a>
+    section.
+
+    Note: Modifications to the <code><a element-attr>content</a></code>
+    attribute of a <code><a element>meta</a></code> element after the
+    element has been parsed will be ignored.
+
     Note: The <code><a>Content-Security-Policy-Report-Only</a></code>
     header is <em>not</em> supported inside a <code><a element>meta</a></code>
     element.
+  </section>
+
+  <section>
+    <h3 id="ch-csp-client-hint">The <code>CH-CSP</code> Client Hint</h3>
+
+    The <code><dfn>CH-CSP</dfn></code> header field indicates that a particular
+    request is subject to a <a>policy</a>, and its value is defined by the
+    following ABNF grammar:
+
+    <pre>
+      "CH-CSP:" 1#<a>hint-value</a>
+
+      <dfn>hint-value</dfn> = *WSP "active"
+    </pre>
+
+    If the user agent is <a>monitoring</a> or <a>enforcing</a> a <a>policy</a>
+    that includes directives whose value is a <a>source list</a>, and whose
+    source list contains the  <code>'unsafe-redirect'</code> source expression,
+    then the user agent MUST send a header field named <code>CH-CSP</code>
+    along with requests for resources whose <a>origin</a> <em>does not</em>
+    match the <a>protected resource</a>'s origin. The value of this header MUST
+    be <code>active</code>.
+
+    The user agent MAY choose to send this header only if the request is for a
+    resource type which the active policy would effect. That is, given a policy
+    of <code>img-src example.com 'unsafe-redirect'</code>, the user agent
+    would send <code>CH-CSP: active</code> along with requests for images, but
+    might choose not to send the header with requests for script.
+
+    Note: The central reason for including this header is that it hints to a
+    server that information about redirects might be leaked as a side-effect
+    of a page's active policy. If this header is present, a server might decline
+    to redirect a logged-out user from <code>example.com</code> to
+    <code>accounts.example.com</code>, for example, as a malicious embedder
+    might otherwise be able to determine the user's logged-in status.
   </section>
 
   <section>
@@ -358,6 +403,142 @@ Link Defaults: dom-core-ls (interface) event
     will only load if it meets both policy's criteria: in this case, the only
     origin that can match is <code>http://example.com</code>, as both
     policies allow it.
+  </section>
+
+  <section>
+    <h3 id="which-policy-applies">Policy applicability</h3>
+
+    <em>This section is not normative.</em>
+
+    Policies are associated with an <a>protected resource</a>, and
+    <a title="enforce">enforced</a> or <a>monitored</a> for for that resource.
+    If a resource does not create a new execution context (for example, when
+    including a script, image, or stylesheet into a document), then any policies
+    delivered with that resource are discarded without effect. Its execution is
+    subject to the policy or policies of the including context. The following
+    table outlines examples of these relationships:
+
+    <style>
+      table {
+        text-align: left;
+        margin: 20px;
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      tbody tr:nth-child(odd) {
+        background-color: #EEE;
+      }
+
+      th {
+        border-bottom: 1px solid #999;
+        padding: 0.5em;
+      }
+
+      td:first-child {
+        width: 30%;
+        padding-right: 1em;
+      }
+
+      td {
+        vertical-align: top;
+        padding: 0.5em;
+      }
+
+      tbody th {
+        border: 0;
+        background-color: #FFF;
+      }
+
+      tr.section {
+        border-top: 1px solid #999;
+        vertical-align: top;
+      }
+    </style>
+
+    <table>
+      <thead>
+        <tr>
+          <th colspan="2">Resource Type</th>
+          <th>What <a>policy</a> applies?</th>
+        <tr>
+      </thead>
+      <tbody>
+        <tr class="section">
+          <th rowspan="2">Top-level Contexts</th>
+
+          <td>HTML as a new, top-level browsing context</td>
+          <td>The policy delivered with the resource</td>
+        </tr>
+        <tr>
+          <td>SVG, as a top-level document</td>
+          <td>Policy delivered with the resource</td>
+        </tr>
+
+        <tr class="section">
+          <th rowspan="3">Embedded Contexts</th>
+
+          <td>
+            Any resource included via <a element>iframe</a>,
+            <a element>object</a>, or <a element>embed</a>
+          </td>
+          <td>
+            The policy of the embedding resource controls <em>what</em> may be
+            embedded. The embedded resource, however, is controlled by the
+            policy delivered with the resource, or the policy of the embedding
+            resource if the embedded resource is a <a>globally unique
+            identifier</a> (or a <a element-attr>srcdoc</a> frame).
+          </td>
+        </tr>
+        <tr>
+          <td>SVG, as an embedded document</td>
+          <td>
+            The policy delivered with the resource, or policy of the creating
+            context if created from a <a>globally unique identifier</a>.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            JavaScript, as a Worker, Shared Worker or Service Worker
+          </td>
+          <td>
+            The policy delivered with the resource, or policy of the creating
+            context if created from a <a>globally unique identifier</a>
+          </td>
+        </tr>
+
+        <tr class="section">
+          <th rowspan="7">Subresources</th>
+
+          <td>SVG, inlined via <a element>svg</a></td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>SVG, as a resource document</td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>HTML via XMLHttpRequest</td>
+          <td>Policy of the context that performed the fetch</td>
+        </tr>
+        <tr>
+          <td>Image via <a element>img</a> element</td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>JavaScript via a <a element>script</a> element</td>
+          <td>Policy of the including context</td>
+        </tr>
+        <tr>
+          <td>SVG, via <a element>img</a></td>
+          <td>No policy; should be just as safe as JPG</td>
+        </tr>
+        <tr>
+          <td>SVG, as a WebFont</td>
+          <td>No policy; should be just as safe as WOFF</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </section>
 
@@ -449,7 +630,7 @@ Link Defaults: dom-core-ls (interface) event
       <dfn>source-expression</dfn> = <a>scheme-source</a> / <a>host-source</a> / <a>keyword-source</a> / <a>nonce-source</a> / <a>hash-source</a>
       <dfn>scheme-source</dfn>     = <a>scheme-part</a> ":"
       <dfn>host-source</dfn>       = [ <a>scheme-part</a> "://" ] <a>host-part</a> [ <a>port-part</a> ] [ <a>path-part</a> ]
-      <dfn>keyword-source</dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'"
+      <dfn>keyword-source</dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'" / "'unsafe-redirect'"
       <dfn>base64-value</dfn>      = 1*( ALPHA / DIGIT / "+" / "/" )*2( "=" )
       <dfn>nonce-value</dfn>       = <a>base64-value</a>
       <dfn>hash-value</dfn>        = <a>base64-value</a>
@@ -644,10 +825,33 @@ Link Defaults: dom-core-ls (interface) event
         <li>Otherwise, return <em>does not match</em>.</li>
       </ol>
 
-      A URI is said to <dfn>match a source list</dfn> if, and only if, the URI
-      <a title="match a source expression">matches at least one source
-        expression</a> in the set of source expressions obtained by
-      <a title="parse a source list">parsing the source list</a>.
+      A URI is said to <dfn>match a source list</dfn> if the following
+      conditions are met:
+
+      <ol>
+        <li>
+          The URI <a title="match a source expression">matches at least one
+          source expression</a> in the set of source expressions obtained by
+          <a title="parse a source list">parsing the source list</a>.
+        </li>
+        <li>
+          At least one of the following is true:
+
+          <ol>
+            <li>
+              The URI is one of  <strong>not</strong> the result of a redirect.
+            </li>
+            <li>
+              The set of source expressions obtained by
+              <a title="parse a source list">parsing the source list</a>
+              contains the source expression <code>'unsafe-redirect'</code>.
+            </li>
+            <li>
+              The source list is the U+002A ASTERISK character (<code>*</code>).
+            </li>
+          </ol>
+        </li>
+      </ol>
 
       Note: No URIs match an empty set of source expressions, such as the set
       obtained by parsing the source list <code>'none'</code>.
@@ -1104,6 +1308,12 @@ Link Defaults: dom-core-ls (interface) event
   an unrecognized directive, the user agent SHOULD report a warning message
   in the developer console indicating the name of the unrecognized directive.
 
+  If the user agent <a>monitors</a> or <a>enforces</a> a policy that contains
+  a directive that contains a <a>source list</a>, then the user agent MUST set
+  a <code><a>CH-CSP</a></code> Client Hint when requesting cross-origin
+  resources, as described in the <a section href="#ch-csp-client-hint"></a>
+  section.
+
   <section>
     <h3 id="processing-model-workers">Workers</h3>
 
@@ -1327,6 +1537,13 @@ Link Defaults: dom-core-ls (interface) event
   <code>'unsafe-inline'</code> or <code>data:</code> as valid sources in
   their policies. Both enable XSS attacks by allowing code to be included
   directly in the document itself; they are best avoided completely.
+
+  Redirects are another area of potential concern. Authors SHOULD NOT include
+  <code>'unsafe-redirect'</code> as valid sources in their policies. It makes
+  it more difficult to reason about the complete set of resources that a policy
+  allows, especially given the path behavior outlined in the
+  <a section href="#source-list-paths-and-redirects"></a> section.
+
 <!--
 ████████     ███     ██████  ████████         ██     ██ ████████  ████
 ██     ██   ██ ██   ██    ██ ██               ██     ██ ██     ██  ██
@@ -1405,11 +1622,10 @@ Link Defaults: dom-core-ls (interface) event
 
       Whenever the user agent <a>fetches</a> a URL while processing the
       <code>Worker</code> or <code>SharedWorker</code> constructors
-      [[!WORKERS]], the user agent MUST act as if it had received an empty
-      <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400
-      response</a> <em>and</em> <a>report a violation</a> if the URI does not
-      <a title="match a source list">match</a> the <a>allowed child
-      sources</a>.
+      [[!WORKERS]], the user agent MUST act as if there was a fatal network
+      error and no resource was obtained, <em>and</em> <a>report a violation</a>
+      if the URI does not <a title="match a source list">match</a> the
+      <a>allowed child sources</a>.
     </section>
   </section>
 
@@ -1443,9 +1659,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI in the course of one of the
     following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed connection
-    targets</a>, the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    targets</a>, the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <!-- TODO: Figure out how to autolink here. -->
@@ -1605,9 +1820,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI in the course of one of the
     following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed font sources</a>,
-    the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <li>Requesting data for display in a font, such as when processing
@@ -1643,9 +1857,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI in the course of one of the
     following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed form actions</a>,
-    the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <li>Processing an HTML <code><a element>form</a></code> element.</li>
@@ -1716,8 +1929,7 @@ Link Defaults: dom-core-ls (interface) event
             <ol>
               <li>Abort loading the protected resource.</li>
 
-              <li>Act as if it received an empty
-              <a href="https://tools.ietf.org/html/rfc2616#section-10.2.1">HTTP 200 response</a>.</li>
+              <li>Act as if it received an empty <a>HTTP 200 response</a>.</li>
 
               <li><a spec="HTML5">Parse a sandboxing directive</a> using the
               empty string as the <em>input</em> and the newly created
@@ -1844,9 +2056,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI in the course of one of the
     following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed frame sources</a>,
-    the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <li>Requesting data for display in a <a>nested browsing context</a> in the
@@ -1887,9 +2098,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI in the course of one of the
     following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed image sources</a>,
-    the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <!-- TODO: autolink srcset -->
@@ -1943,9 +2153,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI in the course of one of the
     following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed media sources</a>,
-    the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <li>Requesting data for a video or audio clip, such as when
@@ -1986,9 +2195,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI in the course of one of the
     following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed object sources</a>,
-    the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <li>Requesting data for a plugin, such as when processing the
@@ -2299,9 +2507,9 @@ Link Defaults: dom-core-ls (interface) event
 
       <li>If the value of the directive is <code>block</code>, the user
       agent MUST stop rendering the protected resource upon detection of
-      reflected script, and instead act as though it received an empty
-      <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP
-      400 response</a> for the protected resource itself.</li>
+      reflected script, and instead act as if there was a fatal network
+      error and no resource was obtained, <em>and</em> <a>report a
+      violation</a>:
     </ul>
 
     If the user agent's active protections against reflected cross-site
@@ -2374,7 +2582,7 @@ Link Defaults: dom-core-ls (interface) event
     <pre>
       directive-name    = "sandbox"
       directive-value   = <a>sandbox-token</a> *( 1*WSP <a>sandbox-token</a> )
-      <dfn>sandbox-token</dfn>     = &lt;token from RFC 2616&gt;
+      <dfn>sandbox-token</dfn>     = &lt;token from RFC 7230&gt;
     </pre>
 
     When enforcing the <code>sandbox</code> directive, the user agent
@@ -2519,9 +2727,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI (including when following redirects)
     in the course of one of the following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed script sources</a>,
-    the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <li>Requesting a script while processing the
@@ -2737,9 +2944,8 @@ Link Defaults: dom-core-ls (interface) event
     Whenever the user agent <a>fetches</a> a URI in the course of one of the
     following activities, if the URI does not
     <a title="match a source list">match</a> the <a>allowed style sources</a>,
-    the user agent MUST act as if it had received an empty
-    <a href="https://tools.ietf.org/html/rfc2616#section-10.4.1">HTTP 400 response</a>
-    <em>and</em> <a>report a violation</a>:
+    the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
       <li>Requesting external style sheets, such as when processing the
@@ -3047,6 +3253,28 @@ Link Defaults: dom-core-ls (interface) event
       <dt>Specification document</dt>
       <dd>This specification (See
       <code><a>Content-Security-Policy-Report-Only</a></code> Header Field)</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h3 id="iana-ch-csp">CH-CSP</h3>
+
+    <dl>
+      <dt>Header field name</dt>
+      <dd>CH-CSP</dd>
+
+      <dt>Applicable protocol</dt>
+      <dd>http</dd>
+
+      <dt>Status</dt>
+      <dd>standard</dd>
+
+      <dt>Author/Change controller</dt>
+      <dd>W3C</dd>
+
+      <dt>Specification document</dt>
+      <dd>This specification (See
+      <code><a>CH-CSP</a></code> Client Hint)</dd>
     </dl>
   </section>
 </section>
