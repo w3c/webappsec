@@ -597,7 +597,7 @@ Link Defaults: dom-core-ls (interface) event
       <dfn>source-expression</dfn> = <a>scheme-source</a> / <a>host-source</a> / <a>keyword-source</a> / <a>nonce-source</a> / <a>hash-source</a>
       <dfn>scheme-source</dfn>     = <a>scheme-part</a> ":"
       <dfn>host-source</dfn>       = [ <a>scheme-part</a> "://" ] <a>host-part</a> [ <a>port-part</a> ] [ <a>path-part</a> ]
-      <dfn>keyword-source</dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'"
+      <dfn>keyword-source</dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'" / "'unsafe-redirect'"
       <dfn>base64-value</dfn>      = 1*( ALPHA / DIGIT / "+" / "/" )*2( "=" )
       <dfn>nonce-value</dfn>       = <a>base64-value</a>
       <dfn>hash-value</dfn>        = <a>base64-value</a>
@@ -792,10 +792,33 @@ Link Defaults: dom-core-ls (interface) event
         <li>Otherwise, return <em>does not match</em>.</li>
       </ol>
 
-      A URI is said to <dfn>match a source list</dfn> if, and only if, the URI
-      <a title="match a source expression">matches at least one source
-        expression</a> in the set of source expressions obtained by
-      <a title="parse a source list">parsing the source list</a>.
+      A URI is said to <dfn>match a source list</dfn> if the following
+      conditions are met:
+
+      <ol>
+        <li>
+          The URI <a title="match a source expression">matches at least one
+          source expression</a> in the set of source expressions obtained by
+          <a title="parse a source list">parsing the source list</a>.
+        </li>
+        <li>
+          At least one of the following is true:
+
+          <ol>
+            <li>
+              The URI is one of  <strong>not</strong> the result of a redirect.
+            </li>
+            <li>
+              The set of source expressions obtained by
+              <a title="parse a source list">parsing the source list</a>
+              contains the source expression <code>'unsafe-redirect'</code>.
+            </li>
+            <li>
+              The source list is the U+002A ASTERISK character (<code>*</code>).
+            </li>
+          </ol>
+        </li>
+      </ol>
 
       Note: No URIs match an empty set of source expressions, such as the set
       obtained by parsing the source list <code>'none'</code>.
@@ -1475,6 +1498,13 @@ Link Defaults: dom-core-ls (interface) event
   <code>'unsafe-inline'</code> or <code>data:</code> as valid sources in
   their policies. Both enable XSS attacks by allowing code to be included
   directly in the document itself; they are best avoided completely.
+
+  Redirects are another area of potential concern. Authors SHOULD NOT include
+  <code>'unsafe-redirect'</code> as valid sources in their policies. It makes
+  it more difficult to reason about the complete set of resources that a policy
+  allows, especially given the path behavior outlined in the
+  <a section href="#source-list-paths-and-redirects"></a> section.
+
 <!--
 ████████     ███     ██████  ████████         ██     ██ ████████  ████
 ██     ██   ██ ██   ██    ██ ██               ██     ██ ██     ██  ██
