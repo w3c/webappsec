@@ -144,11 +144,11 @@
 			<ul class=toc>
 			<li><a href=#referrer-policy-delivery-implicit-nested><span class=secno>4.2.1</span>      Nested Browsing Contexts   </a>
 			<li><a href=#referrer-policy-delivery-implicit-workers><span class=secno>4.2.2</span>     Workers   </a></ul></ul>
-	<li><a href=#modifications-to-fetch><span class=secno>5</span>Modifications to Fetch</a>
+	<li><a href=#integration-with-fetch><span class=secno>5</span>Integration with Fetch</a>
 	<li><a href=#algorithms><span class=secno>6</span>Algorithms</a>
 		<ul class=toc>
 		<li><a href=#set-referrer-policy><span class=secno>6.1</span>     Set <var>environment</var>’s referrer policy to <var>policy</var>.   </a>
-		<li><a href=#set-request-referrer><span class=secno>6.2</span>     Set <var>request</var>’s <code>Referer</code> header.   </a>
+		<li><a href=#determine-requests-referrer><span class=secno>6.2</span>     Determine <var>request</var>’s Referrer.   </a>
 		<li><a href=#strip-url><span class=secno>6.3</span>     Strip <var>url</var> for use as a referrer.   </a></ul>
 	<li><a href=#acknowledgements><span class=secno>7</span>Acknowledgements</a>
 	<li><a href=#conformance><span class=secno></span>Conformance</a>
@@ -312,15 +312,11 @@
       5.2 of "Web Security Context: User Interface Guidelines"</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-wsc-ui title=biblio-wsc-ui>[WSC-UI]</a>.
     </dd>
 
-    <dt><dfn data-dfn-type=dfn data-noexport="" id=globally-unique-identifier>globally unique identifier<a class=self-link href=#globally-unique-identifier></a></dfn></dt>
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=relative-scheme>relative scheme<a class=self-link href=#relative-scheme></a></dfn></dt>
     <dd>
-      This term is defined in
-      <a href=http://tools.ietf.org/html/rfc6454#section-4>Section 4 of the
-      Origin specification</a>. Note that URLs that do not use
-      <a href=http://tools.ietf.org/html/rfc3986#section-3.2>hierarchical
-      elements</a> as naming authorities (for example: <code>blob:</code>, and
-      <code>data:</code>) have origins which are globally unique identifiers.
-      <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=biblio-rfc6454>[RFC6454]</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-uri title=biblio-uri>[URI]</a>
+      The set of <strong>relative schemes</strong> is defined in
+      <a href=http://url.spec.whatwg.org/#relative-scheme>Section 5 of the
+      URL specification</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-url title=biblio-url>[URL]</a>
     </dd>
 
     <dt><dfn data-dfn-type=dfn data-noexport="" id=runs-a-worker>runs a worker<a class=self-link href=#runs-a-worker></a></dfn> algorithm</dt>
@@ -343,7 +339,7 @@
   <code><a data-link-type=dfn href=#origin-only title="origin only">Origin Only</a></code>, <code><a data-link-type=dfn href=#origin-when-cross-origin title="origin when cross-origin">Origin when cross-origin</a></code>,
   and <code><a data-link-type=dfn href=#unsafe-url title="unsafe url">Unsafe URL</a></code>. Each is explained below, and a detailed
   algorithm for evaluating their effect is given in the
-  <a data-section="" href=#modifications-to-fetch>Modifications to Fetch</a> and
+  <a data-section="" href=#integration-with-fetch>Integration with Fetch</a> and
   <a data-section="" href=#algorithms>Algorithms</a> sections:</p>
 
 <p class=note>Note: The referrer policy for a <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> provides a default
@@ -590,8 +586,8 @@
   </span><a class=self-link href=#referrer-policy-delivery-implicit-nested></a></h4>
 
 <p>Whenever a user agent creates a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#nested-browsing-context title="nested browsing context">nested browsing context</a> containing
-  <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#an-iframe-srcdoc-document title="an iframe srcdoc document">an iframe srcdoc document</a> or a resource whose <a data-link-type=dfn href=#origin title=origin>origin</a> is a
-  <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a> (for instance, a <code>blob</code> or
+  <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#an-iframe-srcdoc-document title="an iframe srcdoc document">an iframe srcdoc document</a> or a resource whose <a data-link-type=dfn href=#origin title=origin>origin</a>’s scheme
+  is not a <a data-link-type=dfn href=#relative-scheme title="relative scheme">relative scheme</a> (for instance, a <code>blob</code> or
   <code>data</code> resource):</p>
 
   <ol>
@@ -616,8 +612,8 @@
     Workers
   </span><a class=self-link href=#referrer-policy-delivery-implicit-workers></a></h4>
 
-<p>Whenever a user agent <a data-link-type=dfn href=#runs-a-worker title="runs a worker">runs a worker</a> whose script’s <a data-link-type=dfn href=#origin title=origin>origin</a>
-  is a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a>:</p>
+<p>Whenever a user agent <a data-link-type=dfn href=#runs-a-worker title="runs a worker">runs a worker</a> whose script’s <a data-link-type=dfn href=#origin title=origin>origin</a>’s
+  scheme is not a <a data-link-type=dfn href=#relative-scheme title="relative scheme">relative scheme</a>:</p>
 
 <p class=issue id=issue-b9bfaa7e><a class=self-link href=#issue-b9bfaa7e></a>What about shared workers?</p>
 
@@ -643,20 +639,16 @@
 </section>
 
 <section>
-  <h2 class="heading settled heading" data-level=5 id=modifications-to-fetch><span class=secno>5 </span><span class=content>Modifications to Fetch</span><a class=self-link href=#modifications-to-fetch></a></h2>
+  <h2 class="heading settled heading" data-level=5 id=integration-with-fetch><span class=secno>5 </span><span class=content>Integration with Fetch</span><a class=self-link href=#integration-with-fetch></a></h2>
 
-<p class=issue id=issue-7c1aab62><a class=self-link href=#issue-7c1aab62></a>Change this section to point to Fetch once we agree on how the
-  integration should look.</p>
-
-<p>Replace Step 1 of <a href=http://fetch.spec.whatwg.org/#http-fetch>Fetch’s
-  'HTTP Fetch' algorithm</a> with the following step:</p>
-
-  <ol>
-    <li>
-      Execute the <a href=#set-request-referrer>Set <var>request</var>’s
-      <code>Referer</code> header</a> algorithm on <var>request</var>.
-    </li>
-  </ol>
+<p>The Fetch specification calls out to the
+  <a href=#determine-requests-referrer>Determine <var>request</var>’s
+  referrer</a> algorithm as
+  <a href=http://fetch.spec.whatwg.org/#concept-fetch>Step 2 of the
+  Fetching algorithm</a>, and uses the response to set the <var>request</var>’s
+  <code>referrer</code> property. Fetch is responsible for serializing the
+  URL provided, and setting the `<code>Referer</code>` header on
+  <var>request</var>.</p>
 </section>
 
 <section>
@@ -705,16 +697,22 @@
     </li>
   </ol>
 
-  <h3 class="heading settled heading" data-level=6.2 id=set-request-referrer><span class=secno>6.2 </span><span class=content>
-    Set <var>request</var>’s <code>Referer</code> header.
-  </span><a class=self-link href=#set-request-referrer></a></h3>
+  <h3 class="heading settled heading" data-level=6.2 id=determine-requests-referrer><span class=secno>6.2 </span><span class=content>
+    Determine <var>request</var>’s Referrer.
+  </span><a class=self-link href=#determine-requests-referrer></a></h3>
 
 <p>Given a <a data-link-type=dfn href=#request title=request>Request</a> <var>request</var>, we can determine the correct
   referrer information to send by examining the <a data-link-type=dfn href=#referrer-policy title=policy>policy</a> associated with
   its <code>client</code>’s <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>, as detailed in the
-  following steps:</p>
+  following steps, which returns either <code>null</code> or a URL:</p>
+
+<p class=note>Note: If Fetch is performing a navigation in response to a link of type
+  <code><a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/links.html#rel-noreferrer title=noreferrer>noreferrer</a></code>, then <var>request</var>’s
+  <code>referrer</code> will be <code>none</code>, and Fetch won’t call into
+  this algorithm.</p>
 
   <ol>
+    
     <li>
       Let <var>environment</var> be <var>request</var>’s <code>client</code>.
     </li>
@@ -723,100 +721,70 @@
       <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a>.
     </li>
     <li>
-      Let <var>headerValue</var> be the empty byte sequence.
+      If <var>request</var>’s <code>referrer</code> is a URL, let
+      <var>pageURL</var> be the value of <var>request</var>’s
+      <var>referrer</var>. Otherwise, let <var>referrerURL</var>
+      be the URL of <var>environment</var>.
     </li>
     <li>
-      Let <var>referrerURL</var> be the URL of <var>request</var>’s
-      <code>referrer</code> if <var>request</var>’s <code>referrer</code> is
-      not <code>null</code>, and otherwise the URL of <var>environment</var>.
+      Let <var>referrerURL</var> be the result of <a href=#strip-url>stripping
+      <var>pageURL</var> for use as a referrer.</a>
     </li>
     <li>
-      <a href=#strip-url>Strip <var>referrerURL</var> for use as a
-      referrer.</a>
-    </li>
-    <li>
-      Let <var>referrerOrigin</var> be the result of appending a U+002F SOLIDUS
-      (<code>/</code>) code point to the
-      <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of
-      the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>referrerURL</var> .
+      Let <var>referrerOrigin</var> be the result of
+      <a href=#strip-url>stripping <var>pageURL</var> for use as a
+      referrer</a>, with the <code><a data-link-type=dfn href=#origin-only-flag title="origin-only flag">origin-only flag</a></code> set to
+      <code>true</code>.
     </li>
 
-    
     <li>
-      If <var>policy</var> is <code><a data-link-type=dfn href=#none title=none>None</a></code>, or <var>request</var>’s
-      <code>noreferrer</code> flag is set, set <var>headerValue</var> to the
-      empty byte sequence.
+      Execute the statements corresponding to the value of <var>policy</var>:
 
-<p class=issue id=issue-a13bb370><a class=self-link href=#issue-a13bb370></a>Update this once https://www.w3.org/Bugs/Public/show_bug.cgi?id=26058
-      is resolved. </p>
-    </li>
-    
-    <li>
-      If <var>policy</var> is <code><a data-link-type=dfn href=#origin title=origin>Origin</a></code>, set
-      <var>headerValue</var> to <var>referrerOrigin</var>.
-    </li>
-    
-    <li>
-      If <var>policy</var> is <code><a data-link-type=dfn href=#origin-when-cross-origin title="origin when cross-origin">Origin When Cross-Origin</a></code>,
-      then:
+      <dl>
+        <dt><var>policy</var> is <code><a data-link-type=dfn href=#none title=none>None</a></code></dt>
+        <dd>Return <code>null</code></dd>
 
-      <ol>
-        <li>
-          If <var>request</var> is a <a data-link-type=dfn href=#cross-origin-request title="cross-origin request">cross-origin request</a>, then set
-          <var>headerValue</var> to <var>referrerOrigin</var>.
-        </li>
+        <dt><var>policy</var> is <code><a data-link-type=dfn href=#origin title=origin>Origin</a></code></dt>
+        <dd>Return <var>referrerOrigin</var></dd>
 
-        <li>
-          Otherwise, set <var>headerValue</var> to the
-          <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
-          of <var>referrerURL</var>.
-        </li>
-      </ol>
-    </li>
-    
-    <li>
-      If <var>policy</var> is <code><a data-link-type=dfn href=#unsafe-url title="unsafe url">Unsafe URL</a></code>, set
-      <var>headerValue</var> to the
-      <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
-      of <var>referrerURL</var>.
-    </li>
-    
-    <li>
-      If <var>policy</var> is <code><a data-link-type=dfn href=#none-when-downgrade title="none when downgrade">None When Downgrade</a></code>, or the
-      <code>null</code>, then:
+        <dt><var>policy</var> is <code><a data-link-type=dfn href=#unsafe-url title="unsafe url">Unsafe URL</a></code></dt>
+        <dd>Return <var>referrerURL</var>.</dd>
 
-      <ol>
-        <li>
-          If <var>environment</var> is not <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, then set
-          <var>headerValue</var> to the
-          <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
-          of <var>referrerURL</var>.
-        </li>
-        <li>
-          Otherwise, <var>environment</var> is <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a>, so:
-
+        <dt>
+          <var>policy</var> is <code><a data-link-type=dfn href=#origin-when-cross-origin title="origin when cross-origin">Origin When Cross-Origin</a></code>
+        </dt>
+        <dd>
           <ol>
             <li>
-              If the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s <code>URL</code> is
-              an <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em> insecure origin</a>, then set
-              <var>headerValue</var> to the empty byte sequence.
+              If <var>request</var> is a <a data-link-type=dfn href=#cross-origin-request title="cross-origin request">cross-origin request</a>, then
+              return <var>referrerOrigin</var>.
             </li>
             <li>
-              Otherwise, the <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s
-              <code>URL</code> is not an <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em> insecure
-              origin</a>, so set <var>headerValue</var> to the
-              <a href=http://url.spec.whatwg.org/#serializing>serialization</a>
-              of <var>referrerURL</var>.
+              Otherwise, return <var>referrerURL</var>.
             </li>
           </ol>
-        </li>
-      </ol>
-    </li>
+        </dd>
 
-    <li>
-      Set `<code>Referer</code>` to <var>headerValue</var> in
-      <var>request</var>’s
-      <a href=http://fetch.spec.whatwg.org/#concept-request-headers>headers</a>.
+        <dt>
+          <var>policy</var> is <code><a data-link-type=dfn href=#none-when-downgrade title="none when downgrade">None When Downgrade</a></code>
+        </dt>
+        <dt>
+          <var>policy</var> is <code>null</code>
+        </dt>
+        <dd>
+          <ol>
+            <li>
+              If <var>environment</var> is <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a> <em>and</em> the
+              <a data-link-type=dfn href=#origin title=origin>origin</a> of <var>request</var>’s <code>URL</code> is
+              an <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em> insecure origin</a>, then return
+              <code>null</code>.
+            </li>
+            <li>
+              Otherwise, return <var>requestURL</var>.
+            </li>
+          </ol>
+        </dd>
+      </dl>
     </li>
   </ol>
 
@@ -825,7 +793,7 @@
   query parameters from a request’s referrer, or to send an empty referrer
   header regardless of the <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> specified.</p>
 
-<p class=issue id=issue-f3216f95><a class=self-link href=#issue-f3216f95></a>I don’t think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.</p>
+<p class=issue id=issue-08251c5e><a class=self-link href=#issue-08251c5e></a>(eisinger) I don’t think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.</p>
 
   <h3 class="heading settled heading" data-level=6.3 id=strip-url><span class=secno>6.3 </span><span class=content>
     Strip <var>url</var> for use as a referrer.
@@ -833,9 +801,17 @@
 
 <p>Certain portions of URLs MUST not be included when sending a URL as the value
   of a `<code>Referer</code>` header: a URLs fragment, username, and password
-  components should be stripped from the URL before it’s sent out.</p>
+  components should be stripped from the URL before it’s sent out. This
+  algorithm accepts a <code><dfn data-dfn-type=dfn data-noexport="" id=origin-only-flag>origin-only flag<a class=self-link href=#origin-only-flag></a></dfn></code>, which defaults
+  to <code>false</code>. If set to <code>true</code>, the algorithm will
+  additionally remove the URL’s path and query components, leaving only the
+  scheme, host, and port.</p>
 
   <ol>
+    <li>
+      If <var>url</var>’s <code>scheme</code> is <em>not</em> a <a data-link-type=dfn href=#relative-scheme title="relative scheme">relative
+      scheme</a>, then return <code>null</code>.
+    </li>
     <li>
       Set <var>url</var>’s <code>username</code> to the empty string.
     </li>
@@ -843,13 +819,25 @@
       Set <var>url</var>’s <code>password</code> to <code>null</code>.
     </li>
     <li>
-      Set <var>url</var>’s <code>fragment</code> to <code>null</code>
+      Set <var>url</var>’s <code>fragment</code> to <code>null</code>.
+    </li>
+    <li>
+      If the <code><a data-link-type=dfn href=#origin-only-flag title="origin-only flag">origin-only flag</a></code> is <code>true</code>,
+      then:
+
+      <ol>
+        <li>
+          Set <var>url</var>’s <code>path</code> to <code>null</code>.
+        </li>
+        <li>
+          Set <var>url</var>’s <code>query</code> to <code>null</code>.
+        </li>
+      </ol>
     </li>
     <li>
       Return <var>url</var>.
     </li>
   </ol>
-
 </section>
 
 
@@ -924,7 +912,7 @@ Normative References</span><a class=self-link href=#normative></a></h3>
 <dt id=biblio-rfc2119 title=RFC2119><a class=self-link href=#biblio-rfc2119></a>[RFC2119]<dd>S. Bradner. <a href=http://www.ietf.org/rfc/rfc2119.txt>Key words for use in RFCs to Indicate Requirement Levels</a>. URL: <a href=http://www.ietf.org/rfc/rfc2119.txt>http://www.ietf.org/rfc/rfc2119.txt</a></dd>
 <dt id=biblio-rfc6454 title=RFC6454><a class=self-link href=#biblio-rfc6454></a>[RFC6454]<dd>Adam Barth. <a href=http://www.ietf.org/rfc/rfc6454.txt>The Web Origin Concept</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6454.txt>http://www.ietf.org/rfc/rfc6454.txt</a></dd>
 <dt id=biblio-rfc7231 title=RFC7231><a class=self-link href=#biblio-rfc7231></a>[RFC7231]<dd>Roy T. Fielding; Julian F. Reschke. <a href=http://www.ietf.org/rfc/rfc7231.txt>HTTP/1.1 Semantics and Content</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc7231.txt>http://www.ietf.org/rfc/rfc7231.txt</a></dd>
-<dt id=biblio-uri title=URI><a class=self-link href=#biblio-uri></a>[URI]<dd>T. Berners-Lee; R. Fielding; L. Masinter. <a href=http://www.ietf.org/rfc/rfc3986.txt>Uniform Resource Identifiers (URI): generic syntax</a>. January 2005. URL: <a href=http://www.ietf.org/rfc/rfc3986.txt>http://www.ietf.org/rfc/rfc3986.txt</a></dd>
+<dt id=biblio-url title=URL><a class=self-link href=#biblio-url></a>[URL]<dd>Anne van Kesteren. <a href=http://url.spec.whatwg.org/>URL</a>. Living Standard. URL: <a href=http://url.spec.whatwg.org/>http://url.spec.whatwg.org/</a></dd>
 <dt id=biblio-workers title=WORKERS><a class=self-link href=#biblio-workers></a>[WORKERS]<dd>Ian Hickson. <a href=http://www.w3.org/TR/2012/CR-workers-20120501/>Web Workers</a>. 1 May 2012. W3C Candidate Recommendation. (Work in progress.) URL: <a href=http://www.w3.org/TR/2012/CR-workers-20120501/>http://www.w3.org/TR/2012/CR-workers-20120501/</a></dd>
 <dt id=biblio-wsc-ui title=WSC-UI><a class=self-link href=#biblio-wsc-ui></a>[WSC-UI]<dd>Thomas Roessler; Anil Saldhana. <a href=http://www.w3.org/TR/2010/REC-wsc-ui-20100812/>Web Security Context: User Interface Guidelines</a>. 12 August 2010. W3C Recommendation. URL: <a href=http://www.w3.org/TR/2010/REC-wsc-ui-20100812/>http://www.w3.org/TR/2010/REC-wsc-ui-20100812/</a></dd>
 </dl></div>
@@ -948,18 +936,19 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>cross-origin request, <a href=#cross-origin-request title="section 2.2">2.2</a>
 <li>fetch, <a href=#fetch title="section 2.2">2.2</a>
 <li>global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a>
-<li>globally unique identifier, <a href=#globally-unique-identifier title="section 2.2">2.2</a>
 <li>JavaScript global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a>
 <li>None, <a href=#none title="section 3.1">3.1</a>
 <li>None When Downgrade, <a href=#none-when-downgrade title="section 3.2">3.2</a>
 <li>origin, <a href=#origin title="section 2.2">2.2</a>
 <li>Origin Only, <a href=#origin-only title="section 3.3">3.3</a>
+<li>origin-only flag, <a href=#origin-only-flag title="section 6.3">6.3</a>
 <li>Origin When Cross-Origin, <a href=#origin-when-cross-origin title="section 3.4">3.4</a>
 <li>policy, <a href=#referrer-policy title="section 2.1">2.1</a>
 <li>Referer, <a href=#referer-http-header-field title="section 2.2">2.2</a>
 <li>Referer header, <a href=#referer-http-header-field title="section 2.2">2.2</a>
 <li>Referer HTTP header field, <a href=#referer-http-header-field title="section 2.2">2.2</a>
 <li>referrer policy, <a href=#referrer-policy title="section 2.1">2.1</a>
+<li>relative scheme, <a href=#relative-scheme title="section 2.2">2.2</a>
 <li>request, <a href=#request title="section 2.2">2.2</a>
 <li>request client, <a href=#request-client title="section 2.2">2.2</a>
 <li>request context, <a href=#request-context title="section 2.2">2.2</a>
@@ -979,11 +968,6 @@ Index</span><a class=self-link href=#index></a></h2>
 
 <div class=issue>What about service workers?<a href=#issue-d46e3fb1> ↵ </a></div>
 
-  <div class=issue>Change this section to point to Fetch once we agree on how the
-  integration should look.<a href=#issue-7c1aab62> ↵ </a></div>
-
-<div class=issue>Update this once https://www.w3.org/Bugs/Public/show_bug.cgi?id=26058
-      is resolved. <a href=#issue-a13bb370> ↵ </a></div>
-    <div class=issue>I don’t think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.<a href=#issue-f3216f95> ↵ </a></div>
+  <div class=issue>(eisinger) I don’t think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.<a href=#issue-08251c5e> ↵ </a></div>
 
   </div>

@@ -175,15 +175,11 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
       5.2 of "Web Security Context: User Interface Guidelines"</a>. [[!WSC-UI]].
     </dd>
 
-    <dt><dfn>globally unique identifier</dfn></dt>
+    <dt><dfn>relative scheme</dfn></dt>
     <dd>
-      This term is defined in
-      <a href="http://tools.ietf.org/html/rfc6454#section-4">Section 4 of the
-      Origin specification</a>. Note that URLs that do not use
-      <a href="http://tools.ietf.org/html/rfc3986#section-3.2">hierarchical
-      elements</a> as naming authorities (for example: <code>blob:</code>, and
-      <code>data:</code>) have origins which are globally unique identifiers.
-      [[!RFC6454]] [[!URI]]
+      The set of <strong>relative schemes</strong> is defined in
+      <a href="http://url.spec.whatwg.org/#relative-scheme">Section 5 of the
+      URL specification</a>. [[!URL]]
     </dd>
 
     <dt><dfn>runs a worker</dfn> algorithm</dt>
@@ -206,7 +202,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
   <code><a>Origin Only</a></code>, <code><a>Origin when cross-origin</a></code>,
   and <code><a>Unsafe URL</a></code>. Each is explained below, and a detailed
   algorithm for evaluating their effect is given in the
-  <a section href="#modifications-to-fetch"></a> and
+  <a section href="#integration-with-fetch"></a> and
   <a section href="#algorithms"></a> sections:
 
   Note: The referrer policy for a <a>global environment</a> provides a default
@@ -452,8 +448,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
   </h4>
 
   Whenever a user agent creates a <a>nested browsing context</a> containing
-  <a>an iframe srcdoc document</a> or a resource whose <a>origin</a> is a
-  <a>globally unique identifier</a> (for instance, a <code>blob</code> or
+  <a>an iframe srcdoc document</a> or a resource whose <a>origin</a>'s scheme
+  is not a <a>relative scheme</a> (for instance, a <code>blob</code> or
   <code>data</code> resource):
 
   <ol>
@@ -476,8 +472,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
     Workers
   </h4>
 
-  Whenever a user agent <a>runs a worker</a> whose script's <a>origin</a>
-  is a <a>globally unique identifier</a>:
+  Whenever a user agent <a>runs a worker</a> whose script's <a>origin</a>'s
+  scheme is not a <a>relative scheme</a>:
 
   Issue: What about shared workers?
 
@@ -501,20 +497,16 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
 </section>
 
 <section>
-  <h2 id="modifications-to-fetch">Modifications to Fetch</h2>
+  <h2 id="integration-with-fetch">Integration with Fetch</h2>
 
-  Issue: Change this section to point to Fetch once we agree on how the
-  integration should look.
-
-  Replace Step 1 of <a href="http://fetch.spec.whatwg.org/#http-fetch">Fetch's
-  'HTTP Fetch' algorithm</a> with the following step:
-
-  <ol>
-    <li>
-      Execute the <a href="#set-request-referrer">Set <var>request</var>'s
-      <code>Referer</code> header</a> algorithm on <var>request</var>.
-    </li>
-  </ol>
+  The Fetch specification calls out to the
+  <a href="#determine-requests-referrer">Determine <var>request</var>'s
+  referrer</a> algorithm as
+  <a href="http://fetch.spec.whatwg.org/#concept-fetch">Step 2 of the
+  Fetching algorithm</a>, and uses the response to set the <var>request</var>'s
+  <code>referrer</code> property. Fetch is responsible for serializing the
+  URL provided, and setting the `<code>Referer</code>` header on
+  <var>request</var>.
 </section>
 
 <section>
@@ -563,16 +555,22 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
     </li>
   </ol>
 
-  <h3 id="set-request-referrer">
-    Set <var>request</var>'s <code>Referer</code> header.
+  <h3 id="determine-requests-referrer">
+    Determine <var>request</var>'s Referrer.
   </h3>
 
   Given a <a>Request</a> <var>request</var>, we can determine the correct
   referrer information to send by examining the <a>policy</a> associated with
   its <code>client</code>'s <a>global environment</a>, as detailed in the
-  following steps:
+  following steps, which returns either <code>null</code> or a URL:
+
+  Note: If Fetch is performing a navigation in response to a link of type
+  <code><a>noreferrer</a></code>, then <var>request</var>'s
+  <code>referrer</code> will be <code>none</code>, and Fetch won't call into
+  this algorithm.
 
   <ol>
+    <!-- Boring Variables -->
     <li>
       Let <var>environment</var> be <var>request</var>'s <code>client</code>.
     </li>
@@ -581,100 +579,70 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
       <a>referrer policy</a>.
     </li>
     <li>
-      Let <var>headerValue</var> be the empty byte sequence.
+      If <var>request</var>'s <code>referrer</code> is a URL, let
+      <var>pageURL</var> be the value of <var>request</var>'s
+      <var>referrer</var>. Otherwise, let <var>referrerURL</var>
+      be the URL of <var>environment</var>.
     </li>
     <li>
-      Let <var>referrerURL</var> be the URL of <var>request</var>'s
-      <code>referrer</code> if <var>request</var>'s <code>referrer</code> is
-      not <code>null</code>, and otherwise the URL of <var>environment</var>.
+      Let <var>referrerURL</var> be the result of <a href="#strip-url">stripping
+      <var>pageURL</var> for use as a referrer.</a>
     </li>
     <li>
-      <a href="#strip-url">Strip <var>referrerURL</var> for use as a
-      referrer.</a>
-    </li>
-    <li>
-      Let <var>referrerOrigin</var> be the result of appending a U+002F SOLIDUS
-      (<code>/</code>) code point to the
-      <a title="ASCII serialization of an origin">ASCII serialization</a> of
-      the <a>origin</a> of <var>referrerURL</var> .
+      Let <var>referrerOrigin</var> be the result of
+      <a href="#strip-url">stripping <var>pageURL</var> for use as a
+      referrer</a>, with the <code><a>origin-only flag</a></code> set to
+      <code>true</code>.
     </li>
 
-    <!-- None -->
     <li>
-      If <var>policy</var> is <code><a>None</a></code>, or <var>request</var>'s
-      <code>noreferrer</code> flag is set, set <var>headerValue</var> to the
-      empty byte sequence.
+      Execute the statements corresponding to the value of <var>policy</var>:
 
-      Issue: Update this once https://www.w3.org/Bugs/Public/show_bug.cgi?id=26058
-      is resolved. 
-    </li>
-    <!-- Origin -->
-    <li>
-      If <var>policy</var> is <code><a>Origin</a></code>, set
-      <var>headerValue</var> to <var>referrerOrigin</var>.
-    </li>
-    <!-- Origin When Cross-Origin -->
-    <li>
-      If <var>policy</var> is <code><a>Origin When Cross-Origin</a></code>,
-      then:
+      <dl>
+        <dt><var>policy</var> is <code><a>None</a></code></dt>
+        <dd>Return <code>null</code></dd>
 
-      <ol>
-        <li>
-          If <var>request</var> is a <a>cross-origin request</a>, then set
-          <var>headerValue</var> to <var>referrerOrigin</var>.
-        </li>
+        <dt><var>policy</var> is <code><a>Origin</a></code></dt>
+        <dd>Return <var>referrerOrigin</var></dd>
 
-        <li>
-          Otherwise, set <var>headerValue</var> to the
-          <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
-          of <var>referrerURL</var>.
-        </li>
-      </ol>
-    </li>
-    <!-- Unsafe URL -->
-    <li>
-      If <var>policy</var> is <code><a>Unsafe URL</a></code>, set
-      <var>headerValue</var> to the
-      <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
-      of <var>referrerURL</var>.
-    </li>
-    <!-- None When Downgrade -->
-    <li>
-      If <var>policy</var> is <code><a>None When Downgrade</a></code>, or the
-      <code>null</code>, then:
+        <dt><var>policy</var> is <code><a>Unsafe URL</a></code></dt>
+        <dd>Return <var>referrerURL</var>.</dd>
 
-      <ol>
-        <li>
-          If <var>environment</var> is not <a>TLS-protected</a>, then set
-          <var>headerValue</var> to the
-          <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
-          of <var>referrerURL</var>.
-        </li>
-        <li>
-          Otherwise, <var>environment</var> is <a>TLS-protected</a>, so:
-
+        <dt>
+          <var>policy</var> is <code><a>Origin When Cross-Origin</a></code>
+        </dt>
+        <dd>
           <ol>
             <li>
-              If the <a>origin</a> of <var>request</var>'s <code>URL</code> is
-              an <a><em>a priori</em> insecure origin</a>, then set
-              <var>headerValue</var> to the empty byte sequence.
+              If <var>request</var> is a <a>cross-origin request</a>, then
+              return <var>referrerOrigin</var>.
             </li>
             <li>
-              Otherwise, the <a>origin</a> of <var>request</var>'s
-              <code>URL</code> is not an <a><em>a priori</em> insecure
-              origin</a>, so set <var>headerValue</var> to the
-              <a href="http://url.spec.whatwg.org/#serializing">serialization</a>
-              of <var>referrerURL</var>.
+              Otherwise, return <var>referrerURL</var>.
             </li>
           </ol>
-        </li>
-      </ol>
-    </li>
+        </dd>
 
-    <li>
-      Set `<code>Referer</code>` to <var>headerValue</var> in
-      <var>request</var>'s
-      <a href="http://fetch.spec.whatwg.org/#concept-request-headers">headers</a>.
+        <dt>
+          <var>policy</var> is <code><a>None When Downgrade</a></code>
+        </dt>
+        <dt>
+          <var>policy</var> is <code>null</code>
+        </dt>
+        <dd>
+          <ol>
+            <li>
+              If <var>environment</var> is <a>TLS-protected</a> <em>and</em> the
+              <a>origin</a> of <var>request</var>'s <code>URL</code> is
+              an <a><em>a priori</em> insecure origin</a>, then return
+              <code>null</code>.
+            </li>
+            <li>
+              Otherwise, return <var>requestURL</var>.
+            </li>
+          </ol>
+        </dd>
+      </dl>
     </li>
   </ol>
 
@@ -683,7 +651,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
   query parameters from a request's referrer, or to send an empty referrer
   header regardless of the <a>referrer policy</a> specified.
 
-  Issue: I don't think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.
+  Issue: (eisinger) I don't think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.
 
   <h3 id="strip-url">
     Strip <var>url</var> for use as a referrer.
@@ -691,9 +659,17 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
 
   Certain portions of URLs MUST not be included when sending a URL as the value
   of a `<code>Referer</code>` header: a URLs fragment, username, and password
-  components should be stripped from the URL before it's sent out.
+  components should be stripped from the URL before it's sent out. This
+  algorithm accepts a <code><dfn>origin-only flag</dfn></code>, which defaults
+  to <code>false</code>. If set to <code>true</code>, the algorithm will
+  additionally remove the URL's path and query components, leaving only the
+  scheme, host, and port.
 
   <ol>
+    <li>
+      If <var>url</var>'s <code>scheme</code> is <em>not</em> a <a>relative
+      scheme</a>, then return <code>null</code>.
+    </li>
     <li>
       Set <var>url</var>'s <code>username</code> to the empty string.
     </li>
@@ -701,13 +677,25 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
       Set <var>url</var>'s <code>password</code> to <code>null</code>.
     </li>
     <li>
-      Set <var>url</var>'s <code>fragment</code> to <code>null</code>
+      Set <var>url</var>'s <code>fragment</code> to <code>null</code>.
+    </li>
+    <li>
+      If the <code><a>origin-only flag</a></code> is <code>true</code>,
+      then:
+
+      <ol>
+        <li>
+          Set <var>url</var>'s <code>path</code> to <code>null</code>.
+        </li>
+        <li>
+          Set <var>url</var>'s <code>query</code> to <code>null</code>.
+        </li>
+      </ol>
     </li>
     <li>
       Return <var>url</var>.
     </li>
   </ol>
-
 </section>
 
 <!--
