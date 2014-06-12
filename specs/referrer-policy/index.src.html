@@ -213,16 +213,12 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
 
   The simplest policy is <dfn>None</dfn>, which specifies that no referrer
   information is to be sent along with requests made from a particular <a>global
-  environment</a> to any <a>origin</a>. A <code><a>referer</a></code> will
-  still be sent, but it will contain the empty byte sequence.
-
-  Issue: Is that true? If yes, is it also valid to just omit the referer header?
+  environment</a> to any <a>origin</a>. The header will be omitted entirely.
 
   <div class="example">
     If a document at <code>https://example.com/page.html</code> sets a policy of
     <code>None</code>, then navigations to <code>https://example.com/</code>
-    (or any other URL) would send a <a><code>referer</code> header</a>
-    with a value of the empty byte sequence.
+    (or any other URL) would send no <a><code>referer</code> header</a>.
   </div>
 
   <h3 id="referrer-policy-state-none-when-downgrade">None When Downgrade</h3>
@@ -234,8 +230,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
 
   Requests from <a>TLS-protected</a> <a>global environments</a> to <a><em>a
   priori</em> insecure origins</a>, on the other hand, will contain no referrer
-  information. A <code><a>referer</a></code> will still be sent, but it will
-  contain the empty byte sequence.
+  information. A <code><a>referer</a></code> will not be sent.
 
   <div class="example">
     If a document at <code>https://example.com/page.html</code> sets a policy of
@@ -246,8 +241,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
     <a><em>a priori</em> insecure origin</a>.
 
     Navigations from that same page to
-    <code><strong>http</strong>://not.example.com/</code> would send a
-    <a><code>referer</code> header</a> with a value of the empty byte sequence.
+    <code><strong>http</strong>://not.example.com/</code> would send no
+    <a><code>referer</code> header</a>.
   </div>
 
   This is a user agent's default behavior, if no policy is otherwise specified.
@@ -652,12 +647,11 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
     </li>
   </ol>
 
-  User agents MAY choose to be more limited with regard to referrer information
-  than this algorithm specifies. For instance, user agents MAY choose to strip
-  query parameters from a request's referrer, or to send an empty referrer
-  header regardless of the <a>referrer policy</a> specified.
-
-  Issue: (eisinger) I don't think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.
+  Note: Nothing here should be interpreted as preventing user agents from
+  offering options to users which would reduce the information sent out via a
+  `<code>Referer</code>` header. For instance, user agents MAY allow users to
+  suppress the referrer header entirely, regardless of the <a>referrer
+  policy</a>.
 
   <h3 id="strip-url">
     Strip <var>url</var> for use as a referrer.
