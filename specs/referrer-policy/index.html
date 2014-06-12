@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Referrer Policy</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140611>11 June 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140612>12 June 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/referrerpolicy/>https://w3c.github.io/webappsec/specs/referrerpolicy/</a><dt>Editor’s Draft:<dd><a href=https://w3c.github.io/webappsec/specs/referrerpolicy/>https://w3c.github.io/webappsec/specs/referrerpolicy/</a><dt>Version History:<dd><a href=https://github.com/w3c/webappsec/commits/master/specs/referrerpolicy/index.src.html>https://github.com/w3c/webappsec/commits/master/specs/referrerpolicy/index.src.html</a>
     <dt>Feedback:</dt>
         <dd><a href="mailto:public-webappsec@w3.org?subject=%5BREFERRER%5D%20feedback">public-webappsec@w3.org</a>
@@ -148,7 +148,8 @@
 	<li><a href=#algorithms><span class=secno>6</span>Algorithms</a>
 		<ul class=toc>
 		<li><a href=#set-referrer-policy><span class=secno>6.1</span>     Set <var>environment</var>’s referrer policy to <var>policy</var>.   </a>
-		<li><a href=#set-request-referrer><span class=secno>6.2</span>     Set <var>request</var>’s <code>Referer</code> header.   </a></ul>
+		<li><a href=#set-request-referrer><span class=secno>6.2</span>     Set <var>request</var>’s <code>Referer</code> header.   </a>
+		<li><a href=#strip-url><span class=secno>6.3</span>     Strip <var>url</var> for use as a referrer.   </a></ul>
 	<li><a href=#acknowledgements><span class=secno>7</span>Acknowledgements</a>
 	<li><a href=#conformance><span class=secno></span>Conformance</a>
 		<ul class=toc>
@@ -361,10 +362,8 @@
   <div class=example>
     If a document at <code>https://example.com/page.html</code> sets a policy of
     <code>None</code>, then navigations to <code>https://example.com/</code>
-    (and every other origin) would send a <a data-link-type=dfn href=#referer-http-header-field title="referer header"><code>referer</code> header</a>
+    (or any other URL) would send a <a data-link-type=dfn href=#referer-http-header-field title="referer header"><code>referer</code> header</a>
     with a value of the empty byte sequence.
-
-<p class=issue id=issue-22225704><a class=self-link href=#issue-22225704></a>Navigations are to URLs, not origins, no?</p>
   </div>
 
   <h3 class="heading settled heading" data-level=3.2 id=referrer-policy-state-none-when-downgrade><span class=secno>3.2 </span><span class=content>None When Downgrade</span><a class=self-link href=#referrer-policy-state-none-when-downgrade></a></h3>
@@ -373,8 +372,6 @@
   from <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a> <a data-link-type=dfn href=#javascript-global-environment title="global environments">global environments</a> to a non-<a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a
   priori</em> insecure origin</a>, and requests from <a data-link-type=dfn href=#javascript-global-environment title="global environments">global environments</a>
   which are <em>not</em> <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a> to any <a data-link-type=dfn href=#origin title=origin>origin</a>.</p>
-
-<p class=issue id=issue-362e5071><a class=self-link href=#issue-362e5071></a>what happens if you load about:blank, will document.referrer still be set?</p>
 
 <p>Requests from <a data-link-type=dfn href=#tls-protected title=tls-protected>TLS-protected</a> <a data-link-type=dfn href=#javascript-global-environment title="global environments">global environments</a> to <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origins"><em>a
   priori</em> insecure origins</a>, on the other hand, will contain no referrer
@@ -401,10 +398,15 @@
 <p>The <dfn data-dfn-type=dfn data-noexport="" id=origin-only>Origin Only<a class=self-link href=#origin-only></a></dfn> policy specifies that only the
   <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of the
   <a data-link-type=dfn href=#origin title=origin>origin</a> of the <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> from which a request is
-  made is sent as referrer information when making requests from a particular
-  <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> to any <a data-link-type=dfn href=#origin title=origin>origin</a>.</p>
+  made is sent as referrer information when making both <a data-link-type=dfn href=#same-origin-request title="same-origin requests">same-origin
+  requests</a> and <a data-link-type=dfn href=#cross-origin-request title="cross-origin requests">cross-origin requests</a> from a particular
+  <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>.</p>
 
-<p class=issue id=issue-7d15b9c6><a class=self-link href=#issue-7d15b9c6></a>do we have to add here that we need to add SOLIDUS slash?</p>
+<p class=note>Note: The serialization of an origin looks like
+  <code>https://example.com</code>. To ensure that a valid URL is sent in the
+  `<code>Referer</code>` header, user agents will append a U+002F SOLIDUS
+  ("<code>/</code>") character to the origin (e.g.
+  <code>https://example.com/</code>).</p>
 
   <div class=example>
     If a document at <code>https://example.com/page.html</code> sets a policy of
@@ -415,9 +417,10 @@
 
   <h3 class="heading settled heading" data-level=3.4 id=referrer-policy-state-origin-when-cross-origin><span class=secno>3.4 </span><span class=content>Origin When Cross-Origin</span><a class=self-link href=#referrer-policy-state-origin-when-cross-origin></a></h3>
 
-<p>The <dfn data-dfn-type=dfn data-noexport="" id=origin-when-cross-origin>Origin When Cross-Origin<a class=self-link href=#origin-when-cross-origin></a></dfn> policy specifies that a full URL
-  is sent as referrer information when making <a data-link-type=dfn href=#same-origin-request title="same-origin requests">same-origin requests</a> from a
-  particular <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>, and only the
+<p>The <dfn data-dfn-type=dfn data-noexport="" id=origin-when-cross-origin>Origin When Cross-Origin<a class=self-link href=#origin-when-cross-origin></a></dfn> policy specifies that a full URL,
+  <a href=#strip-url>stripped for use as a referrer</a>, is sent as referrer
+  information when making <a data-link-type=dfn href=#same-origin-request title="same-origin requests">same-origin requests</a> from a particular
+  <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>, and only the
   <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ascii serialization of an origin">ASCII serialization</a> of the
   <a data-link-type=dfn href=#origin title=origin>origin</a> of the <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> from which a request is
   made is sent at referrer information when making <a data-link-type=dfn href=#cross-origin-request title="cross-origin requests">cross-origin requests</a>
@@ -437,11 +440,10 @@
 
   <h3 class="heading settled heading" data-level=3.5 id=referrer-policy-state-unsafe-url><span class=secno>3.5 </span><span class=content>Unsafe URL</span><a class=self-link href=#referrer-policy-state-unsafe-url></a></h3>
 
-<p>The <dfn data-dfn-type=dfn data-noexport="" id=unsafe-url>Unsafe URL<a class=self-link href=#unsafe-url></a></dfn> policy specifies that a full URL is sent along with
-  requests made from a particular <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> to any
-  <a data-link-type=dfn href=#origin title=origin>origin</a>.</p>
-
-<p class=issue id=issue-3ac6ce3d><a class=self-link href=#issue-3ac6ce3d></a>we actually always strip reference fragment, login information, and query parameters.</p>
+<p>The <dfn data-dfn-type=dfn data-noexport="" id=unsafe-url>Unsafe URL<a class=self-link href=#unsafe-url></a></dfn> policy specifies that a full URL,
+  <a href=#strip-url>stripped for use as a referrer</a>, is sent along with
+  both <a data-link-type=dfn href=#cross-origin-request title="cross-origin requests">cross-origin requests</a> and <a data-link-type=dfn href=#same-origin-request title="same-origin requests">same-origin requests</a> made from
+  a particular <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a>.</p>
 
   <div class=example>
     If a document at <code>https://example.com/sekrit.html</code> sets a policy
@@ -816,10 +818,34 @@
 
 <p>User agents MAY choose to be more limited with regard to referrer information
   than this algorithm specifies. For instance, user agents MAY choose to strip
-  query paramaters from a request’s referrer, or to send an empty referrer
+  query parameters from a request’s referrer, or to send an empty referrer
   header regardless of the <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> specified.</p>
 
 <p class=issue id=issue-f3216f95><a class=self-link href=#issue-f3216f95></a>I don’t think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.</p>
+
+  <h3 class="heading settled heading" data-level=6.3 id=strip-url><span class=secno>6.3 </span><span class=content>
+    Strip <var>url</var> for use as a referrer.
+  </span><a class=self-link href=#strip-url></a></h3>
+
+<p>Certain portions of URLs MUST not be included when sending a URL as the value
+  of a `<code>Referer</code>` header: a URLs fragment, username, and password
+  components should be stripped from the URL before it’s sent out.</p>
+
+  <ol>
+    <li>
+      Set <var>url</var>’s <code>username</code> to the empty string.
+    </li>
+    <li>
+      Set <var>url</var>’s <code>password</code> to <code>null</code>.
+    </li>
+    <li>
+      Set <var>url</var>’s <code>fragment</code> to <code>null</code>
+    </li>
+    <li>
+      Return <var>url</var>.
+    </li>
+  </ol>
+
 </section>
 
 
@@ -944,13 +970,6 @@ Index</span><a class=self-link href=#index></a></h2>
 
 <h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style="counter-reset: issue"><div class=issue>Is that true? If yes, is it also valid to just omit the referer header?<a href=#issue-29b0dda8> ↵ </a></div>
 
-  <div class=issue>Navigations are to URLs, not origins, no?<a href=#issue-22225704> ↵ </a></div>
-  <div class=issue>what happens if you load about:blank, will document.referrer still be set?<a href=#issue-362e5071> ↵ </a></div>
-
-<div class=issue>do we have to add here that we need to add SOLIDUS slash?<a href=#issue-7d15b9c6> ↵ </a></div>
-
-  <div class=issue>we actually always strip reference fragment, login information, and query parameters.<a href=#issue-3ac6ce3d> ↵ </a></div>
-
   <div class=issue>What is the interaction with the preload scanner?<a href=#issue-d3acc01e> ↵ </a></div>
     <div class=issue>What about shared workers?<a href=#issue-b9bfaa7e> ↵ </a></div>
 
@@ -962,4 +981,5 @@ Index</span><a class=self-link href=#index></a></h2>
 <div class=issue>Update this once https://www.w3.org/Bugs/Public/show_bug.cgi?id=26058
       is resolved. <a href=#issue-a13bb370> ↵ </a></div>
     <div class=issue>I don’t think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.<a href=#issue-f3216f95> ↵ </a></div>
-</div>
+
+  </div>
