@@ -261,8 +261,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
   The <dfn>Origin Only</dfn> policy specifies that only the
   <a title="ASCII serialization of an origin">ASCII serialization</a> of the
   <a>origin</a> of the <a>global environment</a> from which a request is
-  made is sent as referrer information when making requests from a particular
-  <a>global environment</a> to any <a>origin</a>.
+  made is sent as referrer information when making both <a>same-origin
+  requests</a> and <a>cross-origin requests</a> from a particular
+  <a>global environment</a>.
 
   Note: The serialization of an origin looks like
   <code>https://example.com</code>. To ensure that a valid URL is sent in the
@@ -279,9 +280,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 
   <h3 id="referrer-policy-state-origin-when-cross-origin">Origin When Cross-Origin</h3>
 
-  The <dfn>Origin When Cross-Origin</dfn> policy specifies that a full URL
-  is sent as referrer information when making <a>same-origin requests</a> from a
-  particular <a>global environment</a>, and only the
+  The <dfn>Origin When Cross-Origin</dfn> policy specifies that a full URL,
+  <a href="#strip-url">stripped for use as a referrer</a>, is sent as referrer
+  information when making <a>same-origin requests</a> from a particular
+  <a>global environment</a>, and only the
   <a title="ASCII serialization of an origin">ASCII serialization</a> of the
   <a>origin</a> of the <a>global environment</a> from which a request is
   made is sent at referrer information when making <a>cross-origin requests</a>
@@ -301,11 +303,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 
   <h3 id="referrer-policy-state-unsafe-url">Unsafe URL</h3>
 
-  The <dfn>Unsafe URL</dfn> policy specifies that a full URL is sent along with
-  requests made from a particular <a>global environment</a> to any
-  <a>origin</a>.
-
-  Issue: we actually always strip reference fragment, login information, and query parameters.
+  The <dfn>Unsafe URL</dfn> policy specifies that a full URL,
+  <a href="#strip-url">stripped for use as a referrer</a>, is sent along with
+  both <a>cross-origin requests</a> and <a>same-origin requests</a> made from
+  a particular <a>global environment</a>.
 
   <div class="example">
     If a document at <code>https://example.com/sekrit.html</code> sets a policy
@@ -675,10 +676,34 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrerp
 
   User agents MAY choose to be more limited with regard to referrer information
   than this algorithm specifies. For instance, user agents MAY choose to strip
-  query paramaters from a request's referrer, or to send an empty referrer
+  query parameters from a request's referrer, or to send an empty referrer
   header regardless of the <a>referrer policy</a> specified.
 
   Issue: I don't think we should let UAs strip additional information that is not specified here. In fact, we should always strip the reference fragment, login information, and query parameters.
+
+  <h3 id="strip-url">
+    Strip <var>url</var> for use as a referrer.
+  </h3>
+
+  Certain portions of URLs MUST not be included when sending a URL as the value
+  of a `<code>Referer</code>` header: a URLs fragment, username, and password
+  components should be stripped from the URL before it's sent out.
+
+  <ol>
+    <li>
+      Set <var>url</var>'s <code>username</code> to the empty string.
+    </li>
+    <li>
+      Set <var>url</var>'s <code>password</code> to <code>null</code>.
+    </li>
+    <li>
+      Set <var>url</var>'s <code>fragment</code> to <code>null</code>
+    </li>
+    <li>
+      Return <var>url</var>.
+    </li>
+  </ol>
+
 </section>
 
 <!--
