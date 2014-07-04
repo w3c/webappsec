@@ -642,19 +642,19 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       <a href="http://www.w3.org/TR/XMLHttpRequest2/#the-open-method"><code>open()</code>
       method</a>, throw a <code>SecurityError</code> exception and terminate the
       method's execution if the <var>request URL</var> provided points to an
-      <a><em>a priori</em> insecure origin</a>.</li>
+      <a><em>a priori</em> insecure origin</a>. [[!XMLHTTPREQUEST]]</li>
 
-      <li>When provessing EventSource's
+      <li>When processing EventSource's
       <a href="http://www.w3.org/TR/eventsource/#the-eventsource-interface">constructor</a>,
       throw a <code>SecurityError</code> exception and terminate the constructor's
       execution if the <var>url</var> provided points to an <a><em>a priori</em>
-      insecure origin</a>.</li>
+      insecure origin</a>. [[!EVENTSOURCE]]</li>
 
       <li>When processing WebSocket's
       <a href="http://www.w3.org/TR/websockets/#the-websocket-interface">constructor</a>,
       throw a <code>SecurityError</code> exception and terminate the constructor's
       execution if the <var>url</var> provided points to an <a><em>a priori</em>
-      insecure origin</a>.</li>
+      insecure origin</a>. [[!WEBSOCKETS]]</li>
     </ol>
   </section>
 
@@ -663,22 +663,15 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 
     If a <a>request</a> for <a>optionally blockable passive</a> resources
     which are <a>mixed content</a> is <strong>not</strong> treated as <a>active
-    content</a> (per requirement #3 above), then the user agent MUST adhere to
-    the following requirements:
+    content</a> (per requirement #3 above), then the user agent MUST NOT provide
+    the user with a visible indication that the <a>top-level browsing
+    context</a> which loaded that resource is secure (for instance, via a green
+    lock icon). The user agent SHOULD instead display a visible indication that
+    <a>mixed content</a> is present.
 
-    <ul>
-      <li>
-        The user agent MUST NOT provide the user with a visible indication that
-        the <a>top-level browsing context</a> which loaded that resource is
-        secure (for instance, via a green lock icon). The user agent SHOULD
-        instead display a visible indication that <a>mixed content</a> is
-        present.
-
-        This requirement explicitly includes any visible indication of the
-        <a>top-level browsing context</a>'s
-        <a href="https://cabforum.org/about-ev-ssl/">EV status</a>.
-      </li>
-    </ul>
+    This requirement explicitly includes any visible indication of the
+    <a>top-level browsing context</a>'s
+    <a href="https://cabforum.org/about-ev-ssl/">EV status</a>. [[!CAB]]
   </section>
 
   <section>
@@ -725,7 +718,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     </h3>
 
     Given a <a>JavaScript global environment</a> <var>environment</var>, the
-    user agent can determine if <var>environment</var> is a
+    user agent determines whether <var>environment</var> is a
     <dfn export>secure context</dfn> via the following algorithm, which returns
     <strong>true</strong> if <var>environment</var> is a secure context, and
     <strong>false</strong> otherwise.
@@ -761,36 +754,38 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       <li>Return <strong>false</strong>.</li>
     </ol>
 
-    If a document is framed, user agents need to check not only the document
-    itself, but also the <a>top-level browsing context</a> in which the
-    document is nested, as that is the context which controls the user's
-    expectations regarding the security status of the resource she's loaded.
-    For example:
+    <div class="note">
+      If a document is a <a>nested browsing context</a>, user agents need to
+      check not only the document itself, but also the <a>top-level browsing
+      context</a> in which the document is nested, as that is the context
+      which controls the user's expectations regarding the security status of
+      the resource she's loaded. For example:
 
-    <div class="example">
-      <code>http://a.com</code> loads <code>http://evil.com</code>. The
-      insecure request will be allowed, as <code>a.com</code> was not loaded
-      over a secure connection.
-    </div>
+      <div class="example">
+        <code>http://a.com</code> loads <code>http://evil.com</code>. The
+        insecure request will be allowed, as <code>a.com</code> was not loaded
+        over a secure connection.
+      </div>
 
-    <div class="example">
-      <code>https://a.com</code> loads <code>http://evil.com</code>. The
-      insecure request will be blocked, as <code>a.com</code> was loaded over
-      a secure connection.
-    </div>
+      <div class="example">
+        <code>https://a.com</code> loads <code>http://evil.com</code>. The
+        insecure request will be blocked, as <code>a.com</code> was loaded over
+        a secure connection.
+      </div>
 
-    <div class="example">
-      <code>http://a.com</code> frames <code>https://b.com</code>, which
-      loads <code>http://evil.com</code>. In this case, the insecure request
-      to <code>evil.com</code> will be blocked, as <code>b.com</code> was
-      loaded over a secure connection, even though <code>a.com</code> was not.
-    </div>
+      <div class="example">
+        <code>http://a.com</code> frames <code>https://b.com</code>, which
+        loads <code>http://evil.com</code>. In this case, the insecure request
+        to <code>evil.com</code> will be blocked, as <code>b.com</code> was
+        loaded over a secure connection, even though <code>a.com</code> was not.
+      </div>
 
-    <div class="example">
-      <code>https://a.com</code> frames a <code>data:</code> URL, which loads
-      <code>http://evil.com</code>. In this case, the insecure request to
-      <code>evil.com</code> will be blocked, as <code>a.com</code> was loaded
-      over a secure connection, even though the framed data URL was not.
+      <div class="example">
+        <code>https://a.com</code> frames a <code>data:</code> URL, which loads
+        <code>http://evil.com</code>. In this case, the insecure request to
+        <code>evil.com</code> will be blocked, as <code>a.com</code> was loaded
+        over a secure connection, even though the framed data URL was not.
+      </div>
     </div>
   </section>
 
