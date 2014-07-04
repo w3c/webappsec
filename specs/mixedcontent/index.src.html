@@ -71,6 +71,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   security and privacy by limiting a resource's ability to inadvertently
   communicate in the clear, or to expose non-public resources to the web at
   large.
+  
+  Note: Nothing described in this document is really new; everything covered
+  here has appeared in one or more user agents over the years: Internet Explorer
+  led the way, alerting users to mixed active content since at least version 4.
 </section>
 
 <!--
@@ -342,7 +346,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         well as scripts loaded as Workers and SharedWorkers [[!WORKERS]], or
         ServiceWorkers [[!SERVICEWORKERS]]) [[!ECMA-262]]
       </li>
-      <li>Stylesheets [[!CSS-2010]]</li>
+      <li>Stylesheets [[!CSS21]]</li>
       <li>
         <a>Plugin</a> data (loaded, for example, through
         <a element>applet</a>, <a element>embed</a>, or <a element>object</a>
@@ -862,7 +866,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     is used to make that determination.
 
     Given a <a>request</a> <var>request</var> and <a>response</a>
-    <var>response</var>, the user agent can determine what response should be
+    <var>response</var>, the user agent determines what response should be
     returned via the following algorithm:
 
     <ol>
@@ -935,10 +939,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 ██       ████████    ██     ██████  ██     ██
 -->
 <section>
-  <h2 id="fetch-integration">Modifications to Fetch</h2>
-
-  Issue: Replace this section with some pointers to Fetch once we can get Fetch
-  updated accordingly.
+  <h2 id="fetch-integration">Integration with Fetch</h2>
 
   When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
@@ -946,55 +947,24 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   origins</a>, and at the bottom of the algorithm, to block responses from
   <a>insecure origins</a>.
 
-  The Fetch algorithm MUST be updated as follows: [[!FETCH]]
+  Fetch calls the algorithm defined in
+  <a section href="#should-block-fetch"></a> during
+  <a href="http://fetch.spec.whatwg.org/#fetching">Step 4 of the 'Fetching'
+  algorithm</a>. [[!FETCH]]
 
-  <ul>
-    <li>
-      After <a href="http://fetch.spec.whatwg.org/#concept-fetch">step 1 of the
-      current Fetch algorithm</a>, perform the following steps:
+  Note: Hooking into Fetch here ensures that we catch not only the initial
+  request, but all redirects as well. That is certainly the intent.
 
-      <ol>
-        <li>
-          If the <a href="#should-block-fetch">Should fetching
-          <var>request</var> be blocked as mixed content?</a> algorithm returns
-          <strong><code>blocked</code></strong> when executed using
-          <var>request</var>:
+  Further, Fetch calls the algorithm defined in
+  <a section href="#should-block-response"></a> during
+  <a href="http://fetch.spec.whatwg.org/#fetching">Step 7 of the 'Fetching'
+  algorithm</a>. [[!FETCH]]
 
-          <ol>
-            <li>Set <var>response</var> to a <a>network error</a>.</li>
-            <li>Skip to step 7 of the current Fetch algorithm.</li>
-          </ol>
-        </li>
-      </ol>
-
-      Note: Hooking into Fetch here ensures that we catch not only the initial
-      request, but all redirects as well. That is certainly the intent.
-    </li>
-    <li>
-      After <a href="http://fetch.spec.whatwg.org/#concept-fetch">step 9 of the
-      current Fetch algorithm</a>, perform the following steps:
-
-      <ol>
-        <li>
-          If the <a href="#should-block-response">Should <var>response</var>
-          to <var>request</var> be blocked as mixed content?</a> algorithm
-          returns <strong><code>blocked</code></strong> when executed using
-          <var>request</var> and <var>response</var>:
-
-          <ol>
-            <li>Set <var>response</var> to a <a>network error</a>.</li>
-          </ol>
-
-        </li>
-      </ol>
-
-      Note: This hook is necessary to detect resources modified or
-      synthesized by a ServiceWorker, as well as to determine whether a
-      resource is <a>insecure</a> once the TLS-handshake has finished. See
-      steps 4.1 and 4.2 of the <a section href="#should-block-response"></a>
-      algorithm for detail.
-    </li>
-  </ul>
+  Note: This hook is necessary to detect resources modified or
+  synthesized by a ServiceWorker, as well as to determine whether a
+  resource is <a>insecure</a> once the TLS-handshake has finished. See
+  steps 4.1 and 4.2 of the <a section href="#should-block-response"></a>
+  algorithm for detail.
 </section>
 
 <!--
@@ -1008,18 +978,13 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 -->
 <section>
   <h2 id="websockets-integration">Modifications to WebSockets</h2>
-
-  WebSocket connections don't go through the Fetch algorithm, they're defined
-  in the <a href="http://tools.ietf.org/html/rfc6455#section-4.1">Establish a
-  WebSocket Connection</a> algorithm [[!WSP]], and in the 'WebSocket()'
-  constructor algorithm. Those algorithms MUST be modified as follows:
+  
+  The <a href="http://www.w3.org/TR/2012/CR-websockets-20120920/#the-websocket-interface"><code>WebSocket()</code>
+  constructor algorithm</a> [[!WEBSOCKETS]] is modified as follows:
 
   <ul>
     <li>
-      Replace
-      <a href="http://www.w3.org/TR/2012/CR-websockets-20120920/#the-websocket-interface">
-        Step 2 of the <code>WebSocket()</code> constructor algorithm
-      </a> with the following step:
+      Replace Step 2 with the following steps:
 
       <ol>
         <li>
@@ -1037,10 +1002,14 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         </li>
       </ol>
     </li>
+  </ol>
+
+  The <a href="http://tools.ietf.org/html/rfc6455#section-4.1">Establish a
+  WebSocket Connection algorithm</a> is modified as follows:
+
+  <ol>
     <li>
-      After <a href="http://tools.ietf.org/html/rfc6455#section-4.1">step 5 of
-      the current Establish a WebSocket Connection algorithm</a>, perform the
-      following step:
+      After step 5, perform the following step:
 
       <ol>
         <li>
@@ -1066,9 +1035,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 -->
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>
-
-  This specification does not invent new behaviors, attempting instead to
-  document and rationalize existing behaviors. Everything covered here
-  has appeared in one or more user agents over the years: Internet Explorer led
-  the way, alerting users to mixed active content since at least version 4.
+  
+  In addition to the wonderful feedback gathered from the WebAppSec WG, the
+  Chrome security team was invaluable in preparing this specification. In
+  particular, Chris Palmer, Chris Evans, Ryan Sleevi, Michal Zalewski, Ken
+  Buchanan, and Tom Sepez gave lots of early feedback. Anne van Kesteren
+  explained Fetch and helped define the interface to this specification.
 </section>
