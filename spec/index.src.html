@@ -52,7 +52,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   the credential manager to be more accurate on the one hand, and to assist
   users with federated sign-in on the other.
 
-  These use cases are explored in more detail in [[#use-cases] and in
+  These use cases are explored in more detail in [[#use-cases]] and in
   <a href="../usecases/">Credential Management: Use Cases and Requirements</a>;
   this specification attempts to address many of the requirements that document
   outlines by defining a Credential Manager API which a website can use to
@@ -118,6 +118,12 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   </section>
 
   <section>
+    <h3 id="existing-solutions">
+      Haven't we done this before? What about [<em>insert technology here</em>]?
+    </h3>
+  </section>
+
+  <section>
     <h3 id="introduction-examples">Examples</h3>
 
     <h4 id="examples-local-signin">Local Sign-in</h4>
@@ -145,8 +151,22 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
               var xhr = new XMLHttpRequest();
               xhr.open("POST", "https://example.com/loginEndpoint");
               var formData = new FormData();
-              formData.append("username", credential.id);
-              formData.append("password", credential.password);
+              formData.append("username", credential.<a idl>id</a>);
+              formData.append("password", credential.<a idl>password</a>);
+              xhr.onreadystatechange = function () {
+                if (this.readyState != this.DONE)
+                  return;
+
+                var loginSucceeded = // Process response: if login succeeded, yay! If not, boo!;
+                if (loginSucceeded) {
+                  navigator.<a idl>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(credential);
+                  // Notify the user that signin succeeded! Do amazing, signed-in things!
+                } else {
+                  navigator.credentials.<a idl title="notifyFailedSignIn()">notifyFailedSignIn</a>(credential);
+                  // Notify the user that signin failed, and fall back to the usual experience.
+                }
+              };
+
               xhr.send(formData);
             });
       </pre>
@@ -165,8 +185,8 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
           return;
         }
 
-        navigator.<a idl>credentials</a>.request({
-          "federations": [ "https://federation.com" ]
+        navigator.<a idl>credentials</a>.<a idl title="request()">request</a>({
+          "<a idl>federations</a>": [ "https://federation.com" ]
         }).then(
             function(credential) {
               if (!credential) {
@@ -177,16 +197,17 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
                 return;
               }
 
-              if (credential instanceof {{FederatedCredential}}) {
-                switch (credential.federation) {
+              if (credential instanceof <a idl>FederatedCredential</a>) {
+                switch (credential.<a idl>federation</a>) {
                   // Do something specific for each supported federation.
                 }
               } else {
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", "https://example.com/loginEndpoint");
                 var formData = new FormData();
-                formData.append("username", credential.id);
-                formData.append("password", credential.password);
+                formData.append("username", credential.<a idl>id</a>);
+                formData.append("password", credential.<a idl>password</a>);
+                xhr.onreadystatechange = // Success handler from first example.
                 xhr.send(formData);
               }
             });
@@ -208,7 +229,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
       <pre>
         if (navigator.<a idl>credentials</a>)
-          navigator.<a idl>credentials</a>.<a idl>notifySignedIn()</a>;
+          navigator.<a idl>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(navigator.<a idl>credentials</a>.<a idl>pending</a>);
       </pre>
     </div>
 
@@ -219,8 +240,8 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
       <pre>
         if (navigator.<a idl>credentials</a>) {
-          navigator.<a idl>credentials</a>.notifySignedIn(
-            new LocalCredential("username", "hunter1")
+          navigator.<a idl>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(
+            new <a idl>LocalCredential</a>("username", "hunter1")
           );
         }
       </pre>
@@ -231,12 +252,19 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
       <pre>
         if (navigator.<a idl>credentials</a>) {
-          navigator.<a idl>credentials</a>.notifySignedIn(
-            new FederatedCredential("username", "https://example.com")
+          navigator.<a idl>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(
+            new <a idl>FederatedCredential</a>("username", "https://federation.com")
           );
         }
       </pre>
     </div>
+
+    <h4 id="examples-sign-up">Sign-Up</h4>
+
+    The "federated sign-in" mechanism can be reused for "sign-up" with no
+    modifications: if the user has a credential from a supported federated
+    identity provider, it could be offered to the user via the same request
+    mechanism.
   </section>
 </section>
 
@@ -270,7 +298,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     <dd>
       A <strong>credential store</strong> is an opaque storage mechanism which
       offers a user agent the ability to save, retrieve, and modify
-      <code><a idl>Credential</a></code> objects.
+      <code>{{Credential}}</code> objects.
 
       The implementation is vendor-specific, and the interface provided is not
       exposed to the web.
@@ -280,7 +308,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       <dfn export local-title="zeroclick">Zeroclick Credential</dfn>
     </dt>
     <dd>
-      A <code><a idl>Credential</a></code> is said to be
+      A <code>{{Credential}}</code> is said to be
       <strong>zeroclick</strong> for an origin if a user has chosen to allow
       it to be provided without further interaction when
       <code><a idl>request()</a></code> is called. Further
@@ -292,7 +320,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     </dt>
     <dd>
       A <strong>pending credential</strong> is a
-      <code><a idl>Credential</a></code> object created automatically by the
+      <code>{{Credential}}</code> object created automatically by the
       user agent when it believes that a user has signed-in to a website. For
       example, a pending credential may be created as a result of a successful
       form submission which contained a text field and a password field.
@@ -331,8 +359,10 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     </dd>
 
     <dt><dfn>insecure origin</dfn></dt>
+    <dt><dfn local-title="a priori insecure"><em>a priori</em> insecure origin</dfn></dt>
     <dd>
-      An <strong>insecure origin</strong> is defined in
+      An <strong>insecure origin</strong> and <strong><em>a priori</em>
+      insecure origin</a></strong> are defined in
       <a href="https://w3c.github.io/webappsec/specs/mixedcontent/#insecure-origin">Section
       2.2 of the Mixed Content specification</a>. [[!MIX]]
     </dd>
@@ -363,6 +393,18 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       These terms are defined in detail in
       <a href="http://fetch.spec.whatwg.org/#responses">Section 2.3</a> of the
       Fetch living standard. [[!FETCH]]
+    </dd>
+
+    <dt><dfn>registerable domain</dfn></dt>
+    <dt><dfn>public suffix</dfn></dt>
+    <dd>
+      An <a>origin</a>'s <strong>public suffix</strong> is defined via the
+      <a href="https://publicsuffix.org/">Public Suffix List</a>, and represents
+      the portion of the domain that is controlled by a public or private
+      registry (e.g. the public suffix of <code>https://www.example.com/</code>
+      is ".com"). The <strong>registerable domain</strong> is the public suffix
+      plus one additional label: the registerable domain of
+      <code>https://www.example.com/</code> is "example.com". [[!PSL]]
     </dd>
   </dl>
 </section>
@@ -406,14 +448,15 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     </dd>
     <dt><dfn>avatarURL</dfn></dt>
     <dd>
-      A URL pointing to an avatar image for the user.
+      A URL pointing to an avatar image for the user. This URL MUST NOT be <a>a priori
+      insecure</a>.
 
       ISSUE: How do we make this responsive? Adopt [[MANIFEST]]'s icon syntax?
     </dd>
 
   </dl>
 
-  All <code><a idl>Credential</a></code> objects have internal slots named
+  All <code>{{Credential}}</code> objects have internal slots named
   <code><dfn>[[origin]]</dfn></code>, <code><dfn>[[isFederation]]</dfn></code>,
   and <code><dfn>[[isZeroClick]]</dfn></code>, which store the
   <a>origin</a> for which the credential was saved, whether or not that origin
@@ -445,6 +488,13 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     <a section href="#identifying-federations"></a></dd>
   </dl>
 
+  <h4 id="interfaces-credential-types-pendingcredential"><code>PendingCredential</code></h4>
+  <pre class="idl">
+    [NoInterfaceObject]
+    interface PendingCredential : Credential {
+    };
+  </pre>
+
   <h3 id="interfaces-credential-manager">Credential Manager</h3>
 
   The credential manager hangs off of the <code><a attribute>navigator</a></code>
@@ -461,6 +511,8 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       Promise&lt;any&gt; notifySignedIn(optional Credential credential);
       Promise&lt;any&gt; notifyFailedSignIn(optional Credential credential);
       Promise&lt;any&gt; notifySignedOut();
+
+      readonly attribute PendingCredential? pending;
     };
   </pre>
   <dl dfn-for="CredentialsContainer">
@@ -485,11 +537,16 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     <dt><dfn method>notifySignedOut()</dfn></dt>
     <dd>
       Notify the credential manager that the user is signing out. The user
-      agent MUST execute the algorithm defined in
-      <a section href="#dezeroclickize-origin"></a> with the <a>origin</a>
-      of the <a>JavaScript global environment</a> in which this method is
-      called.
+      agent MUST execute the algorithm defined in [[#dezeroclickize-origin]]
+      with the <a>origin</a> of the <a>JavaScript global environment</a> in
+      which this method is called.
     </dd>
+    <dt><dfn attribute>pending</dfn></dt>
+    <dd>
+      If the user agent has a <a>pending credential</a> for the current page,
+      this attribute will hold a {{PendingCredential}} object which may be
+      passed to {{notifySignedIn()}} or {{notifyFailedSignIn()}}. If not, this
+      attribute will be <code>undefined</code>.
   </dl>
 
   <h3 id="interfaces-request-options">Request Options</h3>
@@ -503,14 +560,14 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   <dl dfn-for="CredentialRequestOptions">
     <dt><dfn attribute>zeroClickOnly</dfn></dt>
     <dd>If <code>true</code>, the user agent will only attempt to provide a
-    <code><a idl>Credential</a></code> without user interaction: if the
+    <code>{{Credential}}</code> without user interaction: if the
     user has explicitly opted-into always giving a particular site access to
     a particular set of credentials, they will be provided. If not, the promise
     will resolve with <code>undefined</code>. For processing details, see the
-    algorithm defined in <a section href="#request-credential"></a>.</dd>
+    algorithm defined in [[#request-credential]].</dd>
     <dt><dfn attribute>federations</dfn></dt>
     <dd>An array of federation identifiers. For details regarding valid formats
-    see <a section href="#identifying-federations"></a></dd>
+    see [[#identifying-federations]]</dd>
   </dl>
 </section>
 
@@ -558,13 +615,13 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   The manifest MUST be served with a content type of
   <code>application/identity-provider-manifest</code>.
 
-  ISSUE: Do we need to register the content type somewhere?
+  ISSUE: Register the content type somewhere.
 
   When the credential manager stores a credential, it MAY asynchronously attempt
   to fetch this URL from the <a>origin</a> tied to the credential. If the
   attempt is successful, the credential could be flagged as being an identity
   provider. For detailed processing instructions, see the algorithm defined in
-  <a section href="#save-credential"></a>.
+  [[#save-credential]].
 
   <div class="example">
     Users sign into Facebook at <code>https://www.facebook.com/login/</code>, and
@@ -612,7 +669,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       Indicate endpoints from which additional data about a user can be
       retrieved (name, avatar, etc).
 
-      ISSUE: Spec this out in more detail.
+      ISSUE: Spec this out in more detail. Perhaps make use of OpenID Connect?
     </li>
   </ul>
 
@@ -632,13 +689,12 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   agents to be helpful.
 
   For consistency, federations passed into the APIs defined in this document
-  (e.g. <code><a idl>CredentialsContainer</a></code>'s
-  <code><a idl>federations</a></code> array, or
-  <code><a idl>FederatedCredential</a></code>'s
-  <code><a idl>federation</a></code> property) MUST be identified by the
-  <a>ASCII serialization</a> of the origin the provider uses for sign in. That
-  is, Facebook would be represented by <code>https://www.facebook.com</code>
-  and Google by <code>https://accounts.google.com</code>.
+  (e.g. <code>{{CredentialsContainer}}</code>'s <code>{{federations}}</code>
+  array, or <code>{{FederatedCredential}}</code>'s <code>{{federation}}</code>
+  property) MUST be identified by the <a>ASCII serialization</a> of the origin
+  the provider uses for sign in. That is, Facebook would be represented by
+  <code>https://www.facebook.com</code> and Google by
+  <code>https://accounts.google.com</code>.
   
   The ASCII serialization of an origin does <em>not</em> include a trailing
   U+002F SOLIDUS ("<code>/</code>"), but user agents SHOULD accept them
@@ -663,12 +719,16 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     Request a <code>Credential</code> with <var>options</var>
   </h3>
 
-  This algorithm accepts a <code><a idl>CredentialRequestOptions</a></code>
+  This algorithm accepts a <code>{{CredentialRequestOptions}}</code>
   object <var>options</var>, and returns a <code>Promise</code> which resolves
-  with either a single <code><a idl>Credential</a></code> object if one could
-  be obtained, or with no argument if no credential was available (either
+  with either a single <code>{{Credential}}</code> object if one could be
+  obtained, or with no argument if no credential was available (either
   because the user refused to share a credential with this page, or because no
   credentials were available, period).
+
+  If called on an <a>insecure origin</a>, or from somewhere other than the
+  <a>top-level browsing context</a>, the <code>Promise</code> will be rejected
+  with a <code>SecurityError</code>.
 
   <ol>
     <li>
@@ -710,13 +770,13 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
       <ol>
         <li>
-          Ask the user which <code><a idl>Credential</a></code> to share.
+          Ask the user which <code>{{Credential}}</code> to share.
 
           Note: This behavior is vendor-specific. Guidelines for user agent
-          behavior are presented in <a section href="#user-mediation"></a>.
+          behavior are presented in [[#user-mediation]].
         </li>
         <li>
-          Let <var>credential</var> be the <code><a idl>Credential</a></code>
+          Let <var>credential</var> be the <code>{{Credential}}</code>
           the user chose, or <code>null</code> if the user chose not to share
           a credential with <var>origin</var>.
         </li>
@@ -728,7 +788,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       </ol>
     </li>
     <li>
-      No <code><a idl>Credential</a></code> is available: terminate this
+      No <code>{{Credential}}</code> is available: terminate this
       algorithm by resolving <var>promise</var>.
     </li>
   </ol>
@@ -739,16 +799,19 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   </h3>
 
   This algorithm accepts an <a>origin</a> <var>origin</var> and a
-  <code><a idl>CredentialRequestOptions</a></code> object <var>options</var>,
-  and returns either a single <code><a idl>Credential</a></code> object if one
+  <code>{{CredentialRequestOptions}}</code> object <var>options</var>,
+  and returns either a single <code>{{Credential}}</code> object if one
   exists, or <code>null</code> if not.
 
   <ol>
     <li>
-      Let <var>credential</var> be the <code><a idl>Credential</a></code> in
+      Let <var>credential</var> be the <code>{{Credential}}</code> in
       the <a>credential store</a> whose <code><a>[[origin]]</a></code> slot is
       <var>origin</var> and whose <code><a>[[isZeroClick]]</a></code> slot is
       <code>true</code>, or <code>null</code> if no such object exists.
+
+      Note: This is an exact match, not a <a>registerable domain</a> match.
+      See [[#security-cross-origin-leakage]] for details as to why.
     </li>
     <li>
       If <var>credential</var> is a <code>FederatedCredential</code>, and
@@ -765,10 +828,11 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     Save <var>credential</var>
   </h3>
 
-  This algorithm accepts a <code><a idl>Credential</a></code>
-  <var>credential</var>, and hands it to the internal credential manager for
-  processing. It returns a <code>Promise</code> which resolves with no arguments
-  once credential is successfully persisted to the credential manager:
+  This algorithm accepts a <code>{{Credential}}</code> <var>credential</var>,
+  and hands it to the internal credential manager for processing. It returns
+  a <code>Promise</code> which resolves with no arguments once credential is
+  successfully persisted to the credential manager, or when the user rejects
+  storage:
 
   <ol>
     <li>
@@ -795,12 +859,12 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       terminate this algorithm.
     </li>
     <li>
-      If <var>credential</var> is <code>undefined</code>:
+      If <var>credential</var> is a <code>{{PendingCredential}}</code>:
       
       <ol>
         <li>
           If the user agent has stored a <a>pending credential</a>, then set
-          <var>credential</var> to that <code><a idl>Credential</a></code>.
+          <var>credential</var> to that <code>{{Credential}}</code>.
         </li>
         <li>
           Otherwise, reject <var>Promise</var> with
@@ -821,13 +885,21 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       to <var>origin</var>.
     </li>
     <li>
-      If <var>credential</var> is a <code><a idl>LocalCredential</a></code>
+      If the <a>origin</a> of <var>credential</var>'s <code>{{avatarURL}}</code>
+      is an <a>insecure origin</a>, reject <var>promise</var> with a
+      <code>SecurityError</code> and terminate this algorithm.
+
+      ISSUE: Should we reject the whole credential? Or just clear the avatar
+      URL? The latter is less draconian.
+    </li>
+    <li>
+      If <var>credential</var> is a <code>{{LocalCredential}}</code>
       then:
 
       <ol>
         <li>
           If the user agent's credential manager contains a
-          <code><a idl>LocalCredential</a></code> <var>storedCredential</var>
+          <code>{{LocalCredential}}</code> <var>storedCredential</var>
           whose <code><a idl>name</a></code> attribute is
           <var>credential</var>'s <code><a idl>name</a></code> and whose
           <code><a>[[origin]]</a></code> slot is <var>origin</var>, then:
@@ -835,11 +907,21 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
           <ol>
             <li>
               If the user grants <var>origin</var> permission to update 
-              credentials (as discussed in
-              <a section href="#user-mediated-storage"></a>), then set
-              <var>storedCredential</var>'s <code><a idl>password</a></code> to
-              the value of <var>credential</var>'s
-              <code><a idl>password</a></code>.
+              credentials (as discussed in [[#user-mediated-storage]]), then:
+             
+              <ol>
+                <li>
+                  Set <var>storedCredential</var>'s <code>{{password}}</code> to
+                  the value of <var>credential</var>'s <code>{{password}}</code>.
+                </li>
+                <li>
+                  Set <var>storedCredential</var>'s <code>{{name}}</code> to
+                  the value of <var>credential</var>'s <code>{{name}}</code>.
+                </li>
+                <li>
+                  Set <var>storedCredential</var>'s <code>{{avatarURL}}</code> to
+                  the value of <var>credential</var>'s <code>{{avatarURL}}</code>.
+                </li>
             </li>
             <li>
               Resolve <var>promise</var>.
@@ -852,16 +934,15 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
           <ol>
             <li>
               If the user grants <var>origin</var> permission to store
-              credentials (as discussed in
-              <a section href="#user-mediated-storage"></a>), then store
-              <var>credential</var> in the <a>credential store</a>.
+              credentials (as discussed in [[#user-mediated-storage]]), then
+              store <var>credential</var> in the <a>credential store</a>.
             </li>
             <li>
               Resolve <var>promise</var> and execute the remaining steps
               asynchronously.
             </li>
             <li>
-              Execute <a section href="#set-isFederation"></a> on
+              Execute the algorithm defined in [[#set-isFederation]] on
               <var>credential</var>.
             </li>
           </ol>
@@ -870,12 +951,12 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     </li>
     <li>
       Otherwise, <var>credential</var> is a
-      <code><a idl>FederatedCredential</a></code>:
+      <code>{{FederatedCredential}}</code>:
 
       <ol>
         <li>
           If the user agent's credential manager contains a
-          <code><a idl>FederatedCredential</a></code> <var>storedCredential</var>
+          <code>{{FederatedCredential}}</code> <var>storedCredential</var>
           whose <code><a idl>name</a></code> attribute is
           <var>credential</var>'s <code><a idl>name</a></code>, whose
           <code><a idl>federation</a></code> attribute is
@@ -888,20 +969,19 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
           <ol>
             <li>
               If the user grants <var>origin</var> permission to store
-              credentials (as discussed in
-              <a section href="#user-mediated-storage"></a>), then store
-              <var>credential</var> in the <a>credential store</a>.
+              credentials (as discussed in [[#user-mediated-storage]]), then
+              store <var>credential</var> in the <a>credential store</a>.
             </li>
             <li>
               Resolve <var>promise</var> and execute the remaining steps
               asynchronously.
             </li>
             <li>
-              Execute the algorithm defined in
-              <a section href="#set-isFederation"></a> on <var>credential</var>.
+              Execute the algorithm defined in [[#set-isFederation]] on
+              <var>credential</var>.
 
               Note: We need to perform this step even though this is a
-              <code><a idl>FederatedCredential</a></code>, as there's nothing
+              <code>{{FederatedCredential}}</code>, as there's nothing
               preventing a user from using an <a>identity provider</a> to
               log into another <a>identity provider</a>.
             </li>
@@ -979,7 +1059,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   <ol>
     <li>
       Let <var>credentials</var> be the set of all
-      <code><a idl>Credential</a></code> objects in the <a>credential
+      <code>{{Credential}}</code> objects in the <a>credential
       store</a> whose <code><a>[[origin]]</a></code> is <var>origin</var>.
     </li>
     <li>
@@ -1022,7 +1102,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       Credential information MUST NOT be stored or updated without explicit
       user consent. For example, the user agent could display a "Save this
       password?" dialog box to the user in response to each call to
-      <code><a idl>notifySignedIn()</a></code>.
+      <code>{{notifySignedIn()}}</code>.
     </li>
     <li>
       User agents MUST notify users when credentials are stored. This might
@@ -1059,7 +1139,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
   <ol>
     <li>
-      By default, <code><a idl>Credential</a></code> objects MUST NOT be
+      By default, <code>{{Credential}}</code> objects MUST NOT be
       considered <a>zeroclick</a> for the origin on which they're saved.
     </li>
     <li>
@@ -1083,8 +1163,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     <li>
       If a user clears her browsing data for an origin (cookies, localStorage,
       and so on), the user agent MUST de-zeroclickize credentials for that origin
-      by executing the algorithm defined in
-      <a section href="#dezeroclickize-origin"></a>.
+      by executing the algorithm defined in [[#dezeroclickize-origin]].
     </li>
   </ol>
 
@@ -1105,25 +1184,28 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   The chooser interface MUST include an indication of the origin which is
   requesting credentials.
 
-  The chooser interface SHOULD include all <code><a idl>Credential</a></code>
+  The chooser interface SHOULD include all <code>{{Credential}}</code>
   objects associated with the origin that requested credentials. It MAY also
   include credentials associated with <a>federated identity providers</a>
   which the origin supports. For example, a credential associated with
-  <code>https://www.facebook.com</code> might be suggested on
-  <code>https://example.com</code> if the latter lists the former as an accepted
-  identity provider.
+  <code>https://www.facebook.com</code> might be suggested as a
+  <code>{{FederatedCredential}}</code> on <code>https://example.com</code> if
+  the latter lists the former as an accepted identity provider.
 
   Note: The credentials suggested in the chooser are not exposed to the web
   unless the user explicitly allows it. The user agent is therefore free to
-  synthesize <code><a idl>Credential</a></code> objects for use in the chooser
-  without risking a user's privacy.
+  synthesize <code>{{FederatedCredential}}</code> objects for use in the
+  chooser without risking a user's privacy.
+
+  <em>The following image is an exceptionally non-normative mock:</em>
+
+  <img src="./mock-chooser.png" alt="A mockup of what a chooser might look like.">
 
   User agents MAY internally associate information with each
-  <code><a idl>Credential</a></code> object beyond the attributes specified in
-  this document in order to enhance the utility of such a chooser. For example,
-  avatar images can help users understand which credential they're choosing,
-  Favicons could help disambiguate <a>identity providers</a>, and so on. Any
-  additional information stored MUST not be exposed directly to the web.
+  <code>{{Credential}}</code> object beyond the attributes specified in this
+  document in order to enhance the utility of such a chooser. For example,
+  favicons could help disambiguate identity providers, etc. Any additional
+  information stored MUST not be exposed directly to the web.
 </section>
 
 <!--
@@ -1138,6 +1220,44 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 <section>
   <h2 id="security-considerations">Security Considerations</h2>
 
+  <h3 id="security-cross-origin-leakage">Cross-origin Credential Leakage</h3>
+
+  Credentials are sensitive information, and user agents need to exercise
+  caution in determining when they can be safely shared with a website. The
+  safest option is to restrict credential sharing to the exact origin on
+  which they were saved. That is likely too restrictive for the web, however:
+  consider sites which divide functionality into subdomains:
+  <code>example.com</code> vs <code>admin.example.com</code>.
+
+  As a compromise between annoying users, and securing their credentials, user
+  agents:
+
+  <ol>
+    <li>
+      MUST NOT share credentials between origins whose scheme components are
+      not the same. That is: credentials saved on
+      <code>https://example.com/</code> will never be available to
+      <code>http://example.com/</code> via {{request()}}
+    </li>
+    <li>
+      MAY use the Public Suffix List [[!PSL]] to determine the effective scope
+      of a credential by comparing the <a>registerable domains</a> of the
+      credential's <code>[[origin]]</code> with the origin in which
+      {{request()}} is called. That is: credentials saved on
+      <code>https://admin.example.com/</code> and
+      <code>https://example.com/</code> MAY be offered to users when
+      {{request()}} is called from <code>https://www.example.com/</code>
+    </li>
+    <li>
+      MUST NOT offer <a>zeroclick</a> credentials to an origin in response
+      to {{request()}} if the credential's origin is not an exact match for
+      the calling origin. That is, <a>zeroclick</a> credentials for
+      <code>https://example.com</code> would not be returned directly to
+      <code>https://www.example.com</code>, but would be offered to the user
+      via the chooser.
+    </li>
+  </ol>
+
   <h3 id="security-origin-confusion">Origin Confusion</h3>
 
   If framed pages have access to the APIs defined here, it might be possible
@@ -1147,18 +1267,19 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
   Therefore, <a>Nested browsing contexts</a> and other <a>JavaScript global
   environments</a> like Workers [[WORKERS]] cannot receive or store
-  <code><a idl>Credential</a></code> objects; the user agent MUST reject
-  promises generated by calls to <code><a idl>request()</a></code>
-  and <code><a idl>notifySignedIn()</a></code> with a
-  <code>SecurityError</code> when called from a context which is not a
-  <a>top-level browsing context</a>.
+  <code>{{Credential}}</code> objects; the user agent MUST reject
+  promises generated by calls to <code>{{request()}}</code>
+  and <code>{{notifySignedIn()}}</code> with a <code>SecurityError</code> when
+  called from a context which is not a <a>top-level browsing context</a>.
 
-  See the algorithms defined in <a section href="#request-credential"></a>
-  and <a section href="#save-credential"></a> for details.
+  See the algorithms defined in [[#request-credential]] and [[#save-credential]]
+  for details.
+
+  ISSUE: Is this a meaningful restriction for Service Workers? Probably not.
 
   <h3 id="security-insecure-origins">Insecure Origins</h3>
 
-  User agents MUST not expose credential information via the APIs defined here
+  User agents MUST NOT expose credential information via the APIs defined here
   to <a>insecure origins</a>. User agents MAY implement autofill mechanisms
   which store user credentials and fill sign-in forms on <a>insecure
   origins</a>, but those sites cannot be trusted to interact directly with the
@@ -1204,7 +1325,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   today.
 
   The natural way to expose this information is to extend the
-  <code><a idl>FederatedCredential</a></code> interface with properties like
+  <code>{{FederatedCredential}}</code> interface with properties like
   authentication tokens, and the <a>manifest</a> format with properties which
   declare the authentication type which the provider supports.
 
