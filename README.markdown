@@ -11,12 +11,20 @@ Web Application Security Working Group
 * Content Security Policy
     * 1.0:
         * Candidate Recommendation: <http://w3.org/TR/CSP>
-    * 1.1:
-        * Editor's Draft: <http://w3c.github.io/webappsec/specs/content-security-policy/>
-        * Working Draft: <http://w3.org/TR/CSP11>
+    * Level 2:
+        * Editor's Draft: <https://w3c.github.io/webappsec/specs/content-security-policy/>
+        * Working Draft: <http://w3.org/TR/CSP2>
     * Source: <https://github.com/w3c/webappsec/tree/master/specs/content-security-policy/>
 
+* Mixed Content
+    * Editor's Draft: <https://w3c.github.io/webappsec/specs/mixedcontent/>
+    * Source: <https://github.com/w3c/webappsec/tree/master/specs/mixedcontent>
+
+* Referrer Policy
+    * Editor's Draft: <https://w3c.github.io/webappsec/specs/referrer-policy/>
+    * Source: <https://github.com/w3c/webappsec/tree/master/specs/referrer-policy>
+
 * Subresource Integrity
-    * Editor's Draft: <http://w3c.github.io/webappsec/specs/subresourceintegrity/>
+    * Editor's Draft: <https://w3c.github.io/webappsec/specs/subresourceintegrity/>
     * Working Draft: <http://w3.org/TR/SRI>
     * Source: <https://github.com/w3c/webappsec/tree/master/specs/subresourceintegrity>
