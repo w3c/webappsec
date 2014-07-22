@@ -7,7 +7,7 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how and why user agents disallow rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor
+Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
@@ -74,7 +74,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   
   Note: Nothing described in this document is really new; everything covered
   here has appeared in one or more user agents over the years: Internet Explorer
-  led the way, alerting users to mixed active content since at least version 4.
+  led the way, alerting users to mixed content since at least version 4.
 </section>
 
 <!--
@@ -225,7 +225,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       overly-long validity period, a certificate signed with SHA-1, or a
       certificate which otherwise fails to meet the
       <a href="https://cabforum.org/baseline-requirements-documents/">
-      CA/Browser Forum's Baseline Requirements</a>.
+      CA/Browser Forum's Baseline Requirements</a>. [[!CAB]]
     </dd>
   </dl>
 
@@ -280,6 +280,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     <dt><dfn>request</dfn></dt>
     <dt><dfn local-title="client">request client</dfn></dt>
     <dt><dfn local-title="context">request context</dfn></dt>
+    <dt><dfn local-title="frame type">request context frame type</dfn></dt>
     <dd>
       These terms are defined in
       <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the
@@ -303,245 +304,147 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   </dl>
 </section>
 
-<!--
- ██████   ███████  ██    ██ ████████ ████████ ██    ██ ████████        ██████     ███    ████████ ████████  ██████    ███████  ████████  ████ ████████  ██████
-██    ██ ██     ██ ███   ██    ██    ██       ███   ██    ██          ██    ██   ██ ██      ██    ██       ██    ██  ██     ██ ██     ██  ██  ██       ██    ██
-██       ██     ██ ████  ██    ██    ██       ████  ██    ██          ██        ██   ██     ██    ██       ██        ██     ██ ██     ██  ██  ██       ██
-██       ██     ██ ██ ██ ██    ██    ██████   ██ ██ ██    ██          ██       ██     ██    ██    ██████   ██   ████ ██     ██ ████████   ██  ██████    ██████
-██       ██     ██ ██  ████    ██    ██       ██  ████    ██          ██       █████████    ██    ██       ██    ██  ██     ██ ██   ██    ██  ██             ██
-██    ██ ██     ██ ██   ███    ██    ██       ██   ███    ██          ██    ██ ██     ██    ██    ██       ██    ██  ██     ██ ██    ██   ██  ██       ██    ██
- ██████   ███████  ██    ██    ██    ████████ ██    ██    ██           ██████  ██     ██    ██    ████████  ██████    ███████  ██     ██ ████ ████████  ██████
--->
+<!-- Big Text: Categories -->
 <section>
-  <h2 id="categories">Categories of Content</h2>
+  <h2 id="categories">Content Categories</h2>
 
-  Categories of content are defined informally directly below. Note that the
-  lists in the following three sections attempt to be comprehensive, but the
-  platform is huge: in practice, user agents will determine a resource's
-  category based on it's <a>request context</a>, which is much simpler to
-  exhaustively define.
+  In a perfect world, user agents would be required to block all <a>mixed
+  content</a> without exception. Unfortunately, that is impractical on today's
+  internet. For instance, a survey in 2013 notes that blocking mixed content
+  would break around ~43% of secure websites in one way or another
+  [[DANGEROUS-MIX]]. Draconian blocking policies applied to some types of mixed
+  content are (for the moment) infeasible. User agents need to be more nuanced
+  in their restrictions.
 
-  Fetch defines three <a>request contexts</a> that do not map directly to
-  resources which are included in a <a>global environment</a>:<code>form</code>,
-  <code>navigate</code>, and <code>popup</code>. These contexts are
-  <dfn export>navigational request contexts</dfn>, and cover navigations between
-  pages, not content. User agents MAY treat one or more of these contexts as
-  either <a>active</a> or <a>blockable passive</a> content if they choose to do
-  so: there are reasonable arguments for restricting mixed form submissions, for
-  example.
+  With that in mind, we here split mixed content into two categories defined in
+  the following two sections: [[#category-blockable]] and
+  [[#category-optionally-blockable]].
+
+  Future versions of this specification will update these categories with
+  the intent of moving towards a world where all <a>mixed</a> content is
+  blocked; that is the end goal, but this is the best we can do for now.
+
+  ISSUE: Should the presence of a form with an <a element-attr>action</a>
+  attribute pointing to an <a><em>a priori</em> insecure origin</a> be
+  considered mixed content? Blink is currently triggering a warning when such a
+  form is present: <a href="https://crbug.com/253249">crbug.com/253249</a>.
 
   <section>
-    <h3 id="categories-active">Active Content</h3>
+    <h3 id="category-optionally-blockable">Optionally-blockable Content</h3>
 
-    <dfn export title="active content|active">Active content</dfn> is content
-    which can in some way directly manipulate the resource with which a user
-    is interacting. Script and style are the clearest examples: if an attacker
-    can manipulate either, she can completely control the activity on a webpage
-    and exfiltrate data at will. Active content include the following resource
-    types:
+    A resource is considered
+    <dfn title="optionally-blockable content" local-title="optionally-blockable">optionally-blockable content</dfn>
+    when the risk of allowing its usage as <a>mixed content</a> is outweighed by
+    the risk of breaking significant portions of the web. This could be because
+    mixed usage of the resource type is sufficiently high, or because the resource
+    is very clearly low-risk in and of itself. This category of content includes:
+
+    <ul>
+      <li>
+        Images loaded via <a element>img</a>
+
+        Note: This includes SVG documents loaded as images.
+      </li>
+      <li>
+        Video loaded via <a element>video</a> and <a element>source</a>
+      </li>
+      <li>
+        Audio loaded via <a element>audio</a> and <a element>source</a>
+      </li>
+      <li>
+        <a href="http://www.w3.org/TR/html5/links.html#link-type-prefetch">Prefetched</a>
+        content [[!HTML5]]
+      </li>
+    </ul>
+
+    These resource types map to the following Fetch <a>request contexts</a>:
+    <code>download</code>, <code>image</code>, <code>media</code>, and
+    <code>prefetch</code>. These contexts are <dfn>optionally-blockable request
+    contexts</dfn>.
+
+    Note: The fact that these resource types are optionally-blockable does not
+    mean that they are <em>safe</em>, simply that they're less catastrophically
+    dangerous than other resource types. For example, images and icons are often
+    the central UI elements in an application's interface. If an attacker
+    reversed the "Delete email" and "Reply" icons, there would be real impact on
+    users.
+
+    Note: We further limit this category in [[#should-block-fetch]] by
+    force-failing any CORS-enabled request. This means that mixed content images
+    loaded via <code>&lt;img crossorigin ...&gt;</code> will be blocked. This is
+    a good example of the general principle that a category of content falls
+    into this category <em>only</em> when it is too widely used to be blocked
+    outright. The working group intends to find more blockable subsets of an
+    otherwise <a>optionally-blockable request context</a>.
+  </section>
+
+  <section>
+    <h3 id="category-blockable">Blockable Content</h3>
+
+    Any resource that isn't <a>optionally-blockable</a> is considered
+    <dfn title="blockable content" local-title="blockable">blockable content</dfn>.
+    A non-exhaustive sample of content that falls into this category includes:
 
     <ul>
       <li>
         Scripts (loaded, for example, via <a element>script</a> elements, as
-        well as scripts loaded as Workers and SharedWorkers [[!WORKERS]], or
-        ServiceWorkers [[!SERVICEWORKERS]]) [[!ECMA-262]]
+        well as scripts loaded as Workers and SharedWorkers [[WORKERS]], or
+        ServiceWorkers [[SERVICEWORKERS]]) [[ECMA-262]]
       </li>
-      <li>Stylesheets [[!CSS21]]</li>
+      <li>Stylesheets [[CSS21]]</li>
       <li>
         <a>Plugin</a> data (loaded, for example, through
         <a element>applet</a>, <a element>embed</a>, or <a element>object</a>
         elements; or through a <a>plugin document</a> loaded into an
-        <a element>iframe</a> or <a>frame</a> element) [[!HTML5]]
+        <a element>iframe</a> or <a>frame</a> element) [[HTML5]]
       </li>
-      <li>SVG Documents [[!SVG2]]</li>
-      <li>XSL Transformations [[!XSLT]]</li>
-      <li>HTML Imports [[!HTML-IMPORTS]]</li>
-      <li>HTML Manifests [[!MANIFEST]]</li>
+      <li>SVG Documents [[SVG2]]</li>
+      <li>XSL Transformations [[XSLT]]</li>
+      <li>HTML Imports [[HTML-IMPORTS]]</li>
+      <li>HTML Manifests [[MANIFEST]]</li>
       <li>Documents rendered in <a element>iframe</a> elements</li>
+      <li>Beacon [[BEACON]]</li>
+      <li>Custom Filters [[FILTER-EFFECTS]]</li>
+      <li>
+        Data (loaded, for example, via XMLHttpRequest [[XMLHTTPREQUEST]],
+        EventSource [[EVENTSOURCE]], or WebSockets [[WEBSOCKETS]])
+      </li>
+      <li>
+        <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing">hyperlink auditing pings</a> [[HTML]]
+      </li>
+      <li>
+        Subtitles and captions loaded via <a element>track</a> elements
+      </li>
+      <li>Web Fonts [[CSS3-WEBFONTS]]</li>
+      <li>Images loaded via <code>&lt;picture&gt;</code></li>
+      <li>
+        Resources which are not rendered directly in the browser, but
+        downloaded to a user's storage device (either as a result of a
+        <a element-attr>download</a> attribute, or
+        <code>Content-Disposition</code> headers)
+      </li>
     </ul>
 
     These resource types map to the following Fetch <a>request contexts</a>:
-    <code>script</code>, <code>worker</code>, <code>sharedworker</code>,
-    <code>serviceworker</code>, <code>style</code>, <code>object</code>,
-    <code>manifest</code> and <code>child</code>. These contexts are
-    <dfn export>active request contexts</dfn>.
+    <code>audio</code>, <code>beacon</code>, <code>cspreport</code>,
+    <code>download</code>, <code>embed</code>, <code>eventsource</code>,
+    <code>favicon</code>, <code>fetch</code>, <code>font</code>,
+    <code>form</code>, <code>frame</code>, <code>hyperlink</code>,
+    <code>iframe</code>, <code>image</code>, <code>location</code>,
+    <code>manifest</code>, <code>object</code>, <code>ping</code>,
+    <code>plugin</code>, <code>script</code>, <code>serviceworker</code>,
+    <code>sharedworker</code>, <code>subresource</code>, <code>style</code>,
+    <code>track</code>, <code>video</code>, <code>worker</code>,
+    <code>xmlhttprequest</code>, and <code>xslt</code>. These contexts are the
+    <dfn>blockable request contexts</dfn>.
 
-    The contents of an <a element>iframe</a> are considered active content
-    because same-origin frames can reach up into their <a>parent browsing
-    context</a> via script, and even cross-origin frames can initiate
-    top-level navigations. User agents MAY decide to treat cross-origin
-    frames as <a>passive</a> content if that capability is removed by applying
-    a appropriate <a>sandboxing flag set</a> (e.g. one which does not include
-    the <a element-attr>allow-top-navigation</a> flag).
-
-    Note: <a element>iframe</a> elements, as currently implemented in user
-    agents do come with risks beyond those mentioned above. For example,
-    <a href="http://lcamtuf.blogspot.de/2012/05/yes-you-can-have-fun-with-downloads.html">a
-    downloaded file's origin is often difficult to pinpoint</a>, HTTP
-    authentication prompts are sometimes allowed (after a HTTP 401 response,
-    for instance), and modal prompts like <code>window.prompt()</code> can
-    confuse users. These risks exist even with secure iframes, but attackers
-    can more easily inject malicious code into innocent but insecure iframes.
-
-    Issue: Should form submissions to an insecure origin be considered active
-    content? I suspect they should, though I'm not sure we can get away with
-    it in a web-compatible way.
+    Note: The request contexts <code>form</code>, <code>hyperlink</code>, and
+    <code>location</code> might refer to <a>top-level browsing context</a>
+    <a title="navigated">navigations</a>, which are not considered mixed
+    content. See the treatment of <a>request context frame type</a> in
+    [[#should-block-fetch]] for details.
   </section>
-
-  <section>
-    <h3 id="categories-passive">Passive Content</h3>
-
-    <dfn export title="passive content|passive">Passive content</dfn> includes
-    resources which cannot directly interact with or modify other resources on
-    a page: images, fonts, audio, and video for example. The risk of rendering a
-    manipulated passive resource is significantly lower than executing an
-    <a>active</a> resource; passive content can confuse or deceive users, but
-    cannot directly manipulate other resources on a page or exfiltrate data.
-
-    <a>Active content</a> is clearly dangerous in a <a>mixed</a> context, and
-    must be blocked from executing in those contexts to protect both users and
-    site authors, regardless of the risk of breaking insecurely composed
-    websites. Passive <a>mixed</a> content is less directly dangerous to
-    users: if an attacker manipulates an image resource, the worst case is that
-    the attacker-controlled image is displayed to the user rather than the image
-    a site's author intended.
-
-    In a perfect world, user agents would be required to block <em>all</em>
-    types of <a>mixed content</a>. Unfortunately, there exists a massive amount
-    of passive <a>mixed content</a> on the Internet today:
-    <a href="http://www.securitee.org/files/mixedinc_isc2013.pdf">according to a
-    survey in 2013</a> blocking passive mixed content would break around ~43% of
-    secure websites in one way or another. Draconian blocking policies applied to
-    passive mixed content are (for the moment) infeasible. User agents must be
-    more nuanced in their restrictions.
-
-    With that in mind, we'll split passive content into two categories:
-    resources user agents can safely block without breaking the web, and
-    resources whose usage in <a>mixed</a> contexts is simply too high to block
-    by default.
-
-    Future versions of this specification will update these subcategories with
-    the intent of moving towards a world where all <a>mixed</a> content is
-    blocked; that is the end goal, but this is the best we can do for now.
-
-    Issue: Should the presence of a form with an <a element-attr>action</a>
-    attribute representing an <a><em>a priori</em> insecure origin</a> be
-    considered passive mixed content?
-
-    <section>
-      <h4 id="categories-passive-optionally-blockable">
-        Optionally-blockable Passive Content
-      </h4>
-
-      Passive content is
-      <dfn export title="optionally blockable passive content|optionally blockable passive|optionally blockable">
-      optionally blockable</dfn> when the risk of allowing its usage in a <a>mixed</a>
-      context is outweighed by the risk of breaking significant portions of the
-      web. This may be because usage of these resource types in <a>mixed</a>
-      contexts is sufficiently high, or because the feature is very clearly
-      low-risk in and of itself.
-
-      This category includes:
-
-      <ul>
-        <li>
-          Images loaded via <a element>img</a> or <code>picture</code>
-
-          Note: This includes SVG documents loaded as images.
-        </li>
-        <li>
-          Video loaded via <a element>video</a> and <a element>source</a>
-          elements
-        </li>
-        <li>
-          Audio loaded via <a element>audio</a> and <a element>source</a>
-          elements
-        </li>
-        <li>
-          <a href="http://www.w3.org/TR/html5/links.html#link-type-prefetch">Prefetched</a>
-          content
-        </li>
-      </ul>
-
-      These resource types map to the following Fetch <a>request contexts</a>:
-      <code>image</code>, <code>media</code>, and <code>prefetch</code>. These
-      contexts are <dfn export>optionally blockable passive request
-      contexts</dfn>.
-
-      Note: The fact that these resource types are on the "optionally blockable"
-      list does not mean that they are <em>safe</em>, simply that they're less
-      catastrophically dangerous as the resource types on the "active" list.
-      For example, images and icons are often the central UI elements in an
-      application's interface. If an attacker reversed the "Delete email"
-      and "Reply" icons, there would be real impact on users.
-    </section>
-
-    <section>
-      <h4 id="categories-passive-blockable">Blockable Passive Content</h4>
-
-      Passive content is
-      <dfn export title="blockable passive content|blockable passive|blockable">
-      blockable</dfn> when the risk of allowing its usage in a <a>mixed</a>
-      context outweighs the risk of temporary inconvenience for those site
-      authors delivering insecurely composed pages. This may be because usage
-      of these features in <a>mixed</a> contexts is sufficiently low, or
-      because the content is close to the boundary between <a>active</a> and
-      <a>passive</a>.
-
-      This category includes all content that is not <a>optionally blockable</a>
-      or <a>active</a>. For example:
-
-      <ul>
-        <li>
-          Beacon [[!BEACON]]
-        </li>
-        <li>Custom Filters [[!FILTER-EFFECTS]]</li>
-        <li>
-          Data (loaded, for example, via XMLHttpRequest [[!XMLHTTPREQUEST]],
-          EventSource [[!EVENTSOURCE]], or WebSockets [[!WEBSOCKETS]])
-        </li>
-        <li>
-          <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing">hyperlink auditing pings</a>
-        </li>
-        <li>
-          Resources which are not rendered directly in the browser, but
-          downloaded to a user's storage device (either as a result of a
-          <a element-attr>download</a> attribute, or
-          <code>Content-Disposition</code> headers)
-        </li>
-        <li>
-          Subtitles and captions loaded via <a element>track</a> elements
-        </li>
-        <li>Web Fonts [[!CSS3-WEBFONTS]]</li>
-      </ul>
-
-      <div class="note">
-        Note: In particular, this category includes data loaded via
-        <code>XMLHttpRequest</code>, <code>EventSource</code>, or
-        <code>WebSockets</code>. While these communication mechanism are
-        <em>technically</em> passive, developers very often use them to gather
-        data that affects program control flow. Consider a missile silo UI
-        that grabs JSON to determine whether to reveal the Big Red Launch Button:
-
-        <pre>
-          {
-            showLaunchButton: false
-          }
-        </pre>
-
-        Or the ever-popular:
-
-        <pre>
-          document.write("&lt;script&gt;" + xhr.responseText + "&lt;/script&gt;");
-        </pre>
-      </div>
-
-      These resource types map to the following Fetch <a>request contexts</a>:
-      <code>connect</code>, <code>download</code>, <code>ping</code>, and
-      <code>font</code>. These contexts are <dfn export>blockable passive
-      request contexts</dfn>.
-    </section>
-  </section>
+  
   <section>
     <h3 id="categories-unknown-content">Future Contexts</h3>
 
@@ -550,8 +453,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     that any new content types defined in the future be prevented from loading
     as <a>mixed content</a>. To that end, any <a>request context</a> which is
     not explicitly listed in the preceeding content categories MUST be
-    considered an <a>active request context</a> when determining whether or not
-    a request should be blocked as mixed content.
+    considered a <a>blockable request context</a>.
   </section>
 </section>
 
@@ -583,34 +485,33 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 
     <ol>
       <li>
-        <a>Requests</a> for <a>active</a> resources and <a>blockable passive</a>
-        resources from an <a><em>a priori</em> insecure origin</a> MUST not
-        generate network traffic, and MUST instead return a synthetically
+        <a>Requests</a> for <a>blockable</a> resources from an
+        <a><em>a priori</em> insecure origin</a> MUST not generate network
+        traffic, and MUST instead return a synthetically generated <a>network
+        error</a> response.
+      </li>
+
+      <li>
+        <a>Responses</a> to <a>requests</a> for <a>blockable</a> resources from
+        an <a>insecure origin</a> MUST not be delivered to the requesting
+        <a>global environment</a>, but instead MUST return a synthetically
         generated <a>network error</a> response.
       </li>
 
       <li>
-        <a>Responses</a> to <a>requests</a> for <a>active</a> resources and
-        <a>blockable passive</a> resources from an <a>insecure origin</a> MUST
-        not be delivered to the requesting <a>global environment</a>, but
-        instead MUST return a synthetically generated <a>network error</a>
-        response.
-      </li>
-
-      <li>
-        <a>Requests</a> for <a>optionally blockable passive</a> resources which
-        are <a>mixed content</a> SHOULD be treated as <a>active</a> (and
-        therefore returned as a <a>network error</a> as described above).
+        <a>Requests</a> for <a>optionally-blockable</a> resources which
+        are <a>mixed content</a> SHOULD be treated as <a>blockable</a> (and
+        therefore returned as a <a>network error</a> as described above), but
+        user agents MAY allow them to load normally.
 
         Note: For instance, a user agent could interpret the presence of a
         <code>Strict-Transport-Security</code> header field as forcing all
-        content into the <a>active</a> category. [[RFC6797]]
+        content into the <a>blockable</a> category. [[RFC6797]]
       </li>
 
       <li>
-        <a>Requests</a> for <a>optionally blockable passive</a> resources which
-        are <a>mixed content</a>, but which are <strong>not</strong> treated
-        as <a>active content</a> MAY be modified to reduce the risk to users.
+        <a>Requests</a> for <a>optionally-blockable</a> resources which
+        are <a>mixed content</a> MAY be modified to reduce the risk to users.
         For example, cookies and other authentication tokens could be stripped
         from the requests, or the user agent could automatically change the
         protocol of the requested URL to <code>HTTPS</code> in certain cases.
@@ -630,8 +531,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       </li>
     </ol>
 
-    <a section href="#fetch-integration"></a> and
-    <a section href="#algorithms"></a> detail how these fetching
+    [[#fetch-integration]] and [[#algorithms]] detail how these fetching
     requirements could be implemented.
   </section>
 
@@ -665,13 +565,12 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   <section>
     <h3 id="requirements-ux">UI Requirements</h3>
 
-    If a <a>request</a> for <a>optionally blockable passive</a> resources
-    which are <a>mixed content</a> is <strong>not</strong> treated as <a>active
-    content</a> (per requirement #3 above), then the user agent MUST NOT provide
-    the user with a visible indication that the <a>top-level browsing
-    context</a> which loaded that resource is secure (for instance, via a green
-    lock icon). The user agent SHOULD instead display a visible indication that
-    <a>mixed content</a> is present.
+    If a <a>request</a> for an <a>optionally-blockable</a> resource which is
+    <a>mixed content</a> is <strong>not</strong> treated as <a>blockable</a>,
+    then the user agent MUST NOT provide the user with a visible indication that
+    the <a>top-level browsing context</a> which loaded that resource is secure
+    (for instance, via a green lock icon). The user agent SHOULD instead display
+    a visible indication that <a>mixed content</a> is present.
 
     This requirement explicitly includes any visible indication of the
     <a>top-level browsing context</a>'s
@@ -682,24 +581,21 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     <h3 id="requirements-user-controls">User Controls</h3>
 
     User agents MAY offer users the ability to directly decide whether or not to
-    treat <strong>all</strong> <a>mixed content</a> as <a>active</a> (meaning
-    that even <a>optionally blockable passive content</a> would be blocked in a
+    treat <strong>all</strong> <a>mixed content</a> as <a>blockable</a> (meaning
+    that even <a>optionally-blockable</a> would be blocked in a
     mixed context).
 
     Note: It is <em>strongly recommended</em> that users take advantage of such
     an option if provided.
 
     User agents MAY offer users the ability to override its decision to block
-    <a>blockable passive</a> mixed content on a particular page.
-
-    User agents MAY also offer users the ability to override its decision to
-    block <a>active</a> mixed content on a page.
+    <a>blockable</a> mixed content on a particular page.
 
     Note: Practically, user agents probably can't get away with not offering
-    such a back door. That said, allowing active mixed content is in
-    particular a very dangerous option, and user agents
-    <a href="http://tools.ietf.org/html/rfc6919#section-3">REALLY SHOULD
-    NOT</a> present such a choice to users without careful consideration and
+    such a back door. That said, allowing mixed script is in particular a very
+    dangerous option, and user agents
+    <a href="http://tools.ietf.org/html/rfc6919#section-3">REALLY SHOULD NOT</a>
+    present such a choice to users without careful consideration and
     communication of the risk involved.
   </section>
 </section>
@@ -799,8 +695,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     </h3>
 
     Note: The Fetch specification hooks into this algorithm to determine whether
-    a request should be entirely blocked (e.g. because the request would be used
-    as <a>active content</a>, and we can <em>assume</em> that it won't be
+    a request should be entirely blocked (e.g. because the request is for
+    <a>blockable</a> content, and we can <em>assume</em> that it won't be
     loaded over a secure connection).
 
     Given a <a>request</a> <var>request</var>, a user agent determines
@@ -810,6 +706,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     <ol>
       <li>
         Let <var>context</var> be <var>request</var>'s <code>context</code>.
+      </li>
+      <li>
+        Let <var>frame type</var> be <var>request</var>'s <code>context frame
+        type</code>.
       </li>
       <li>
         Let <var>client</var> be <var>request</var>'s <code>client</code>.
@@ -832,17 +732,28 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         <strong>allowed</strong>.
       </li>
       <li>
+        If <var>request</var>'s <code>context frame type</code> is
+        <code>top-level</code>, return <strong>allowed</strong>.
+
+        ISSUE: Should we prevent top-level form submissions to insecure origins
+        from secure origins?
+      </li>
+      <li>
         If <var>origin</var> is <a><em>a priori</em> insecure</a>:
 
         <ol>
           <li>
-            If <var>context</var> is an <a>active request context</a> or
-            <a>blockable passive request context</a>, return
+            If <var>request</var>'s <code>mode</code> is <code>CORS</code> or
+            <code>CORS-with-forced-preflight</code>, return
             <strong>blocked</strong>.
           </li>
           <li>
-            If the user agent is configured to block <a>optionally blockable
-            passive</a> mixed content, return <strong>blocked</strong>.
+            If <var>context</var> is a <a>blockable request context</a>, return
+            <strong>blocked</strong>.
+          </li>
+          <li>
+            If the user agent is configured to block <a>optionally-blockable</a>
+            mixed content, return <strong>blocked</strong>.
           </li>
         </ol>
       </li>
@@ -861,9 +772,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
 
     Note: <a href="#should-block-fetch">If a request proceeds</a>, we still
     might want to block the response based on the state of the connection
-    that generated the response (e.g. because the response would be used as
-    <a>active content</a>, but the server is <a>insecure</a>). This algorithm
-    is used to make that determination.
+    that generated the response (e.g. because the response is for <a>blockable
+    content</a>, but the server is <a>insecure</a>). This algorithm is used to
+    make that determination.
 
     Given a <a>request</a> <var>request</var> and <a>response</a>
     <var>response</var>, the user agent determines what response should be
@@ -886,9 +797,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
         <var>request</var>.
       </li>
       <li>
-        If <var>context</var> is an <a>active request context</a> or
-        <a>blockable passive request context</a>, or the user agent is
-        configured to block <a>optionally blockable passive</a> mixed content:
+        If <var>context</var> is an <a>blockable request context</a> or the
+        user agent is configured to block <a>optionally-blockable</a> mixed
+        content:
 
         <ol>
           <li>
@@ -910,7 +821,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
             Note: If a user agent is configured to reject <a>weakly
             TLS-protected</a> resources, we'll never hit this condition, as
             <a href="http://fetch.spec.whatwg.org/#fetching">step 6 of the Fetch
-            algorithm</a> would have returned a network error.
+            algorithm</a> would have returned a network error. [[!FETCH]]
           </li>
           <li>
             If the response's TLS-protection is <a>deprecated</a>, return
@@ -948,7 +859,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   <a>insecure origins</a>.
 
   Fetch calls the algorithm defined in
-  <a section href="#should-block-fetch"></a> during
+  [[#should-block-fetch]] during
   <a href="http://fetch.spec.whatwg.org/#fetching">Step 4 of the Fetching
   algorithm</a>. [[!FETCH]]
 
@@ -956,15 +867,16 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   request, but all redirects as well. That is certainly the intent.
 
   Further, Fetch calls the algorithm defined in
-  <a section href="#should-block-response"></a> during
+  [[#should-block-response]] during
   <a href="http://fetch.spec.whatwg.org/#fetching">Step 7 of the Fetching
   algorithm</a>. [[!FETCH]]
 
   Note: This hook is necessary to detect resources modified or
   synthesized by a ServiceWorker, as well as to determine whether a
   resource is <a>insecure</a> once the TLS-handshake has finished. See
-  steps 4.1 and 4.2 of the algorithm defined in
-  <a section href="#should-block-response"></a> for detail.
+  steps 4.1 and 4.2 of the algorithm defined in [[#should-block-response]] for
+  detail.
+
 </section>
 
 <!--
@@ -1005,7 +917,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   </ol>
 
   The <a href="http://tools.ietf.org/html/rfc6455#section-4.1">Establish a
-  WebSocket Connection algorithm</a> is modified as follows:
+  WebSocket Connection algorithm</a> [[!RFC6455]] is modified as follows:
 
   <ol>
     <li>
@@ -1017,7 +929,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
           in step 5 results in a <a>weakly TLS-protected</a> connection, or the
           TLS-protection is <a>deprecated</a>,then the client MUST
           <a href="http://tools.ietf.org/html/rfc6455#section-7.1.7">Fail the
-          WebSocket Connection</a> and abort the connection.
+          WebSocket Connection</a> and abort the connection. [[!RFC6455]]
         </li>
       </ol>
     </li>
