@@ -9,7 +9,7 @@ Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This document describes how an author can set a referrer policy for documents they create, and the impact of such a policy on the <code>referer</code> HTTP header for outgoing requests and navigations.
 
-Link Defaults: HTML5 (dfn) plugin / browsing context / browsing context container / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / an iframe srcdoc document / noreferrer
+Link Defaults: HTML5 (dfn) active document / plugin / browsing context / browsing context container / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / an iframe srcdoc document / noreferrer
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-policy/index.src.html
@@ -161,6 +161,33 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
     <dd>
       This term is defined in <a title="JavaScript global environment" spec="HTML5">Section
       2.2.2</a> of the HTML5 specification. [[!HTML5]]
+    </dd>
+
+    <dt><dfn>global object</dfn></dt>
+    <dd>
+      This term is defined in the ECMAScript specification. [[!ECMA-262]]
+    </dd>
+
+    <dt><dfn>document environment</dfn></dt>
+    <dt><dfn>worker environment</dfn></dt>
+    <dd>
+      These terms are defined in
+      <a title="document environment" spec="HTML5">Section 6.1.3.1</a> of the
+      HTML5 specification. [[!!HTML5]]
+    </dd>
+
+    <dt><dfn>API referrer source</dfn></dt>
+    <dd>
+      This term is defined in
+      <a title="API referrer source" spec="HTML5">Section 8.1.3.1</a> of the
+      HTML5 specification. [[!HTML5]]
+    </dd>
+
+    <dt><dfn>Entry settings object</dfn></dt>
+    <dd>
+      This term is defined in
+      <a title="entry settings object" spec="HTML5">Section 8.1.3.3</a> of the
+      HTML5 specification. [[!HTML5]]
     </dd>
 
     <dt><dfn>TLS-protected</dfn></dt>
@@ -561,33 +588,57 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
   this algorithm.
 
   <ol>
-    <!-- Boring Variables -->
     <li>
       Let <var>environment</var> be <var>request</var>'s <code>client</code>.
-    </li>
-    <li>
-      While <var>environment</var> corresponds to <a>an iframe srcdoc
-      Document</a>, let <var>environment</var> be that Document's <a>browsing
-      context</a>'s <a>browsing context container</a>'s Document's <a>global
-      environment</a>.
     </li>
     <li>
       Let <var>policy</var> be the value of <var>environment</var>'s
       <a>referrer policy</a>.
     </li>
     <li>
-      If <var>request</var>'s <code>referrer</code> is a URL, let
-      <var>pageURL</var> be the value of <var>request</var>'s
-      <var>referrer</var>. Otherwise, let <var>referrerURL</var>
-      be the URL of <var>environment</var>.
+      If <var>request</var>'s <code>referrer</code> is a URL, then let
+      <var>referrerSource</var> be <var>request</var>'s
+      <code>referrer</code>. Otherwise:
+
+      <ol>
+        <li>
+          If <var>environment</var> is a <a>document environment</a>:
+          
+          <ol>
+            <li>
+              Let <var>document</var> be the {{Document}} object of the
+              <a>active document</a> of the <a>browsing context</a> of
+              <var>environment</var>'s <a>global object</a>.
+            </li>
+          </ol>
+        </li>
+        <li>
+          Otherwise, <var>environment</var> is a <a>worker environment</a>:
+
+          <ol>
+            <li>
+              Let <var>document</var> be the <a>API referrer source</a>
+              specified by the <a>entry settings object</a>.
+            </li>
+          </ol>
+        </li>
+        <li>
+          While <var>document</var> corresponds to <a>an iframe srcdoc Document</a>,
+          let <var>document</var> be that Document's <a>browsing context</a>'s
+          <a>browsing context container</a>'s {{Document}}.
+        </li>
+        <li>
+          Let <var>referrerSource</var> be <var>document</var>'s URL.
+        </li>
+      </ol>
     </li>
     <li>
       Let <var>referrerURL</var> be the result of <a href="#strip-url">stripping
-      <var>pageURL</var> for use as a referrer.</a>
+      <var>referrerSource</var> for use as a referrer.</a>
     </li>
     <li>
       Let <var>referrerOrigin</var> be the result of
-      <a href="#strip-url">stripping <var>pageURL</var> for use as a
+      <a href="#strip-url">stripping <var>referrerSource</var> for use as a
       referrer</a>, with the <code><a>origin-only flag</a></code> set to
       <code>true</code>.
     </li>
