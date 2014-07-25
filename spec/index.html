@@ -56,7 +56,7 @@ h2 + h3, h3 + h4, h4 + h5, h5 + h6 { margin-top: 1.2em; }
 p.copyright { font-size: small; }
 p.copyright small { font-size: small; }
 
-pre { margin: 1em 0 1em 2em; }
+pre { margin: 1em 0 1em 2em; overflow: auto; }
 pre, code, .idl-code {
   font-size: .9em;
   font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
@@ -545,7 +545,7 @@ span.issue, span.note {
   <p data-fill-with=logo></p>
   <h1 class="p-name no-ref" id=title>Credential Management</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>A Collection of Interesting Ideas,
-    <span class=dt-updated><span class=value-title title=20140723>23 July 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140725>25 July 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl>
 	<dt>This version:
 	<dd><a class=u-url href=http://projects.mikewest.org/credentialmanagement/spec/>http://projects.mikewest.org/credentialmanagement/spec/</a>
@@ -561,7 +561,7 @@ span.issue, span.note {
   <p class=copyright data-fill-with=copyright><a href=http://creativecommons.org/publicdomain/zero/1.0/ rel=license><img alt=CC0 src=https://i.creativecommons.org/p/zero/1.0/80x15.png></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 23 July 2014,
+In addition, as of 25 July 2014,
 the editors have made this specification available under the
 <a href=http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0 rel=license>Open Web Foundation Agreement Version 1.0</a>,
 which is available at http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0.
@@ -641,7 +641,6 @@ Parts of this work may be from another specification document.  If so, those par
 	<li><a href=#index><span class=secno></span>  Index</a>
 	<li><a href=#property-index><span class=secno></span>  Property index</a>
 	<li><a href=#issues-index><span class=secno></span> Issues Index</a></ul></div>
-
 
 
 
@@ -753,7 +752,6 @@ Parts of this work may be from another specification document.  If so, those par
   // Sadness! Return early.
   return;
 }
-
 navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a>.then(
     function(credential) {
       if (!credential) {
@@ -763,7 +761,6 @@ navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credential
         // really be progressive enhancement on top of an existing form).
         return;
       }
-
       var xhr = new XMLHttpRequest();
       xhr.open("POST", "https://example.com/loginEndpoint");
       var formData = new FormData();
@@ -772,7 +769,6 @@ navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credential
       xhr.onreadystatechange = function () {
         if (this.readyState != this.DONE)
           return;
-
         var loginSucceeded = // Process response: if login succeeded, yay! If not, boo!;
         if (loginSucceeded) {
           navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn</a>(credential);
@@ -782,7 +778,6 @@ navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credential
           // Notify the user that signin failed, and fall back to the usual experience.
         }
       };
-
       xhr.send(formData);
     });
 </pre>
@@ -799,7 +794,6 @@ navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credential
   // Sadness! Return early.
   return;
 }
-
 navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request</a>({
   "<a data-link-type=idl href=#dom-credentialrequestoptions-federations title=federations>federations</a>": [ "https://federation.com" ]
 }).then(
@@ -811,7 +805,6 @@ navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credential
         // really be progressive enhancement on top of an existing form).
         return;
       }
-
       if (credential instanceof <a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a>) {
         switch (credential.<a data-link-type=idl href=#dom-federatedcredential-federation title=federation>federation</a>) {
           // Do something specific for each supported federation.
@@ -1125,21 +1118,18 @@ interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global
 
   <h3 class="heading settled heading" data-level=3.2 id=interfaces-credential-manager><span class=secno>3.2 </span><span class=content>Credential Manager</span><a class=self-link href=#interfaces-credential-manager></a></h3>
 
-<p>The credential manager hangs off of the <code><a class=idl-code data-link-type=attribute href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#dom-navigator title=navigator>navigator</a></code>
-  object, and exposes methods to request credentials, and to notify the user
-  agent when interesting events occur: successful sign in, failed sign in, and
-  sign out.</p>
+<p>The credential manager hangs off of the <code><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#dom-navigator title=navigator>navigator</a></code> object, and exposes
+  methods to request credentials, and to notify the user agent when interesting
+  events occur: successful sign in, failed sign in, and sign out.</p>
 
   <pre class=idl>partial interface <a class=idl-code data-global-name="" data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#navigator title=Navigator>Navigator</a> {
   readonly attribute <a data-link-type=idl href=#dom-credentialscontainer title=CredentialsContainer>CredentialsContainer</a> <dfn class=idl-code data-dfn-for=Navigator data-dfn-type=attribute data-export="" data-global-name="Navigator<interface>/credentials<attribute>" data-readonly="" data-type="CredentialsContainer " id=dom-navigator-credentials>credentials<a class=self-link href=#dom-navigator-credentials></a></dfn>;
 };
-
 interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-credentialscontainer>CredentialsContainer<a class=self-link href=#dom-credentialscontainer></a></dfn> {
   Promise&lt;<a data-link-type=idl href=#dom-credential title=Credential>Credential</a>?&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/request()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-request title=request()>request</a>(optional <a data-link-type=idl href=#dictdef-credentialrequestoptions title=CredentialRequestOptions>CredentialRequestOptions</a> <dfn class=idl-code data-dfn-for=CredentialsContainer/request() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/request()<method>/options<argument>" id=dom-credentialscontainerrequest-options>options<a class=self-link href=#dom-credentialscontainerrequest-options></a></dfn>);
   Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifysignedin()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn</a>(optional <a data-link-type=idl href=#dom-credential title=Credential>Credential</a> <dfn class=idl-code data-dfn-for=CredentialsContainer/notifySignedIn() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/notifySignedIn()<method>/credential<argument>" id=dom-credentialscontainernotifysignedin-credential>credential<a class=self-link href=#dom-credentialscontainernotifysignedin-credential></a></dfn>);
   Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifyfailedsignin()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifyfailedsignin title=notifyFailedSignIn()>notifyFailedSignIn</a>(optional <a data-link-type=idl href=#dom-credential title=Credential>Credential</a> <dfn class=idl-code data-dfn-for=CredentialsContainer/notifyFailedSignIn() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/notifyFailedSignIn()<method>/credential<argument>" id=dom-credentialscontainernotifyfailedsignin-credential>credential<a class=self-link href=#dom-credentialscontainernotifyfailedsignin-credential></a></dfn>);
   Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifysignedout()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifysignedout title=notifySignedOut()>notifySignedOut</a>();
-
   readonly attribute <a data-link-type=idl href=#dom-pendingcredential title=PendingCredential>PendingCredential</a>? <a class=idl-code data-global-name="CredentialsContainer<interface>/pending<attribute>" data-link-for=CredentialsContainer data-link-type=attribute data-readonly="" data-type="PendingCredential? " href=#dom-credentialscontainer-pending title=pending>pending</a>;
 };
 </pre>
