@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled heading" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140728>28 July 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140730>30 July 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl>
 	<dt>This version:
 	<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a>
@@ -146,7 +146,7 @@
 		<li><a href=#requirements-user-controls><span class=secno>4.4</span> User Controls</a></ul>
 	<li><a href=#algorithms><span class=secno>5</span> Algorithms</a>
 		<ul class=toc>
-		<li><a href=#categorize-environment><span class=secno>5.1</span>        Is <var>environment</var> a secure context?     </a>
+		<li><a href=#categorize-environment><span class=secno>5.1</span>        Does <var>environment</var> restrict mixed content?     </a>
 		<li><a href=#should-block-fetch><span class=secno>5.2</span>        Should fetching <var>request</var> be blocked as mixed content?     </a>
 		<li><a href=#should-block-response><span class=secno>5.3</span>        Should <var>response</var> to <var>request</var> be blocked as mixed       content?     </a></ul>
 	<li><a href=#fetch-integration><span class=secno>6</span> Integration with Fetch</a>
@@ -238,8 +238,8 @@
       <ul>
         <li>
           The resource’s <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#insecure-origin title=insecure>insecure</a>, <strong>and</strong>
-          the <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript global environment</a> into which it is loaded is a
-          <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>.
+          the <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript global environment</a> into which it is loaded
+          <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts mixed content</a>.
         </li>
         <li>
           The resource’s <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#private-origin title=private>private</a> <strong>and</strong>
@@ -376,6 +376,15 @@
 
 <p>A URL whose <a data-link-type=dfn href=#origin title=origin>origin</a> is insecure is itself considered to be insecure.
     </dd><p></p>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" id=unsecured-environment>unsecured environment<a class=self-link href=#unsecured-environment></a></dfn>
+    </dt>
+    <dd>
+      A <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript global environment</a> is called
+      <strong>unsecured</strong> if it does not
+      <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restrict mixed content</a>.
+    </dd>
 
     <dt>
       <dfn data-dfn-type=dfn data-export="" data-local-title=deprecated id=deprecated-tls-protection>
@@ -640,9 +649,9 @@
     of the risk (for instance, presenting the user with a confirmation screen
     she must click through).</p>
 
-<p>If a <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> is a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, then user agents
-    MUST adhere to the following requirements when <a data-link-type=dfn href=#fetch title=fetching>fetching</a> resources in
-    response to its requests (including not only requests for a
+<p>If a <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts mixed content</a>, then user
+    agents MUST adhere to the following requirements when <a data-link-type=dfn href=#fetch title=fetching>fetching</a>
+    resources in response to its requests (including not only requests for a
     <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a>’s subresources, but also requests made from
     Workers, SharedWorkers, ServiceWorkers and so on):</p>
 
@@ -701,8 +710,9 @@
   <section>
     <h3 class="heading settled heading" data-level=4.2 id=requirements-script><span class=secno>4.2 </span><span class=content>Script APIs</span><a class=self-link href=#requirements-script></a></h3>
 
-<p>If a <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> is a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, then user agents
-    MUST adhere to the following requirements when executing the following APIs:</p>
+<p>If a <a data-link-type=dfn href=#javascript-global-environment title="global environment">global environment</a> <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts mixed content</a>, then user
+    agents MUST adhere to the following requirements when executing the
+    following APIs:</p>
 
     <ol>
       <li>When processing XMLHttpRequest’s
@@ -769,13 +779,13 @@
 
   <section>
     <h3 class="heading settled heading" data-level=5.1 id=categorize-environment><span class=secno>5.1 </span><span class=content>
-      Is <var>environment</var> a secure context?
+      Does <var>environment</var> restrict mixed content?
     </span><a class=self-link href=#categorize-environment></a></h3>
 
 <p>Given a <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript global environment</a> <var>environment</var>, the
-    user agent determines whether <var>environment</var> is a
-    <dfn data-dfn-type=dfn data-export="" id=secure-context>secure context<a class=self-link href=#secure-context></a></dfn> via the following algorithm, which returns
-    <strong>true</strong> if <var>environment</var> is a secure context, and
+    user agent determines whether <var>environment</var> <dfn data-dfn-type=dfn data-export="" id=restricts-mixed-content>restricts
+    mixed content<a class=self-link href=#restricts-mixed-content></a></dfn> via the following algorithm, which returns
+    <strong>true</strong> if <var>environment</var> restricts mixed content, and
     <strong>false</strong> otherwise.</p>
 
     <ol>
@@ -883,7 +893,7 @@
         return <strong>blocked</strong>.
       </li>
       <li>
-        If <var>environment</var> is not a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, return
+        If <var>environment</var> <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts mixed content</a>, return
         <strong>allowed</strong>.
       </li>
       <li>
@@ -944,7 +954,7 @@
         with which <var>client</var> is associated.
       </li>
       <li>
-        If <var>environment</var> is not a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, return
+        If <var>environment</var> <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts mixed content</a>, return
         <strong>allowed</strong>.
       </li>
       <li>
@@ -1049,7 +1059,7 @@
         <li>
           If <var>secure</var> is <strong>false</strong>, but the <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript
           global environment</a> which the <var>entry script</var> is associated
-          with is a <a data-link-type=dfn href=#secure-context title="secure context">secure context</a>, then throw a
+          with <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts mixed content</a>, then throw a
           <code>SecurityError</code> exception.
         </li>
         <li>
@@ -1232,8 +1242,10 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>request context, <a href=#request-context title="section 2.2">2.2</a>
 <li>request context frame type, <a href=#request-context-frame-type title="section 2.2">2.2</a>
 <li>response, <a href=#response title="section 2.2">2.2</a>
-<li>secure context, <a href=#secure-context title="section 5.1">5.1</a>
+<li>restricts
+    mixed content, <a href=#restricts-mixed-content title="section 5.1">5.1</a>
 <li>TLS-protected, <a href=#tls-protected title="section 2.2">2.2</a>
+<li>unsecured environment, <a href=#unsecured-environment title="section 2.1">2.1</a>
 <li>weak, <a href=#weakly-tls-protected title="section 2.2">2.2</a>
 <li>weakly TLS-protected, <a href=#weakly-tls-protected title="section 2.2">2.2</a>
 </ul></div>
