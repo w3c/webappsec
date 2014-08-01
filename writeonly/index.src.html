@@ -102,17 +102,19 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   <h2 id="prevent-dom-access">Preventing DOM access to form fields</h2>
 
   Developers may opt-into preventing DOM access to form fields by setting a
-  <code><a element-attr>writeonly</a></code> attribute on specific <a element>input</a>
-  elements, or by using the <code><a>credentials</a></code> Content Security
-  Policy directive to prevent DOM access to any and all <a element>input</a> elements
-  of type <a element-attr>password</a>. Both mechanisms are described below:
+  <code><a element-attr>writeonly</a></code> attribute on specific
+  <a element>input</a> elements, or by using the <code><a>credentials</a></code>
+  Content Security Policy directive to prevent DOM access to any and all
+  <a element>input</a> elements of type
+  <code><a element-attr>password</a></code>. Both mechanisms are described
+  below:
 
   <h3 id="writeonly-attribute">The <code>writeonly</code> attribute</h3>
 
   <code><dfn element-attr>writeonly</dfn></code> is a <a>boolean attribute</a>
-  that controls whether or not an <a element>input</a> element's value may be read
-  directly via the <a idl for="HTMLInputElement">value</a> IDL attribute, or
-  inferred via the
+  that controls whether or not an <a element>input</a> element's value may be
+  read directly via the <a idl for="HTMLInputElement">value</a> IDL attribute,
+  or inferred via the
   <a href="http://www.w3.org/TR/html5/forms.html#the-constraint-validation-api">constraint
   validation API</a> [[!HTML5]]. 
 
@@ -139,10 +141,10 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     The <code>credentials</code> Content Security Policy directive
   </h3>
 
-  The <code><dfn>credentials</dfn></code> directive specifies a credentials policy which affects how the
-  user agent interprets <a element>input</a> elements in a protected resource. The
-  syntax for the name and value of the directive are described by the following
-  ABNF grammar [[!ABNF]]:
+  The <code><dfn>credentials</dfn></code> directive specifies a credentials
+  policy which affects how the user agent interprets <a element>input</a>
+  elements in a protected resource. The syntax for the name and value of the
+  directive are described by the following ABNF grammar [[!ABNF]]:
 
   <pre>
     directive-name  = "credentials"
@@ -154,12 +156,24 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
   <h3 id="input-behavior"><code>&lt;input&gt;</code> element behavior</h3>
 
-  If an <a element>input</a> element <var>input</var>'s <a>write-only value flag</a> is
-  <code>true</code>, or if <var>input</var>'s {{Document}}'s <a>forced
-  write-only password value flag</a> is <code>true</code>, the following
+  If an <a element>input</a> element <var>input</var>'s <a>write-only value
+  flag</a> is <code>true</code>, or if <var>input</var>'s {{Document}}'s
+  <a>forced write-only password value flag</a> is <code>true</code>
+  <strong>and</strong> <var>input</var>'s
+  <code><a idl for="HTMLInputElement">type</a></code> is <code>password</code>, the following
   restrictions apply:
 
   <ol>
+    <li>
+      When setting <var>input</var>'s
+      <code><a idl for="HTMLInputElement">type</a></code> IDL attribute
+      [[!HTML5]], <var>input</var>'s <a>write-only value flag</a> MUST also be
+      set to <code>true</code>.
+
+      Note: This prevents attackers from bypassing the CSP directive by changing
+      the element's type from <code>password</code> to something unprotected
+      (like <code>text</code>).
+    </li>
     <li>
       Getting <var>input</var>'s <a idl for="HTMLInputElement">value</a>,
       <a idl for="HTMLInputElement">valueAsNumber</a>, and
@@ -230,7 +244,10 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   out of the child's sandbox in order to steal credentials.
 
   A more rigorous examination of this approach is undertaken in "Protecting
-  Users Against XSS-based Password Manager Abuse" [[STOCK]].
+  Users Against XSS-based Password Manager Abuse" [[STOCK]]. Their use of a
+  browser extension is instructive: there's no reason that this scheme couldn't
+  be implemented by a third-party credential manager, as long as it has access
+  to the data POSTed from one page to another.
 </section>
 
 <!--
