@@ -1,0 +1,269 @@
+<h1>Write-only Input Elements</h1>
+<pre class="metadata">
+Status: DREAM
+ED: http://projects.mikewest.org/credentialmanagement/writeonly/
+Shortname: WRITEONLY
+Level: 1
+Editor: Mike West, Google Inc., mkwst@google.com
+Abstract:
+    This specification describes how a website can ask a user agent to deny
+    read access to input elements, which can mitigate the risk of credential
+    leakage via cross-site scripting attacks.
+Link Defaults: HTML5 (dfn) boolean attribute / barred the element from constraint validation
+Link Defaults: HTML5 (interface) document
+Link Defaults: HTML5 (element) input
+Link Defaults: HTML5 (attribute) navigator / value
+Link Defaults: HTML5 (element-attr) password
+Link Defaults: dom-core-ls (dfn) invalidstateerror 
+Version History: https://github.com/mikewest/credentialmanagement/commits/master/writeonly/index.src.html
+</pre>
+
+<!--
+████ ██    ██ ████████ ████████   ███████
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████
+-->
+<section>
+  <h2 id="introduction">Introduction</h2>
+
+  <em>This section is not normative.</em>
+
+  A user's credentials are valuable, and are often the key target of phishing
+  and content injection attacks.
+
+  Users can defend themselves from the former threat by using a credential
+  manager which enables the generation of strong, unique passwords for all the
+  sites they visit, and which only provides those credentials to the website
+  they're tied to. If a user relies on a credential manager to keep track of her
+  passwords, and the credential manager refuses to fill them into forms on
+  unexpected origins, phishing becomes significantly more difficult.
+
+  Content injection, on the other hand, can turn the credential manager against
+  the user, as demonstrated in "Automated Password Extraction Attack on Modern
+  Password Managers" [[LUPIN]]. If an attacker can inject a form into a website
+  and the credential manager can be tricked into filling it, the user's
+  credentials will be available to the attacker directly via DOM APIs or
+  indirectly via form submission to a malicious endpoint. The latter risk can be
+  mitigated via the Content Security Policy <code>form-action</code> directive
+  [[!CSP2]], but the former is a real problem. If passwords are a simple "value"
+  accessor away, users are at risk.
+
+  It is tempting to simply block read access to password fields, but many
+  websites do interesting things with password fields. They may read the values
+  in order to sign a user in via XMLHttpRequest, for instance, rather than
+  submitting a form. A blanket restriction is unlikely to be web-compatible.
+
+  Instead, this document proposes an opt-in mechanism by which a website can
+  choose to deny itself read access to the values of particular form fields.
+
+  <h3 id="introduction-examples">Examples</h3>
+
+  <h4 id="examples-signin">Sign-in Form</h4>
+
+  <div class="example">
+    <pre>
+      &lt;form action="/signin-endpoint" method="POST"&gt;
+        &lt;input type="text"
+               autofill="username"
+               name="username"&gt;
+        &lt;input type="password"
+               <strong><a idl>writeonly</a></strong>
+               autofill="current-password" 
+               name="password"&gt;
+        &lt;input type="submit"&gt;
+      &lt;/form&gt;
+    </pre>
+  </div>
+
+  <h4 id="examples-csp">Content Security Policy</h4>
+
+  <div class="example">
+    <pre>
+      Content-Security-Policy: credentials writeonly;
+                               form-action https://example.com/signin-endpoint
+    </pre>
+  </div>
+</section>
+
+<!--
+████████ ████████     ███    ██     ██ ████████ ██      ██  ███████  ████████  ██    ██
+██       ██     ██   ██ ██   ███   ███ ██       ██  ██  ██ ██     ██ ██     ██ ██   ██ 
+██       ██     ██  ██   ██  ████ ████ ██       ██  ██  ██ ██     ██ ██     ██ ██  ██  
+██████   ████████  ██     ██ ██ ███ ██ ██████   ██  ██  ██ ██     ██ ████████  █████   
+██       ██   ██   █████████ ██     ██ ██       ██  ██  ██ ██     ██ ██   ██   ██  ██  
+██       ██    ██  ██     ██ ██     ██ ██       ██  ██  ██ ██     ██ ██    ██  ██   ██ 
+██       ██     ██ ██     ██ ██     ██ ████████  ███  ███   ███████  ██     ██ ██    ██
+-->
+<section>
+  <h2 id="prevent-dom-access">Preventing DOM access to form fields</h2>
+
+  Developers may opt-into preventing DOM access to form fields by setting a
+  <code><a element-attr>writeonly</a></code> attribute on specific <a element>input</a>
+  elements, or by using the <code><a>credentials</a></code> Content Security
+  Policy directive to prevent DOM access to any and all <a element>input</a> elements
+  of type <a element-attr>password</a>. Both mechanisms are described below:
+
+  <h3 id="writeonly-attribute">The <code>writeonly</code> attribute</h3>
+
+  <code><dfn element-attr>writeonly</dfn></code> is a <a>boolean attribute</a>
+  that controls whether or not an <a element>input</a> element's value may be read
+  directly via the <a idl for="HTMLInputElement">value</a> IDL attribute, or
+  inferred via the
+  <a href="http://www.w3.org/TR/html5/forms.html#the-constraint-validation-api">constraint
+  validation API</a> [[!HTML5]]. 
+
+  <pre class="idl">
+    partial interface HTMLInputElement {
+        attribute boolean writeonly;
+    };
+  </pre>
+  <dl dfn-for="HTMLInputElement">
+    <dt><dfn attribute>writeonly</dfn></dt>
+    <dd>This attribute <a spec="HTML5">reflects</a> the value of the
+    element's <code><a element-attr>writeonly</a></code> content attribute.</dd>
+  </dl>
+
+  If the <code>writeonly</code> attribute is set for an <a element>input</a> element
+  <var>input</var>, then set <var>input</var>'s <dfn>write-only value flag</dfn>
+  to <code>true</code>.
+
+  Note: Removing the <code><a element-attr>writeonly</a></code> attribute or
+  changing its value to <code>false</code> will not clear an element's
+  <a>write-only value flag</a>. Once that flag is set for an element, it cannot
+  be cleared.
+
+  <h3 id="credentials-directive">
+    The <code>credentials</code> Content Security Policy directive
+  </h3>
+
+  The <code><dfn>credentials</dfn></code> directive specifies a credentials policy which affects how the
+  user agent interprets <a element>input</a> elements in a protected resource. The
+  syntax for the name and value of the directive are described by the following
+  ABNF grammar [[!ABNF]]:
+
+  <pre>
+    directive-name  = "credentials"
+    directive-value = "writeonly"
+  </pre>
+
+  When enforcing the credentials directive, the user agent MUST set the
+  protected resource's <dfn>forced write-only password value flag</dfn> to true.
+
+  <h3 id="input-behavior"><code>&lt;input&gt;</code> element behavior</h3>
+
+  If an <a element>input</a> element <var>input</var>'s <a>write-only value flag</a> is
+  <code>true</code>, or if <var>input</var>'s {{Document}}'s <a>forced
+  write-only password value flag</a> is <code>true</code>, the following
+  restrictions apply:
+
+  <ol>
+    <li>
+      Getting <var>input</var>'s <a idl for="HTMLInputElement">value</a>,
+      <a idl for="HTMLInputElement">valueAsNumber</a>, and
+      <a idl for="HTMLInputElement">valueAsDate</a> IDL attributes [[!HTML5]]
+      will throw an <code><a>InvalidStateError</a></code> exception. [[!DOM]]
+    
+      Note: Setting these attributes is unaffected.
+    </li>
+    <li>
+      Getting <var>input</var>'s {{selectionStart}} and {{selectionEnd}} IDL
+      attributes [[!HTML5]] will throw an <code><a>InvalidStateError</a></code>
+      exception. [[!DOM]]
+
+      Note: Setting these attributes is unaffected.
+    </li>
+    <li>
+      <var>input</var> is considered
+      <a title="barred the element from constraint validation">barred from
+      constraint validation</a>.
+    </li>
+    <li>
+      The user agent MUST NOT fire <code>keydown</code>, <code>keyup</code>, or
+      <code>keypress</code> events on <var>input</var>. [[!DOM-LEVEL-3-EVENTS]]
+    </li>
+  </ol>
+
+  ISSUE: Is this more or less exhaustive? I'm sure I'm missing some clever ways
+  of reading the value.
+</section>
+
+<!--
+ ██████  ████████  ██████  ██     ██ ████████  ████ ████████ ██    ██
+██    ██ ██       ██    ██ ██     ██ ██     ██  ██     ██     ██  ██ 
+██       ██       ██       ██     ██ ██     ██  ██     ██      ████  
+ ██████  ██████   ██       ██     ██ ████████   ██     ██       ██   
+      ██ ██       ██       ██     ██ ██   ██    ██     ██       ██   
+██    ██ ██       ██    ██ ██     ██ ██    ██   ██     ██       ██   
+ ██████  ████████  ██████   ███████  ██     ██ ████    ██       ██   
+-->
+<section>
+  <h2 id="security-considerations">Security Considerations</h2>
+
+  <h3 id="security-sandboxing">Sandboxing autofilled credential access</h3>
+
+  <em>This section is non-normative.</em>
+
+  Some user agents are implemented in such a way as to render websites via
+  low-privilege processes that don't have direct access to the network. Network
+  requests are mediated by a more privileged parent process, which can protect
+  against a number of threats which arise if a clever attacker can exploit bugs
+  in the user agent to corrupt the website's process.
+
+  Even if we prevent DOM-level access to input fields, the form field is somehow
+  represented in memory that's accessible to that child process. It is quite
+  conceivable that an attacker could exploit browser bugs which corrupt the
+  child process in such a way as to expose a user's credentials.
+
+  Marking fields as write-only might mitigate this risk in the case of
+  autofilled credentials. Since the webpage does not need access to a user's
+  actual password, the parent process can generate a nonce when autofilling
+  credentials, and ask the child process to fill the password field with that
+  value instead of the actual password. Then, when the child process asks the
+  parent process to POST a form, the parent process can replace occurrences of
+  the nonce in the POST's body with the actual password for a given credential.
+
+  This approach means that the actual credentials are never provided to the
+  high-risk child process, which means that an attacker would have to break
+  out of the child's sandbox in order to steal credentials.
+
+  A more rigorous examination of this approach is undertaken in "Protecting
+  Users Against XSS-based Password Manager Abuse" [[STOCK]].
+</section>
+
+<!--
+   ███    ██     ██ ████████ ██     ██  ███████  ████████  ████ ██    ██  ██████  
+  ██ ██   ██     ██    ██    ██     ██ ██     ██ ██     ██  ██  ███   ██ ██    ██ 
+ ██   ██  ██     ██    ██    ██     ██ ██     ██ ██     ██  ██  ████  ██ ██       
+██     ██ ██     ██    ██    █████████ ██     ██ ████████   ██  ██ ██ ██ ██   ████
+█████████ ██     ██    ██    ██     ██ ██     ██ ██   ██    ██  ██  ████ ██    ██ 
+██     ██ ██     ██    ██    ██     ██ ██     ██ ██    ██   ██  ██   ███ ██    ██ 
+██     ██  ███████     ██    ██     ██  ███████  ██     ██ ████ ██    ██  ██████  
+-->
+<section>
+  <h2 id="authoring-considerations">Authoring Considerations</h2>
+
+  <em>This section is non-normative.</em>
+
+  In order to mitigate the risk of content injection attacks which steal user
+  credentials, we recommend that authors:
+
+  <ol>
+    <li>
+      Set a Content Security Policy [[!CSP2]] on every page of their sites
+      (including error pages, etc.), and ensure that the policy contains both
+      <code><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-form-action">form-action</a></code>
+      and <code><a>credentials</a></code> directives. The former will protect
+      against autofilled form submissions which exfiltrate data to an attacker's
+      origin, the latter against DOM-level content injection attacks.
+    </li>
+    <li>
+      Always place sign-in forms on TLS-protected pages, and always submit such
+      forms to TLS-protected endpoints. If credentials are sent in the clear,
+      they are trivially vulnerable to theft.
+    </li>
+  </ol>
+</section>
