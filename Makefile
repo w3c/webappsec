@@ -1,4 +1,4 @@
-all: clean spec/index.html usecases/index.html
+all: spec/index.html usecases/index.html writeonly/index.html
 
 clean:
 	rm -rf ./spec/index.html
