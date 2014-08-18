@@ -239,9 +239,7 @@
 			<li><a href=#plugin-types-predeclaration><span class=secno>7.12.2</span>          Predeclaration of expected media types       </a></ul>
 		<li><a href=#directive-referrer><span class=secno>7.13</span> <code>referrer</code></a>
 			<ul class=toc>
-			<li><a href=#referrer-multiple-policies><span class=secno>7.13.1</span> Processing multiple referrer policies</a>
-				<ul class=toc>
-				<li><a href=#referrer-usage><span class=secno>7.13.1.1</span> Usage</a></ul></ul>
+			<li><a href=#referrer-usage><span class=secno>7.13.1</span> Usage</a></ul>
 		<li><a href=#directive-reflected-xss><span class=secno>7.14</span> <code>reflected-xss</code></a>
 			<ul class=toc>
 			<li><a href=#reflected-xss-and-x-xss-protection><span class=secno>7.14.1</span>          Relationship to <code>X-XSS-Protection</code>       </a></ul>
@@ -2426,9 +2424,9 @@ directive-value   = media-type-list
   <section>
     <h3 class="heading settled" data-level=7.13 id=directive-referrer><span class=secno>7.13 </span><span class=content><code>referrer</code></span><a class=self-link href=#directive-referrer></a></h3>
 
-<p>The <code><dfn data-dfn-type=dfn data-noexport="" id=referrer>referrer<a class=self-link href=#referrer></a></dfn></code> directive specifies a referrer
-    policy that the user agent applies when determining what referrer
-    information should be included with requests made, and with
+<p>The <code><dfn data-dfn-type=dfn data-noexport="" id=referrer>referrer<a class=self-link href=#referrer></a></dfn></code> directive specifies the referrer
+    policy <a data-biblio-type=normative data-link-type=biblio href=#biblio-referrer title=biblio-REFERRER>[REFERRER]</a> that the user agent applies when determining what
+    referrer information should be included with requests made, and with
     <a data-link-spec=HTML5 data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing contexts">browsing contexts</a> created from the context of the
     protected resource. The syntax for the name and value of the directive
     are described by the following ABNF grammar:</p>
@@ -2439,73 +2437,14 @@ directive-value   = "none" / "none-when-downgrade" / "origin" / "origin-when-cro
 
 <p class=note>Note: The directive name does not share the HTTP header’s misspelling.</p>
 
-<p>The term <dfn data-dfn-type=dfn data-noexport="" id=referrer-policy>referrer policy<a class=self-link href=#referrer-policy></a></dfn> refers to the value of the
-    <code>referrer</code> directive, or to <code>none-when-downgrade</code>
-    if no <code>referrer</code> directive is present in the protected
-    resource’s policy.</p>
-
-<p>If the value of the <code>referrer</code> directive is invalid,
-    the user agent SHOULD set the referrer policy to <code>never</code>.</p>
-
-<p>Replace step 7 of the
-    <a href=http://fetch.spec.whatwg.org/#determine-referrer>"Determine referrer" algorithm defined in Fetch</a>
-    with the following:</p>
-
-    <ol start=7>
-      <li>If <var>referrer</var> is null, or if the <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> is
-      <code>none</code>, return <strong>null</strong>.</li>
-
-      <li>If the <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> is
-      <code>origin</code>, return the ASCII serialization of
-      <var>referrer</var>’s origin. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=biblio-RFC6454>[RFC6454]</a></li>
-
-      <li>If the <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> is
-      <code>origin-when-cross-origin</code>, return <var>referrer</var>
-      if <var>referrer</var>’s origin is the same as the origin of the
-      resource being fetched, and otherwise the ASCII serialization of
-      <var>referrer</var>’s origin. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=biblio-RFC6454>[RFC6454]</a></li>
-
-      <li>If the <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> is <code>unsafe-url</code>, return
-      <var>referrer</var>. Note that this might cause HTTPS referrer
-      information to be sent over the network as part of unencrypted HTTP
-      requests.</li>
-
-      <li>If the <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> is <code>none-when-downgrade</code>,
-      then:
-        <ul>
-          <li>Return <strong>null</strong> if the scheme component of
-          <var>referrer</var> represents a protocol that uses
-          transport-layer security and the scheme component of the
-          resource being fetched does not.</li>
-          <li>Otherwise return <var>referrer</var>.</li>
-        </ul>
-      </li>
-    </ol>
-
-<p class=note>Note: This specification should not be interpreted as limiting
-    user agents' ability to apply other restrictions to limit referrer
-    leakage.</p>
-
-    <section>
-      <h4 class="heading settled" data-level=7.13.1 id=referrer-multiple-policies><span class=secno>7.13.1 </span><span class=content>Processing multiple referrer policies</span><a class=self-link href=#referrer-multiple-policies></a></h4>
-
-<p>If a referrer policy is specified in multiple places (e.g. both a
-      <a href=http://wiki.whatwg.org/wiki/Meta_referrer><code>meta</code>
-      element</a> and a <code>referrer</code> directive), resolve the conflict
-      as follows:</p>
-
-      <ol>
-        <li>If all referrer policies have the same value, the protected
-        resource’s <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> is
-        that value.</li>
-
-        <li>Otherwise, the protected resource’s <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> is
-        <code>none</code>.</li>
-      </ol>
-    </section>
+<p>When <a data-link-type=dfn href=#enforce title=enforcing>enforcing</a> the <code>referrer</code> directive, the user agent
+    MUST execute <a data-biblio-type=normative data-link-type=biblio href=#biblio-referrer title=biblio-REFERRER>[REFERRER]</a>'s
+    <a href=http://w3c.github.io/webappsec/specs/referrer-policy/#set-referrer-policy>Set <var>environment</var>’s referrer policy to <var>policy</var>.</a>
+    algorithm on the <a data-link-type=dfn href=#protected-resource title="protected resource">protected resource</a>’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#javascript-global-environment title="JavaScript global environment">JavaScript global
+    environment</a> using the <code>referrer</code> directive’s value.</p>
 
     <section class=informative>
-      <h5 class="heading settled" data-level=7.13.1.1 id=referrer-usage><span class=secno>7.13.1.1 </span><span class=content>Usage</span><a class=self-link href=#referrer-usage></a></h5>
+      <h4 class="heading settled" data-level=7.13.1 id=referrer-usage><span class=secno>7.13.1 </span><span class=content>Usage</span><a class=self-link href=#referrer-usage></a></h4>
 
 <p><em>This section is not normative.</em></p>
 
@@ -3329,6 +3268,7 @@ Normative References</span><a class=self-link href=#normative></a></h3>
 <dt id=biblio-eventsource title=EVENTSOURCE><a class=self-link href=#biblio-eventsource></a>[EVENTSOURCE]<dd>Ian Hickson. <a href=http://www.w3.org/TR/2012/CR-eventsource-20121211/>Server-Sent Events</a>. 11 December 2012. W3C Candidate Recommendation. (Work in progress.) URL: <a href=http://www.w3.org/TR/2012/CR-eventsource-20121211/>http://www.w3.org/TR/2012/CR-eventsource-20121211/</a></dd>
 <dt id=biblio-html-imports title=HTML-IMPORTS><a class=self-link href=#biblio-html-imports></a>[HTML-IMPORTS]<dd>Dmitri Glazkov; Hajime Morrita. <a href=http://www.w3.org/TR/html-imports/>HTML Imports</a>. WD. URL: <a href=http://www.w3.org/TR/html-imports/>http://www.w3.org/TR/html-imports/</a></dd>
 <dt id=biblio-html5 title=HTML5><a class=self-link href=#biblio-html5></a>[HTML5]<dd>Robin Berjon; et al. <a href=http://www.w3.org/TR/2014/WD-html5-20140617/>HTML5</a>. 17 June 2014. W3C Candidate Recommendation. (Work in progress.) URL: <a href=http://www.w3.org/TR/2014/WD-html5-20140617/>http://www.w3.org/TR/2014/WD-html5-20140617/</a></dd>
+<dt id=biblio-referrer title=REFERRER><a class=self-link href=#biblio-referrer></a>[REFERRER]<dd>Jochen Eisinger; Mike West. <a href=https://w3c.github.io/webappsec/specs/referrer-policy/>Referrer Policy</a>. FPWD. URL: <a href=https://w3c.github.io/webappsec/specs/referrer-policy/>https://w3c.github.io/webappsec/specs/referrer-policy/</a></dd>
 <dt id=biblio-rfc2119 title=RFC2119><a class=self-link href=#biblio-rfc2119></a>[RFC2119]<dd>S. Bradner. <a href=http://www.ietf.org/rfc/rfc2119.txt>Key words for use in RFCs to Indicate Requirement Levels</a>. URL: <a href=http://www.ietf.org/rfc/rfc2119.txt>http://www.ietf.org/rfc/rfc2119.txt</a></dd>
 <dt id=biblio-rfc3492 title=RFC3492><a class=self-link href=#biblio-rfc3492></a>[RFC3492]<dd>Adam M. Costello. <a href=http://www.ietf.org/rfc/rfc3492.txt>Punycode: A Bootstring encoding of Unicode for Internationalized Domain Names in Applications (IDNA)</a>. REC. URL: <a href=http://www.ietf.org/rfc/rfc3492.txt>http://www.ietf.org/rfc/rfc3492.txt</a></dd>
 <dt id=biblio-rfc3864 title=RFC3864><a class=self-link href=#biblio-rfc3864></a>[RFC3864]<dd>Graham Klyne; Mark Nottingham; Jeffrey C. Mogul. <a href=http://www.ietf.org/rfc/rfc3864.txt>Registration Procedures for Message Header Fields</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc3864.txt>http://www.ietf.org/rfc/rfc3864.txt</a></dd>
@@ -3454,8 +3394,7 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>referrer<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-referrer title="section 6.1">6.1</a>
 <li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-referrer title="section 6.2">6.2</a>
 <li>definition of, <a href=#referrer title="section 7.13">7.13</a>
-</ul><li>referrer policy, <a href=#referrer-policy title="section 7.13">7.13</a>
-<li>reflected-xss, <a href=#reflected-xss title="section 7.14">7.14</a>
+</ul><li>reflected-xss, <a href=#reflected-xss title="section 7.14">7.14</a>
 <li>report a violation, <a href=#report-a-violation title="section 4.4">4.4</a>
 <li>report-uri, <a href=#report-uri title="section 7.15">7.15</a>
 <li>resource representation, <a href=#resource-representation title="section 2">2</a>
