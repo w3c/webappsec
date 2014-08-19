@@ -220,10 +220,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
   the referrer information sent along with requests made for subresources, and
   for navigations. The <a>policy</a> will be <code>null</code> if no policy has
   been set, otherwise it will be one of the following five values:
-  <code><a>None</a></code>, <code><a>None when downgrade</a></code>,
-  <code><a>Origin Only</a></code>, <code><a>Origin when cross-origin</a></code>,
-  and <code><a>Unsafe URL</a></code>. Each is explained below, and a detailed
-  algorithm for evaluating their effect is given in the
+  <code><a>No Referrer</a></code>, <code><a>No Referrer When
+  Downgrade</a></code>, <code><a>Origin Only</a></code>, <code><a>Origin When
+  Cross-origin</a></code>, and <code><a>Unsafe URL</a></code>. Each is explained
+  below, and a detailed algorithm for evaluating their effect is given in the
   <a section href="#integration-with-fetch"></a> and
   <a section href="#algorithms"></a> sections:
 
@@ -231,24 +231,27 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
   baseline policy for requests. This policy may be tightened for specific
   requests via mechanisms like the <code><a>noreferrer</a></code> link type.
 
-  <h3 id="referrer-policy-state-none">None</h3>
+  <h3 id="referrer-policy-state-none">No Referrer</h3>
 
-  The simplest policy is <dfn>None</dfn>, which specifies that no referrer
-  information is to be sent along with requests made from a particular <a>global
-  environment</a> to any <a>origin</a>. The header will be omitted entirely.
+  The simplest policy is <dfn>No Referrer</dfn>, which specifies that no
+  referrer information is to be sent along with requests made from a particular
+  <a>global environment</a> to any <a>origin</a>. The header will be omitted
+  entirely.
 
   <div class="example">
     If a document at <code>https://example.com/page.html</code> sets a policy of
-    <code>None</code>, then navigations to <code>https://example.com/</code>
-    (or any other URL) would send no <a><code>referer</code> header</a>.
+    <code>No Referrer</code>, then navigations to
+    <code>https://example.com/</code> (or any other URL) would send no
+    <a><code>referer</code> header</a>.
   </div>
 
-  <h3 id="referrer-policy-state-none-when-downgrade">None When Downgrade</h3>
+  <h3 id="referrer-policy-state-none-when-downgrade">No Referrer When Downgrade</h3>
 
-  The <dfn>None When Downgrade</dfn> policy sends a full URL along with requests
-  from <a>TLS-protected</a> <a>global environments</a> to a non-<a><em>a
-  priori</em> insecure origin</a>, and requests from <a>global environments</a>
-  which are <em>not</em> <a>TLS-protected</a> to any <a>origin</a>.
+  The <dfn>No Referrer When Downgrade</dfn> policy sends a full URL along with
+  requests from <a>TLS-protected</a> <a>global environments</a> to a
+  non-<a><em>a priori</em> insecure origin</a>, and requests from <a>global
+  environments</a> which are <em>not</em> <a>TLS-protected</a> to any
+  <a>origin</a>.
 
   Requests from <a>TLS-protected</a> <a>global environments</a> to <a><em>a
   priori</em> insecure origins</a>, on the other hand, will contain no referrer
@@ -256,7 +259,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
 
   <div class="example">
     If a document at <code>https://example.com/page.html</code> sets a policy of
-    <code>None When Downgrade</code>, then navigations to
+    <code>No Referrer When Downgrade</code>, then navigations to
     <code>https://not.example.com/</code> would send a
     <code><a>referer</a></code> HTTP header with a value of
     <code>https://example.com/page.html</code>, as neither resource's origin is an
@@ -432,15 +435,15 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
 
           <dl>
             <dt>never</dt>
-            <dt>none</dt>
-            <dd><code><a>None</a></code></dd>
+            <dt>no-referrer</dt>
+            <dd><code><a>No Referrer</a></code></dd>
 
             <dt>origin</dt>
             <dd><code><a>Origin Only</a></code></dd>
 
             <dt>default</dt>
             <dt>none-when-downgrade</dt>
-            <dd><code><a>None When Downgrade</a></code></dd>
+            <dd><code><a>No Referrer When Downgrade</a></code></dd>
 
             <dt>origin-when-crossorigin</dt>
             <dd><code><a>Origin When Cross-Origin</a></code></dd>
@@ -514,7 +517,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
       environment</a>.
     </li>
     <li>
-      Let <var>policy</var> be the <code>None when downgrade</code>
+      Let <var>policy</var> be <code>No Referrer When Downgrade</code>.
     </li>
     <li>
       Execute the <a section href="#set-referrer-policy"></a> algorithm on
@@ -546,15 +549,15 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
   If no referrer policy has been set for a <a>global environment</a>, then
   setting its value is straightforward. If a policy has previously been set,
   however, then we need to deal with potential conflict. We handle conflict
-  in a draconian fashion: conflicts resolve to <code>None</code>, as described
-  below.
+  in a draconian fashion: conflicts resolve to <code>No Referrer</code>, as
+  described below.
 
   <ol>
-    <li>If <var>policy</var> is not one of <code><a>None</a></code>,
-    <code><a>None when downgrade</a></code>, <code><a>Origin Only</a></code>,
-    <code><a>Origin when cross-origin</a></code>, or
+    <li>If <var>policy</var> is not one of <code><a>No Referrer</a></code>,
+    <code><a>No Referrer When Downgrade</a></code>, <code><a>Origin
+    Only</a></code>, <code><a>Origin when cross-origin</a></code>, or
     <code><a>Unsafe URL</a></code>, then set <var>policy</var> to
-    <code><a>None</a></code>.</li>
+    <code><a>No Referrer</a></code>.</li>
 
     <li>
       Let <var>currentPolicy</var> be the value of <var>environment</var>'s
@@ -672,7 +675,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
       Execute the statements corresponding to the value of <var>policy</var>:
 
       <dl>
-        <dt><var>policy</var> is <code><a>None</a></code></dt>
+        <dt><var>policy</var> is <code><a>No Referrer</a></code></dt>
         <dd>Return <code>none</code></dd>
 
         <dt><var>policy</var> is <code><a>Origin Only</a></code></dt>
@@ -697,7 +700,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/referrer-
         </dd>
 
         <dt>
-          <var>policy</var> is <code><a>None When Downgrade</a></code>
+          <var>policy</var> is <code><a>No Referrer When Downgrade</a></code>
         </dt>
         <dt>
           <var>policy</var> is <code>null</code>
