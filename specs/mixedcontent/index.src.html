@@ -7,7 +7,7 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how and why user agents disallow rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated
+Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
@@ -271,6 +271,27 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       Note: We recommend that user agents return network errors rather than
       fetching resources whose TLS-protection is deprecated.
     </dd>
+
+    <dt>
+      <dfn export>authenticated origin</dfn>
+    </dt>
+    <dt>
+      <dfn export>authenticated environment</dfn>
+    </dt>
+    <dd>
+      An origin can be called <strong>authenticated</strong> when it either
+      refers to a source which is impossible not to trust (e.g.
+      <code>localhost</code>), or to a source which can be adequately verified
+      as authentic.
+
+      A JavaScript global environment can be called
+      <strong>authenticated</strong> if its origin is
+      <strong>authenticated</strong>.
+      
+      These are spelled out in more detail in the
+      [[#is-origin-authenticated]] and [[#is-environment-authenticated]]
+      algorithms.
+    </dd>
   </dl>
 
   <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
@@ -347,6 +368,14 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       This term is defined in
       <a href="http://www.w3.org/TR/html5/infrastructure.html#javascript-global-environment">Section
       2.2.2 of the HTML5 specification</a>. [[!HTML5]]
+    </dd>
+
+    <dt><dfn>document environment</dfn></dt>
+    <dt><dfn>worker environment</dfn></dt>
+    <dd>
+      These terms are defined in
+      <a title="document environment" spec="HTML5">Section 6.1.3.1</a> of the
+      HTML5 specification. [[!!HTML5]]
     </dd>
   </dl>
 </section>
@@ -888,6 +917,106 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       <li>Return <strong>allowed</strong>.</li>
     </ol>
   </section>
+
+  <section>
+    <h3 id="is-origin-authenticated">
+      Is <var>origin</var> an <strong>authenticated origin</strong>?
+    </h3>
+
+    Given an <a>origin</a> <var>origin</var>, this algorithm returns
+    <code>authenticated</code> if the origin is an <a>authenticated origin</a>,
+    and <code>unauthenticated</code> otherwise.
+
+    <ol>
+      <li>
+        If <var>origin</var> is <strong>not</strong> an <a>insecure origin</a>,
+        return <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>host</code> component is
+        <code>localhost</code>, return
+        <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>host</code> component matches one of the
+        CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
+        [[!RFC4632]], return <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>scheme</code> component is
+        <code>file</code>, return <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>scheme</code> component is one which the
+        user agent considers to be authenticated, return
+        <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        Return <strong><code>unauthenticated</code></strong>.
+      </li>
+    </ol>
+
+    Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
+    is the origin of the context in which they were created. Therefore, blobs
+    created in an authenticated origin will themselves be authenticated.
+
+    Note: Step #5 above is meant to cover vendor-specific URL schemes whose
+    contents are authenticated by the user agent. For example, FirefoxOS
+    application resources are referred to with an URL whose <code>scheme</code>
+    component is <code>app:</code>. Likewise, Chrome's extensions and apps
+    live on <code>chrome-extension:</code> schemes. These could reasonably
+    be considered authenticated origins.
+  </section>
+
+  <section>
+    <h3 id="is-environment-authenticated">
+      Is <var>environment</var> an <strong>authenticated environment</strong>?
+    </h3>
+
+    Given a <a>JavaScript global environment</a> <var>environment</var>, this
+    algorithm returns <code>authenticated</code> if the environment is an
+    <a>authenticated environment</a>, and <code>unauthenticated</code>
+    otherwise.
+
+    <ol>
+      <li>
+        Let <var>origin</var> be the <a>origin</a> specified by
+        <var>environment</var>'s <a>entry settings object</a>.
+      </li>
+      <li>
+        If <var>environment</var> is a <a>document environment</a>:
+
+        <ol>
+          <li>
+            Let <var>document</var> be the {{Document}} object of the
+            <a>active document</a> of the <a>browsing context</a> of
+            <var>environment</var>'s <a>global object</a>.
+          </li>
+          <li>
+            If <var>document</var>'s active <a>sandboxing flag set</a> has its
+            <a>sandboxed origin browsing context flag</a> set:
+
+            <ol>
+              <li>
+                Set <var>origin</var> to the <a>origin</a> of
+                <var>document</var>'s address.
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return the result of executing the [[#is-origin-authenticated]]
+        algorithm on <var>origin</var>.
+      </li>
+    </ol>
+  </section>
+
+  Note: Sandboxed documents will have a unique origin. This algorithm uses the
+  location of a sandboxed document to determine whether it should be considered
+  authenticated. That is, the document inside
+  <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
+  would be considered to have an authenticated environment.
 </section>
 
 <!--

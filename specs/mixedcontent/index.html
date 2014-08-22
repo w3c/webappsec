@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140820>20 August 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140822>22 August 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl>
 	<dt>This version:
 	<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a>
@@ -148,7 +148,9 @@
 		<ul class=toc>
 		<li><a href=#categorize-environment><span class=secno>5.1</span>        Does <var>environment</var> restrict mixed content?     </a>
 		<li><a href=#should-block-fetch><span class=secno>5.2</span>        Should fetching <var>request</var> be blocked as mixed content?     </a>
-		<li><a href=#should-block-response><span class=secno>5.3</span>        Should <var>response</var> to <var>request</var> be blocked as mixed       content?     </a></ul>
+		<li><a href=#should-block-response><span class=secno>5.3</span>        Should <var>response</var> to <var>request</var> be blocked as mixed       content?     </a>
+		<li><a href=#is-origin-authenticated><span class=secno>5.4</span>        Is <var>origin</var> an <strong>authenticated origin</strong>?     </a>
+		<li><a href=#is-environment-authenticated><span class=secno>5.5</span>        Is <var>environment</var> an <strong>authenticated environment</strong>?     </a></ul>
 	<li><a href=#fetch-integration><span class=secno>6</span> Integration with Fetch</a>
 	<li><a href=#websockets-integration><span class=secno>7</span> Modifications to WebSockets</a>
 	<li><a href=#acknowledgements><span class=secno>8</span> Acknowledgements</a>
@@ -408,6 +410,31 @@
 <p class=note>Note: We recommend that user agents return network errors rather than
       fetching resources whose TLS-protection is deprecated.
     </dd><p></p>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" id=authenticated-origin>authenticated origin<a class=self-link href=#authenticated-origin></a></dfn>
+    </dt>
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" id=authenticated-environment>authenticated environment<a class=self-link href=#authenticated-environment></a></dfn>
+    </dt>
+    <dd>
+      An origin can be called <strong>authenticated</strong> when it either
+      refers to a source which is impossible not to trust (e.g.
+      <code>localhost</code>), or to a source which can be adequately verified
+      as authentic.
+
+<p>A JavaScript global environment can be called
+      <strong>authenticated</strong> if its origin is
+      <strong>authenticated</strong>.</p>
+
+<p>These are spelled out in more detail in the
+      <a data-section="" href=#is-origin-authenticated>§5.4 
+      Is <var>origin</var> an <strong>authenticated origin</strong>?
+    </a> and <a data-section="" href=#is-environment-authenticated>§5.5 
+      Is <var>environment</var> an <strong>authenticated environment</strong>?
+    </a>
+      algorithms.
+    </dd><p></p>
   </dl>
 
   <h3 class="heading settled" data-level=2.2 id=terms-defined-by-reference><span class=secno>2.2 </span><span class=content>Terms defined by reference</span><a class=self-link href=#terms-defined-by-reference></a></h3>
@@ -484,6 +511,14 @@
       This term is defined in
       <a href=http://www.w3.org/TR/html5/infrastructure.html#javascript-global-environment>Section
       2.2.2 of the HTML5 specification</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=biblio-HTML5>[HTML5]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=document-environment>document environment<a class=self-link href=#document-environment></a></dfn></dt>
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=worker-environment>worker environment<a class=self-link href=#worker-environment></a></dfn></dt>
+    <dd>
+      These terms are defined in
+      <a data-link-spec=HTML5 data-link-type=dfn href=#document-environment title="document environment">Section 6.1.3.1</a> of the
+      HTML5 specification. [[!!HTML5]]
     </dd>
   </dl>
 </section>
@@ -1013,7 +1048,109 @@
       <li>Return <strong>allowed</strong>.</li>
     </ol>
   </section>
-</section>
+
+  <section>
+    <h3 class="heading settled" data-level=5.4 id=is-origin-authenticated><span class=secno>5.4 </span><span class=content>
+      Is <var>origin</var> an <strong>authenticated origin</strong>?
+    </span><a class=self-link href=#is-origin-authenticated></a></h3>
+
+<p>Given an <a data-link-type=dfn href=#origin title=origin>origin</a> <var>origin</var>, this algorithm returns
+    <code>authenticated</code> if the origin is an <a data-link-type=dfn href=#authenticated-origin title="authenticated origin">authenticated origin</a>,
+    and <code>unauthenticated</code> otherwise.</p>
+
+    <ol>
+      <li>
+        If <var>origin</var> is <strong>not</strong> an <a data-link-type=dfn href=#insecure-origin title="insecure origin">insecure origin</a>,
+        return <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        If <var>origin</var>’s <code>host</code> component is
+        <code>localhost</code>, return
+        <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        If <var>origin</var>’s <code>host</code> component matches one of the
+        CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
+        <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=biblio-RFC4632>[RFC4632]</a>, return <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        If <var>origin</var>’s <code>scheme</code> component is
+        <code>file</code>, return <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        If <var>origin</var>’s <code>scheme</code> component is one which the
+        user agent considers to be authenticated, return
+        <strong><code>authenticated</code></strong>.
+      </li>
+      <li>
+        Return <strong><code>unauthenticated</code></strong>.
+      </li>
+    </ol>
+
+<p class=note>Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
+    is the origin of the context in which they were created. Therefore, blobs
+    created in an authenticated origin will themselves be authenticated.</p>
+
+<p class=note>Note: Step #5 above is meant to cover vendor-specific URL schemes whose
+    contents are authenticated by the user agent. For example, FirefoxOS
+    application resources are referred to with an URL whose <code>scheme</code>
+    component is <code>app:</code>. Likewise, Chrome’s extensions and apps
+    live on <code>chrome-extension:</code> schemes. These could reasonably
+    be considered authenticated origins.</p>
+  </section>
+
+  <section>
+    <h3 class="heading settled" data-level=5.5 id=is-environment-authenticated><span class=secno>5.5 </span><span class=content>
+      Is <var>environment</var> an <strong>authenticated environment</strong>?
+    </span><a class=self-link href=#is-environment-authenticated></a></h3>
+
+<p>Given a <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript global environment</a> <var>environment</var>, this
+    algorithm returns <code>authenticated</code> if the environment is an
+    <a data-link-type=dfn href=#authenticated-environment title="authenticated environment">authenticated environment</a>, and <code>unauthenticated</code>
+    otherwise.</p>
+
+    <ol>
+      <li>
+        Let <var>origin</var> be the <a data-link-type=dfn href=#origin title=origin>origin</a> specified by
+        <var>environment</var>’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#entry-settings-object title="entry settings object">entry settings object</a>.
+      </li>
+      <li>
+        If <var>environment</var> is a <a data-link-type=dfn href=#document-environment title="document environment">document environment</a>:
+
+        <ol>
+          <li>
+            Let <var>document</var> be the <code class=idl><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a></code> object of the
+            <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#active-document title="active document">active document</a> of the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> of
+            <var>environment</var>’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#global-object title="global object">global object</a>.
+          </li>
+          <li>
+            If <var>document</var>’s active <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#sandboxing-flag-set title="sandboxing flag set">sandboxing flag set</a> has its
+            <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#sandboxed-origin-browsing-context-flag title="sandboxed origin browsing context flag">sandboxed origin browsing context flag</a> set:
+
+            <ol>
+              <li>
+                Set <var>origin</var> to the <a data-link-type=dfn href=#origin title=origin>origin</a> of
+                <var>document</var>’s address.
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return the result of executing the <a data-section="" href=#is-origin-authenticated>§5.4 
+      Is <var>origin</var> an <strong>authenticated origin</strong>?
+    </a>
+        algorithm on <var>origin</var>.
+      </li>
+    </ol>
+  </section>
+
+<p class=note>Note: Sandboxed documents will have a unique origin. This algorithm uses the
+  location of a sandboxed document to determine whether it should be considered
+  authenticated. That is, the document inside
+  <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
+  would be considered to have an authenticated environment.
+</section><p></p>
 
 
 <section>
@@ -1210,6 +1347,8 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>a priori insecure, <a href=#a-priori-insecure-origin title="section 2.1">2.1</a>
 <li>a priori insecure origin, <a href=#a-priori-insecure-origin title="section 2.1">2.1</a>
 <li>a priori insecure URL, <a href=#a-priori-insecure-url title="section 2.1">2.1</a>
+<li>authenticated environment, <a href=#authenticated-environment title="section 2.1">2.1</a>
+<li>authenticated origin, <a href=#authenticated-origin title="section 2.1">2.1</a>
 <li>blockable, <a href=#blockable-content title="section 3.2">3.2</a>
 <li>blockable content, <a href=#blockable-content title="section 3.2">3.2</a>
 <li>blockable request contexts, <a href=#blockable-request-contexts title="section 3.2">3.2</a>
@@ -1219,6 +1358,7 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>context, <a href=#request-context title="section 2.2">2.2</a>
 <li>deprecated, <a href=#deprecated-tls-protection title="section 2.1">2.1</a>
 <li>deprecated TLS-protection, <a href=#deprecated-tls-protection title="section 2.1">2.1</a>
+<li>document environment, <a href=#document-environment title="section 2.2">2.2</a>
 <li>fetch, <a href=#fetch title="section 2.2">2.2</a>
 <li>frame type, <a href=#request-context-frame-type title="section 2.2">2.2</a>
 <li>global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a>
@@ -1258,6 +1398,7 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>unsecured environment, <a href=#unsecured-environment title="section 2.1">2.1</a>
 <li>weak, <a href=#weakly-tls-protected title="section 2.2">2.2</a>
 <li>weakly TLS-protected, <a href=#weakly-tls-protected title="section 2.2">2.2</a>
+<li>worker environment, <a href=#worker-environment title="section 2.2">2.2</a>
 </ul></div>
 
 
