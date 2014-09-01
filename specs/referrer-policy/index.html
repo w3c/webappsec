@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Referrer Policy</h1>
   <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20140819>19 August 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20140901>1 September 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl>
 	<dt>This version:
 	<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/referrer-policy/>https://w3c.github.io/webappsec/specs/referrer-policy/</a>
@@ -159,7 +159,8 @@
 		<ul class=toc>
 		<li><a href=#set-referrer-policy><span class=secno>6.1</span>      Set <var>environment</var>’s referrer policy to <var>policy</var>.   </a>
 		<li><a href=#determine-requests-referrer><span class=secno>6.2</span>      Determine <var>request</var>’s Referrer.   </a>
-		<li><a href=#strip-url><span class=secno>6.3</span>      Strip <var>url</var> for use as a referrer.   </a></ul>
+		<li><a href=#strip-url><span class=secno>6.3</span>      Strip <var>url</var> for use as a referrer.   </a>
+		<li><a href=#determine-policy-for-token><span class=secno>6.4</span>      Determine <var>token</var>’s Policy.   </a></ul>
 	<li><a href=#acknowledgements><span class=secno>7</span> Acknowledgements</a>
 	<li><a href=#conformance><span class=secno></span> Conformance</a>
 		<ul class=toc>
@@ -533,12 +534,28 @@
 
   <h3 class="heading settled" data-level=4.1 id=referrer-policy-delivery-meta><span class=secno>4.1 </span><span class=content>Delivery via <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/document-metadata.html#meta title=meta>meta</a></span><a class=self-link href=#referrer-policy-delivery-meta></a></h3>
 
-<p>When an HTML <code><a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/document-metadata.html#meta title=meta>meta</a></code> element with a name attribute
-  that is a case-insensitive match for the string "<code>Referrer</code>" is
-  inserted into a document, for example:</p>
+<p>A referrer policy may be set when an HTML <code><a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/document-metadata.html#meta title=meta>meta</a></code>
+  element with a name attribute that is a case-insensitive match for the string
+  "<code>Referrer</code>" is inserted into a document, for example:</p>
 
   <pre class=example>&lt;meta name="referrer" content="origin"&gt;
 </pre>
+
+<p>The following values for the <code>content</code> attribute are valid, and map
+  to the listed <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> values:</p>
+
+  <dl>
+    <dt>no-referrer</dt>
+    <dd><a data-link-type=dfn href=#no-referrer title="No Referrer"><code>No Referrer</code></a></dd>
+    <dt>origin</dt>
+    <dd><a data-link-type=dfn href=#origin title=Origin><code>Origin</code></a></dd>
+    <dt>no-referrer-when-downgrade</dt>
+    <dd><a data-link-type=dfn href=#no-referrer-when-downgrade title="No Referrer When Downgrade"><code>No Referrer When Downgrade</code></a></dd>
+    <dt>origin-when-crossorigin</dt>
+    <dd><a data-link-type=dfn href=#origin-when-cross-origin title="Origin When Cross-Origin"><code>Origin When Cross-Origin</code></a></dd>
+    <dt>unsafe-url</dt>
+    <dd><a data-link-type=dfn href=#unsafe-url title="Unsafe URL"><code>Unsafe URL</code></a></dd>
+  </dl>
 
 <p>Add the following entry to the
   <a href=http://www.w3.org/TR/html5/document-metadata.html#pragma-directives>pragma directives</a>
@@ -574,29 +591,10 @@
         </li>
 
         <li>
-          Let <var>policy</var> be the value associated with the first of the
-          following keywords which is a case-insensitive match for
-          <var>meta-value</var>:
-
-          <dl>
-            <dt>never</dt>
-            <dt>no-referrer</dt>
-            <dd><code><a data-link-type=dfn href=#no-referrer title="No Referrer">No Referrer</a></code></dd>
-
-            <dt>origin</dt>
-            <dd><code><a data-link-type=dfn href=#origin-only title="Origin Only">Origin Only</a></code></dd>
-
-            <dt>default</dt>
-            <dt>no-referrer-when-downgrade</dt>
-            <dd><code><a data-link-type=dfn href=#no-referrer-when-downgrade title="No Referrer When Downgrade">No Referrer When Downgrade</a></code></dd>
-
-            <dt>origin-when-crossorigin</dt>
-            <dd><code><a data-link-type=dfn href=#origin-when-cross-origin title="Origin When Cross-Origin">Origin When Cross-Origin</a></code></dd>
-
-            <dt>always</dt>
-            <dt>unsafe-url</dt>
-            <dd><code><a data-link-type=dfn href=#unsafe-url title="Unsafe URL">Unsafe URL</a></code></dd>
-          </dl>
+          Let <var>policy</var> be the result of executing the
+          <a data-section="" href=#determine-policy-for-token>§6.4 
+    Determine <var>token</var>’s Policy.
+  </a> algorithm on <var>meta-value</var>.
         </li>
 
         <li>
@@ -926,7 +924,49 @@
       Return <var>url</var>.
     </li>
   </ol>
-</section>
+
+  <h3 class="heading settled" data-level=6.4 id=determine-policy-for-token><span class=secno>6.4 </span><span class=content>
+    Determine <var>token</var>’s Policy.
+  </span><a class=self-link href=#determine-policy-for-token></a></h3>
+
+<p>Given a token (for example, the value of a
+  <a href=https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer><code>referrer</code>
+  Content Security Policy directive</a>), this algorithm will return the
+  <a data-link-type=dfn href=#referrer-policy title="referrer policy">referrer policy</a> it refers to:</p>
+
+  <ol>
+    <li>
+      If <var>token</var> is <code>never</code> or <code>no-referrer</code>,
+      return <a data-link-type=dfn href=#no-referrer title="No Referrer"><code>No Referrer</code></a>.
+    </li>
+    <li>
+      If <var>token</var> is <code>origin</code>, return
+      <a data-link-type=dfn href=#origin title=Origin><code>Origin</code></a>.
+    </li>
+    <li>
+      If <var>token</var> is <code>default</code> or
+      <code>no-referrer-when-downgrade</code>, return
+      <a data-link-type=dfn href=#no-referrer-when-downgrade title="No Referrer When Downgrade"><code>No Referrer When Downgrade</code></a>.
+    </li>
+    <li>
+      If <var>token</var> is <code>origin-when-crossorigin</code>, return
+      <a data-link-type=dfn href=#origin-when-cross-origin title="Origin When Cross-Origin"><code>Origin When Cross-Origin</code></a>.
+    </li>
+    <li>
+      If <var>token</var> is <code>always</code> or <code>unsafe-url</code>,
+      return <a data-link-type=dfn href=#unsafe-url title="Unsafe URL"><code>Unsafe URL</code></a>.
+    </li>
+    <li>
+      Return <a data-link-type=dfn href=#no-referrer title="No Referrer"><code>No Referrer</code></a>.
+    </li>
+  </ol>
+
+<p class=note>Note: Authors are encouraged to avoid the legacy keywords
+  <code>never</code>, <code>default</code>, and <code>always</code>. The
+  keywords <code>no-referrer</code>,
+  <code>no-referrer-when-downgrade</code>, and <code>unsafe-url</code>
+  respectively are preferred.
+</section><p></p>
 
 
 <section>
