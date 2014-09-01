@@ -172,6 +172,8 @@
 <h2 class="no-num no-toc no-ref heading settled" id=contents><span class=content>Table of Contents</span></h2>
 <div data-fill-with=table-of-contents><ul class=toc>
 	<li><a href=#intro><span class=secno>1</span> Introduction</a>
+		<ul class=toc>
+		<li><a href=#changes><span class=secno>1.1</span> Changes from 1.0</a></ul>
 	<li><a href=#key-concepts><span class=secno>2</span> Key Concepts and Terminology</a>
 	<li><a href=#policy-delivery><span class=secno>3</span> Policy Delivery</a>
 		<ul class=toc>
@@ -318,6 +320,104 @@
   <code>Content-Security-Policy</code> HTTP header. Such policies apply to the
   current resource representation only. To supply a policy for an entire site,
   the server needs to supply a policy with each resource representation.</p>
+
+  <h3 class="heading settled" data-level=1.1 id=changes><span class=secno>1.1 </span><span class=content>Changes from 1.0</span><a class=self-link href=#changes></a></h3>
+
+<p>This document describes an evolution of the
+  <a href=http://w3.org/TR/CSP>Content Security Policy specification</a>.
+  Level 2 makes two breaking changes, and adds support for a number of new
+  directives and capabilities which are summarized below:</p>
+
+  <ol>
+    <li>
+      The following changes are backwards incompatible with the majority of
+      user agent’s implementations of CSP 1:
+
+      <ol>
+        <li>
+          The path component of a source expression is now ignored if the
+          resource being loaded is the result of a redirect, as described in
+          <a data-section="" href=#source-list-paths-and-redirects>§4.2.2.3 Paths and Redirects</a>.
+
+<p class=note>Note: Paths are technically new in CSP2, but they were already
+          implemented in many user agents before this revision of CSP was
+          completed, so noting the change here seems reasonable.</p>
+        </li>
+        <li>
+          Redirects are blocked by default, and explicitly allowed with a new
+          <code>unsafe-redirect</code> expression, as part of 
+        </li>
+        <li>
+          A <a data-link-type=dfn href=#protected-resource title="protected resource">protected resource</a>’s ability to load Workers is now controlled
+          via <a data-link-type=dfn href=#child-src title=child-src><code>child-src</code></a> rather than
+          <a data-link-type=dfn href=#script-src title=script-src><code>script-src</code></a>.
+        </li>
+        <li>
+          Workers now have their own policy, separate from the <a data-link-type=dfn href=#protected-resource title="protected resource">protected
+          resource</a> which loaded them. This is described in
+          <a data-section="" href=#processing-model-workers>§5.1 Workers</a>.
+        </li>
+      </ol>
+    </li>
+    <li>
+      The following directives are brand new in this revision:
+
+      <ol>
+        <li>
+          <a data-link-type=dfn href=#base-uri title=base-uri><code>base-uri</code></a></li> controls the <a data-link-type=dfn href=#protected-resource title="protected resource">protected
+          resource</a>’s ability to specify the <a data-link-spec=HTML5 data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#document-base-url title="document base URL">document base
+          URL</a>.
+        
+        <li>
+          <a data-link-type=dfn href=#child-src title=child-src><code>child-src</code></a> deprecates and replaces
+          <a data-link-type=dfn href=#frame-src title=frame-src><code>frame-src</code></a>, controling the <a data-link-type=dfn href=#protected-resource title="protected resource">protected
+          resource</a>’s ability to embed frames, and to load Workers.
+        </li>
+        <li>
+          <a data-link-type=dfn href=#form-action title=form-action><code>form-action</code></a> controls the <a data-link-type=dfn href=#protected-resource title="protected resource">protected
+          resource</a>’s ability to submit forms.
+        </li>
+        <li>
+          <a data-link-type=dfn href=#frame-ancestors title=frame-ancestor><code>frame-ancestor</code></a> controls the <a data-link-type=dfn href=#protected-resource title="protected resource">protected
+          resource</a>’s ability be embedded in other documents. It is meant
+          to supplant the <code>X-Frame-Options</code> HTTP request header.
+        </li>
+        <li>
+          <a data-link-type=dfn href=#plugin-types title=plugin-types><code>plugin-types</code></a> controls the <a data-link-type=dfn href=#protected-resource title="protected resource">protected
+          resource</a>’s ability to load specific types of plugins.
+        </li>
+        <li>
+          <a data-link-type=dfn href=#referrer title=referrer><code>referrer</code></a> controls the <a data-link-type=dfn href=#protected-resource title="protected resource">protected resource</a>’s
+          referrer policy <a data-biblio-type=normative data-link-type=biblio href=#biblio-referrer title=biblio-REFERRER>[REFERRER]</a>.
+        </li>
+        <li>
+          <a data-link-type=dfn href=#reflected-xss title=reflected-xss><code>reflected-xss</code></a> controls the user agent’s built-in
+          heuristics to actively protect against XSS. It is meant to supplant
+          the <code>X-XSS-Protection</code> HTTP request header.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Individual inline scripts and stylesheets may be whitelisted via nonces
+      (as described in <a data-section="" href=#source-list-valid-nonces>§4.2.4 Valid Nonces</a>) and hashes (as described
+      in <a data-section="" href=#source-list-valid-hashes>§4.2.5 Valid Hashes</a>).
+    </li>
+    <li>
+      A <code>CSP</code> request header is now sent with relevant requests, as
+      described in <a data-section="" href=#csp-request-header>§3.4 The <code>CSP</code> HTTP Request Header</a>.
+    </li>
+    <li>
+      A <code class=idl><a data-link-type=idl href=#dom-securitypolicyviolationevent title=SecurityPolicyViolationEvent>SecurityPolicyViolationEvent</a></code> is fired upon violations, as described
+      in <a data-section="" href=#firing-securitypolicyviolationevent-events>§6.3 Firing Violation Events</a>.
+    </li>
+    <li>
+      A number of new fields were added to violation reports (both those POSTED
+      via <a data-link-type=dfn href=#report-uri title=report-uri><code>report-uri</code></a>, and those handed to the DOM via
+      <code class=idl><a data-link-type=idl href=#dom-securitypolicyviolationevent title=SecurityPolicyViolationEvent>SecurityPolicyViolationEvent</a></code> events. These include
+      <code class=idl><a data-link-type=idl href=#dom-securitypolicyviolationevent-effectivedirective title=effectiveDirective>effectiveDirective</a></code>, <code class=idl><a data-link-type=idl href=#dom-securitypolicyviolationevent-statuscode title=statusCode>statusCode</a></code>, <code class=idl><a data-link-type=idl href=#dom-securitypolicyviolationevent-sourcefile title=sourceFile>sourceFile</a></code>, <code class=idl><a data-link-type=idl href=#dom-securitypolicyviolationevent-linenumber title=lineNumber>lineNumber</a></code>,
+      <code class=idl><a data-link-type=idl href=#dom-securitypolicyviolationevent-columnnumber title=columnNumber>columnNumber</a></code>.
+    </li>
+  </ol>
 </section>
 
 
@@ -1571,6 +1671,7 @@ interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global
     readonly    attribute DOMString <a class=idl-code data-global-name="SecurityPolicyViolationEvent<interface>/effectivedirective<attribute>" data-link-for=SecurityPolicyViolationEvent data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-securitypolicyviolationevent-effectivedirective title=effectiveDirective>effectiveDirective</a>;
     readonly    attribute DOMString <a class=idl-code data-global-name="SecurityPolicyViolationEvent<interface>/originalpolicy<attribute>" data-link-for=SecurityPolicyViolationEvent data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-securitypolicyviolationevent-originalpolicy title=originalPolicy>originalPolicy</a>;
     readonly    attribute DOMString <a class=idl-code data-global-name="SecurityPolicyViolationEvent<interface>/sourcefile<attribute>" data-link-for=SecurityPolicyViolationEvent data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-securitypolicyviolationevent-sourcefile title=sourceFile>sourceFile</a>;
+    readonly    attribute DOMString <a class=idl-code data-global-name="SecurityPolicyViolationEvent<interface>/statuscode<attribute>" data-link-for=SecurityPolicyViolationEvent data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-securitypolicyviolationevent-statuscode title=statusCode>statusCode</a>;
     readonly    attribute long      <a class=idl-code data-global-name="SecurityPolicyViolationEvent<interface>/linenumber<attribute>" data-link-for=SecurityPolicyViolationEvent data-link-type=attribute data-readonly="" data-type="long      " href=#dom-securitypolicyviolationevent-linenumber title=lineNumber>lineNumber</a>;
     readonly    attribute long      <a class=idl-code data-global-name="SecurityPolicyViolationEvent<interface>/columnnumber<attribute>" data-link-for=SecurityPolicyViolationEvent data-link-type=attribute data-readonly="" data-type="long      " href=#dom-securitypolicyviolationevent-columnnumber title=columnNumber>columnNumber</a>;
 };
@@ -1588,6 +1689,8 @@ interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global
       <dd>Refer to the <a href=#violation-report-effective-directive><code>effective-directive</code></a> property of violation reports for a description of this property.</dd>
       <dt><dfn class=idl-code data-dfn-for=SecurityPolicyViolationEvent data-dfn-type=attribute data-export="" id=dom-securitypolicyviolationevent-originalpolicy>originalPolicy<a class=self-link href=#dom-securitypolicyviolationevent-originalpolicy></a></dfn></dt>
       <dd>Refer to the <a href=#violation-report-original-policy><code>original-policy</code></a> property of violation reports for a description of this property.</dd>
+      <dt><dfn class=idl-code data-dfn-for=SecurityPolicyViolationEvent data-dfn-type=attribute data-export="" id=dom-securitypolicyviolationevent-statuscode>statusCode<a class=self-link href=#dom-securitypolicyviolationevent-statuscode></a></dfn></dt>
+      <dd>Refer to the <a href=#violation-report-status-code><code>status-code</code></a> property of violation reports for a description of this property.</dd>
       <dt><dfn class=idl-code data-dfn-for=SecurityPolicyViolationEvent data-dfn-type=attribute data-export="" id=dom-securitypolicyviolationevent-sourcefile>sourceFile<a class=self-link href=#dom-securitypolicyviolationevent-sourcefile></a></dfn></dt>
       <dd>Refer to the <a href=#violation-report-source-file><code>source-file</code></a> property of violation reports for a description of this property.</dd>
       <dt><dfn class=idl-code data-dfn-for=SecurityPolicyViolationEvent data-dfn-type=attribute data-export="" id=dom-securitypolicyviolationevent-linenumber>lineNumber<a class=self-link href=#dom-securitypolicyviolationevent-linenumber></a></dfn></dt>
@@ -3422,6 +3525,7 @@ Index</span><a class=self-link href=#index></a></h2>
 </ul><li>source-list, <a href=#source-list title="section 4.2">4.2</a>
 <li>source
     list, <a href=#source-list0 title="section 4.2">4.2</a>
+<li>statusCode, <a href=#dom-securitypolicyviolationevent-statuscode title="section 6.1">6.1</a>
 <li>stripped for reporting, <a href=#strip-uri-for-reporting title="section 4.4">4.4</a>
 <li>strip uri for reporting, <a href=#strip-uri-for-reporting title="section 4.4">4.4</a>
 <li>style-src, <a href=#style-src title="section 7.18">7.18</a>
