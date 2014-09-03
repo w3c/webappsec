@@ -400,11 +400,6 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
   the intent of moving towards a world where all <a>mixed</a> content is
   blocked; that is the end goal, but this is the best we can do for now.
 
-  ISSUE: Should the presence of a form with an <a element-attr>action</a>
-  attribute pointing to an <a><em>a priori</em> insecure origin</a> be
-  considered mixed content? Blink is currently triggering a warning when such a
-  form is present: <a href="https://crbug.com/253249">crbug.com/253249</a>.
-
   <section>
     <h3 id="category-optionally-blockable">Optionally-blockable Content</h3>
 
@@ -519,7 +514,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
     content. See the treatment of <a>request context frame type</a> in
     [[#should-block-fetch]] for details.
   </section>
-  
+
   <section>
     <h3 id="categories-unknown-content">Future Contexts</h3>
 
@@ -636,6 +631,26 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       execution if the <var>url</var> provided points to an <a><em>a priori</em>
       insecure origin</a>. [[!WEBSOCKETS]]</li>
     </ol>
+  </section>
+
+  <section>
+    <h3 id="requirements-forms">Form Submission</h3>
+
+    If a <a>global environment</a> <a>restricts mixed content</a>, then user
+    agents MAY <strong>optionally</strong> choose to warn users of the presence
+    of one or more <a element>form</a> elements with <a element-attr>action</a>
+    attributes whose values are <a>insecure URLs</a>.
+
+    Note: Chrome, for example, currently gives the same UI treatment to a page
+    with an insecure form action as it does for a page that displays an insecure
+    image.    
+
+    Further, user agents MAY <strong>optionally</strong> treat form submissions
+    in the <a>top-level browsing context</a> from a <a>global environment</a>
+    which <a>restricts mixed content</a> as a request for <a>blockable
+    content</a> to protect users from accidental data leakage.
+  </section>
+
   </section>
 
   <section>
@@ -813,9 +828,6 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcont
       <li>
         If <var>request</var>'s <code>context frame type</code> is
         <code>top-level</code>, return <strong>allowed</strong>.
-
-        ISSUE: Should we prevent top-level form submissions to insecure origins
-        from secure origins?
       </li>
       <li>
         If <var>origin</var> is <a><em>a priori</em> insecure</a>:
