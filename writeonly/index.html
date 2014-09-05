@@ -586,7 +586,15 @@ leakage via cross-site scripting attacks.</p>
 		<li><a href=#input-behavior><span class=secno>2.3</span> <code>&lt;input&gt;</code> element behavior</a>
 		<li><a href=#opaque-formdata><span class=secno>2.4</span>      Opaque <code>FormData</code> objects   </a>
 			<ul class=toc>
-			<li><a href=#opaque-formdata-algorithms><span class=secno>2.4.1</span>      Algorithm Modifications   </a></ul></ul>
+			<li><a href=#opaque-formdata-algorithms><span class=secno>2.4.1</span>      Algorithm Modifications   </a>
+				<ul class=toc>
+				<li><a href=#xhr-formdata-constructor><span class=secno>2.4.1.1</span> XHR: <code>FormData</code> constructor</a>
+				<li><a href=#xhr-formdatas-get><span class=secno>2.4.1.2</span> XHR: <code>FormData</code>’s <code>get()</code></a>
+				<li><a href=#xhr-formdatas-getall><span class=secno>2.4.1.3</span> XHR: <code>FormData</code>’s <code>getAll()</code></a>
+				<li><a href=#fetch-request-objects><span class=secno>2.4.1.4</span> Fetch: <code>Request</code> objects</a>
+				<li><a href=#fetch-requests-constructor><span class=secno>2.4.1.5</span> Fetch: <code>Request</code>’s constructor</a>
+				<li><a href=#fetch-fetchbodystreams-as-generic><span class=secno>2.4.1.6</span> Fetch: <code>FetchBodyStream</code>’s <code>as generic</code></a>
+				<li><a href=#fetch-extract-a-byte-stream><span class=secno>2.4.1.7</span> Fetch: Extract a byte stream</a></ul></ul></ul>
 	<li><a href=#security-considerations><span class=secno>3</span> Security Considerations</a>
 		<ul class=toc>
 		<li><a href=#security-sandboxing><span class=secno>3.1</span> Sandboxing autofilled credential access</a></ul>
@@ -780,7 +788,8 @@ directive-value = "writeonly"
       objects constructed from the form which contains <var>input</var> are
       opaque, as described in <a data-section="" href=#opaque-formdata>§2.4 
     Opaque <code>FormData</code> objects
-  </a><p></p>
+  </a>
+    </li><p></p>
   </ol>
 
 <p class=issue id=issue-eedb26e3><a class=self-link href=#issue-eedb26e3></a>Is this more or less exhaustive? I’m sure I’m missing some clever ways
@@ -846,6 +855,8 @@ directive-value = "writeonly"
 <p class=issue id=issue-f5b10335><a class=self-link href=#issue-f5b10335></a>Monkey-patching! Hooray! Though, of course, that’s pretty much this
   whole strawman...</p>
 
+  <h5 class="heading settled" data-level=2.4.1.1 id=xhr-formdata-constructor><span class=secno>2.4.1.1 </span><span class=content>XHR: <code>FormData</code> constructor</span><a class=self-link href=#xhr-formdata-constructor></a></h5>
+
 <p>Insert the following steps before step 3 of
   <a href=http://xhr.spec.whatwg.org/#dom-formdata>the <code>FormData</code>
   constructor’s algorithm</a>:</p>
@@ -875,6 +886,8 @@ directive-value = "writeonly"
     
   </ol>
 
+  <h5 class="heading settled" data-level=2.4.1.2 id=xhr-formdatas-get><span class=secno>2.4.1.2 </span><span class=content>XHR: <code>FormData</code>’s <code>get()</code></span><a class=self-link href=#xhr-formdatas-get></a></h5>
+
 <p>Redefine <code>FormData</code>’s
   <a href=http://xhr.spec.whatwg.org/#dom-formdata-get><code>get()</code></a>
   method as follows:</p>
@@ -893,6 +906,8 @@ directive-value = "writeonly"
       exists.
     </li>
   </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.3 id=xhr-formdatas-getall><span class=secno>2.4.1.3 </span><span class=content>XHR: <code>FormData</code>’s <code>getAll()</code></span><a class=self-link href=#xhr-formdatas-getall></a></h5>
 
 <p>Redefine <code>FormData</code>’s
   <a href=http://xhr.spec.whatwg.org/#dom-formdata-getall><code>getAll()</code></a>
@@ -913,6 +928,40 @@ directive-value = "writeonly"
     </li>
   </ol>
 
+  <h5 class="heading settled" data-level=2.4.1.4 id=fetch-request-objects><span class=secno>2.4.1.4 </span><span class=content>Fetch: <code>Request</code> objects</span><a class=self-link href=#fetch-request-objects></a></h5>
+
+<p>Add a new <dfn data-dfn-type=dfn data-noexport="" id=opaque-request-flag>opaque request flag<a class=self-link href=#opaque-request-flag></a></dfn> to
+  <a href=http://fetch.spec.whatwg.org/#request-class>Fetch’s <code>Request</code> objects</a>.
+  This flag is unset unless otherwise specified.</p>
+
+  <h5 class="heading settled" data-level=2.4.1.5 id=fetch-requests-constructor><span class=secno>2.4.1.5 </span><span class=content>Fetch: <code>Request</code>’s constructor</span><a class=self-link href=#fetch-requests-constructor></a></h5>
+
+<p>Add the following step after step 3 of step 17 of
+  <a href=http://fetch.spec.whatwg.org/#dom-request>Fetch’s <code>Request</code> constructor</a>:</p>
+
+  <ol>
+    <li>
+      If <var>init</var>’s <code>body</code> member is a <code>FormData</code>
+      object whose <a data-link-type=dfn href=#opaque-flag title="opaque flag">opaque flag</a> is set, set <var>r</var>’s <strong>opaque
+      flag</strong>.
+    </li>
+  </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.6 id=fetch-fetchbodystreams-as-generic><span class=secno>2.4.1.6 </span><span class=content>Fetch: <code>FetchBodyStream</code>’s <code>as generic</code></span><a class=self-link href=#fetch-fetchbodystreams-as-generic></a></h5>
+
+<p>Insert the following step before step 3 of
+  <a href=http://fetch.spec.whatwg.org/#concept-fetchbodystream-as-generic><code>FetchBodyStream</code>’s <code>as generic</code></a>
+  algorithm:</p>
+
+  <ol start=3>
+    <li>
+      If <var>object</var>’s <a data-link-type=dfn href=#opaque-request-flag title="opaque request flag">opaque request flag</a> is set, resolve
+      <var>p</var> with <code>null</code>, and return <var>p</var>.
+    </li>
+  </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.7 id=fetch-extract-a-byte-stream><span class=secno>2.4.1.7 </span><span class=content>Fetch: Extract a byte stream</span><a class=self-link href=#fetch-extract-a-byte-stream></a></h5>
+
 <p>Redefine the <code>FormData</code> case of Fetch’s
   <a href=http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract>extract a byte stream and <code>Content-Type</code></a>
   algorithm as follows:</p>
@@ -922,7 +971,10 @@ directive-value = "writeonly"
       If <var>object</var>’s <a data-link-type=dfn href=#opaque-flag title="opaque flag">opaque flag</a> is <strong>not</strong> set,
       or if the extraction algorithm is being executed in the context of
       <a href=http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send>XMLHttpRequest’s <code>send()</code> method</a>
-      then:
+      or
+      <a href=http://fetch.spec.whatwg.org/#dom-request>Fetch’s <code>Request</code> constructor</a>
+
+<p>then:</p>
 
       <ol>
         <li>
@@ -1077,6 +1129,7 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>credentials, <a href=#credentials title="section 2.2">2.2</a>
 <li>forced write-only password value flag, <a href=#forced-write-only-password-value-flag title="section 2.2">2.2</a>
 <li>opaque flag, <a href=#opaque-flag title="section 2.4">2.4</a>
+<li>opaque request flag, <a href=#opaque-request-flag title="section 2.4.1.4">2.4.1.4</a>
 <li>writeonly<ul><li>(element-attr), <a href=#element-attrdef-writeonly title="section 2.1">2.1</a>
 <li>attribute for HTMLInputElement, <a href=#dom-htmlinputelement-writeonly title="section 2.1">2.1</a>
 </ul><li>write-only value flag, <a href=#write-only-value-flag title="section 2.1">2.1</a>

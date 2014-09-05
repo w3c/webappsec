@@ -216,6 +216,7 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       <a href="http://xhr.spec.whatwg.org/#interface-formdata"><code>FormData</code></a>
       objects constructed from the form which contains <var>input</var> are
       opaque, as described in [[#opaque-formdata]]
+    </li>
   </ol>
 
   ISSUE: Is this more or less exhaustive? I'm sure I'm missing some clever ways
@@ -281,6 +282,8 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
   ISSUE: Monkey-patching! Hooray! Though, of course, that's pretty much this
   whole strawman...
 
+  <h5>XHR: <code>FormData</code> constructor</h5>
+
   Insert the following steps before step 3 of
   <a href="http://xhr.spec.whatwg.org/#dom-formdata">the <code>FormData</code>
   constructor's algorithm</a>:
@@ -310,6 +313,8 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     </li>
   </ol>
 
+  <h5>XHR: <code>FormData</code>'s <code>get()</code></h5>
+
   Redefine <code>FormData</code>'s
   <a href="http://xhr.spec.whatwg.org/#dom-formdata-get"><code>get()</code></a>
   method as follows:
@@ -328,6 +333,8 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       exists.
     </li>
   </ol>
+
+  <h5>XHR: <code>FormData</code>'s <code>getAll()</code></h5>
 
   Redefine <code>FormData</code>'s
   <a href="http://xhr.spec.whatwg.org/#dom-formdata-getall"><code>getAll()</code></a>
@@ -348,6 +355,40 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
     </li>
   </ol>
 
+  <h5>Fetch: <code>Request</code> objects</h5>
+
+  Add a new <dfn>opaque request flag</dfn> to
+  <a href="http://fetch.spec.whatwg.org/#request-class">Fetch's <code>Request</code> objects</a>.
+  This flag is unset unless otherwise specified.
+
+  <h5>Fetch: <code>Request</code>'s constructor</h5>
+
+  Add the following step after step 3 of step 17 of  
+  <a href="http://fetch.spec.whatwg.org/#dom-request">Fetch's <code>Request</code> constructor</a>:
+
+  <ol>
+    <li>
+      If <var>init</var>'s <code>body</code> member is a <code>FormData</code>
+      object whose <a>opaque flag</a> is set, set <var>r</var>'s <strong>opaque
+      flag</strong>.
+    </li>
+  </ol>
+
+  <h5>Fetch: <code>FetchBodyStream</code>'s <code>as generic</code></h5>
+
+  Insert the following step before step 3 of
+  <a href="http://fetch.spec.whatwg.org/#concept-fetchbodystream-as-generic"><code>FetchBodyStream</code>'s <code>as generic</code></a>
+  algorithm:
+
+  <ol start="3">
+    <li>
+      If <var>object</var>'s <a>opaque request flag</a> is set, resolve
+      <var>p</var> with <code>null</code>, and return <var>p</var>.
+    </li>
+  </ol>
+
+  <h5>Fetch: Extract a byte stream</h5>
+
   Redefine the <code>FormData</code> case of Fetch's
   <a href="http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract">extract a byte stream and <code>Content-Type</code></a>
   algorithm as follows:
@@ -357,6 +398,9 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       If <var>object</var>'s <a>opaque flag</a> is <strong>not</strong> set,
       or if the extraction algorithm is being executed in the context of
       <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send">XMLHttpRequest's <code>send()</code> method</a>
+      or
+      <a href="http://fetch.spec.whatwg.org/#dom-request">Fetch's <code>Request</code> constructor</a>
+
       then:
      
       <ol>
