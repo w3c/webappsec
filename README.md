@@ -12,13 +12,14 @@ if folks generally like the idea but disagree with the approach.
 
 Feedback ever so welcome. :)
 
-* **Use cases**: <http://projects.mikewest.org/credentialmanagement/usecases/>
-* **Spec**: <http://projects.mikewest.org/credentialmanagement/spec/>
-* **proof-of-concept polyfill**: <http://projects.mikewest.org/credentialmanagement/polyfill/> (click "Save!" first, because no one at all ever has accountchooser.com credentials :) )
+* **Use cases**: <https://mikewest.github.io/credentialmanagement/usecases/>
+* **Spec**: <https://mikewest.github.io/credentialmanagement/spec/>
+* **proof-of-concept polyfill**: <https://mikewest.github.io/credentialmanagement/polyfill/> (click "Save!" first, because no one at all ever has accountchooser.com credentials :) )
 * **Thread**: <http://lists.w3.org/Archives/Public/public-webapps/2014JulSep/0141.html>
 
 Write-only Form Fields
 ----------------------
 
-* **Spec**: <http://projects.mikewest.org/credentialmanagement/writeonly/>
+* **Spec**: <https://mikewest.github.io/credentialmanagement/writeonly/>
 * **Thread**: <http://lists.w3.org/Archives/Public/public-webapps/2014JulSep/0165.html>
+* **Specifiction**: <http://specifiction.org/t/write-only-input-fields/598/3>
