@@ -9,7 +9,7 @@ Abstract:
     This specification describes how a website can ask a user agent to deny
     read access to input elements, which can mitigate the risk of credential
     leakage via cross-site scripting attacks.
-Link Defaults: HTML5 (dfn) boolean attribute / barred the element from constraint validation
+Link Defaults: HTML5 (dfn) boolean attribute / barred the element from constraint validation / HTMLFormElement
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) input
 Link Defaults: HTML5 (attribute) navigator / value
@@ -212,10 +212,172 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
       The user agent MUST NOT fire <code>keydown</code>, <code>keyup</code>, or
       <code>keypress</code> events on <var>input</var>. [[!DOM-LEVEL-3-EVENTS]]
     </li>
+    <li>
+      <a href="http://xhr.spec.whatwg.org/#interface-formdata"><code>FormData</code></a>
+      objects constructed from the form which contains <var>input</var> are
+      opaque, as described in [[#opaque-formdata]]
   </ol>
 
   ISSUE: Is this more or less exhaustive? I'm sure I'm missing some clever ways
   of reading the value.
+
+  <h3 id="opaque-formdata">
+    Opaque <code>FormData</code> objects
+  </h3>
+
+  <code>FormData</code> objects have a <dfn>opaque flag</dfn>, unset by default,
+  and set only if the object is constructed from a <a element>form</a>
+  containing one or more <a element>input</a> elements whose <a>write-only value
+  flag</a>. Opaque <code>FormData</code> objects return <code>null</code> and
+  the empty sequence when their
+  <a href="http://xhr.spec.whatwg.org/#dom-formdata-get"><code>get()</code></a>
+  and
+  <a href="http://xhr.spec.whatwg.org/#dom-formdata-getall"><code>getAll()</code></a>
+  methods are executed, respectively. Further, data from opaque
+  <code>FormData</code> objects can only be
+  <a href="http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract">extracted</a>
+  in the context of executing 
+  <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send">XMLHttpRequest's <code>send()</code> method</a>.
+  
+  Opaque <code>FormData</code> objects have the following properties:
+
+  <ol>
+    <li>
+      Whenever the user agent would execute an opaque <code>FormData</code> object's
+      <a href="http://xhr.spec.whatwg.org/#dom-formdata-get"><code>get()</code></a>
+      method, it MUST return <code>null</code>.
+    </li>
+    <li>
+      Whenever the user agent would execute an opaque <code>FormData</code> object's
+      <a href="http://xhr.spec.whatwg.org/#dom-formdata-getall"><code>getAll()</code></a>
+      method, it MUST return the empty sequence.
+    </li>
+    <li>
+      Whenever the user agent would
+      <a href="http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract">extract a byte stream and <code>Content-Type</code></a>
+      from an opaque <code>FormData</code> object <var>formdata</var>, first
+      the following steps:
+
+      <ol>
+        <li>
+          If the extraction algorithm is being executed in the context of
+          <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send">XMLHttpRequest's <code>send()</code> method</a>
+          then skip the next step and proceed executing the algorithm.
+        </li>
+        <li>
+          Otherwise, abort the extraction algorithm and return the result of
+          executing the 
+          <a href="http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract">extract a byte stream and <code>Content-Type</code></a>
+          algorithm on a new (empty) <code>FormData</code> object.
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+  <h4 id="opaque-formdata-algorithms">
+    Algorithm Modifications
+  </h4>
+
+  ISSUE: Monkey-patching! Hooray! Though, of course, that's pretty much this
+  whole strawman...
+
+  Insert the following steps before step 3 of
+  <a href="http://xhr.spec.whatwg.org/#dom-formdata">the <code>FormData</code>
+  constructor's algorithm</a>:
+
+  <ol start="3">
+    <li>
+      Unset <var>fd</var>'s <a>opaque flag</a>.
+    </li>
+    <li>
+      If <var>form</var> is given, then:
+      
+      <ol>
+        <li>
+          Let <var>controls</var> be a list of all the submittable elements
+          whose form owner is <var>form</var>.
+        </li>
+        <li>
+          For each element <var>field</var> in <var>controls</var>:
+
+          <ol>
+            <li>
+              If <var>field</var>'s <a>write-only value flag</a> is
+              <code>true</code>, then set <var>fd</var>'s <a>opaque flag</a>.
+            </li>
+          </ol>
+        </li>
+    </li>
+  </ol>
+
+  Redefine <code>FormData</code>'s
+  <a href="http://xhr.spec.whatwg.org/#dom-formdata-get"><code>get()</code></a>
+  method as follows:
+
+  <ol>
+    <li>If the <a>opaque flag</a> is set, return <code>null</code>.</li>
+    <li>
+      Otherwise, return the
+      <a href="http://xhr.spec.whatwg.org/#concept-formdata-entry-value">value</a>
+      of the first
+      <a href="http://xhr.spec.whatwg.org/#concept-formdata-entry">entry</a>
+      whose
+      <a href="http://xhr.spec.whatwg.org/#concept-formdata-entry-name">name</a>
+      is <var>name</var>, and <code>null</code> if no such
+      <a href="http://xhr.spec.whatwg.org/#concept-formdata-entry">entry</a>
+      exists.
+    </li>
+  </ol>
+
+  Redefine <code>FormData</code>'s
+  <a href="http://xhr.spec.whatwg.org/#dom-formdata-getall"><code>getAll()</code></a>
+  method as follows:
+
+  <ol>
+    <li>If the <a>opaque flag</a> is set, return the empty sequence.</li>
+    <li>
+      Otherwise, return the
+      <a href="http://xhr.spec.whatwg.org/#concept-formdata-entry-value">values</a>
+      of all
+      <a href="http://xhr.spec.whatwg.org/#concept-formdata-entry">entries</a>
+      whose
+      <a href="http://xhr.spec.whatwg.org/#concept-formdata-entry-name">name</a>
+      is <var>name</var>, in list order, and the empty sequence if no such
+      <a href="http://xhr.spec.whatwg.org/#concept-formdata-entry">entry</a>
+      exists.
+    </li>
+  </ol>
+
+  Redefine the <code>FormData</code> case of Fetch's
+  <a href="http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract">extract a byte stream and <code>Content-Type</code></a>
+  algorithm as follows:
+
+  <ol>
+    <li>
+      If <var>object</var>'s <a>opaque flag</a> is <strong>not</strong> set,
+      or if the extraction algorithm is being executed in the context of
+      <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send">XMLHttpRequest's <code>send()</code> method</a>
+      then:
+     
+      <ol>
+        <li>
+          Push the result of running the multipart/form-data encoding algorithm, with object as form data set and with utf-8 as the explicit character encoding, to stream.
+        </li>
+        <li>
+          Set Content-Type to `multipart/form-data;boundary=`, followed by the multipart/form-data boundary string generated by the multipart/form-data encoding algorithm.
+        </li>
+      </ol>
+
+    </li>
+    <li>
+      Otherwise, set <var>Content-Type</var> to <code>text/plain;charset=UTF-8</code>. 
+
+      Note: In this case (e.g. <var>object</var> is opaque
+      and the algorithm isn't being executed as a result of
+      <code>XHR.send()</code>), <var>stream</var> will remain an empty byte
+      stream.
+    </li>
+  </ol>
 </section>
 
 <!--
