@@ -358,11 +358,11 @@ is a consistent ordering.
 1.  If <var>algorithm</var> is not a hash function recognized and supported
     by the user agent, return `null`.
 2.  Let <var>result</var> be the result of applying <var>algorithm</var> to
-    the [representation][ietf-representation] without any content-codings
+    the [representation data][ietf-representation] without any content-codings
     applied, except when the user agent intends to consumes the content with
     content-encodings applied (e.g., saving a gzip’d file to disk). In the
     latter case, let <var>result</var> be the result of applying
-    <var>algorithm</var> to the [representation][ietf-representation].
+    <var>algorithm</var> to the [representation data][ietf-representation].
 3.  Let <var>encodedResult</var> be result of base64url-encoding
     <var>result</var>.
 4.  Strip any trailing U+003D EQUALS SIGN (`=`) characters from
@@ -370,7 +370,7 @@ is a consistent ordering.
 5.  Return <var>encodedResult</var>.
 
 
-[ietf-representation]: http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-26#section-3.1.1.5
+[ietf-representation]: http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#representation.data
 [apply-algorithm]: #apply-algorithm-to-resource
 </section><!-- Algorithms::apply -->
 <section>
@@ -418,7 +418,7 @@ checking because it won't have loaded successfully.
 
 [fetch-mode]: http://fetch.spec.whatwg.org/#concept-request-mode
 [fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
-[cachable by a shared cache]: https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/latest/p6-cache.html#response.cacheability
+[cachable by a shared cache]: http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7234.html#response.cacheability
 </section><!-- Algorithms::eligible -->
 <section>
 #### Parse <var>metadata</var>.
