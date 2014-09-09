@@ -211,11 +211,15 @@ The term <dfn>origin</dfn> is defined in the Origin specification.
 The <dfn>MIME type</dfn> of a resource is a technical hint about the use
 and format of that resource. [[!MIMETYPE]]
 
-The <dfn>entity body</dfn>, <dfn>transfer encoding</dfn>, <dfn>content
-encoding</dfn> and <dfn>message body</dfn> of a resource is defined by the
-[HTTP 1.1 specification, section 7.2][entity]. [[!HTTP11]]
+The <dfn>message body</dfn> and the <dfn>transfer encoding</dfn> of a resource
+are defined by [RFC7230, section 3][messagebody]. [[!RFC7230]] 
 
-[entity]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html
+[messagebody]: http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#message.body
+
+The <dfn>representation data</dfn> and <dfn>content encoding</dfn> of a resource
+are defined by [RFC7231, section 3][representationdata]. [[!RFC7231]]
+
+[representationdata]: http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#representations
 
 A <dfn>base64url encoding</dfn> is defined in
 [RFC 4648, section 5][base64url]. In a nutshell, it replaces the characters
@@ -358,19 +362,17 @@ is a consistent ordering.
 1.  If <var>algorithm</var> is not a hash function recognized and supported
     by the user agent, return `null`.
 2.  Let <var>result</var> be the result of applying <var>algorithm</var> to
-    the [representation data][ietf-representation] without any content-codings
+    the [representation data][representationdata] without any content-codings
     applied, except when the user agent intends to consumes the content with
     content-encodings applied (e.g., saving a gzip’d file to disk). In the
     latter case, let <var>result</var> be the result of applying
-    <var>algorithm</var> to the [representation data][ietf-representation].
+    <var>algorithm</var> to the [representation data][representationdata].
 3.  Let <var>encodedResult</var> be result of base64url-encoding
     <var>result</var>.
 4.  Strip any trailing U+003D EQUALS SIGN (`=`) characters from
     <var>encodedResult</var>.
 5.  Return <var>encodedResult</var>.
 
-
-[ietf-representation]: http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#representation.data
 [apply-algorithm]: #apply-algorithm-to-resource
 </section><!-- Algorithms::apply -->
 <section>
@@ -408,7 +410,7 @@ The following algorithm details these restrictions:
 4.  If the [origin][fetch-origin] of <var>request</var> is
     <var>resource</var>'s origin, return `true`.
 5.  If <var>resource</var> is [cachable by a shared cache][], as defined
-    in [[!HTTP11]], return `true`.
+    in [[!RFC7234]], return `true`.
 6.  Return `false`.
 
 Step 2 returns `true` if the resource was a CORS-enabled request. If the
