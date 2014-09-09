@@ -214,12 +214,12 @@ and format of that resource. [[!MIMETYPE]]
 The <dfn>message body</dfn> and the <dfn>transfer encoding</dfn> of a resource
 are defined by [RFC7230, section 3][messagebody]. [[!RFC7230]] 
 
-[messagebody]: http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#message.body
+[messagebody]: http://tools.ietf.org/html/rfc7230#section-3
 
 The <dfn>representation data</dfn> and <dfn>content encoding</dfn> of a resource
 are defined by [RFC7231, section 3][representationdata]. [[!RFC7231]]
 
-[representationdata]: http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#representations
+[representationdata]: http://tools.ietf.org/html/rfc7231#section-3
 
 A <dfn>base64url encoding</dfn> is defined in
 [RFC 4648, section 5][base64url]. In a nutshell, it replaces the characters
@@ -420,7 +420,7 @@ checking because it won't have loaded successfully.
 
 [fetch-mode]: http://fetch.spec.whatwg.org/#concept-request-mode
 [fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
-[cachable by a shared cache]: http://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7234.html#response.cacheability
+[cachable by a shared cache]: http://tools.ietf.org/html/rfc7234#section-3
 </section><!-- Algorithms::eligible -->
 <section>
 #### Parse <var>metadata</var>.
