@@ -1253,7 +1253,7 @@ variants are more difficult to mitigate. Consider the following:
 
 1.  An attacker lures Alice to a page containing the following code:
 
-        <script src="http://evil.com/evil.js" digest="ni://sha-256;123...789">
+        <script src="http://evil.com/evil.js" integrity="ni://sha-256;123...789">
     {:.example.highlight}
 
 2.  Alice's user agent loads `evil.js`, and stores it in her cache.
@@ -1262,7 +1262,7 @@ variants are more difficult to mitigate. Consider the following:
     `bank.com`, the attacker may still be able to exploit an XSS vulnerability
     in `bank.com` which allows the injection of:
 
-        <script src="http://bank.com/awesome.js" digest="ni://sha-256;123...789">
+        <script src="http://bank.com/awesome.js" integrity="ni://sha-256;123...789">
     {:.example.highlight}
 
     Since the script appears to come from `bank.com`, CSP allows it, even though
