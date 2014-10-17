@@ -512,19 +512,26 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
   <h4 id="interfaces-credential-types-localcredential"><code>LocalCredential</code></h4>
   <pre class="idl">
-    [Constructor(DOMString id, DOMString password, DOMString name, DOMString avatarURL)]
+    [Constructor(DOMString id, DOMString password, optional DOMString name, optional DOMString avatarURL)]
     interface LocalCredential : Credential {
-      readonly attribute DOMString password;
+      readonly attribute FormData formData;
     };
   </pre>
   <dl dfn-for="LocalCredential">
-    <dt><dfn attribute>password</dfn></dt>
-    <dd>The credential's password.</dd>
+    <dt><dfn attribute>formData</dfn></dt>
+    <dd>An <a href="http://mikewest.github.io/credentialmanagement/writeonly/#opaque-formdata">opaque FormData object</a>,
+    containing two entries: one named <code>username</code>, the other named
+    <code>password</code>.</dd>
   </dl>
+
+  All {{LocalCredential}} objects have an internal slot named <code><dfn>[[password]]</dfn></code>
+  which stores the credential's password. This property is not directly exposed
+  to the web, but used to construct the {{formData}} property that is exposed to
+  the web.
 
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
-    [Constructor(DOMString id, DOMString federation, DOMString name, DOMString avatarURL)]
+    [Constructor(DOMString id, DOMString federation, optional DOMString name, optional DOMString avatarURL)]
     interface FederatedCredential : Credential {
       readonly attribute DOMString federation;
     };
@@ -851,9 +858,44 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
           <var>origin</var>.
         </li>
         <li>
-          If <var>credential</var> is not <code>null</code>, resolve
-          <var>promise</var> with <var>credential</var> and terminate this
-          algorithm.
+          If <var>credential</var> is not <code>null</code>:
+         
+          <ol>
+            <li>
+              Let <var>data</var> be a new
+              <code><a href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code>
+              object.
+            </li>
+            <li>
+              Let <var>username entry</var> be the result of
+              <a href="https://xhr.spec.whatwg.org/#create-an-entry">creating
+              an entry</a> named "username" with a value of
+              <var>credential</var>'s {{id}} attribute.
+            </li>
+            <li>
+              Let <var>password entry</var> be the result of
+              <a href="https://xhr.spec.whatwg.org/#create-an-entry">creating
+              an entry</a> named "password" with a value of
+              <var>credential</var>'s <code><a>[[password]]</a></code> slot.
+            </li>
+            <li>
+              Append <var>username entry</var> and <var>password entry</var>
+              to <var>data</var>.
+            </li>
+            <li>
+              Set <var>data</var>'s
+              <a href="http://mikewest.github.io/credentialmanagement/writeonly/#opaque-flag">opaque
+              flag</a> to <code>true</code>.
+            </li>
+            <li>
+              Set <var>credential</var>'s {{formData}} attribute to
+              <var>data</var>.
+            </li>
+            <li>
+              Resolve <var>promise</var> with <var>credential</var> and
+              terminate this algorithm.
+            </li>
+          </ol>
         </li>
       </ol>
     </li>
@@ -975,8 +1017,10 @@ Version History: https://github.com/mikewest/credentialmanagement/commits/master
 
               <ol>
                 <li>
-                  Set <var>storedCredential</var>'s {{password}} to the value
-                  of <var>credential</var>'s {{password}}.
+                  Set <var>storedCredential</var>'s
+                  <code><a>[[password]]</a></code> to the value of
+                  <var>credential</var>'s <code><a>[[password]]</a></code>
+                  slot.
                 </li>
                 <li>
                   Set <var>storedCredential</var>'s {{name}} to the value of
