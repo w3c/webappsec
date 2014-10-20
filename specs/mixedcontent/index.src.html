@@ -9,7 +9,7 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how user agents should handle rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container
+Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container / relevant settings object for a script / responsible browsing context
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
@@ -104,13 +104,13 @@ Indent: 2
       <ul>
         <li>
           The resource's <a>origin</a> is <a>insecure</a>, <strong>and</strong>
-          the <a>JavaScript global environment</a> into which it is loaded
-          <a>restricts mixed content</a>.
+          the <a>browsing context</a> responsible for loading it <a>restricts
+          mixed content</a>.
         </li>
         <li>
           The resource's <a>origin</a> is <a>private</a> <strong>and</strong>
-          the <a>origin</a> of the <a>JavaScript global environment</a> into
-          which it is loaded is <a>public</a>.
+          the <a>origin</a> of the <a>browsing context</a> responsible for
+          loading it is <a>public</a>.
         </li>
       </ul>
 
@@ -246,11 +246,11 @@ Indent: 2
     </dd>
 
     <dt>
-      <dfn export>unsecured environment</dfn>
+      <dfn export>unsecured context</dfn>
     </dt>
     <dd>
-      A <a>JavaScript global environment</a> is called
-      <strong>unsecured</strong> if it does not <a>restrict mixed content</a>.
+      A <a>browsing context</a> is called <strong>unsecured</strong> if it does
+      not <a>restrict mixed content</a>.
     </dd>
 
     <dt>
@@ -279,7 +279,7 @@ Indent: 2
       <dfn export>authenticated origin</dfn>
     </dt>
     <dt>
-      <dfn export>authenticated environment</dfn>
+      <dfn export>authenticated browsing context</dfn>
     </dt>
     <dd>
       An origin can be called <strong>authenticated</strong> when it either
@@ -287,12 +287,12 @@ Indent: 2
       <code>localhost</code>), or to a source which can be adequately verified
       as authentic.
 
-      A JavaScript global environment can be called
-      <strong>authenticated</strong> if its origin is
+      A <a>browsing context</a> can be called <strong>authenticated</strong>
+      if the origin of its <a>active document</a> is
       <strong>authenticated</strong>.
-      
+
       These are spelled out in more detail in the
-      [[#is-origin-authenticated]] and [[#is-environment-authenticated]]
+      [[#is-origin-authenticated]] and [[#is-browsing-context-authenticated]]
       algorithms.
     </dd>
   </dl>
@@ -365,21 +365,6 @@ Indent: 2
       These terms are defined in detail in
       <a href="http://fetch.spec.whatwg.org/#responses">Section 2.3</a> of the
       Fetch living standard. [[!FETCH]]
-    </dd>
-
-    <dt><dfn local-title="global environment">JavaScript global environment</dfn></dt>
-    <dd>
-      This term is defined in
-      <a href="http://www.w3.org/TR/html5/infrastructure.html#javascript-global-environment">Section
-      2.2.2 of the HTML5 specification</a>. [[!HTML5]]
-    </dd>
-
-    <dt><dfn>document environment</dfn></dt>
-    <dt><dfn>worker environment</dfn></dt>
-    <dd>
-      These terms are defined in
-      <a title="document environment" spec="HTML5">Section 6.1.3.1</a> of the
-      HTML5 specification. [[!!HTML5]]
     </dd>
   </dl>
 </section>
@@ -551,7 +536,7 @@ Indent: 2
     of the risk (for instance, presenting the user with a confirmation screen
     she must click through).
 
-    If a <a>global environment</a> <a>restricts mixed content</a>, then user
+    If a <a>browsing context</a> <a>restricts mixed content</a>, then user
     agents MUST adhere to the following requirements when <a>fetching</a>
     resources in response to its requests (including not only requests for a
     <a interface>Document</a>'s subresources, but also requests made from
@@ -568,7 +553,7 @@ Indent: 2
       <li>
         <a>Responses</a> to <a>requests</a> for <a>blockable</a> resources from
         an <a>insecure origin</a> MUST not be delivered to the requesting
-        <a>global environment</a>, but instead MUST return a synthetically
+        <a>browsing context</a>, but instead MUST return a synthetically
         generated <a>network error</a> response.
       </li>
 
@@ -592,9 +577,10 @@ Indent: 2
       </li>
     </ol>
 
-    If a <a>global environment</a>'s origin is a <a>public origin</a>, then user
-    agents MUST adhere to the following requirements when <a>fetching</a>
-    resources in response to the environment's requests:
+    If a <a>browsing context</a>'s <a>active document</a>'s origin is a
+    <a>public origin</a>, then user agents MUST adhere to the following
+    requirements when <a>fetching</a> resources in response to the
+    browsing context's requests:
 
     <ol>
       <li>
@@ -612,9 +598,10 @@ Indent: 2
   <section>
     <h3 id="requirements-script">Script APIs</h3>
 
-    If a <a>global environment</a> <a>restricts mixed content</a>, then user
-    agents MUST adhere to the following requirements when executing the
-    following APIs:
+    If the <a>relevant settings object for a script</a> <var>script</var> has a
+    <a>responsible browsing context</a> which <a>restricts mixed content</a>,
+    then user agents MUST adhere to the following requirements when executing
+    the following APIs in the context of <var>script</var>:
 
     <ol>
       <li>When processing XMLHttpRequest's
@@ -640,17 +627,17 @@ Indent: 2
   <section>
     <h3 id="requirements-forms">Form Submission</h3>
 
-    If a <a>global environment</a> <a>restricts mixed content</a>, then user
+    If a <a>browsing context</a> <a>restricts mixed content</a>, then user
     agents MAY <strong>optionally</strong> choose to warn users of the presence
     of one or more <a element>form</a> elements with <a element-attr>action</a>
     attributes whose values are <a>insecure URLs</a>.
 
     Note: Chrome, for example, currently gives the same UI treatment to a page
     with an insecure form action as it does for a page that displays an insecure
-    image.    
+    image.
 
     Further, user agents MAY <strong>optionally</strong> treat form submissions
-    in the <a>top-level browsing context</a> from a <a>global environment</a>
+    in the <a>top-level browsing context</a> from a <a>browsing context</a>
     which <a>restricts mixed content</a> as a request for <a>blockable
     content</a> to protect users from accidental data leakage.
   </section>
@@ -708,40 +695,35 @@ Indent: 2
   <h2 id="algorithms">Algorithms</h2>
 
   <section>
-    <h3 id="categorize-environment">
-      Does <var>environment</var> restrict mixed content?
+    <h3 id="categorize-browsing-context">
+      Does <var>browsing context</var> restrict mixed content?
     </h3>
 
-    Given a <a>JavaScript global environment</a> <var>environment</var>, the
-    user agent determines whether <var>environment</var>
+    Given a <a>browsing context</a> <var>context</var>, the user agent
+    determines whether <var>context</var>
     <dfn export local-title="restrict mixed content">restricts mixed content</dfn>
     via the following algorithm, which returns <strong>true</strong> if
-    <var>environment</var> restricts mixed content, and <strong>false</strong>
+    <var>context</var> restricts mixed content, and <strong>false</strong>
     otherwise.
 
     <ol>
       <li>
-        If <var>environment</var> is <a>TLS-protected</a>, and that
+        If <var>context</var> is <a>TLS-protected</a>, and that
         TLS-protection is neither <a>weak</a> nor <a>deprecated</a>, then return
         <strong>true</strong>.
       </li>
       <li>
-        If <var>environment</var> is a <a>nested browsing context</a>, then:
+        If <var>context</var> is a <a>nested browsing context</a>, then:
 
         <ol>
           <li>Let <var>ancestorList</var> be the list of all
-          <a>ancestors</a> of <var>environment</var>'s <a>browsing
-          context</a>.</li>
+          <a>ancestors</a> of <var>context</var>.</li>
 
           <li>
             For each <var>ancestorContext</var> in <var>ancestorList</var>:
 
             <ol>
-              <li>Let <var>ancestorEnvironment</var> be the <a>JavaScript
-              global environment</a> associated with
-              <var>ancestorContext</var></li>
-
-              <li>If <var>ancestorEnvironment</var> is <a>TLS-protected</a>, and
+              <li>If <var>ancestorContext</var> is <a>TLS-protected</a>, and
               that TLS-protection is neither <a>weak</a> nor <a>deprecated</a>,
               then return <strong>true</strong>.</li>
             </ol>
@@ -810,11 +792,8 @@ Indent: 2
         type</code>.
       </li>
       <li>
-        Let <var>client</var> be <var>request</var>'s <code>client</code>.
-      </li>
-      <li>
-        Let <var>environment</var> be the <a>JavaScript global environment</a>
-        with which <var>client</var> is associated.
+        Let <var>browsing context</var> be <var>request</var>'s
+        <code>client</code>'s <a>responsible browsing context</a>.
       </li>
       <li>
         Let <var>origin</var> be the <a>origin</a> of <var>request</var>'s
@@ -822,12 +801,12 @@ Indent: 2
       </li>
       <li>
         If <var>origin</var> is a <a>private origin</a>, and
-        <var>environment</var>'s <a>origin</a> is a <a>public origin</a>,
-        return <strong>blocked</strong>.
+        <var>request</var>'s <code>client</code>'s <a>origin</a> is a
+        <a>public origin</a>, return <strong>blocked</strong>.
       </li>
       <li>
-        If <var>environment</var> does not <a>restrict mixed content</a>, return
-        <strong>allowed</strong>.
+        If <var>browsing context</var> does not <a>restrict mixed content</a>,
+        return <strong>allowed</strong>.
       </li>
       <li>
         If <var>request</var>'s <code>context frame type</code> is
@@ -877,15 +856,12 @@ Indent: 2
 
     <ol>
       <li>
-        Let <var>client</var> be <var>request</var>'s <code>client</code>.
+        Let <var>browsing context</var> be the <var>client</var>'s
+        <a>responsible browsing context</a>.
       </li>
       <li>
-        Let <var>environment</var> be the <a>JavaScript global environment</a>
-        with which <var>client</var> is associated.
-      </li>
-      <li>
-        If <var>environment</var> does not <a>restrict mixed content</a>, return
-        <strong>allowed</strong>.
+        If <var>browsing context</var> does not <a>restrict mixed content</a>,
+        return <strong>allowed</strong>.
       </li>
       <li>
         Let <var>context</var> be the <a>request context</a> of
@@ -987,44 +963,34 @@ Indent: 2
   </section>
 
   <section>
-    <h3 id="is-environment-authenticated">
-      Is <var>environment</var> an <strong>authenticated environment</strong>?
+    <h3 id="is-browsing-context-authenticated">
+      Is <var>browsing context</var> an <strong>authenticated browsing
+      context</strong>?
     </h3>
 
-    Given a <a>JavaScript global environment</a> <var>environment</var>, this
-    algorithm returns <code>authenticated</code> if the environment is an
-    <a>authenticated environment</a>, and <code>unauthenticated</code>
+    Given a <a>browsing context</a> <var>browsing context</var>, this
+    algorithm returns <code>authenticated</code> if the browsing context is an
+    <a>authenticated browsing context</a>, and <code>unauthenticated</code>
     otherwise.
 
     <ol>
       <li>
-        Let <var>origin</var> be the <a>origin</a> specified by
-        <var>environment</var>'s <a>entry settings object</a>.
+        Let <var>document</var> be the {{Document}} object of the
+        <a>active document</a> of <var>browsing context</var>.
       </li>
       <li>
-        If <var>environment</var> is a <a>document environment</a>:
+        While <var>document</var> corresponds to <a>an iframe srcdoc Document</a>,
+        let <var>document</var> be that Document's <a>browsing context</a>'s
+        <a>browsing context container</a>'s {{Document}}.
+      </li>
+      <li>
+        If <var>document</var>'s active <a>sandboxing flag set</a> has its
+        <a>sandboxed origin browsing context flag</a> set:
 
         <ol>
           <li>
-            Let <var>document</var> be the {{Document}} object of the
-            <a>active document</a> of the <a>browsing context</a> of
-            <var>environment</var>'s <a>global object</a>.
-          </li>
-          <li>
-            While <var>document</var> corresponds to <a>an iframe srcdoc Document</a>,
-            let <var>document</var> be that Document's <a>browsing context</a>'s
-            <a>browsing context container</a>'s {{Document}}.
-          </li>
-          <li>
-            If <var>document</var>'s active <a>sandboxing flag set</a> has its
-            <a>sandboxed origin browsing context flag</a> set:
-
-            <ol>
-              <li>
-                Set <var>origin</var> to the <a>origin</a> of
-                <var>document</var>'s address.
-              </li>
-            </ol>
+            Set <var>origin</var> to the <a>origin</a> of
+            <var>document</var>'s address.
           </li>
         </ol>
       </li>
@@ -1039,7 +1005,7 @@ Indent: 2
   location of a sandboxed document to determine whether it should be considered
   authenticated. That is, the document inside
   <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
-  would be considered to have an authenticated environment.
+  would be considered to have an <a>authenticated browsing context</a>.
 </section>
 
 <!--
@@ -1102,17 +1068,18 @@ Indent: 2
 
       <ol>
         <li>
-          If <var>secure</var> is <strong>false</strong>, but the <a>JavaScript
-          global environment</a> which the <var>entry script</var> is associated
-          with <a>restricts mixed content</a>, then throw a
-          <code>SecurityError</code> exception.
+          If <var>secure</var> is <strong>false</strong>, but <var>entry
+          script</var>'s
+          <a title="relevant settings object for a script">relevant settings
+          object</a>'s <a>responsible browsing context</a> <a>restricts mixed
+          content</a>, then throw a <code>SecurityError</code> exception.
         </li>
         <li>
-          If the <a>origin</a> of the <a>JavaScript global environment</a> with
-          which the <var>entry script</var> is associated is a <a>public
-          origin</a>, and the <a>origin</a> of the <var>url</var> argument is a
-          <a>private origin</a>, then throw a <code>SecurityError</code>
-          exception.
+          If <var>entry script</var>'s
+          <a title="relevant settings object for a script">relevant settings
+          object</a>'s <code>origin</code> is a <a>public origin</a>, and the
+          <a>origin</a> of the <var>url</var> argument is a <a>private
+          origin</a>, then throw a <code>SecurityError</code> exception.
         </li>
       </ol>
     </li>
@@ -1149,7 +1116,7 @@ Indent: 2
 -->
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>
-  
+
   In addition to the wonderful feedback gathered from the WebAppSec WG, the
   Chrome security team was invaluable in preparing this specification. In
   particular, Chris Palmer, Chris Evans, Ryan Sleevi, Michal Zalewski, Ken
