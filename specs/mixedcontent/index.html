@@ -53,14 +53,14 @@
 </p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20141023>23 October 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20141027>27 October 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl>
 	<dt>This version:
 	<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a>
 	<dt>Latest version:
 	<dd><a href=http://www.w3c.org/TR/mixed-content/>http://www.w3c.org/TR/mixed-content/</a>
 	<dt>Previous Versions:
-	<dd><dd><a href=http://www.w3.org/TR/2014/WD-mixed-content-20140722/ rel=previous>http://www.w3.org/TR/2014/WD-mixed-content-20140722/</a>
+	<dd><a href=http://www.w3.org/TR/2014/WD-mixed-content-20140722/ rel=previous>http://www.w3.org/TR/2014/WD-mixed-content-20140722/</a>
 	<dt>Version History:
 	<dd><a href=https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html>https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html</a>
 	<dt>Feedback:
@@ -68,7 +68,7 @@
             with subject line
             “<kbd>[MIX] <var>… message topic …</var></kbd>”(<a href=http://lists.w3.org/Archives/Public/public-webappsec/ rel=discussion>archives</a>)
 	<dt>Editor:
-	<dd><dd class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)
+	<dd><div class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)</div>
 </dl>
 </div>
   <div data-fill-with=warning></div>
@@ -127,6 +127,9 @@
 	that page also includes instructions for disclosing a patent.
 	An individual who has actual knowledge of a patent which the individual believes contains <a href=http://www.w3.org/Consortium/Patent-Policy-20040205/#def-essential>Essential Claim(s)</a>
 	must disclose the information in accordance with <a href=http://www.w3.org/Consortium/Patent-Policy-20040205/#sec-Disclosure>section 6 of the W3C Patent Policy</a>.
+
+<p id=w3c_process_revision>
+  This document is governed by the <a href=http://www.w3.org/2014/Process-20140801/>1 August 2014 W3C Process Document</a>.
 </div>
 <div data-fill-with=at-risk></div>
 
@@ -213,16 +216,9 @@
   resource whose status is mixed, as insecure requests are wide open for
   man-in-the-middle attacks. This scenario is unfortunately quite common.</p>
 
-<p>Regardless of <code>example.com</code>’s own privacy, users' privacy and
-  security can be further impacted if a public resource can generate requests
-  to private resources on a local network. For example, public resources must
-  not be allowed to generate requests to a user’s router, or an enterprise’s
-  internal file server.</p>
-
 <p>This specification details how user agents can mitigate these risks to
   security and privacy by limiting a resource’s ability to inadvertently
-  communicate in the clear, or to expose non-public resources to the web at
-  large.</p>
+  communicate in the clear.</p>
 
 <p class=note>Note: Nothing described in this document is really new; everything covered
   here has appeared in one or more user agents over the years: Internet Explorer
@@ -239,21 +235,9 @@
       <dfn data-dfn-type=dfn data-export="" data-local-title=mixed id=mixed-content>mixed content<a class=self-link href=#mixed-content></a></dfn>
     </dt>
     <dd>
-      A resource is said to be <strong>mixed content</strong> if either of the
-      following conditions holds:
-
-      <ul>
-        <li>
-          The resource’s <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#insecure-origin title=insecure>insecure</a>, <strong>and</strong>
-          the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> responsible for loading it <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts
-          mixed content</a>.
-        </li>
-        <li>
-          The resource’s <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#private-origin title=private>private</a> <strong>and</strong>
-          the <a data-link-type=dfn href=#origin title=origin>origin</a> of the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> responsible for
-          loading it is <a data-link-type=dfn href=#public-origin title=public>public</a>.
-        </li>
-      </ul>
+      A resource is said to be <strong>mixed content</strong> if the resource’s
+      <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#insecure-origin title=insecure>insecure</a>, <strong>and</strong> the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing
+      context</a> responsible for loading it <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts mixed content</a>.
 
       <div class=example>
         The image <code>http://example.com/image.png</code> is <strong>mixed
@@ -263,56 +247,6 @@
 <p>The image <code>http://127.0.0.1/image.png</code> is <strong>mixed
         content</strong> when loaded by <code>http://example.com/</code>.</p>
       </div>
-    </dd>
-
-    <dt>
-      <dfn data-dfn-type=dfn data-export="" data-local-title=private id=private-origin>private origin<a class=self-link href=#private-origin></a></dfn>
-    </dt>
-    <dt>
-      <dfn data-dfn-type=dfn data-export="" id=private-url>private URL<a class=self-link href=#private-url></a></dfn>
-    </dt>
-    <dd>
-      An <a data-link-type=dfn href=#origin title=origin>origin</a> is considered a <strong>private origin</strong> if any
-      of the following conditions holds:
-
-      <ul>
-        <li>
-          The origin’s <code>scheme</code> component is <code>file</code>.
-        </li>
-        <li>
-          The origin’s <code>host</code> component is <code>localhost</code>
-          or a subdomain of the <code>.local</code> TLD <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6761 title=biblio-RFC6761>[RFC6761]</a>, or
-          matches one of the CIDR notations <code>127.0.0.0/8</code> or
-          <code>::1/128</code> <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6890 title=biblio-RFC6890>[RFC6890]</a>
-        </li>
-        <li>
-          The origin’s <code>host</code> component matches one of the
-          <dfn data-dfn-type=dfn data-noexport="" id=private-address-space>private address space<a class=self-link href=#private-address-space></a></dfn> patterns defined in
-          <a href=http://tools.ietf.org/html/rfc1918#section-3>Section 3 of
-          RFC1918</a> (<code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>,
-          <code>192.168.0.0/16</code>) <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc1918 title=biblio-RFC1918>[RFC1918]</a>.
-        </li>
-        <li>
-          The origin’s <code>host</code> component is an <dfn data-dfn-type=dfn data-noexport="" id=internal-name>Internal
-          Name<a class=self-link href=#internal-name></a></dfn>, as defined by the CA/Browser Forum’s Baseline
-          Requirements <a data-biblio-type=normative data-link-type=biblio href=#biblio-cab title=biblio-CAB>[CAB]</a>.
-        </li>
-      </ul>
-
-<p>A URL whose <a data-link-type=dfn href=#origin title=origin>origin</a> is private is itself considered to be private.</p>
-    </dd>
-
-    <dt>
-      <dfn data-dfn-type=dfn data-export="" data-local-title=public id=public-origin>public origin<a class=self-link href=#public-origin></a></dfn>
-    </dt>
-    <dt>
-      <dfn data-dfn-type=dfn data-export="" id=public-url>public URL<a class=self-link href=#public-url></a></dfn>
-    </dt>
-    <dd>
-      Any <a data-link-type=dfn href=#origin title=origin>origin</a> which is not <a data-link-type=dfn href=#private-origin title=private>private</a> is said to be a
-      <strong>public origin</strong>.
-
-<p>A URL whose <a data-link-type=dfn href=#origin title=origin>origin</a> is public is itself considered to be public.</p>
     </dd>
 
     <dt>
@@ -335,7 +269,7 @@
           <code>WSS</code>, or <code>about</code>.
         </li>
         <li>
-          The origin is a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a> <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6454 title=biblio-RFC6454>[RFC6454]</a> (for
+          The origin is a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a> <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6454 title=RFC6454>[RFC6454]</a> (for
           example, a <code>blob</code> URL).
         </li>
       </ul>
@@ -345,7 +279,7 @@
 
 <p class=note>Note: The mixed content checks take place <em>after</em> Strict
       Transport Security is applied to resource URLs, which simplifies
-      determination of insecurity. <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6797 title=biblio-RFC6797>[RFC6797]</a></p>
+      determination of insecurity. <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6797 title=RFC6797>[RFC6797]</a></p>
     </dd>
 
     <dt>
@@ -406,12 +340,12 @@
       refuse it anyway. This determination is vendor-specific.
 
 <p>For example, a user agent may choose to reject resources for which the
-      server presented a publicly-trusted certificate for an <a data-link-type=dfn href=#internal-name title="Internal Name">Internal
-      Name</a> (e.g. <code>https://intranet/</code>), a certificate with an
+      server presented a publicly-trusted certificate for an "Internal
+      Name" (e.g. <code>https://intranet/</code>), a certificate with an
       overly-long validity period, a certificate signed with SHA-1, or a
       certificate which otherwise fails to meet the
       <a href=https://cabforum.org/baseline-requirements-documents/>
-      CA/Browser Forum’s Baseline Requirements</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-cab title=biblio-CAB>[CAB]</a></p>
+      CA/Browser Forum’s Baseline Requirements</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-cab title=CAB>[CAB]</a></p>
 
 <p class=note>Note: We recommend that user agents return network errors rather than
       fetching resources whose TLS-protection is deprecated.</p>
@@ -425,9 +359,9 @@
     </dt>
     <dd>
       An origin can be called <strong>authenticated</strong> when it either
-      refers to a source which is impossible not to trust (e.g.
-      <code>localhost</code>), or to a source which can be adequately verified
-      as authentic.
+      refers to a source which the user agent is obligated to take as a basic
+      part of the platform on which it operates (e.g. <code>localhost</code>),
+      or to a source which can be adequately verified as authentic.
 
 <p>A <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> can be called <strong>authenticated</strong>
       if the origin of its <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#active-document title="active document">active document</a> is
@@ -451,7 +385,7 @@
     <dd>
       These terms are defined in
       <a href=http://www.w3.org/TR/2010/REC-wsc-ui-20100812/#typesoftls>§5.2
-      of "Web Security Context: User Interface Guidelines"</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-wsc-ui title=biblio-WSC-UI>[WSC-UI]</a>.
+      of "Web Security Context: User Interface Guidelines"</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-wsc-ui title=WSC-UI>[WSC-UI]</a>.
       A resource is <strong>TLS-protected</strong> when it is delivered over an
       encrypted channel. <strong>Weakly TLS-protected</strong> refers to a
       subset of those resources delivered over a channel that doesn’t offer
@@ -473,27 +407,27 @@
     <dd>
       An origin defines the scope of authority or privilege under which a
       resource operates. It is defined in detail in the Origin specification.
-      <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=biblio-RFC6454>[RFC6454]</a>
+      <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=RFC6454>[RFC6454]</a>
     </dd>
 
     <dt><dfn data-dfn-type=dfn data-noexport="" id=globally-unique-identifier>globally unique identifier<a class=self-link href=#globally-unique-identifier></a></dfn></dt>
     <dd>
       This term is defined in
       <a href=http://tools.ietf.org/html/rfc6454#section-4>Section 4 of
-      RFC6454</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=biblio-RFC6454>[RFC6454]</a>
+      RFC6454</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=RFC6454>[RFC6454]</a>
 
 <p class=note>Note: URLs that do not use
       <a href=http://tools.ietf.org/html/rfc3986#section-3.2>hierarchical
       elements</a> as naming authorities (for example: <code>blob:</code>, and
       <code>data:</code>) have origins which are globally unique identifiers.
-      <a data-biblio-type=informative data-link-type=biblio href=#biblio-uri title=biblio-URI>[URI]</a></p>
+      <a data-biblio-type=informative data-link-type=biblio href=#biblio-uri title=URI>[URI]</a></p>
     </dd>
 
     <dt><dfn data-dfn-type=dfn data-noexport="" id=fetch>fetch<a class=self-link href=#fetch></a></dfn></dt>
     <dd>
       "fetching" is the process by which a user agent requests resources, and
       delivers responses. It is defined in detail in the Fetch living standard.
-      <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=biblio-FETCH>[FETCH]</a>
+      <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a>
     </dd>
 
     <dt><dfn data-dfn-type=dfn data-noexport="" id=request>request<a class=self-link href=#request></a></dfn></dt>
@@ -503,7 +437,7 @@
     <dd>
       These terms are defined in
       <a href=http://fetch.spec.whatwg.org/#requests>Section 2.2</a> of the
-      Fetch living standard. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=biblio-FETCH>[FETCH]</a>
+      Fetch living standard. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a>
     </dd>
 
     <dt><dfn data-dfn-type=dfn data-noexport="" id=response>response<a class=self-link href=#response></a></dfn></dt>
@@ -511,7 +445,7 @@
     <dd>
       These terms are defined in detail in
       <a href=http://fetch.spec.whatwg.org/#responses>Section 2.3</a> of the
-      Fetch living standard. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=biblio-FETCH>[FETCH]</a>
+      Fetch living standard. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a>
     </dd>
   </dl>
 </section>
@@ -524,7 +458,7 @@
   content</a> without exception. Unfortunately, that is impractical on today’s
   internet. For instance, a survey in 2013 notes that blocking mixed content
   would break around ~43% of secure websites in one way or another
-  <a data-biblio-type=informative data-link-type=biblio href=#biblio-dangerous-mix title=biblio-DANGEROUS-MIX>[DANGEROUS-MIX]</a>. Draconian blocking policies applied to some types of mixed
+  <a data-biblio-type=informative data-link-type=biblio href=#biblio-dangerous-mix title=DANGEROUS-MIX>[DANGEROUS-MIX]</a>. Draconian blocking policies applied to some types of mixed
   content are (for the moment) infeasible. User agents need to be more nuanced
   in their restrictions.</p>
 
@@ -560,7 +494,7 @@
       </li>
       <li>
         <a href=http://www.w3.org/TR/html5/links.html#link-type-prefetch>Prefetched</a>
-        content <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=biblio-HTML5>[HTML5]</a>
+        content <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=HTML5>[HTML5]</a>
       </li>
     </ul>
 
@@ -597,34 +531,34 @@
     <ul>
       <li>
         Scripts (loaded, for example, via <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/scripting-1.html#script title=script>script</a> elements, as
-        well as scripts loaded as Workers and SharedWorkers <a data-biblio-type=informative data-link-type=biblio href=#biblio-workers title=biblio-WORKERS>[WORKERS]</a>, or
-        ServiceWorkers <a data-biblio-type=informative data-link-type=biblio href=#biblio-serviceworkers title=biblio-SERVICEWORKERS>[SERVICEWORKERS]</a>) <a data-biblio-type=informative data-link-type=biblio href=#biblio-ecma-262 title=biblio-ECMA-262>[ECMA-262]</a>
+        well as scripts loaded as Workers and SharedWorkers <a data-biblio-type=informative data-link-type=biblio href=#biblio-workers title=WORKERS>[WORKERS]</a>, or
+        ServiceWorkers <a data-biblio-type=informative data-link-type=biblio href=#biblio-serviceworkers title=SERVICEWORKERS>[SERVICEWORKERS]</a>) <a data-biblio-type=informative data-link-type=biblio href=#biblio-ecma-262 title=ECMA-262>[ECMA-262]</a>
       </li>
-      <li>Stylesheets <a data-biblio-type=informative data-link-type=biblio href=#biblio-css21 title=biblio-CSS21>[CSS21]</a></li>
+      <li>Stylesheets <a data-biblio-type=informative data-link-type=biblio href=#biblio-css21 title=CSS21>[CSS21]</a></li>
       <li>
         <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#plugin title=Plugin>Plugin</a> data (loaded, for example, through
         <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/obsolete.html#the-applet-element title=applet>applet</a>, <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-embed-element title=embed>embed</a>, or <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-object-element title=object>object</a>
         elements; or through a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#plugin-document title="plugin document">plugin document</a> loaded into an
-        <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-iframe-element title=iframe>iframe</a> or <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/obsolete.html#frame title=frame>frame</a> element) <a data-biblio-type=informative data-link-type=biblio href=#biblio-html5 title=biblio-HTML5>[HTML5]</a>
+        <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-iframe-element title=iframe>iframe</a> or <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/obsolete.html#frame title=frame>frame</a> element) <a data-biblio-type=informative data-link-type=biblio href=#biblio-html5 title=HTML5>[HTML5]</a>
       </li>
-      <li>SVG Documents <a data-biblio-type=informative data-link-type=biblio href=#biblio-svg2 title=biblio-SVG2>[SVG2]</a></li>
-      <li>XSL Transformations <a data-biblio-type=informative data-link-type=biblio href=#biblio-xslt title=biblio-XSLT>[XSLT]</a></li>
-      <li>HTML Imports <a data-biblio-type=informative data-link-type=biblio href=#biblio-html-imports title=biblio-HTML-IMPORTS>[HTML-IMPORTS]</a></li>
-      <li>HTML Manifests <a data-biblio-type=informative data-link-type=biblio href=#biblio-manifest title=biblio-MANIFEST>[MANIFEST]</a></li>
+      <li>SVG Documents <a data-biblio-type=informative data-link-type=biblio href=#biblio-svg2 title=SVG2>[SVG2]</a></li>
+      <li>XSL Transformations <a data-biblio-type=informative data-link-type=biblio href=#biblio-xslt title=XSLT>[XSLT]</a></li>
+      <li>HTML Imports <a data-biblio-type=informative data-link-type=biblio href=#biblio-html-imports title=HTML-IMPORTS>[HTML-IMPORTS]</a></li>
+      <li>HTML Manifests <a data-biblio-type=informative data-link-type=biblio href=#biblio-manifest title=MANIFEST>[MANIFEST]</a></li>
       <li>Documents rendered in <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-iframe-element title=iframe>iframe</a> elements</li>
-      <li>Beacon <a data-biblio-type=informative data-link-type=biblio href=#biblio-beacon title=biblio-BEACON>[BEACON]</a></li>
-      <li>Custom Filters <a data-biblio-type=informative data-link-type=biblio href=#biblio-filter-effects title=biblio-FILTER-EFFECTS>[FILTER-EFFECTS]</a></li>
+      <li>Beacon <a data-biblio-type=informative data-link-type=biblio href=#biblio-beacon title=BEACON>[BEACON]</a></li>
+      <li>Custom Filters <a data-biblio-type=informative data-link-type=biblio href=#biblio-filter-effects title=FILTER-EFFECTS>[FILTER-EFFECTS]</a></li>
       <li>
-        Data (loaded, for example, via XMLHttpRequest <a data-biblio-type=informative data-link-type=biblio href=#biblio-xmlhttprequest title=biblio-XMLHTTPREQUEST>[XMLHTTPREQUEST]</a>,
-        EventSource <a data-biblio-type=informative data-link-type=biblio href=#biblio-eventsource title=biblio-EVENTSOURCE>[EVENTSOURCE]</a>, or WebSockets <a data-biblio-type=informative data-link-type=biblio href=#biblio-websockets title=biblio-WEBSOCKETS>[WEBSOCKETS]</a>)
+        Data (loaded, for example, via XMLHttpRequest <a data-biblio-type=informative data-link-type=biblio href=#biblio-xmlhttprequest title=XMLHTTPREQUEST>[XMLHTTPREQUEST]</a>,
+        EventSource <a data-biblio-type=informative data-link-type=biblio href=#biblio-eventsource title=EVENTSOURCE>[EVENTSOURCE]</a>, or WebSockets <a data-biblio-type=informative data-link-type=biblio href=#biblio-websockets title=WEBSOCKETS>[WEBSOCKETS]</a>)
       </li>
       <li>
-        <a href=http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#hyperlink-auditing>hyperlink auditing pings</a> <a data-biblio-type=informative data-link-type=biblio href=#biblio-html title=biblio-HTML>[HTML]</a>
+        <a href=http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#hyperlink-auditing>hyperlink auditing pings</a> <a data-biblio-type=informative data-link-type=biblio href=#biblio-html title=HTML>[HTML]</a>
       </li>
       <li>
         Subtitles and captions loaded via <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#the-track-element title=track>track</a> elements
       </li>
-      <li>Web Fonts <a data-biblio-type=informative data-link-type=biblio href=#biblio-css3-webfonts title=biblio-CSS3-WEBFONTS>[CSS3-WEBFONTS]</a></li>
+      <li>Web Fonts <a data-biblio-type=informative data-link-type=biblio href=#biblio-css3-webfonts title=CSS3-WEBFONTS>[CSS3-WEBFONTS]</a></li>
       <li>Images loaded via <code>&lt;picture&gt;</code></li>
       <li>
         Resources which are not rendered directly in the browser, but
@@ -708,7 +642,7 @@
 
 <p class=note>Note: For instance, a user agent could interpret the presence of a
         <code>Strict-Transport-Security</code> header field as forcing all
-        content into the <a data-link-type=dfn href=#blockable-content title=blockable>blockable</a> category. <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6797 title=biblio-RFC6797>[RFC6797]</a></p>
+        content into the <a data-link-type=dfn href=#blockable-content title=blockable>blockable</a> category. <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6797 title=RFC6797>[RFC6797]</a></p>
       </li>
 
       <li>
@@ -717,20 +651,6 @@
         For example, cookies and other authentication tokens could be stripped
         from the requests, or the user agent could automatically change the
         protocol of the requested URL to <code>HTTPS</code> in certain cases.
-      </li>
-    </ol>
-
-<p>If a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a>’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#active-document title="active document">active document</a>’s origin is a
-    <a data-link-type=dfn href=#public-origin title="public origin">public origin</a>, then user agents MUST adhere to the following
-    requirements when <a data-link-type=dfn href=#fetch title=fetching>fetching</a> resources in response to the
-    browsing context’s requests:</p>
-
-    <ol>
-      <li>
-        <a data-link-type=dfn href=#request title=Requests>Requests</a> to <a data-link-type=dfn href=#private-origin title="private origins">private origins</a> from <a data-link-type=dfn href=#public-origin title="public origins">public origins</a>
-        MUST not generate network traffic (including traffic on loopback
-        interfaces), and MUST instead return a synthetically generated
-        <a data-link-type=dfn href=#network-error title="network error">network error</a> response.
       </li>
     </ol>
 
@@ -751,19 +671,19 @@
       <a href=http://www.w3.org/TR/XMLHttpRequest2/#the-open-method><code>open()</code>
       method</a>, throw a <code>SecurityError</code> exception and terminate the
       method’s execution if the <var>request URL</var> provided points to an
-      <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em> insecure origin</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-xmlhttprequest title=biblio-XMLHTTPREQUEST>[XMLHTTPREQUEST]</a></li>
+      <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em> insecure origin</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-xmlhttprequest title=XMLHTTPREQUEST>[XMLHTTPREQUEST]</a></li>
 
       <li>When processing EventSource’s
       <a href=http://www.w3.org/TR/eventsource/#the-eventsource-interface>constructor</a>,
       throw a <code>SecurityError</code> exception and terminate the constructor’s
       execution if the <var>url</var> provided points to an <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em>
-      insecure origin</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-eventsource title=biblio-EVENTSOURCE>[EVENTSOURCE]</a></li>
+      insecure origin</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-eventsource title=EVENTSOURCE>[EVENTSOURCE]</a></li>
 
       <li>When processing WebSocket’s
       <a href=http://www.w3.org/TR/websockets/#the-websocket-interface>constructor</a>,
       throw a <code>SecurityError</code> exception and terminate the constructor’s
       execution if the <var>url</var> provided points to an <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em>
-      insecure origin</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-websockets title=biblio-WEBSOCKETS>[WEBSOCKETS]</a></li>
+      insecure origin</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-websockets title=WEBSOCKETS>[WEBSOCKETS]</a></li>
     </ol>
   </section>
 
@@ -799,7 +719,7 @@
 
 <p>This requirement explicitly includes any visible indication of the
     <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a>’s
-    <a href=https://cabforum.org/about-ev-ssl/>EV status</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-cab title=biblio-CAB>[CAB]</a></p>
+    <a href=https://cabforum.org/about-ev-ssl/>EV status</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-cab title=CAB>[CAB]</a></p>
   </section>
 
   <section>
@@ -820,7 +740,7 @@
     such a back door. That said, allowing mixed script is in particular a very
     dangerous option, and user agents
     <a href=http://tools.ietf.org/html/rfc6919#section-3>REALLY SHOULD NOT</a>
-    <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6919 title=biblio-RFC6919>[RFC6919]</a> present such a choice to users without careful consideration and
+    <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6919 title=RFC6919>[RFC6919]</a> present such a choice to users without careful consideration and
     communication of the risk involved.</p>
   </section>
 
@@ -935,11 +855,6 @@
         <strong>URL</strong>.
       </li>
       <li>
-        If <var>origin</var> is a <a data-link-type=dfn href=#private-origin title="private origin">private origin</a>, and
-        <var>request</var>’s <code>client</code>’s <a data-link-type=dfn href=#origin title=origin>origin</a> is a
-        <a data-link-type=dfn href=#public-origin title="public origin">public origin</a>, return <strong>blocked</strong>.
-      </li>
-      <li>
         If <var>browsing context</var> does not <a data-link-type=dfn href=#restricts-mixed-content title="restrict mixed content">restrict mixed content</a>,
         return <strong>allowed</strong>.
       </li>
@@ -1027,7 +942,7 @@
 <p class=note>Note: If a user agent is configured to reject <a data-link-type=dfn href=#weakly-tls-protected title="weakly TLS-protected">weakly
             TLS-protected</a> resources, we’ll never hit this condition, as
             <a href=http://fetch.spec.whatwg.org/#fetching>step 6 of the Fetch
-            algorithm</a> would have returned a network error. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=biblio-FETCH>[FETCH]</a></p>
+            algorithm</a> would have returned a network error. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a></p>
           </li>
           <li>
             If the response’s TLS-protection is <a data-link-type=dfn href=#deprecated-tls-protection title=deprecated>deprecated</a>, return
@@ -1067,7 +982,7 @@
       <li>
         If <var>origin</var>’s <code>host</code> component matches one of the
         CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
-        <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=biblio-RFC4632>[RFC4632]</a>, return <strong><code>authenticated</code></strong>.
+        <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=RFC4632>[RFC4632]</a>, return <strong><code>authenticated</code></strong>.
       </li>
       <li>
         If <var>origin</var>’s <code>scheme</code> component is
@@ -1151,16 +1066,15 @@
 
 <p>When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origins"><em>a priori</em> insecure origins</a> and <a data-link-type=dfn href=#private-origin title="private origins">private
-  origins</a>, and at the bottom of the algorithm, to block responses from
-  <a data-link-type=dfn href=#insecure-origin title="insecure origins">insecure origins</a>.</p>
+  traffic to <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origins"><em>a priori</em> insecure origins</a>, and at the bottom of
+  the algorithm, to block responses from <a data-link-type=dfn href=#insecure-origin title="insecure origins">insecure origins</a>.</p>
 
 <p>Fetch calls the algorithm defined in
   <a data-section="" href=#should-block-fetch>§5.2 
       Should fetching <var>request</var> be blocked as mixed content?
     </a> during
   <a href=http://fetch.spec.whatwg.org/#fetching>Step 4 of the Fetching
-  algorithm</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=biblio-FETCH>[FETCH]</a></p>
+  algorithm</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a></p>
 
 <p class=note>Note: Hooking into Fetch here ensures that we catch not only the initial
   request, but all redirects as well. That is certainly the intent.</p>
@@ -1171,7 +1085,7 @@
       content?
     </a> during
   <a href=http://fetch.spec.whatwg.org/#fetching>Step 7 of the Fetching
-  algorithm</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=biblio-FETCH>[FETCH]</a></p>
+  algorithm</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a></p>
 
 <p class=note>Note: This hook is necessary to detect resources modified or
   synthesized by a ServiceWorker, as well as to determine whether a
@@ -1189,7 +1103,7 @@
   <h2 class="heading settled" data-level=7 id=websockets-integration><span class=secno>7 </span><span class=content>Modifications to WebSockets</span><a class=self-link href=#websockets-integration></a></h2>
 
 <p>The <a href=http://www.w3.org/TR/2012/CR-websockets-20120920/#the-websocket-interface><code>WebSocket()</code>
-  constructor algorithm</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-websockets title=biblio-WEBSOCKETS>[WEBSOCKETS]</a> is modified as follows:</p>
+  constructor algorithm</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-websockets title=WEBSOCKETS>[WEBSOCKETS]</a> is modified as follows:</p>
 
   <ul>
     <li>
@@ -1203,19 +1117,12 @@
           object</a>’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#responsible-browsing-context title="responsible browsing context">responsible browsing context</a> <a data-link-type=dfn href=#restricts-mixed-content title="restricts mixed content">restricts mixed
           content</a>, then throw a <code>SecurityError</code> exception.
         </li>
-        <li>
-          If <var>entry script</var>’s
-          <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#relevant-settings-object-for-a-script title="relevant settings object for a script">relevant settings
-          object</a>’s <code>origin</code> is a <a data-link-type=dfn href=#public-origin title="public origin">public origin</a>, and the
-          <a data-link-type=dfn href=#origin title=origin>origin</a> of the <var>url</var> argument is a <a data-link-type=dfn href=#private-origin title="private origin">private
-          origin</a>, then throw a <code>SecurityError</code> exception.
-        </li>
       </ol>
     </li>
   </ul>
 
 <p>The <a href=http://tools.ietf.org/html/rfc6455#section-4.1>Establish a
-  WebSocket Connection algorithm</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6455 title=biblio-RFC6455>[RFC6455]</a> is modified as follows:</p>
+  WebSocket Connection algorithm</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6455 title=RFC6455>[RFC6455]</a> is modified as follows:</p>
 
   <ul>
     <li>
@@ -1227,7 +1134,7 @@
           in step 5 results in a <a data-link-type=dfn href=#weakly-tls-protected title="weakly TLS-protected">weakly TLS-protected</a> connection, or the
           TLS-protection is <a data-link-type=dfn href=#deprecated-tls-protection title=deprecated>deprecated</a>,then the client MUST
           <a href=http://tools.ietf.org/html/rfc6455#section-7.1.7>Fail the
-          WebSocket Connection</a> and abort the connection. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6455 title=biblio-RFC6455>[RFC6455]</a>
+          WebSocket Connection</a> and abort the connection. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6455 title=RFC6455>[RFC6455]</a>
         </li>
       </ol>
     </li>
@@ -1258,7 +1165,7 @@
     letters in this specification.
 
     <p>All of the text of this specification is normative except sections
-    explicitly marked as non-normative, examples, and notes. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc2119 title=biblio-RFC2119>[RFC2119]</a></p>
+    explicitly marked as non-normative, examples, and notes. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc2119 title=RFC2119>[RFC2119]</a></p>
 
     <p>Examples in this specification are introduced with the words "for example"
     or are set apart from the normative text with <code>class="example"</code>,
@@ -1305,13 +1212,10 @@ Normative References</span><a class=self-link href=#normative></a></h3>
 <dt id=biblio-eventsource title=EVENTSOURCE><a class=self-link href=#biblio-eventsource></a>[EVENTSOURCE]<dd>Ian Hickson. <a href=http://www.w3.org/TR/2012/CR-eventsource-20121211/>Server-Sent Events</a>. 11 December 2012. W3C Candidate Recommendation. (Work in progress.) URL: <a href=http://www.w3.org/TR/2012/CR-eventsource-20121211/>http://www.w3.org/TR/2012/CR-eventsource-20121211/</a></dd>
 <dt id=biblio-fetch title=FETCH><a class=self-link href=#biblio-fetch></a>[FETCH]<dd>Anne van Kesteren. <a href=http://fetch.spec.whatwg.org/>Fetch</a>. Living Standard. URL: <a href=http://fetch.spec.whatwg.org/>http://fetch.spec.whatwg.org/</a></dd>
 <dt id=biblio-html5 title=HTML5><a class=self-link href=#biblio-html5></a>[HTML5]<dd>Robin Berjon; et al. <a href=http://www.w3.org/TR/2014/WD-html5-20140617/>HTML5</a>. 17 June 2014. W3C Candidate Recommendation. (Work in progress.) URL: <a href=http://www.w3.org/TR/2014/WD-html5-20140617/>http://www.w3.org/TR/2014/WD-html5-20140617/</a></dd>
-<dt id=biblio-rfc1918 title=RFC1918><a class=self-link href=#biblio-rfc1918></a>[RFC1918]<dd>Yakov Rekhter; et al. <a href=http://www.ietf.org/rfc/rfc1918.txt>Address Allocation for Private Internets</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc1918.txt>http://www.ietf.org/rfc/rfc1918.txt</a></dd>
 <dt id=biblio-rfc2119 title=RFC2119><a class=self-link href=#biblio-rfc2119></a>[RFC2119]<dd>S. Bradner. <a href=http://www.ietf.org/rfc/rfc2119.txt>Key words for use in RFCs to Indicate Requirement Levels</a>. URL: <a href=http://www.ietf.org/rfc/rfc2119.txt>http://www.ietf.org/rfc/rfc2119.txt</a></dd>
 <dt id=biblio-rfc4632 title=RFC4632><a class=self-link href=#biblio-rfc4632></a>[RFC4632]<dd>Vince Fuller; Tony Li. <a href=http://www.ietf.org/rfc/rfc4632.txt>Classless Inter-domain Routing (CIDR): The Internet Address Assignment and Aggregation Plan</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc4632.txt>http://www.ietf.org/rfc/rfc4632.txt</a></dd>
 <dt id=biblio-rfc6454 title=RFC6454><a class=self-link href=#biblio-rfc6454></a>[RFC6454]<dd>Adam Barth. <a href=http://www.ietf.org/rfc/rfc6454.txt>The Web Origin Concept</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6454.txt>http://www.ietf.org/rfc/rfc6454.txt</a></dd>
 <dt id=biblio-rfc6455 title=RFC6455><a class=self-link href=#biblio-rfc6455></a>[RFC6455]<dd>Ian Fette; Alexey Melnikov. <a href=http://www.ietf.org/rfc/rfc6455.txt>The WebSocket Protocol</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6455.txt>http://www.ietf.org/rfc/rfc6455.txt</a></dd>
-<dt id=biblio-rfc6761 title=RFC6761><a class=self-link href=#biblio-rfc6761></a>[RFC6761]<dd>Stuart Cheshire; Marc Krochmal. <a href=http://www.ietf.org/rfc/rfc6761.txt>Special-Use Domain Names</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6761.txt>http://www.ietf.org/rfc/rfc6761.txt</a></dd>
-<dt id=biblio-rfc6890 title=RFC6890><a class=self-link href=#biblio-rfc6890></a>[RFC6890]<dd>Michelle Cotton; et al. <a href=http://www.ietf.org/rfc/rfc6890.txt>Special-Purpose IP Address Registries</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6890.txt>http://www.ietf.org/rfc/rfc6890.txt</a></dd>
 <dt id=biblio-websockets title=WEBSOCKETS><a class=self-link href=#biblio-websockets></a>[WEBSOCKETS]<dd>Ian Hickson. <a href=http://www.w3.org/TR/2012/CR-websockets-20120920/>The WebSocket API</a>. 20 September 2012. W3C Candidate Recommendation. (Work in progress.) URL: <a href=http://www.w3.org/TR/2012/CR-websockets-20120920/>http://www.w3.org/TR/2012/CR-websockets-20120920/</a></dd>
 <dt id=biblio-wsc-ui title=WSC-UI><a class=self-link href=#biblio-wsc-ui></a>[WSC-UI]<dd>Thomas Roessler; Anil Saldhana. <a href=http://www.w3.org/TR/2010/REC-wsc-ui-20100812/>Web Security Context: User Interface Guidelines</a>. 12 August 2010. W3C Recommendation. URL: <a href=http://www.w3.org/TR/2010/REC-wsc-ui-20100812/>http://www.w3.org/TR/2010/REC-wsc-ui-20100812/</a></dd>
 <dt id=biblio-xmlhttprequest title=XMLHTTPREQUEST><a class=self-link href=#biblio-xmlhttprequest></a>[XMLHTTPREQUEST]<dd>Julian Aubourg; 송정기 (Jungkee Song); Hallvord R. M. Steen. <a href=http://www.w3.org/TR/2012/WD-XMLHttpRequest-20121206/>XMLHttpRequest</a>. 6 December 2012. W3C Working Draft. (Work in progress.) URL: <a href=http://www.w3.org/TR/2012/WD-XMLHttpRequest-20121206/>http://www.w3.org/TR/2012/WD-XMLHttpRequest-20121206/</a></dd>
@@ -1361,8 +1265,6 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>insecure, <a href=#insecure-origin title="section 2.1">2.1</a>
 <li>insecure origin, <a href=#insecure-origin title="section 2.1">2.1</a>
 <li>insecure URL, <a href=#insecure-url title="section 2.1">2.1</a>
-<li>Internal
-          Name, <a href=#internal-name title="section 2.1">2.1</a>
 <li>mixed, <a href=#mixed-content title="section 2.1">2.1</a>
 <li>mixed content, <a href=#mixed-content title="section 2.1">2.1</a>
 <li>network error, <a href=#network-error title="section 2.2">2.2</a>
@@ -1374,13 +1276,6 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>potentially secure, <a href=#potentially-secure-origin title="section 2.1">2.1</a>
 <li>potentially secure origin, <a href=#potentially-secure-origin title="section 2.1">2.1</a>
 <li>potentially secure URL, <a href=#potentially-secure-url title="section 2.1">2.1</a>
-<li>private, <a href=#private-origin title="section 2.1">2.1</a>
-<li>private address space, <a href=#private-address-space title="section 2.1">2.1</a>
-<li>private origin, <a href=#private-origin title="section 2.1">2.1</a>
-<li>private URL, <a href=#private-url title="section 2.1">2.1</a>
-<li>public, <a href=#public-origin title="section 2.1">2.1</a>
-<li>public origin, <a href=#public-origin title="section 2.1">2.1</a>
-<li>public URL, <a href=#public-url title="section 2.1">2.1</a>
 <li>request, <a href=#request title="section 2.2">2.2</a>
 <li>request client, <a href=#request-client title="section 2.2">2.2</a>
 <li>request context, <a href=#request-context title="section 2.2">2.2</a>

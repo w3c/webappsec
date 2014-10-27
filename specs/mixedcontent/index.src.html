@@ -64,17 +64,10 @@ Indent: 2
   resource whose status is mixed, as insecure requests are wide open for
   man-in-the-middle attacks. This scenario is unfortunately quite common.
 
-  Regardless of <code>example.com</code>'s own privacy, users' privacy and
-  security can be further impacted if a public resource can generate requests
-  to private resources on a local network. For example, public resources must
-  not be allowed to generate requests to a user's router, or an enterprise's
-  internal file server.
-
   This specification details how user agents can mitigate these risks to
   security and privacy by limiting a resource's ability to inadvertently
-  communicate in the clear, or to expose non-public resources to the web at
-  large.
-  
+  communicate in the clear.
+
   Note: Nothing described in this document is really new; everything covered
   here has appeared in one or more user agents over the years: Internet Explorer
   led the way, alerting users to mixed content since at least version 4.
@@ -98,21 +91,9 @@ Indent: 2
       <dfn export local-title="mixed">mixed content</dfn>
     </dt>
     <dd>
-      A resource is said to be <strong>mixed content</strong> if either of the
-      following conditions holds:
-
-      <ul>
-        <li>
-          The resource's <a>origin</a> is <a>insecure</a>, <strong>and</strong>
-          the <a>browsing context</a> responsible for loading it <a>restricts
-          mixed content</a>.
-        </li>
-        <li>
-          The resource's <a>origin</a> is <a>private</a> <strong>and</strong>
-          the <a>origin</a> of the <a>browsing context</a> responsible for
-          loading it is <a>public</a>.
-        </li>
-      </ul>
+      A resource is said to be <strong>mixed content</strong> if the resource's
+      <a>origin</a> is <a>insecure</a>, <strong>and</strong> the <a>browsing
+      context</a> responsible for loading it <a>restricts mixed content</a>.
 
       <div class="example">
         The image <code>http://example.com/image.png</code> is <strong>mixed
@@ -122,56 +103,6 @@ Indent: 2
         The image <code>http://127.0.0.1/image.png</code> is <strong>mixed
         content</strong> when loaded by <code>http://example.com/</code>.
       </div>
-    </dd>
-
-    <dt>
-      <dfn export local-title="private">private origin</dfn>
-    </dt>
-    <dt>
-      <dfn export>private URL</dfn>
-    </dt>
-    <dd>
-      An <a>origin</a> is considered a <strong>private origin</strong> if any
-      of the following conditions holds:
-
-      <ul>
-        <li>
-          The origin's <code>scheme</code> component is <code>file</code>.
-        </li>
-        <li>
-          The origin's <code>host</code> component is <code>localhost</code>
-          or a subdomain of the <code>.local</code> TLD [[!RFC6761]], or
-          matches one of the CIDR notations <code>127.0.0.0/8</code> or
-          <code>::1/128</code> [[!RFC6890]]
-        </li>
-        <li>
-          The origin's <code>host</code> component matches one of the
-          <dfn>private address space</dfn> patterns defined in
-          <a href="http://tools.ietf.org/html/rfc1918#section-3">Section 3 of
-          RFC1918</a> (<code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>,
-          <code>192.168.0.0/16</code>) [[!RFC1918]].
-        </li>
-        <li>
-          The origin's <code>host</code> component is an <dfn>Internal
-          Name</dfn>, as defined by the CA/Browser Forum's Baseline
-          Requirements [[!CAB]].
-        </li>
-      </ul>
-
-      A URL whose <a>origin</a> is private is itself considered to be private.
-    </dd>
-
-    <dt>
-      <dfn export local-title="public">public origin</dfn>
-    </dt>
-    <dt>
-      <dfn export>public URL</dfn>
-    </dt>
-    <dd>
-      Any <a>origin</a> which is not <a>private</a> is said to be a
-      <strong>public origin</strong>.
-
-      A URL whose <a>origin</a> is public is itself considered to be public.
     </dd>
 
     <dt>
@@ -265,8 +196,8 @@ Indent: 2
       refuse it anyway. This determination is vendor-specific.
 
       For example, a user agent may choose to reject resources for which the
-      server presented a publicly-trusted certificate for an <a>Internal
-      Name</a> (e.g. <code>https://intranet/</code>), a certificate with an
+      server presented a publicly-trusted certificate for an "Internal
+      Name" (e.g. <code>https://intranet/</code>), a certificate with an
       overly-long validity period, a certificate signed with SHA-1, or a
       certificate which otherwise fails to meet the
       <a href="https://cabforum.org/baseline-requirements-documents/">
@@ -284,9 +215,9 @@ Indent: 2
     </dt>
     <dd>
       An origin can be called <strong>authenticated</strong> when it either
-      refers to a source which is impossible not to trust (e.g.
-      <code>localhost</code>), or to a source which can be adequately verified
-      as authentic.
+      refers to a source which the user agent is obligated to take as a basic
+      part of the platform on which it operates (e.g. <code>localhost</code>),
+      or to a source which can be adequately verified as authentic.
 
       A <a>browsing context</a> can be called <strong>authenticated</strong>
       if the origin of its <a>active document</a> is
@@ -578,20 +509,6 @@ Indent: 2
       </li>
     </ol>
 
-    If a <a>browsing context</a>'s <a>active document</a>'s origin is a
-    <a>public origin</a>, then user agents MUST adhere to the following
-    requirements when <a>fetching</a> resources in response to the
-    browsing context's requests:
-
-    <ol>
-      <li>
-        <a>Requests</a> to <a>private origins</a> from <a>public origins</a>
-        MUST not generate network traffic (including traffic on loopback
-        interfaces), and MUST instead return a synthetically generated
-        <a>network error</a> response.
-      </li>
-    </ol>
-
     [[#fetch-integration]] and [[#algorithms]] detail how these fetching
     requirements could be implemented.
   </section>
@@ -799,11 +716,6 @@ Indent: 2
       <li>
         Let <var>origin</var> be the <a>origin</a> of <var>request</var>'s
         <strong>URL</strong>.
-      </li>
-      <li>
-        If <var>origin</var> is a <a>private origin</a>, and
-        <var>request</var>'s <code>client</code>'s <a>origin</a> is a
-        <a>public origin</a>, return <strong>blocked</strong>.
       </li>
       <li>
         If <var>browsing context</var> does not <a>restrict mixed content</a>,
@@ -1023,9 +935,8 @@ Indent: 2
 
   When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a><em>a priori</em> insecure origins</a> and <a>private
-  origins</a>, and at the bottom of the algorithm, to block responses from
-  <a>insecure origins</a>.
+  traffic to <a><em>a priori</em> insecure origins</a>, and at the bottom of
+  the algorithm, to block responses from <a>insecure origins</a>.
 
   Fetch calls the algorithm defined in
   [[#should-block-fetch]] during
@@ -1074,13 +985,6 @@ Indent: 2
           <a title="relevant settings object for a script">relevant settings
           object</a>'s <a>responsible browsing context</a> <a>restricts mixed
           content</a>, then throw a <code>SecurityError</code> exception.
-        </li>
-        <li>
-          If <var>entry script</var>'s
-          <a title="relevant settings object for a script">relevant settings
-          object</a>'s <code>origin</code> is a <a>public origin</a>, and the
-          <a>origin</a> of the <var>url</var> argument is a <a>private
-          origin</a>, then throw a <code>SecurityError</code> exception.
         </li>
       </ol>
     </li>
