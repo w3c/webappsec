@@ -67,101 +67,23 @@ At Risk: [[#directive-child-src]]
   current resource representation only. To supply a policy for an entire site,
   the server needs to supply a policy with each resource representation.
 
-  <h3 id="changes">Changes from 1.0</h3>
+  <h3 id="changes">Changes from Level 2</h3>
 
   This document describes an evolution of the
   <a href="http://w3.org/TR/CSP">Content Security Policy specification</a>.
-  Level 2 makes two breaking changes, and adds support for a number of new
-  directives and capabilities which are summarized below:
+  Level 3 makes the following changes:
 
   <ol>
-    <li>
-      The following changes are backwards incompatible with the majority of
-      user agent's implementations of CSP 1:
-
-      <ol>
-        <li>
-          The path component of a source expression is now ignored if the
-          resource being loaded is the result of a redirect, as described in
-          [[#source-list-paths-and-redirects]].
-          
-          Note: Paths are technically new in CSP2, but they were already
-          implemented in many user agents before this revision of CSP was
-          completed, so noting the change here seems reasonable.
-        </li>
-        <li>
-          Redirects are blocked by default, and explicitly allowed with a new
-          <code>unsafe-redirect</code> expression.
-        </li>
-        <li>
-          A <a>protected resource</a>'s ability to load Workers is now controlled
-          via <a><code>child-src</code></a> rather than
-          <a><code>script-src</code></a>.
-        </li>
-        <li>
-          Workers now have their own policy, separate from the <a>protected
-          resource</a> which loaded them. This is described in
-          [[#processing-model-workers]].
-        </li>
-      </ol>
-    </li>
     <li>
       The following directives are brand new in this revision:
 
       <ol>
         <li>
-          <a><code>base-uri</code></a> controls the <a>protected
-          resource</a>'s ability to specify the <a spec="HTML5">document base
-          URL</a>.
-        </li>
-        <li>
-          <a><code>child-src</code></a> deprecates and replaces
-          <a><code>frame-src</code></a>, controlling the <a>protected
-          resource</a>'s ability to embed frames, and to load Workers.
-        </li>
-        <li>
-          <a><code>form-action</code></a> controls the <a>protected
-          resource</a>'s ability to submit forms.
-        </li>
-        <li>
-          <a><code>frame-ancestors</code></a> controls the <a>protected
-          resource</a>'s ability be embedded in other documents. It is meant
-          to supplant the <code>X-Frame-Options</code> HTTP request header.
-        </li>
-        <li>
-          <a><code>plugin-types</code></a> controls the <a>protected
-          resource</a>'s ability to load specific types of plugins.
-        </li>
-        <li>
-          <a><code>referrer</code></a> controls the <a>protected resource</a>'s
-          referrer policy [[!REFERRER]].
-        </li>
-        <li>
-          <a><code>reflected-xss</code></a> controls the user agent's built-in
-          heuristics to actively protect against XSS. It is meant to supplant
-          the <code>X-XSS-Protection</code> HTTP request header.
+          <a><code>manifest-src</code></a> controls the <a>protected
+          resource</a>'s ability to load application manifests
+          [[!MANIFEST]].
         </li>
       </ol>
-    </li>
-    <li>
-      Individual inline scripts and stylesheets may be whitelisted via nonces
-      (as described in [[#source-list-valid-nonces]]) and hashes (as described
-      in [[#source-list-valid-hashes]]).
-    </li>
-    <li>
-      A <code>CSP</code> request header is now sent with relevant requests, as
-      described in [[#csp-request-header]].
-    </li>
-    <li>
-      A {{SecurityPolicyViolationEvent}} is fired upon violations, as described
-      in [[#firing-securitypolicyviolationevent-events]].
-    </li>
-    <li>
-      A number of new fields were added to violation reports (both those POSTED
-      via <a><code>report-uri</code></a>, and those handed to the DOM via
-      {{SecurityPolicyViolationEvent}} events. These include
-      {{effectiveDirective}}, {{statusCode}}, {{sourceFile}}, {{lineNumber}},
-      {{columnNumber}}.
     </li>
   </ol>
 </section>
@@ -2268,9 +2190,9 @@ At Risk: [[#directive-child-src]]
   <section>
     <h3 id="directive-manifest-src"><code>manifest-src</code></h3>
 
-    The <code><dfn>manifest-src</dfn></code> directive restricts which 
-    [[!APPMANIFEST]] the user agent may apply to the protected 
-    resource. The syntax for the name and value of the directive are described by 
+    The <code><dfn>manifest-src</dfn></code> directive restricts which
+    application manifest [[!MANIFEST]] the user agent may apply to the protected
+    resource. The syntax for the name and value of the directive are described by
     the following ABNF grammar:
 
     <pre>
@@ -2283,20 +2205,12 @@ At Risk: [[#directive-child-src]]
     directive's value as a source list</a> if the policy contains an
     explicit <code>manifest-src</code>, or otherwise to the <a>default sources</a>.
 
-    Whenever the user agent <a>fetches</a> a URI in the course of one of the
-    following activities, if the URI does not
-    <a title="match a source list">match</a> the <a>allowed manifest sources</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
-
-    <ul>
-      <li>Requesting a manifest, such as when processing the
-      <code><a element-attr>href</a></code> attribute of a 
-      <code><a element>link</a></code> element with a
-      <code><a element-attr>rel</a></code> attribute containing the token
-      <code>manifest</code> or attempting to obtain the well-known manifest.
-      </li>
-    </ul>
+    Whenever the user agent <a>fetches</a> a URI that does not
+    <a title="match a source list">match</a> the <a>allowed manifest sources</a>
+    in the course of executing the
+    <a href="http://w3c.github.io/manifest/#obtaining">steps for obtaining a
+    manifest</a>, the user agent MUST act as if there was a fatal network error
+    and no resource was obtained, <em>and</em> <a>report a violation</a>.
   </section>
 
 <!--
