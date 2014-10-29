@@ -185,7 +185,7 @@ At Risk: [[#directive-child-src]]
       Defined by the Origin specification. [[!RFC6454]]
     </dd>
     <dt>
-      <dfn>resource representation</dfn>
+      <dfn local-title="representation">resource representation</dfn>
     </dt>
     <dd>
       Defined in <a href="http://tools.ietf.org/html/rfc7231#section-3">Section
@@ -270,10 +270,13 @@ At Risk: [[#directive-child-src]]
 <section>
   <h2 id="policy-delivery">Policy Delivery</h2>
 
-  The server delivers the policy to the user agent via an HTTP
-  response header or an HTML <a element>meta</a> element. Servers are
-  informed that requests are subject to a policy via an HTTP request
-  header.
+  The server delivers a <a>policy</a> to the user agent via an HTTP response
+  header (defined in [[#content-security-policy-header-field]] and
+  [[#content-security-policy-report-only-header-field]]) or an HTML
+  <a element>meta</a> element (defined in [[#delivery-html-meta-element]]).
+  
+  Servers are informed that requests are coming from a <a>protected resource</a>
+  via an HTTP request header (defined in [[#csp-request-header]]).
 
   <section>
     <h3 id="content-security-policy-header-field">
@@ -281,24 +284,24 @@ At Risk: [[#directive-child-src]]
     </h3>
 
     The <code><dfn export>Content-Security-Policy</dfn></code> header field is
-    the preferred mechanism for delivering a policy.
+    the preferred mechanism for delivering a policy. The grammar is as follows:
 
     <pre>
       "Content-Security-Policy:" 1#<a>policy-token</a>
     </pre>
 
-    For example:
+    For example, a response might include the following header field:
 
-    <pre class="example">
-      Content-Security-Policy: script-src 'self'
-    </pre>
+    <div class="example">
+      <code>Content-Security-Policy: <a>script-src</a> 'self'</code>
+    </div>
 
-    A server MAY send more than one HTTP header field named
-    <code>Content-Security-Policy</code> with a given resource
-    representation.
+    A server MUST NOT send more than one HTTP header field named
+    <code>Content-Security-Policy</code> with a given <a>resource
+    representation</a>.
 
     A server MAY send different <code>Content-Security-Policy</code>
-    header field values with different representations of the same
+    header field values with different <a>representations</a> of the same
     resource or with different resources.
 
     Upon receiving an HTTP response containing at least one
@@ -314,7 +317,7 @@ At Risk: [[#directive-child-src]]
 
     The <code><dfn export>Content-Security-Policy-Report-Only</dfn></code>
     header field lets servers experiment with policies by monitoring (rather
-    than enforcing) a policy.
+    than enforcing) a policy. The grammar is as follows:
 
     <pre>
       "Content-Security-Policy-Report-Only:" 1#<a>policy-token</a>
@@ -324,9 +327,12 @@ At Risk: [[#directive-child-src]]
     security policy iteratively. The operators can deploy a report-only
     policy based on their best estimate of how their site behaves:
 
-    <pre class="example">
-      Content-Security-Policy-Report-Only: script-src 'self'; report-uri /csp-report-endpoint/
-    </pre>
+    <div class="example">
+      <pre>
+        Content-Security-Policy-Report-Only: <a>script-src</a> 'self';
+                                             <a>report-uri</a> /csp-report-endpoint/
+      </pre>
+    </div>
 
     If their site violates this policy the user agent will <a>send violation
     reports</a> to the URL specified in the policy's <a>report-uri</a>
@@ -334,13 +340,13 @@ At Risk: [[#directive-child-src]]
     has confidence that the policy is appropriate, they can start enforcing the
     policy using the <code><a>Content-Security-Policy</a></code> header field.
 
-    A server MAY send more than one HTTP header field named
+    A server MUST NOT send more than one HTTP header field named
     <code>Content-Security-Policy-Report-Only</code> with a given
-    resource representation.
+    <a>resource representation</a>.
 
     A server MAY send different
     <code>Content-Security-Policy-Report-Only</code> header field values
-    with different representations of the same resource or with different
+    with different <a>representations</a> of the same resource or with different
     resources.
 
     Upon receiving an HTTP response containing at least one
@@ -364,7 +370,7 @@ At Risk: [[#directive-child-src]]
     "<code>Content-Security-Policy</code>". For example:
 
     <pre class="example">
-      &lt;meta http-equiv="Content-Security-Policy" content="script-src 'self'"&gt;
+      &lt;meta http-equiv="Content-Security-Policy" content="<a>script-src</a> 'self'"&gt;
     </pre>
 
     <!-- TODO: Change the link here once there's a reasonable syntax for
@@ -415,8 +421,7 @@ At Risk: [[#directive-child-src]]
     element will be enforced along with any other policies active for the
     protected resource, regardless of where they're specified. The general
     mechanism for determining the effect of enforcing multiple policies is
-    detailed in the <a section href="#enforcing-multiple-policies"></a>
-    section.
+    detailed in [[#enforcing-multiple-policies]].
 
     Note: Modifications to the <code><a element-attr>content</a></code>
     attribute of a <code><a element>meta</a></code> element after the
@@ -437,12 +442,12 @@ At Risk: [[#directive-child-src]]
     <pre>
       "CSP:" 1#<a>csp-header-value</a>
 
-      <dfn>csp-header-value</dfn> = *WSP "active"
+      <dfn>csp-header-value</dfn> = *WSP "active" *WSP
     </pre>
 
     If the user agent is <a>monitoring</a> or <a>enforcing</a> a <a>policy</a>
     that includes directives whose value is a <a>source list</a>, and whose
-    source list contains the  <code>'unsafe-redirect'</code> source expression,
+    source list contains the <code>'unsafe-redirect'</code> source expression,
     then the user agent MUST send a header field named <code>CSP</code>
     along with requests for resources whose <a>origin</a> <em>does not</em>
     match the <a>protected resource</a>'s origin. The value of this header MUST

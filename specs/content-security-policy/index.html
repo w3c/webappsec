@@ -444,7 +444,7 @@
       Defined by the Origin specification. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=RFC6454>[RFC6454]</a>
     </dd>
     <dt>
-      <dfn data-dfn-type=dfn data-noexport="" id=resource-representation>resource representation<a class=self-link href=#resource-representation></a></dfn>
+      <dfn data-dfn-type=dfn data-local-title=representation data-noexport="" id=resource-representation>resource representation<a class=self-link href=#resource-representation></a></dfn>
     </dt>
     <dd>
       Defined in <a href=http://tools.ietf.org/html/rfc7231#section-3>Section
@@ -520,10 +520,19 @@
 <section>
   <h2 class="heading settled" data-level=3 id=policy-delivery><span class=secno>3 </span><span class=content>Policy Delivery</span><a class=self-link href=#policy-delivery></a></h2>
 
-<p>The server delivers the policy to the user agent via an HTTP
-  response header or an HTML <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/document-metadata.html#meta title=meta>meta</a> element. Servers are
-  informed that requests are subject to a policy via an HTTP request
-  header.</p>
+<p>The server delivers a <a data-link-type=dfn href=#security-policy title=policy>policy</a> to the user agent via an HTTP response
+  header (defined in <a data-section="" href=#content-security-policy-header-field>§3.1 
+      <code>Content-Security-Policy</code> Header Field
+    </a> and
+  <a data-section="" href=#content-security-policy-report-only-header-field>§3.2 
+      <code>Content-Security-Policy-Report-Only</code> Header Field
+    </a>) or an HTML
+  <a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/document-metadata.html#meta title=meta>meta</a> element (defined in <a data-section="" href=#delivery-html-meta-element>§3.3 
+      HTML <code><span data-link-type=element>meta</span></code> Element
+    </a>).</p>
+
+<p>Servers are informed that requests are coming from a <a data-link-type=dfn href=#protected-resource title="protected resource">protected resource</a>
+  via an HTTP request header (defined in <a data-section="" href=#csp-request-header>§3.4 The <code>CSP</code> HTTP Request Header</a>).</p>
 
   <section>
     <h3 class="heading settled" data-level=3.1 id=content-security-policy-header-field><span class=secno>3.1 </span><span class=content>
@@ -531,22 +540,23 @@
     </span><a class=self-link href=#content-security-policy-header-field></a></h3>
 
 <p>The <code><dfn data-dfn-type=dfn data-export="" id=content-security-policy>Content-Security-Policy<a class=self-link href=#content-security-policy></a></dfn></code> header field is
-    the preferred mechanism for delivering a policy.</p>
+    the preferred mechanism for delivering a policy. The grammar is as follows:</p>
 
     <pre>"Content-Security-Policy:" 1#<a data-link-type=dfn href=#policy-token title=policy-token>policy-token</a>
 </pre>
 
-<p>For example:</p>
+<p>For example, a response might include the following header field:</p>
 
-    <pre class=example>Content-Security-Policy: script-src 'self'
-</pre>
+    <div class=example>
+      <code>Content-Security-Policy: <a data-link-type=dfn href=#script-src title=script-src>script-src</a> 'self'</code>
+    </div>
 
-<p>A server MAY send more than one HTTP header field named
-    <code>Content-Security-Policy</code> with a given resource
-    representation.</p>
+<p>A server MUST NOT send more than one HTTP header field named
+    <code>Content-Security-Policy</code> with a given <a data-link-type=dfn href=#resource-representation title="resource representation">resource
+    representation</a>.</p>
 
 <p>A server MAY send different <code>Content-Security-Policy</code>
-    header field values with different representations of the same
+    header field values with different <a data-link-type=dfn href=#resource-representation title=representations>representations</a> of the same
     resource or with different resources.</p>
 
 <p>Upon receiving an HTTP response containing at least one
@@ -562,7 +572,7 @@
 
 <p>The <code><dfn data-dfn-type=dfn data-export="" id=content-security-policy-report-only>Content-Security-Policy-Report-Only<a class=self-link href=#content-security-policy-report-only></a></dfn></code>
     header field lets servers experiment with policies by monitoring (rather
-    than enforcing) a policy.</p>
+    than enforcing) a policy. The grammar is as follows:</p>
 
     <pre>"Content-Security-Policy-Report-Only:" 1#<a data-link-type=dfn href=#policy-token title=policy-token>policy-token</a>
 </pre>
@@ -571,8 +581,11 @@
     security policy iteratively. The operators can deploy a report-only
     policy based on their best estimate of how their site behaves:</p>
 
-    <pre class=example>Content-Security-Policy-Report-Only: script-src 'self'; report-uri /csp-report-endpoint/
+    <div class=example>
+      <pre>Content-Security-Policy-Report-Only: <a data-link-type=dfn href=#script-src title=script-src>script-src</a> 'self';
+                                     <a data-link-type=dfn href=#report-uri title=report-uri>report-uri</a> /csp-report-endpoint/
 </pre>
+    </div>
 
 <p>If their site violates this policy the user agent will <a data-link-type=dfn href=#send-violation-reports title="send violation reports">send violation
     reports</a> to the URL specified in the policy’s <a data-link-type=dfn href=#report-uri title=report-uri>report-uri</a>
@@ -580,13 +593,13 @@
     has confidence that the policy is appropriate, they can start enforcing the
     policy using the <code><a data-link-type=dfn href=#content-security-policy title=Content-Security-Policy>Content-Security-Policy</a></code> header field.</p>
 
-<p>A server MAY send more than one HTTP header field named
+<p>A server MUST NOT send more than one HTTP header field named
     <code>Content-Security-Policy-Report-Only</code> with a given
-    resource representation.</p>
+    <a data-link-type=dfn href=#resource-representation title="resource representation">resource representation</a>.</p>
 
 <p>A server MAY send different
     <code>Content-Security-Policy-Report-Only</code> header field values
-    with different representations of the same resource or with different
+    with different <a data-link-type=dfn href=#resource-representation title=representations>representations</a> of the same resource or with different
     resources.</p>
 
 <p>Upon receiving an HTTP response containing at least one
@@ -609,7 +622,7 @@
     is a case insensitive match for the string
     "<code>Content-Security-Policy</code>". For example:</p>
 
-    <pre class=example>&lt;meta http-equiv="Content-Security-Policy" content="script-src 'self'"&gt;
+    <pre class=example>&lt;meta http-equiv="Content-Security-Policy" content="<a data-link-type=dfn href=#script-src title=script-src>script-src</a> 'self'"&gt;
 </pre>
 
     
@@ -659,8 +672,7 @@
     element will be enforced along with any other policies active for the
     protected resource, regardless of where they’re specified. The general
     mechanism for determining the effect of enforcing multiple policies is
-    detailed in the <a data-section="" href=#enforcing-multiple-policies>§3.5 Enforcing multiple policies.</a>
-    section.</p>
+    detailed in <a data-section="" href=#enforcing-multiple-policies>§3.5 Enforcing multiple policies.</a>.</p>
 
 <p class=note>Note: Modifications to the <code><a data-link-type=element-attr href=http://www.w3.org/html/wg/drafts/html/CR/document-metadata.html#attr-meta-content title=content>content</a></code>
     attribute of a <code><a data-link-type=element href=http://www.w3.org/html/wg/drafts/html/CR/document-metadata.html#meta title=meta>meta</a></code> element after the
@@ -679,12 +691,12 @@
     following ABNF grammar:</p>
 
     <pre>"CSP:" 1#<a data-link-type=dfn href=#csp-header-value title=csp-header-value>csp-header-value</a>
-<dfn data-dfn-type=dfn data-noexport="" id=csp-header-value>csp-header-value<a class=self-link href=#csp-header-value></a></dfn> = *WSP "active"
+<dfn data-dfn-type=dfn data-noexport="" id=csp-header-value>csp-header-value<a class=self-link href=#csp-header-value></a></dfn> = *WSP "active" *WSP
 </pre>
 
 <p>If the user agent is <a data-link-type=dfn href=#monitor title=monitoring>monitoring</a> or <a data-link-type=dfn href=#enforce title=enforcing>enforcing</a> a <a data-link-type=dfn href=#security-policy title=policy>policy</a>
     that includes directives whose value is a <a data-link-type=dfn href=#source-list0 title="source list">source list</a>, and whose
-    source list contains the  <code>'unsafe-redirect'</code> source expression,
+    source list contains the <code>'unsafe-redirect'</code> source expression,
     then the user agent MUST send a header field named <code>CSP</code>
     along with requests for resources whose <a data-link-type=dfn href=#origin title=origin>origin</a> <em>does not</em>
     match the <a data-link-type=dfn href=#protected-resource title="protected resource">protected resource</a>’s origin. The value of this header MUST
@@ -3540,6 +3552,7 @@ Index</span><a class=self-link href=#index></a></h2>
 </ul><li>reflected-xss, <a href=#reflected-xss title="section 7.15">7.15</a>
 <li>report a violation, <a href=#report-a-violation title="section 4.4">4.4</a>
 <li>report-uri, <a href=#report-uri title="section 7.16">7.16</a>
+<li>representation, <a href=#resource-representation title="section 2.2">2.2</a>
 <li>resource representation, <a href=#resource-representation title="section 2.2">2.2</a>
 <li>runs a worker, <a href=#runs-a-worker title="section 2.3">2.3</a>
 <li>sandbox, <a href=#sandbox title="section 7.17">7.17</a>
