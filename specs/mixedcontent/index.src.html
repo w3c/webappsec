@@ -9,7 +9,7 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how user agents should handle rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container / relevant settings object for a script / responsible browsing context
+Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container / relevant settings object for a script / responsible browsing context / incumbent settings object
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
@@ -92,8 +92,8 @@ Indent: 2
     </dt>
     <dd>
       A resource is said to be <strong>mixed content</strong> if the resource's
-      <a>origin</a> is <a>insecure</a>, <strong>and</strong> the <a>browsing
-      context</a> responsible for loading it <a>restricts mixed content</a>.
+      <a>origin</a> is <a>insecure</a>, <strong>and</strong> the the context
+      responsible for loading it <a>restricts mixed content</a>.
 
       <div class="example">
         The image <code>http://example.com/image.png</code> is <strong>mixed
@@ -171,14 +171,6 @@ Indent: 2
       is either <a>weak</a> or <a>deprecated</a>.
 
       A URL whose <a>origin</a> is insecure is itself considered to be insecure.
-    </dd>
-
-    <dt>
-      <dfn export>unsecured context</dfn>
-    </dt>
-    <dd>
-      A <a>browsing context</a> is called <strong>unsecured</strong> if it does
-      not <a>restrict mixed content</a>.
     </dd>
 
     <dt>
@@ -281,6 +273,8 @@ Indent: 2
     <dt><dfn local-title="client">request client</dfn></dt>
     <dt><dfn local-title="context">request context</dfn></dt>
     <dt><dfn local-title="frame type">request context frame type</dfn></dt>
+    <dt><dfn local-title="authentication state">request client authentication state</dfn></dt>
+    <dt><dfn>response authentication state</dfn></dt>
     <dd>
       These terms are defined in
       <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the
@@ -293,6 +287,11 @@ Indent: 2
       These terms are defined in detail in
       <a href="http://fetch.spec.whatwg.org/#responses">Section 2.3</a> of the
       Fetch living standard. [[!FETCH]]
+    </dd>
+
+    <dt><dfn>environment settings object</dfn></dt>
+    <dd>
+      Defined in [[!HTML5]].
     </dd>
   </dl>
 </section>
@@ -464,11 +463,13 @@ Indent: 2
     of the risk (for instance, presenting the user with a confirmation screen
     she must click through).
 
-    If a <a>browsing context</a> <a>restricts mixed content</a>, then user
-    agents MUST adhere to the following requirements when <a>fetching</a>
-    resources in response to its requests (including not only requests for a
-    <a interface>Document</a>'s subresources, but also requests made from
-    Workers, SharedWorkers, ServiceWorkers and so on):
+    If a <a>browsing context</a>'s <a>incumbent settings object</a> <a>restricts
+    mixed content</a>, or the <a>relevant settings object for a script</a>
+    <a>restricts mixed content</a>, then user agents MUST adhere to the
+    following requirements when <a>fetching</a> resources in response to
+    requests (including not only requests for a <a interface>Document</a>'s
+    subresources, but also requests made from Workers, SharedWorkers,
+    ServiceWorkers and so on):
 
     <ol>
       <li>
@@ -480,9 +481,9 @@ Indent: 2
 
       <li>
         <a>Responses</a> to <a>requests</a> for <a>blockable</a> resources from
-        an <a>insecure origin</a> MUST not be delivered to the requesting
-        <a>browsing context</a>, but instead MUST return a synthetically
-        generated <a>network error</a> response.
+        an <a>insecure origin</a> MUST not be delivered to the <a>request
+        client</a>, but instead MUST return a synthetically generated <a>network
+        error</a> response.
       </li>
 
       <li>
@@ -512,10 +513,10 @@ Indent: 2
   <section>
     <h3 id="requirements-script">Script APIs</h3>
 
-    If the <a>relevant settings object for a script</a> <var>script</var> has a
-    <a>responsible browsing context</a> which <a>restricts mixed content</a>,
-    then user agents MUST adhere to the following requirements when executing
-    the following APIs in the context of <var>script</var>:
+    If the <a>relevant settings object for a script</a> <var>script</var>
+    <a>restricts mixed content</a>, then user agents MUST adhere to the
+    following requirements when executing the following APIs in the context
+    of <var>script</var>:
 
     <ol>
       <li>When processing XMLHttpRequest's
@@ -541,10 +542,10 @@ Indent: 2
   <section>
     <h3 id="requirements-forms">Form Submission</h3>
 
-    If a <a>browsing context</a> <a>restricts mixed content</a>, then user
-    agents MAY choose to warn users of the presence of one or more
-    <a element>form</a> elements with <a element-attr>action</a> attributes
-    whose values are <a>insecure URLs</a>.
+    If a {{Document}}'s <a>incumbent settings object</a> <a>restricts mixed
+    content</a>, then user agents MAY choose to warn users of the presence of
+    one or more <a element>form</a> elements with <a element-attr>action</a>
+    attributes whose values are <a>insecure URLs</a>.
 
     Note: Chrome, for example, currently gives the same UI treatment to a page
     with an insecure form action as it does for a page that displays an insecure
@@ -552,8 +553,9 @@ Indent: 2
 
     Further, user agents MAY <strong>optionally</strong> treat form submissions
     in the <a>top-level browsing context</a> from a <a>browsing context</a>
-    which <a>restricts mixed content</a> as a request for <a>blockable
-    content</a> to protect users from accidental data leakage.
+    whose <a>incumbent settings object</a> <a>restricts mixed content</a> as a
+    request for <a>blockable content</a> to protect users from accidental data
+    leakage.
   </section>
 
   </section>
@@ -609,25 +611,28 @@ Indent: 2
   <h2 id="algorithms">Algorithms</h2>
 
   <section>
-    <h3 id="categorize-browsing-context">
-      Does <var>browsing context</var> restrict mixed content?
+    <h3 id="categorize-settings-object">
+      Does <var>settings object</var> restrict mixed content?
     </h3>
 
-    Given a <a>browsing context</a> <var>context</var>, the user agent
-    determines whether <var>context</var>
-    <dfn export local-title="restrict mixed content">restricts mixed content</dfn>
-    via the following algorithm, which returns <strong>true</strong> if
-    <var>context</var> restricts mixed content, and <strong>false</strong>
-    otherwise.
+    Both documents and workers have <a>environment settings objects</a> which
+    may be examined according to the following algorithm in order to determine
+    whether they <dfn export local-title="restricts mixed content">restrict
+    mixed content</dfn>. This algorithm returns <code>restricts mixed
+    content</code> or <code>does not restrict mixed content</code>, as
+    appropriate.
+
+    Given an <a>environment settings object</a> <var>settings</var>:
 
     <ol>
       <li>
-        If <var>context</var> is <a>TLS-protected</a>, and that
-        TLS-protection is neither <a>weak</a> nor <a>deprecated</a>, then return
-        <strong>true</strong>.
+        If <var>settings</var>' <a>authentication state</a> is
+        <code>authenticated</code>, then return <strong>restricts mixed
+        content</strong>.
       </li>
       <li>
-        If <var>context</var> is a <a>nested browsing context</a>, then:
+        If <var>settings</var> has a <a>responsible browsing context</a>
+        <var>context</var> that is a <a>nested browsing context</a>, then:
 
         <ol>
           <li>Let <var>ancestorList</var> be the list of all
@@ -637,15 +642,21 @@ Indent: 2
             For each <var>ancestorContext</var> in <var>ancestorList</var>:
 
             <ol>
-              <li>If <var>ancestorContext</var> is <a>TLS-protected</a>, and
-              that TLS-protection is neither <a>weak</a> nor <a>deprecated</a>,
-              then return <strong>true</strong>.</li>
+              <li>
+                Let <var>ancestorSettings</var> be <var>ancestorContext</var>'s
+                <a>incumbent settings object</a>.
+              </li>
+              <li>
+                If <var>ancestorSettings</var>' <a>authentication state</a> is
+                <code>authenticated</code>, then return <strong>restricts mixed
+                content</strong>.
+              </li>
             </ol>
           </li>
         </ol>
       </li>
 
-      <li>Return <strong>false</strong>.</li>
+      <li>Return <strong>does not restrict mixed content</strong>.</li>
     </ol>
 
     <div class="note">
@@ -706,16 +717,12 @@ Indent: 2
         type</code>.
       </li>
       <li>
-        Let <var>browsing context</var> be <var>request</var>'s
-        <code>client</code>'s <a>responsible browsing context</a>.
-      </li>
-      <li>
         Let <var>origin</var> be the <a>origin</a> of <var>request</var>'s
         <strong>URL</strong>.
       </li>
       <li>
-        If <var>browsing context</var> does not <a>restrict mixed content</a>,
-        return <strong>allowed</strong>.
+        If <var>request</var>'s <a>client</a> does not <a>restrict mixed
+        content</a>, return <strong>allowed</strong>.
       </li>
       <li>
         If <var>request</var>'s <code>context frame type</code> is
@@ -765,12 +772,8 @@ Indent: 2
 
     <ol>
       <li>
-        Let <var>browsing context</var> be the <var>client</var>'s
-        <a>responsible browsing context</a>.
-      </li>
-      <li>
-        If <var>browsing context</var> does not <a>restrict mixed content</a>,
-        return <strong>allowed</strong>.
+        If <var>request</var>'s <a>client</a> does not <a>restrict mixed
+        content</a>, return <strong>allowed</strong>.
       </li>
       <li>
         Let <var>context</var> be the <a>request context</a> of
@@ -783,30 +786,15 @@ Indent: 2
 
         <ol>
           <li>
-            If the response is not <a>TLS-protected</a>, return
-            <strong>blocked</strong>.
+            If <var>response</var>'s <a>authentication state</a> is not
+            <code>authenticated</code>, return <strong>blocked</strong>.
 
-            ISSUE: Start using the <code>TLS State</code> field whenever Fetch
-            defines it.
-          </li>
-          <li>
-            If the response is only <a>weakly TLS-protected</a>, return
-            <strong>blocked</strong>.
-
-            Note: If a user agent is configured to reject <a>weakly
-            TLS-protected</a> resources, we'll never hit this condition, as
-            <a href="http://fetch.spec.whatwg.org/#fetching">step 6 of the Fetch
-            algorithm</a> would have returned a network error. [[!FETCH]]
-          </li>
-          <li>
-            If the response's TLS-protection is <a>deprecated</a>, return
-            <strong>blocked</strong>.
-
-            Note: This covers cases in which the TLS handshake succeeds, and the
-            resource exceeds the definition of <a>weakly TLS-protected</a>, but
-            the user agent chooses to hold it to a higher standard. The definition
-            of <a>deprecated TLS-protection</a> has some examples of these kinds
-            of scenarios.
+            Note: This covers both cases in which unauthenticated resources are
+            requested, as well as cases in which the TLS handshake succeeds, and
+            the resource exceeds the definition of <a>weakly TLS-protected</a>,
+            but the user agent chooses to hold it to a higher standard. The
+            definition of <a>deprecated TLS-protection</a> has some examples of
+            these kinds of scenarios.
           </li>
         </ol>
       </li>
@@ -974,8 +962,8 @@ Indent: 2
           If <var>secure</var> is <strong>false</strong>, but <var>entry
           script</var>'s
           <a title="relevant settings object for a script">relevant settings
-          object</a>'s <a>responsible browsing context</a> <a>restricts mixed
-          content</a>, then throw a <code>SecurityError</code> exception.
+          object</a>'s <a>restricts mixed content</a>, then throw a
+          <code>SecurityError</code> exception.
         </li>
       </ol>
     </li>
