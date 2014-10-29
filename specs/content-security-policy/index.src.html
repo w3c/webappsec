@@ -2,12 +2,12 @@
 <pre class="metadata">
 Status: ED
 ED: https://w3c.github.io/webappsec/specs/content-security-policy/
-TR: http://www.w3c.org/TR/CSP2/
+TR: http://www.w3c.org/TR/CSP3/
 Previous Version: http://www.w3.org/TR/2014/WD-CSP2-20140703/
 Previous Version: http://www.w3.org/TR/2014/WD-CSP11-20140211/
 Previous Version: http://www.w3.org/TR/2012/CR-CSP-20121115/
-Shortname: CSP2
-Level: 2
+Shortname: CSP3
+Level: 3
 Editor: Mike West, Google Inc., mkwst@google.com
 Editor: Adam Barth, Google Inc., w3c@adambarth.com
 Editor: Dan Veditz, Mozilla Corporation, dveditz@mozilla.com
@@ -100,56 +100,114 @@ At Risk: [[#directive-child-src]]
 <section>
   <h2 id="key-concepts">Key Concepts and Terminology</h2>
 
-  This section defines several terms used throughout the document.
+  <h3 id="terms-defined-here">Terms defined by this specification</h3>
+  <dl>
+    <dt>
+      <dfn export local-title="policy">security policy</dfn>
+    </dt>
+    <dt>
+      <dfn export local-title="directive">security policy directive</dfn>
+    </dt>
+    <dt>
+      <dfn export local-title="directive name">security policy directive name</dfn>
+    </dt>
+      <dfn export local-title="directive value">security policy directive value</dfn>
+    </dt>
+    <dd>
+      A <strong>security policy</strong> refers to both a set of security
+      preferences for restrictions within which content can operate, and
+      to a fragment of text that codifies or transmits these preferences.
+      For example, the following string is a policy which restricts script
+      and object content:
 
-  The term <dfn export title="security policy|policy">security policy</dfn>
-  refers to either:
+      <div class="example">
+        <code><a>script-src</a> 'self'; <a>object-src</a> 'none'</code>
+      </div>
 
-  <ol>
-    <li>a set of security preferences for restrictions within which
-    the content can operate, or</li>
-    <li>a fragment of text that codifies these preferences.</li>
-  </ol>
+      Security policies contain a set of <strong>security policy
+      directives</strong> (<code><a>script-src</a></code> and
+      <code><a>object-src</a></code> in the example above), each responsible
+      for declaring the restrictions for a particular resource type, or
+      manipulating a specific aspect of the policy's restrictions. The list
+      of directives defined by this specification can be found in
+      [[#directives]].
 
-  The security policies defined by this document are applied by a
-  user agent on a <em>per-resource representation basis</em>.
-  Specifically, when a user agent receives a policy along with the
-  representation of a given resource, that policy applies to <em>that
-  resource representation only</em>. This document often refers to
-  that resource representation as the <dfn export>protected resource</dfn>.
+      Each directives has a <strong>name</strong> and a <strong>value</strong>;
+      a detailed grammar can be found in [[#syntax-and-algorithms]].
+    </dd>
+    <dt>
+      <dfn export>protected resource</dfn>
+    </dt>
+    <dd>
+      A <a>security policy</a> is applied by a user agent to a specific
+      <a>resource representation</a>, known as the <strong>protected
+      resource</strong>. See [[#policy-delivery]] for details regarding
+      the mechanisms by which policies may be applied to a protected
+      resource.
+    </dd>
+  </dl>
 
-  A <dfn export title="security policy directive|directive">security policy
-  directive</dfn> is a portion of a <a>policy</a> that declares the specific
-  set of restrictions for a particular resource type, or which manipulates a
-  specific aspect of a protected resource's configuration. A server transmits
-  its security policy for a particular protected resource as a collection of
-  directives, such as <code><a>default-src</a> 'self'</code>, each of which
-  declares a specific set of restrictions for that resource as instantiated
-  by the user agent. More details are provided in the
-  <a section href="#sec-directives"></a> section.
+  <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
+  <dl>
+    <dt>
+      <dfn>globally unique identifier</dfn>
+    </dt>
+    <dd>
+      Defined in
+      <a href="https://tools.ietf.org/html/rfc6454#section-2.3">Section 2.3 of
+      the Origin specification</a>. [[!RFC6454]]
 
-  A directive consists of a <dfn>directive name</dfn>, which
-  indicates the privileges controlled by the directive, and a
-  <dfn>directive value</dfn>, which specifies the restrictions the
-  policy imposes on those privileges.
+      NOTE: URLs which do not use hierarchical elements as naming authorities
+      (<code>data:</code>, for instance) have <a>origins</a> which are globally
+      unique identifiers.
+    </dd>
+    <dt>
+      <dfn>HTTP 200 response</dfn>
+    </dt>
+    <dd>
+      Defined in
+      <a href="http://tools.ietf.org/html/rfc7231#section-6.3.1">Section
+      6.3.1 of HTTP/1.1 -- Semantics and Content</a>. [[!RFC7231]]
+    </dd>
+    <dt>
+      <dfn>JSON object</dfn>
+    </dt>
+    <dt>
+      <dfn>JSON stringification</dfn>
+    </dt>
+    <dd>
+      Defined in the JSON specification. [[!RFC4627]]
+    </dd>
+    <dt>
+      <dfn>origin</dfn>
+    </dt>
+    <dd>
+      Defined by the Origin specification. [[!RFC6454]]
+    </dd>
+    <dt>
+      <dfn>resource representation</dfn>
+    </dt>
+    <dd>
+      Defined in <a href="http://tools.ietf.org/html/rfc7231#section-3">Section
+      3 of HTTP/1.1 -- Semantics and Content</a>. [[!RFC7231]]
+    </dd>
+    <dt>
+      <dfn>URI</dfn>
+      <dfn>URL</dfn>
+    </dt>
+    <dd>
+      This document uses both <strong>URI</strong> and <strong>URL</strong> to
+      refer to "URL", as defined by the URL Living Standard [[!URL]].
+    </dd>
+    <dt><dfn>SHA-256</dfn></dt>
+    <dt><dfn>SHA-384</dfn></dt>
+    <dt><dfn>SHA-512</dfn></dt>
+    <dd>
+      These digest algorithms are defined by the NIST. [[!SHA2]]
+    </dd>
+  </dl>
 
-  <!-- TODO: Drop the <dfn>s here once I can autolink to the RFCs. -->
-  The term <dfn>origin</dfn> is defined in the Origin specification.
-  [[!RFC6454]]
-
-  The term <dfn>globally unique identifier</dfn> is defined in section 4 of
-  the Origin specification. Note that URLs that do not use hierarchical
-  elements as naming authorities have origins which are globally unique
-  identifiers. [[!RFC6454]]
-
-  The term <dfn>URI</dfn> is defined in the URI specification. [[!URI]]
-
-  The term <dfn>resource representation</dfn> is defined
-  <a href="http://tools.ietf.org/html/rfc7231#section-3">Section 3</a>
-  of HTTP/1.1 -- Semantics and Content [[!RFC7231]]
-
-  The terms <dfn>JSON object</dfn> and <dfn>JSON stringification</dfn> are
-  defined in the JSON specification. [[!RFC4627]]
+  <h3 id="html-concepts">Relevant Concepts from HTML</h3>
 
   The <code><a element>applet</a></code>, <code><a element>audio</a></code>,
   <code><a element>embed</a></code>, <code><a element>iframe</a></code>,
@@ -177,22 +235,6 @@ At Risk: [[#directive-child-src]]
   The <code>EventSource</code> object is defined in the <code>EventSource</code>
   specification. [[!EVENTSOURCE]]
 
-  The Augmented Backus-Naur Form (ABNF) notation used in this document is
-  specified in RFC5234. [[!ABNF]]
-
-  This document also uses the ABNF extension "#rule" as defined in
-  <a href="http://tools.ietf.org/html/rfc7230#section-7">Section 7</a>
-  of HTTP/1.1 -- Message Syntax and Routing. [[!RFC7230]]
-
-  The following core rules are included by reference, as defined in
-  <a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">Appendix B.1</a>
-  of [[!ABNF]]: <code>ALPHA</code> (letters), <code>DIGIT</code> (decimal
-  0-9), <code>WSP</code> (white space) and <code>VCHAR</code> (printing
-  characters).
-
-  <dfn>SHA-256</dfn>, <dfn>SHA-384</dfn>, and <dfn>SHA-512</dfn> are the digest
-  algorithms <a href="http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf">defined by the NIST</a>.
-
   The <dfn>runs a worker</dfn> algorithm is
   <a href="http://www.w3.org/TR/workers/#run-a-worker">defined in the Web
   Workers spec</a>. [[!WORKERS]]
@@ -202,9 +244,20 @@ At Risk: [[#directive-child-src]]
   href="http://www.w3.org/TR/2010/WD-WebIDL-20101021/#idl-callers">Web
   IDL</a> specification [[!WEBIDL]].
 
-  An <dfn>HTTP 200 response</dfn> is defined in
-  <a href="http://tools.ietf.org/html/rfc7231#section-6.3.1">Section 6.3.1</a>
-  of HTTP/1.1 -- Semantics and Content [[!RFC7231]]
+  <h3 id="grammar">Grammatical Concepts</h3>
+
+  The Augmented Backus-Naur Form (ABNF) notation used in this document is
+  specified in RFC5234. [[!ABNF]]
+
+  This document also uses the ABNF extension "#rule" as defined in
+  <a href="http://tools.ietf.org/html/rfc7230#section-7">Section 7</a>
+  of HTTP/1.1 -- Message Syntax and Routing. [[!RFC7230]]
+
+  The following core rules are included by reference, as defined in
+  <a href="http://tools.ietf.org/html/rfc5234#appendix-B.1">Appendix B.1</a>
+  of [[!ABNF]]: <code><dfn>ALPHA</dfn></code> (letters),
+  <code><dfn>DIGIT</dfn></code> (decimal 0-9), <code><dfn>WSP</dfn></code>
+  (white space) and <code><dfn>VCHAR</dfn></code> (printing characters).
 </section>
 
 <!--
@@ -350,7 +403,7 @@ At Risk: [[#directive-child-src]]
           <var>directive-set</var>.</li>
 
           <li>Enforce each of the <a>directives</a> in <var>directive-set</var>,
-          as <a href="#sec-directives">defined for each directive type</a>.</li>
+          as <a href="#directives">defined for each directive type</a>.</li>
         </ol>
       </dd>
     </dl>
@@ -1316,7 +1369,7 @@ At Risk: [[#directive-child-src]]
   To <dfn>enforce</dfn> a policy, the user agent MUST <a>parse the policy</a>
   and enforce each of the directives contained in the policy, where the
   specific requirements for enforcing each directive are defined separately
-  for each directive (See <a section href="#sec-directives"></a>, below).
+  for each directive (See <a section href="#directives"></a>, below).
 
   Generally speaking, enforcing a directive prevents the protected
   resource from performing certain actions, such as loading scripts from
@@ -1569,7 +1622,7 @@ At Risk: [[#directive-child-src]]
 ████████  ████ ██     ██ ████████  ██████     ██    ████    ███    ████████  ██████
 -->
 <section>
-  <h2 id="sec-directives">Directives</h2>
+  <h2 id="directives">Directives</h2>
 
   This section describes the content security policy directives
   introduced in this specification. Directive names are case insensitive.
@@ -2313,7 +2366,7 @@ At Risk: [[#directive-child-src]]
     element MUST match the <a>allowed object sources</a> in order to be fetched.
     This is true even when the element data is semantically equivalent to
     content which would otherwise be restricted by one of the other
-    <a section href="#sec-directives">directives</a>, such as an
+    <a section href="#directives">directives</a>, such as an
     <code><a element>object</a></code> element with a <code>text/html</code>
     MIME type.
 
