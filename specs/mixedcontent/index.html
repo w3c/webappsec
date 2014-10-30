@@ -159,7 +159,7 @@
 		<li><a href=#should-block-response><span class=secno>5.3</span>        Should <var>response</var> to <var>request</var> be blocked as mixed       content?     </a></ul>
 	<li><a href=#powerful-features><span class=secno>6</span>      Secure Contexts for Powerful Features   </a>
 		<ul class=toc>
-		<li><a href=#may-browsing-context-use-powerful-features><span class=secno>6.1</span>        May <var>browsing context</var> use powerful features?     </a>
+		<li><a href=#may-document-use-powerful-features><span class=secno>6.1</span>        May <var>Document</var> use powerful features?     </a>
 		<li><a href=#settings-powerful-features><span class=secno>6.2</span>        May <var>environment settings object</var> use powerful features?     </a>
 		<li><a href=#is-origin-trusted><span class=secno>6.3</span>        Is <var>origin</var> potentially trusted?     </a></ul>
 	<li><a href=#fetch-integration><span class=secno>7</span> Integration with Fetch</a>
@@ -574,29 +574,35 @@
     of the risk (for instance, presenting the user with a confirmation screen
     she must click through).</p>
 
-<p>If a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a>’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#incumbent-settings-object title="incumbent settings object">incumbent settings object</a> <a data-link-type=dfn href=#restrict-mixed-content title="restricts mixed content">restricts
+<p>If a <code class=idl><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a></code>'s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#incumbent-settings-object title="incumbent settings object">incumbent settings object</a> <a data-link-type=dfn href=#restrict-mixed-content title="restricts mixed content">restricts
     mixed content</a>, or the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#relevant-settings-object-for-a-script title="relevant settings object for a script">relevant settings object for a script</a>
-    <a data-link-type=dfn href=#restrict-mixed-content title="restricts mixed content">restricts mixed content</a>, then user agents MUST adhere to the
-    following requirements when <a data-link-type=dfn href=#fetch title=fetching>fetching</a> resources in response to
-    requests (including not only requests for a <a class=idl-code data-link-type=interface href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a>’s
-    subresources, but also requests made from Workers, SharedWorkers,
-    ServiceWorkers and so on):</p>
+    <a data-link-type=dfn href=#restrict-mixed-content title="restricts mixed content">restricts mixed content</a>, then <a data-link-type=dfn href=#fetch title=fetching>fetching</a> resource in response
+    to requests (including not only requests for a <code class=idl><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a></code>'s subresources,
+    but also requests made from (Workers, SharedWorkers, Service Workers, and
+    so on) will exhibit the following behavior:</p>
 
     <ol>
       <li>
         <a data-link-type=dfn href=#request title=Requests>Requests</a> for <a data-link-type=dfn href=#blockable-content title=blockable>blockable</a> resources from an
-        <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em> insecure origin</a> MUST not generate network
-        traffic, and MUST instead return a synthetically generated <a data-link-type=dfn href=#network-error title="network error">network
+        <a data-link-type=dfn href=#a-priori-insecure-origin title="a priori insecure origin"><em>a priori</em> insecure origin</a> will not generate network
+        traffic, but will instead return a synthetically generated <a data-link-type=dfn href=#network-error title="network error">network
         error</a> response.
       </li>
 
       <li>
         <a data-link-type=dfn href=#response title=Responses>Responses</a> to <a data-link-type=dfn href=#request title=requests>requests</a> for <a data-link-type=dfn href=#blockable-content title=blockable>blockable</a> resources from
-        an <a data-link-type=dfn href=#insecure-origin title="insecure origin">insecure origin</a> MUST not be delivered to the <a data-link-type=dfn href=#request-client title="request client">request
-        client</a>, but instead MUST return a synthetically generated <a data-link-type=dfn href=#network-error title="network error">network
+        an <a data-link-type=dfn href=#insecure-origin title="insecure origin">insecure origin</a> will not be delivered to the <a data-link-type=dfn href=#request-client title="request client">request
+        client</a>, but instead will return a synthetically generated <a data-link-type=dfn href=#network-error title="network error">network
         error</a> response.
       </li>
+    </ol>
 
+<p><a data-section="" href=#fetch-integration>§7 Integration with Fetch</a> and <a data-section="" href=#algorithms>§5 Insecure Content in Secure Contexts</a> detail how these fetching
+    requirements could be implemented.</p>
+
+<p>User agents MAY take further action:</p>
+
+    <ol>
       <li>
         <a data-link-type=dfn href=#request title=Requests>Requests</a> for <a data-link-type=dfn href=#optionally-blockable-content title=optionally-blockable>optionally-blockable</a> resources which
         are <a data-link-type=dfn href=#mixed-content title="mixed content">mixed content</a> SHOULD be treated as <a data-link-type=dfn href=#blockable-content title=blockable>blockable</a> (and
@@ -616,9 +622,6 @@
         protocol of the requested URL to <code>HTTPS</code> in certain cases.
       </li>
     </ol>
-
-<p><a data-section="" href=#fetch-integration>§7 Integration with Fetch</a> and <a data-section="" href=#algorithms>§5 Insecure Content in Secure Contexts</a> detail how these fetching
-    requirements could be implemented.</p>
   </section>
 
   <section>
@@ -663,8 +666,8 @@
     image.</p>
 
 <p>Further, user agents MAY <strong>optionally</strong> treat form submissions
-    in the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a> from a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a>
-    whose <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#incumbent-settings-object title="incumbent settings object">incumbent settings object</a> <a data-link-type=dfn href=#restrict-mixed-content title="restricts mixed content">restricts mixed content</a> as a
+    in the <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#top-level-browsing-context title="top-level browsing context">top-level browsing context</a> from a <code class=idl><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a></code> whose
+    <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#incumbent-settings-object title="incumbent settings object">incumbent settings object</a> <a data-link-type=dfn href=#restrict-mixed-content title="restricts mixed content">restricts mixed content</a> as a
     request for <a data-link-type=dfn href=#blockable-content title="blockable content">blockable content</a> to protect users from accidental data
     leakage.</p>
   </section>
@@ -721,16 +724,17 @@
 <p>Both documents and workers have <a data-link-type=dfn href=#environment-settings-object title="environment settings objects">environment settings objects</a> which
     may be examined according to the following algorithm in order to determine
     whether they <dfn data-dfn-type=dfn data-export="" data-local-title="restricts mixed content" id=restrict-mixed-content>restrict
-    mixed content<a class=self-link href=#restrict-mixed-content></a></dfn>. This algorithm returns <code>restricts mixed
-    content</code> or <code>does not restrict mixed content</code>, as
+    mixed content<a class=self-link href=#restrict-mixed-content></a></dfn>. This algorithm returns <code>Restricts Mixed
+    Content</code> or <code>Does Not Restrict Mixed Content</code>, as
     appropriate.</p>
 
 <p>Given an <a data-link-type=dfn href=#environment-settings-object title="environment settings object">environment settings object</a> <var>settings</var>:</p>
 
     <ol>
       <li>
-        If <var>settings</var>' <a data-link-type=dfn href=#request-client-tls-state title="TLS state">TLS state</a> is <code>authenticated</code>,
-        then return <strong>restricts mixed content</strong>.
+        If <var>settings</var>' <a data-link-type=dfn href=#request-client-tls-state title="TLS state">TLS state</a> is not
+        <code>unauthenticated</code>, then return <strong>Restricts Mixed
+        Content</strong>.
       </li>
       <li>
         If <var>settings</var> has a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#responsible-browsing-context title="responsible browsing context">responsible browsing context</a>
@@ -750,15 +754,15 @@
               </li>
               <li>
                 If <var>ancestorSettings</var>' <a data-link-type=dfn href=#request-client-tls-state title="TLS state">TLS state</a> is
-                <code>authenticated</code>, then return <strong>restricts mixed
-                content</strong>.
+                <code>authenticated</code>, then return <strong>Restricts Mixed
+                Content</strong>.
               </li>
             </ol>
           </li>
         </ol>
       </li>
 
-      <li>Return <strong>does not restrict mixed content</strong>.</li>
+      <li>Return <strong>Does Not Restrict Mixed Content</strong>.</li>
     </ol>
 
     <div class=note>
@@ -920,23 +924,18 @@
 <p>Here, we define algorithms for such determination.</p>
 
   <section>
-    <h3 class="heading settled" data-level=6.1 id=may-browsing-context-use-powerful-features><span class=secno>6.1 </span><span class=content>
-      May <var>browsing context</var> use powerful features?
-    </span><a class=self-link href=#may-browsing-context-use-powerful-features></a></h3>
+    <h3 class="heading settled" data-level=6.1 id=may-document-use-powerful-features><span class=secno>6.1 </span><span class=content>
+      May <var>Document</var> use powerful features?
+    </span><a class=self-link href=#may-document-use-powerful-features></a></h3>
 
-<p>Given a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> <var>browsing context</var>, this
-    algorithm returns <code>Allowed</code> or <code>Not Allowed</code> as
-    appropriate.</p>
+<p>Given a <code class=idl><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a></code> <var>document</var>, this algorithm returns
+    <code>Allowed</code> or <code>Not Allowed</code> as appropriate.</p>
 
     <ol>
       <li>
-        Let <var>document</var> be the <code class=idl><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a></code> object of the
-        <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#active-document title="active document">active document</a> of <var>browsing context</var>.
-      </li>
-      <li>
-        While <var>document</var> corresponds to <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#an-iframe-srcdoc-document title="an iframe srcdoc Document">an iframe srcdoc Document</a>,
-        let <var>document</var> be that Document’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a>’s
-        <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context-container title="browsing context container">browsing context container</a>’s <code class=idl><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a></code>.
+        While <var>document</var> corresponds to <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/embedded-content-0.html#an-iframe-srcdoc-document title="an iframe srcdoc Document">an iframe srcdoc
+        Document</a>, let <var>document</var> be that Document’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing
+        context</a>’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context-container title="browsing context container">browsing context container</a>’s <code class=idl><a data-link-type=idl href=http://www.w3.org/html/wg/drafts/html/CR/infrastructure.html#dom-document title=Document>Document</a></code>.
       </li>
       <li>
         If <var>document</var>’s active <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#sandboxing-flag-set title="sandboxing flag set">sandboxing flag set</a> has its
