@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20141029>29 October 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20141030>30 October 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl>
 	<dt>This version:
 	<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a>
@@ -152,16 +152,20 @@
 		<li><a href=#requirements-forms><span class=secno>4.3</span> Form Submission</a>
 		<li><a href=#requirements-ux><span class=secno>4.4</span> UI Requirements</a>
 		<li><a href=#requirements-user-controls><span class=secno>4.5</span> User Controls</a></ul>
-	<li><a href=#algorithms><span class=secno>5</span> Algorithms</a>
+	<li><a href=#algorithms><span class=secno>5</span> Insecure Content in Secure Contexts</a>
 		<ul class=toc>
 		<li><a href=#categorize-settings-object><span class=secno>5.1</span>        Does <var>settings object</var> restrict mixed content?     </a>
 		<li><a href=#should-block-fetch><span class=secno>5.2</span>        Should fetching <var>request</var> be blocked as mixed content?     </a>
-		<li><a href=#should-block-response><span class=secno>5.3</span>        Should <var>response</var> to <var>request</var> be blocked as mixed       content?     </a>
-		<li><a href=#is-origin-authenticated><span class=secno>5.4</span>        Is <var>origin</var> an <strong>authenticated origin</strong>?     </a>
-		<li><a href=#is-browsing-context-authenticated><span class=secno>5.5</span>        Is <var>browsing context</var> an <strong>authenticated browsing       context</strong>?     </a></ul>
-	<li><a href=#fetch-integration><span class=secno>6</span> Integration with Fetch</a>
-	<li><a href=#websockets-integration><span class=secno>7</span> Modifications to WebSockets</a>
-	<li><a href=#acknowledgements><span class=secno>8</span> Acknowledgements</a>
+		<li><a href=#should-block-response><span class=secno>5.3</span>        Should <var>response</var> to <var>request</var> be blocked as mixed       content?     </a></ul>
+	<li><a href=#powerful-features><span class=secno>6</span>      Secure Contexts for Powerful Features   </a>
+		<ul class=toc>
+		<li><a href=#may-script-use-powerful-features><span class=secno>6.1</span>        May <var>script</var> use powerful features?     </a>
+		<li><a href=#may-browsing-context-use-powerful-features><span class=secno>6.2</span>        May <var>browsing context</var> use powerful features?     </a>
+		<li><a href=#settings-powerful-features><span class=secno>6.3</span>        May <var>environment settings object</var> use powerful features?     </a>
+		<li><a href=#is-origin-trusted><span class=secno>6.4</span>        Is <var>origin</var> potentially trusted?     </a></ul>
+	<li><a href=#fetch-integration><span class=secno>7</span> Integration with Fetch</a>
+	<li><a href=#websockets-integration><span class=secno>8</span> Modifications to WebSockets</a>
+	<li><a href=#acknowledgements><span class=secno>9</span> Acknowledgements</a>
 	<li><a href=#conformance><span class=secno></span> Conformance</a>
 		<ul class=toc>
 		<li><a href=#conventions><span class=secno></span> Document conventions</a>
@@ -260,18 +264,8 @@
     </dt>
     <dd>
       An <a data-link-type=dfn href=#origin title=origin>origin</a> is said to be <strong>potentially secure</strong>
-      if one of the following is true:
-
-      <ul>
-        <li>
-          The origin’s scheme component is <code>HTTPS</code>,
-          <code>WSS</code>, or <code>about</code>.
-        </li>
-        <li>
-          The origin is a <a data-link-type=dfn href=#globally-unique-identifier title="globally unique identifier">globally unique identifier</a> <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6454 title=RFC6454>[RFC6454]</a> (for
-          example, a <code>blob</code> URL).
-        </li>
-      </ul>
+      if the origin’s scheme component is <code>HTTPS</code>, <code>WSS</code>,
+      or <code>about</code>.
 
 <p>A URL whose <a data-link-type=dfn href=#origin title=origin>origin</a> is potentially secure is itself considered to
       be potentially secure.</p>
@@ -336,32 +330,6 @@
 
 <p class=note>Note: We recommend that user agents return network errors rather than
       fetching resources whose TLS-protection is deprecated.</p>
-    </dd>
-
-    <dt>
-      <dfn data-dfn-type=dfn data-export="" id=authenticated-origin>authenticated origin<a class=self-link href=#authenticated-origin></a></dfn>
-    </dt>
-    <dt>
-      <dfn data-dfn-type=dfn data-export="" id=authenticated-browsing-context>authenticated browsing context<a class=self-link href=#authenticated-browsing-context></a></dfn>
-    </dt>
-    <dd>
-      An origin can be called <strong>authenticated</strong> when it either
-      refers to a source which the user agent is obligated to take as a basic
-      part of the platform on which it operates (e.g. <code>localhost</code>),
-      or to a source which can be adequately verified as authentic.
-
-<p>A <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> can be called <strong>authenticated</strong>
-      if the origin of its <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#active-document title="active document">active document</a> is
-      <strong>authenticated</strong>.</p>
-
-<p>These are spelled out in more detail in the
-      <a data-section="" href=#is-origin-authenticated>§5.4 
-      Is <var>origin</var> an <strong>authenticated origin</strong>?
-    </a> and <a data-section="" href=#is-browsing-context-authenticated>§5.5 
-      Is <var>browsing context</var> an <strong>authenticated browsing
-      context</strong>?
-    </a>
-      algorithms.</p>
     </dd>
   </dl>
 
@@ -650,7 +618,7 @@
       </li>
     </ol>
 
-<p><a data-section="" href=#fetch-integration>§6 Integration with Fetch</a> and <a data-section="" href=#algorithms>§5 Algorithms</a> detail how these fetching
+<p><a data-section="" href=#fetch-integration>§7 Integration with Fetch</a> and <a data-section="" href=#algorithms>§5 Insecure Content in Secure Contexts</a> detail how these fetching
     requirements could be implemented.</p>
   </section>
 
@@ -744,7 +712,7 @@
 
 
 <section>
-  <h2 class="heading settled" data-level=5 id=algorithms><span class=secno>5 </span><span class=content>Algorithms</span><a class=self-link href=#algorithms></a></h2>
+  <h2 class="heading settled" data-level=5 id=algorithms><span class=secno>5 </span><span class=content>Insecure Content in Secure Contexts</span><a class=self-link href=#algorithms></a></h2>
 
   <section>
     <h3 class="heading settled" data-level=5.1 id=categorize-settings-object><span class=secno>5.1 </span><span class=content>
@@ -937,69 +905,52 @@
       <li>Return <strong>allowed</strong>.</li>
     </ol>
   </section>
+</section>
+
+<section>
+  <h2 class="heading settled" data-level=6 id=powerful-features><span class=secno>6 </span><span class=content>
+    Secure Contexts for Powerful Features
+  </span><a class=self-link href=#powerful-features></a></h2>
+
+<p>Tangentially related to a user agent’s handling of insecure resources in
+  secure contexts, certain web platform features that have distinct impact
+  on a user’s security or privacy wish to restrict themselves for use only
+  in sufficiently secure contexts. Service Workers, for instance, may only
+  be registered when the user agent is satisfied that doing so doesn’t put
+  the user at risk.</p>
+
+<p>Here, we define algorithms for such determination.</p>
 
   <section>
-    <h3 class="heading settled" data-level=5.4 id=is-origin-authenticated><span class=secno>5.4 </span><span class=content>
-      Is <var>origin</var> an <strong>authenticated origin</strong>?
-    </span><a class=self-link href=#is-origin-authenticated></a></h3>
+    <h3 class="heading settled" data-level=6.1 id=may-script-use-powerful-features><span class=secno>6.1 </span><span class=content>
+      May <var>script</var> use powerful features?
+    </span><a class=self-link href=#may-script-use-powerful-features></a></h3>
 
-<p>Given an <a data-link-type=dfn href=#origin title=origin>origin</a> <var>origin</var>, this algorithm returns
-    <code>authenticated</code> if the origin is an <a data-link-type=dfn href=#authenticated-origin title="authenticated origin">authenticated origin</a>,
-    and <code>unauthenticated</code> otherwise.</p>
+<p>Given a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#concept-script title=script>script</a> <var>script</var>, this algorithm returns either
+    <code>Allowed</code> or <code>Not Allowed</code> as appropriate.</p>
 
     <ol>
       <li>
-        If <var>origin</var> is <strong>not</strong> an <a data-link-type=dfn href=#insecure-origin title="insecure origin">insecure origin</a>,
-        return <strong><code>authenticated</code></strong>.
+        Let <var>settings</var> be the script’s <a data-link-type=dfn href=#environment-settings-object title="environment settings object">environment settings
+        object</a>.
       </li>
       <li>
-        If <var>origin</var>’s <code>host</code> component is
-        <code>localhost</code>, return
-        <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>’s <code>host</code> component matches one of the
-        CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
-        <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=RFC4632>[RFC4632]</a>, return <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>’s <code>scheme</code> component is
-        <code>file</code>, return <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>’s <code>scheme</code> component is one which the
-        user agent considers to be authenticated, return
-        <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        Return <strong><code>unauthenticated</code></strong>.
+        Return the result of executing the algorithm defined in
+        <a data-section="" href=#settings-powerful-features>§6.3 
+      May <var>environment settings object</var> use powerful features?
+    </a> on <var>settings</var>.
       </li>
     </ol>
-
-<p class=note>Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
-    is the origin of the context in which they were created. Therefore, blobs
-    created in an authenticated origin will themselves be authenticated. The
-    origin of <code>data:</code> and <code>javascript:</code> URLs is an
-    opaque identifier, which will not be considered authenticated.</p>
-
-<p class=note>Note: Step #5 above is meant to cover vendor-specific URL schemes whose
-    contents are authenticated by the user agent. For example, FirefoxOS
-    application resources are referred to with an URL whose <code>scheme</code>
-    component is <code>app:</code>. Likewise, Chrome’s extensions and apps
-    live on <code>chrome-extension:</code> schemes. These could reasonably
-    be considered authenticated origins.</p>
   </section>
 
   <section>
-    <h3 class="heading settled" data-level=5.5 id=is-browsing-context-authenticated><span class=secno>5.5 </span><span class=content>
-      Is <var>browsing context</var> an <strong>authenticated browsing
-      context</strong>?
-    </span><a class=self-link href=#is-browsing-context-authenticated></a></h3>
+    <h3 class="heading settled" data-level=6.2 id=may-browsing-context-use-powerful-features><span class=secno>6.2 </span><span class=content>
+      May <var>browsing context</var> use powerful features?
+    </span><a class=self-link href=#may-browsing-context-use-powerful-features></a></h3>
 
 <p>Given a <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/browsers.html#browsing-context title="browsing context">browsing context</a> <var>browsing context</var>, this
-    algorithm returns <code>authenticated</code> if the browsing context is an
-    <a data-link-type=dfn href=#authenticated-browsing-context title="authenticated browsing context">authenticated browsing context</a>, and <code>unauthenticated</code>
-    otherwise.</p>
+    algorithm returns <code>Allowed</code> or <code>Not Allowed</code> as
+    appropriate.</p>
 
     <ol>
       <li>
@@ -1023,24 +974,127 @@
         </ol>
       </li>
       <li>
-        Return the result of executing the <a data-section="" href=#is-origin-authenticated>§5.4 
-      Is <var>origin</var> an <strong>authenticated origin</strong>?
+        If the result of executing the <a data-section="" href=#is-origin-trusted>§6.4 
+      Is <var>origin</var> potentially trusted?
+    </a> algorithm
+        on <var>origin</var> is <code>Potentially Trusted</code>, return
+        <code>Allowed</code>.
+      </li>
+      <li>
+        Return the result of executing the <a data-section="" href=#settings-powerful-features>§6.3 
+      May <var>environment settings object</var> use powerful features?
     </a>
-        algorithm on <var>origin</var>.
+        algorithm on <var>browsing context</var>’s <a data-link-type=dfn href=http://www.w3.org/html/wg/drafts/html/CR/webappapis.html#incumbent-settings-object title="incumbent settings object">incumbent settings
+        object</a>.
+      </li>
+    </ol>
+
+<p class=note>Note: Sandboxed documents will have a unique origin. This algorithm uses the
+    location of a sandboxed document to determine whether it should be considered
+    authenticated. That is, the document inside
+    <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
+    would be considered to allow powerful features.</p>
+  </section>
+
+  <section>
+    <h3 class="heading settled" data-level=6.3 id=settings-powerful-features><span class=secno>6.3 </span><span class=content>
+      May <var>environment settings object</var> use powerful features?
+    </span><a class=self-link href=#settings-powerful-features></a></h3>
+
+<p>Given an <a data-link-type=dfn href=#environment-settings-object title="environment settings object">environment settings object</a> <var>settings</var>, this
+    algorithm returns <code>Allowed</code> if powerful features may be used
+    in the object’s context, and <code>Not Allowed</code> otherwise.</p>
+
+    <ol>
+      <li>
+        If <var>settings</var>' <a data-link-type=dfn href=#request-client-authentication-state title="authentication state">authentication state</a> is
+        <code>authenticated</code>, return <code>Allowed</code>.
+      </li>
+      <li>
+        Otherwise:
+
+        <ol>
+          <li>
+            Let <var>origin</var> be <var>settings</var>' <a data-link-type=dfn href=#origin title=origin>origin</a>.
+          </li>
+          <li>
+            If the result of executing the <a data-section="" href=#is-origin-trusted>§6.4 
+      Is <var>origin</var> potentially trusted?
+    </a> algorithm
+            on <var>origin</var> is <code>Potentially Trusted</code>, return
+            <code>Allowed</code>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <code>Not Allowed</code>.
       </li>
     </ol>
   </section>
 
-<p class=note>Note: Sandboxed documents will have a unique origin. This algorithm uses the
-  location of a sandboxed document to determine whether it should be considered
-  authenticated. That is, the document inside
-  <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
-  would be considered to have an <a data-link-type=dfn href=#authenticated-browsing-context title="authenticated browsing context">authenticated browsing context</a>.</p>
+  <section>
+    <h3 class="heading settled" data-level=6.4 id=is-origin-trusted><span class=secno>6.4 </span><span class=content>
+      Is <var>origin</var> potentially trusted?
+    </span><a class=self-link href=#is-origin-trusted></a></h3>
+
+<p>Certain origins are impossible for a user agent not to place trust in. In
+    particular, <code>file:</code> URLs and the loopback interface both expose
+    aspects of the machine on which the user agent is running. The user agent
+    has no choice but to trust these origins.</p>
+
+<p>Certain user agents extend this trust to other, vendor-specific URL schemes
+    like <code>app:</code> or <code>chrome-extension:</code>.</p>
+
+<p>Given an <a data-link-type=dfn href=#origin title=origin>origin</a> <var>origin</var>, the following algorithm returns
+    <code>Potentially Trusted</code> or <code>Not Trusted</code> as appropriate.</p>
+
+    <ol>
+      <li>
+        If <var>origin</var> is a <a data-link-type=dfn href=#potentially-secure-origin title="potentially secure origin">potentially secure origin</a>,
+        return <code>Potentially Trusted</code>.
+
+<p class=note>Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
+        is the origin of the context in which they were created. Therefore,
+        blobs created in an potentially secure origin will themselves be
+        potentially secure. The origin of <code>data:</code> and
+        <code>javascript:</code> URLs is an opaque identifier, which will not
+        be considered potentially secure.</p>
+      </li>
+      <li>
+        If <var>origin</var>’s <code>host</code> component is
+        <code>localhost</code>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>’s <code>host</code> component matches one of
+        the CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
+        <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc4632 title=RFC4632>[RFC4632]</a>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>’s <code>scheme</code> component is
+        <code>file</code>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>’s <code>scheme</code> component is one which
+        the user agent considers to be authenticated, return
+        <code>Potentially Trusted</code>.
+
+<p class=note>Note: This is meant to cover vendor-specific URL schemes whose
+        contents are authenticated by the user agent. For example, FirefoxOS
+        application resources are referred to with an URL whose
+        <code>scheme</code> component is <code>app:</code>. Likewise, Chrome’s
+        extensions and apps live on <code>chrome-extension:</code> schemes.
+        These could reasonably be considered trusted origins.</p>
+      </li>
+      <li>
+        Return <code>Not Trusted</code>.
+      </li>
+    </ol>
+  </section>
 </section>
 
 
 <section>
-  <h2 class="heading settled" data-level=6 id=fetch-integration><span class=secno>6 </span><span class=content>Integration with Fetch</span><a class=self-link href=#fetch-integration></a></h2>
+  <h2 class="heading settled" data-level=7 id=fetch-integration><span class=secno>7 </span><span class=content>Integration with Fetch</span><a class=self-link href=#fetch-integration></a></h2>
 
 <p>When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
@@ -1078,7 +1132,7 @@
 
 
 <section>
-  <h2 class="heading settled" data-level=7 id=websockets-integration><span class=secno>7 </span><span class=content>Modifications to WebSockets</span><a class=self-link href=#websockets-integration></a></h2>
+  <h2 class="heading settled" data-level=8 id=websockets-integration><span class=secno>8 </span><span class=content>Modifications to WebSockets</span><a class=self-link href=#websockets-integration></a></h2>
 
 <p>The <a href=http://www.w3.org/TR/2012/CR-websockets-20120920/#the-websocket-interface><code>WebSocket()</code>
   constructor algorithm</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-websockets title=WEBSOCKETS>[WEBSOCKETS]</a> is modified as follows:</p>
@@ -1121,7 +1175,7 @@
 
 
 <section>
-  <h2 class="heading settled" data-level=8 id=acknowledgements><span class=secno>8 </span><span class=content>Acknowledgements</span><a class=self-link href=#acknowledgements></a></h2>
+  <h2 class="heading settled" data-level=9 id=acknowledgements><span class=secno>9 </span><span class=content>Acknowledgements</span><a class=self-link href=#acknowledgements></a></h2>
 
 <p>In addition to the wonderful feedback gathered from the WebAppSec WG, the
   Chrome security team was invaluable in preparing this specification. In
@@ -1226,8 +1280,6 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>a priori insecure, <a href=#a-priori-insecure-origin title="section 2.1">2.1</a>
 <li>a priori insecure origin, <a href=#a-priori-insecure-origin title="section 2.1">2.1</a>
 <li>a priori insecure URL, <a href=#a-priori-insecure-url title="section 2.1">2.1</a>
-<li>authenticated browsing context, <a href=#authenticated-browsing-context title="section 2.1">2.1</a>
-<li>authenticated origin, <a href=#authenticated-origin title="section 2.1">2.1</a>
 <li>authentication state, <a href=#request-client-authentication-state title="section 2.2">2.2</a>
 <li>blockable, <a href=#blockable-content title="section 3.2">3.2</a>
 <li>blockable content, <a href=#blockable-content title="section 3.2">3.2</a>

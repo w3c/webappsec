@@ -9,7 +9,7 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how user agents should handle rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container / relevant settings object for a script / responsible browsing context / incumbent settings object
+Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container / relevant settings object for a script / responsible browsing context / incumbent settings object / script
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
@@ -117,18 +117,8 @@ Indent: 2
     </dt>
     <dd>
       An <a>origin</a> is said to be <strong>potentially secure</strong>
-      if one of the following is true:
-
-      <ul>
-        <li>
-          The origin's scheme component is <code>HTTPS</code>,
-          <code>WSS</code>, or <code>about</code>.
-        </li>
-        <li>
-          The origin is a <a>globally unique identifier</a> [[RFC6454]] (for
-          example, a <code>blob</code> URL).
-        </li>
-      </ul>
+      if the origin's scheme component is <code>HTTPS</code>, <code>WSS</code>,
+      or <code>about</code>.
 
       A URL whose <a>origin</a> is potentially secure is itself considered to
       be potentially secure.
@@ -193,27 +183,6 @@ Indent: 2
 
       Note: We recommend that user agents return network errors rather than
       fetching resources whose TLS-protection is deprecated.
-    </dd>
-
-    <dt>
-      <dfn export>authenticated origin</dfn>
-    </dt>
-    <dt>
-      <dfn export>authenticated browsing context</dfn>
-    </dt>
-    <dd>
-      An origin can be called <strong>authenticated</strong> when it either
-      refers to a source which the user agent is obligated to take as a basic
-      part of the platform on which it operates (e.g. <code>localhost</code>),
-      or to a source which can be adequately verified as authentic.
-
-      A <a>browsing context</a> can be called <strong>authenticated</strong>
-      if the origin of its <a>active document</a> is
-      <strong>authenticated</strong>.
-
-      These are spelled out in more detail in the
-      [[#is-origin-authenticated]] and [[#is-browsing-context-authenticated]]
-      algorithms.
     </dd>
   </dl>
 
@@ -608,7 +577,7 @@ Indent: 2
 ██     ██ ████████  ██████    ███████  ██     ██ ████    ██    ██     ██ ██     ██  ██████
 -->
 <section>
-  <h2 id="algorithms">Algorithms</h2>
+  <h2 id="algorithms">Insecure Content in Secure Contexts</h2>
 
   <section>
     <h3 id="categorize-settings-object">
@@ -801,69 +770,50 @@ Indent: 2
       <li>Return <strong>allowed</strong>.</li>
     </ol>
   </section>
+</section>
+
+<section>
+  <h2 id="powerful-features">
+    Secure Contexts for Powerful Features
+  </h2>
+
+  Tangentially related to a user agent's handling of insecure resources in
+  secure contexts, certain web platform features that have distinct impact
+  on a user's security or privacy wish to restrict themselves for use only
+  in sufficiently secure contexts. Service Workers, for instance, may only
+  be registered when the user agent is satisfied that doing so doesn't put
+  the user at risk.
+
+  Here, we define algorithms for such determination.
 
   <section>
-    <h3 id="is-origin-authenticated">
-      Is <var>origin</var> an <strong>authenticated origin</strong>?
+    <h3 id="may-script-use-powerful-features">
+      May <var>script</var> use powerful features?
     </h3>
 
-    Given an <a>origin</a> <var>origin</var>, this algorithm returns
-    <code>authenticated</code> if the origin is an <a>authenticated origin</a>,
-    and <code>unauthenticated</code> otherwise.
+    Given a <a>script</a> <var>script</var>, this algorithm returns either
+    <code>Allowed</code> or <code>Not Allowed</code> as appropriate.
 
     <ol>
       <li>
-        If <var>origin</var> is <strong>not</strong> an <a>insecure origin</a>,
-        return <strong><code>authenticated</code></strong>.
+        Let <var>settings</var> be the script's <a>environment settings
+        object</a>.
       </li>
       <li>
-        If <var>origin</var>'s <code>host</code> component is
-        <code>localhost</code>, return
-        <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>host</code> component matches one of the
-        CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
-        [[!RFC4632]], return <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>scheme</code> component is
-        <code>file</code>, return <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>scheme</code> component is one which the
-        user agent considers to be authenticated, return
-        <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        Return <strong><code>unauthenticated</code></strong>.
+        Return the result of executing the algorithm defined in
+        [[#settings-powerful-features]] on <var>settings</var>.
       </li>
     </ol>
-
-    Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
-    is the origin of the context in which they were created. Therefore, blobs
-    created in an authenticated origin will themselves be authenticated. The
-    origin of <code>data:</code> and <code>javascript:</code> URLs is an
-    opaque identifier, which will not be considered authenticated.
-
-    Note: Step #5 above is meant to cover vendor-specific URL schemes whose
-    contents are authenticated by the user agent. For example, FirefoxOS
-    application resources are referred to with an URL whose <code>scheme</code>
-    component is <code>app:</code>. Likewise, Chrome's extensions and apps
-    live on <code>chrome-extension:</code> schemes. These could reasonably
-    be considered authenticated origins.
   </section>
 
   <section>
-    <h3 id="is-browsing-context-authenticated">
-      Is <var>browsing context</var> an <strong>authenticated browsing
-      context</strong>?
+    <h3 id="may-browsing-context-use-powerful-features">
+      May <var>browsing context</var> use powerful features?
     </h3>
 
     Given a <a>browsing context</a> <var>browsing context</var>, this
-    algorithm returns <code>authenticated</code> if the browsing context is an
-    <a>authenticated browsing context</a>, and <code>unauthenticated</code>
-    otherwise.
+    algorithm returns <code>Allowed</code> or <code>Not Allowed</code> as
+    appropriate.
 
     <ol>
       <li>
@@ -887,17 +837,116 @@ Indent: 2
         </ol>
       </li>
       <li>
-        Return the result of executing the [[#is-origin-authenticated]]
-        algorithm on <var>origin</var>.
+        If the result of executing the [[#is-origin-trusted]] algorithm
+        on <var>origin</var> is <code>Potentially Trusted</code>, return
+        <code>Allowed</code>.
+      </li>
+      <li>
+        Return the result of executing the [[#settings-powerful-features]]
+        algorithm on <var>browsing context</var>'s <a>incumbent settings
+        object</a>.
+      </li>
+    </ol>
+
+    Note: Sandboxed documents will have a unique origin. This algorithm uses the
+    location of a sandboxed document to determine whether it should be considered
+    authenticated. That is, the document inside
+    <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
+    would be considered to allow powerful features.
+  </section>
+
+  <section>
+    <h3 id="settings-powerful-features">
+      May <var>environment settings object</var> use powerful features?
+    </h3>
+
+    Given an <a>environment settings object</a> <var>settings</var>, this
+    algorithm returns <code>Allowed</code> if powerful features may be used
+    in the object's context, and <code>Not Allowed</code> otherwise.
+
+    <ol>
+      <li>
+        If <var>settings</var>' <a>authentication state</a> is
+        <code>authenticated</code>, return <code>Allowed</code>.
+      </li>
+      <li>
+        Otherwise:
+
+        <ol>
+          <li>
+            Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
+          </li>
+          <li>
+            If the result of executing the [[#is-origin-trusted]] algorithm
+            on <var>origin</var> is <code>Potentially Trusted</code>, return
+            <code>Allowed</code>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <code>Not Allowed</code>.
       </li>
     </ol>
   </section>
 
-  Note: Sandboxed documents will have a unique origin. This algorithm uses the
-  location of a sandboxed document to determine whether it should be considered
-  authenticated. That is, the document inside
-  <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
-  would be considered to have an <a>authenticated browsing context</a>.
+  <section>
+    <h3 id="is-origin-trusted">
+      Is <var>origin</var> potentially trusted?
+    </h3>
+
+    Certain origins are impossible for a user agent not to place trust in. In
+    particular, <code>file:</code> URLs and the loopback interface both expose
+    aspects of the machine on which the user agent is running. The user agent
+    has no choice but to trust these origins.
+
+    Certain user agents extend this trust to other, vendor-specific URL schemes
+    like <code>app:</code> or <code>chrome-extension:</code>.
+
+    Given an <a>origin</a> <var>origin</var>, the following algorithm returns
+    <code>Potentially Trusted</code> or <code>Not Trusted</code> as appropriate.
+
+    <ol>
+      <li>
+        If <var>origin</var> is a <a>potentially secure origin</a>,
+        return <code>Potentially Trusted</code>.
+
+        Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
+        is the origin of the context in which they were created. Therefore,
+        blobs created in an potentially secure origin will themselves be
+        potentially secure. The origin of <code>data:</code> and
+        <code>javascript:</code> URLs is an opaque identifier, which will not
+        be considered potentially secure.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>host</code> component is
+        <code>localhost</code>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>host</code> component matches one of
+        the CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
+        [[!RFC4632]], return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>scheme</code> component is
+        <code>file</code>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>scheme</code> component is one which
+        the user agent considers to be authenticated, return
+        <code>Potentially Trusted</code>.
+
+        Note: This is meant to cover vendor-specific URL schemes whose
+        contents are authenticated by the user agent. For example, FirefoxOS
+        application resources are referred to with an URL whose
+        <code>scheme</code> component is <code>app:</code>. Likewise, Chrome's
+        extensions and apps live on <code>chrome-extension:</code> schemes.
+        These could reasonably be considered trusted origins.
+      </li>
+      <li>
+        Return <code>Not Trusted</code>.
+      </li>
+    </ol>
+  </section>
 </section>
 
 <!--
