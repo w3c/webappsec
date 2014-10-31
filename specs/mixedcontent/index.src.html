@@ -9,7 +9,7 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how user agents should handle rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container / relevant settings object for a script / responsible browsing context / incumbent settings object / script
+Link Defaults: HTML5 (dfn) plugin / browsing context / top-level browsing context / plugin document / frame / sandboxing flag set / navigated / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container / relevant settings object for a script / responsible document / incumbent settings object / script / nested through
 Link Defaults: HTML5 (interface) document
 Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
@@ -223,7 +223,7 @@ Indent: 2
       This term is defined in
       <a href="http://tools.ietf.org/html/rfc6454#section-4">Section 4 of
       RFC6454</a>. [[!RFC6454]]
-    
+
       Note: URLs that do not use
       <a href="http://tools.ietf.org/html/rfc3986#section-3.2">hierarchical
       elements</a> as naming authorities (for example: <code>blob:</code>, and
@@ -261,6 +261,14 @@ Indent: 2
     <dt><dfn>environment settings object</dfn></dt>
     <dd>
       Defined in [[!HTML5]].
+    </dd>
+
+    <dt><dfn>embedding document</dfn></dt>
+    <dd>
+      Given a {{Document}} <var>A</var>, the <strong>embedding
+      document</strong> of <var>A</var> is the {{Document}}
+      <a title="nested through">through which</a> <var>A</var>'s <a>browsing
+      context</a> is nested.
     </dd>
   </dl>
 </section>
@@ -603,36 +611,36 @@ Indent: 2
         Content</strong>.
       </li>
       <li>
-        If <var>settings</var> has a <a>responsible browsing context</a>
-        <var>context</var> that is a <a>nested browsing context</a>, then:
+        If <var>settings</var> has a <a>responsible document</a>
+        <var>document</var>, then:
 
         <ol>
-          <li>Let <var>ancestorList</var> be the list of all
-          <a>ancestors</a> of <var>context</var>.</li>
-
           <li>
-            For each <var>ancestorContext</var> in <var>ancestorList</var>:
+            While <var>document</var> has an <a>embedding document</a>:
 
             <ol>
               <li>
-                Let <var>ancestorSettings</var> be <var>ancestorContext</var>'s
-                <a>incumbent settings object</a>.
+                Let <var>document</var> be <var>document</var>'s <a>embedding
+                document</a>.
               </li>
               <li>
-                If <var>ancestorSettings</var>' <a>TLS state</a> is
-                <code>authenticated</code>, then return <strong>Restricts Mixed
-                Content</strong>.
+                Let <var>embedder settings</var> be <var>document</var>'s
+                <var>incumbent settings object</var>.
+              </li>
+              <li>
+                If <var>embedder settings</var>' <a>TLS state</a> is not
+                <code>unauthenticated</code>, then return <strong>Restricts
+                mixed content</strong>.
               </li>
             </ol>
           </li>
         </ol>
       </li>
-
       <li>Return <strong>Does Not Restrict Mixed Content</strong>.</li>
     </ol>
 
     <div class="note">
-      If a document is a <a>nested browsing context</a>, user agents need to
+      If a document has an <a>embedding document</a>, user agents need to
       check not only the document itself, but also the <a>top-level browsing
       context</a> in which the document is nested, as that is the context
       which controls the user's expectations regarding the security status of
@@ -976,7 +984,7 @@ Indent: 2
 -->
 <section>
   <h2 id="websockets-integration">Modifications to WebSockets</h2>
-  
+
   The <a href="http://www.w3.org/TR/2012/CR-websockets-20120920/#the-websocket-interface"><code>WebSocket()</code>
   constructor algorithm</a> [[!WEBSOCKETS]] is modified as follows:
 
