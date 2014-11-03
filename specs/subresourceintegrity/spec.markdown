@@ -1056,12 +1056,12 @@ contents. This might reveal, for example, whether or not a user is
 logged into a particular service.
 
 Moreover, attackers can brute-force specific values in an otherwise
-static resource: consider a document that looks like this:
+static resource: consider a JSON response that looks like this:
 
-    <html>{static content}<h1>Hello, $username!</h1>{static content}</html>
+    {'status': 'authenticated', 'username': 'Stephan Falken'}
 {:.example.highlight}
 
-An attacker can precompute hashes for the page with a variety of
+An attacker can precompute hashes for the response with a variety of
 common usernames, and specify those hashes while repeatedly attempting
 to load the document. By examining the reported violations, the attacker
 can obtain a user's username.
