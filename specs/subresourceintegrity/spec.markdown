@@ -841,68 +841,6 @@ the WG has concentrated most of its time thus far.
 {:.issue data-number="14"}
 
 <section>
-#### Workers
-
-To validate the integrity of scripts which are to be run as workers, a new
-constructor is added for `Worker` and `SharedWorker` which accepts a second
-argument containing integrity metadata. This information is used when
-[running a worker][runworker] to perform validation, as outlined in the
-following sections: [[!WEBWORKERS]]
-
-[runworker]: http://dev.w3.org/html5/workers/#run-a-worker
-
-<section>
-#### Worker extension
-
-attribute DOMString integrity
-: The value of the Worker's `integrity` attribute. Defaults to the empty string.
-{:title="[Constructor (DOMString scriptURL, DOMString integrityMetadata)] partial interface Worker : EventTarget"}
-{:.idl}
-
-When the `Worker(scriptURL, integrityMetadata)` constructor is invoked:
-
-1. If `integrityMetadata` is not a valid "named information" (`ni`) URL,
-   throw a `SyntaxError` exception and abort these steps.
-2. Execute the `Worker(scriptURL)` constructor, and set the newly created
-   `Worker` object's `integrity` attribute to `integrityMetadata`.
-
-Developers might get sad if future specs with Worker integrationadd further (optional) parameters to the Worker constructor. Their order will seem unintuitive. See also how ServiceWorkers do this. (freddyb)
-{:.issue data-number="75"}
-</section><!-- /Framework::JS::Workers::Worker -->
-<section>
-#### SharedWorker extension
-
-attribute DOMString integrity
-: The value of the SharedWorker's `integrity` attribute. Defaults to the empty string.
-{:title="[Constructor (DOMString scriptURL, DOMString name, DOMString integrityMetadata)] partial interface Worker : EventTarget"}
-{:.idl}
-
-When the `SharedWorker(scriptURL, name, integrityMetadata)` constructor is
-invoked:
-
-1. If `integrityMetadata` is not a valid "named information" (`ni`) URL,
-   throw a `SyntaxError` exception and abort these steps.
-2. Execute the `SharedWorker(scriptURL, name)` constructor, and set the
-   newly created `SharedWorker` object's `integrity` attribute to
-   `integrityMetadata`.
-</section><!-- /Framework::JS::Workers::SharedWorker -->
-
-<section>
-#### Validation
-
-Add the following step directly after step 4 of the [run a worker][runworker]
-algorithm:
-
-5. If the script resource fetched in step 4 has an integrity status of
-   `corrupt`, then for each `Worker` or `SharedWorker` object associated
-   with <var>worker global scope</var>, [queue a task][] to [fire a
-   simple event][] named `error` at that object. Abort these steps.
-{:start="5"}
-</section><!-- /Framework::JS::Workers::validation -->
-
-</section><!-- /Framework::JS::Workers -->
-
-<section>
 #### XMLHttpRequest
 
 To validate the integrity of resources loaded via `XMLHttpRequest`, a new
