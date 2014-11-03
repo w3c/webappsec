@@ -701,8 +701,8 @@ MUST treat the lack of [integrity metadata][] for an resource as automatic
 failure, refuse to fetch the resource, and [report a violation][].
 {:.issue data-number="7"}
 
-[csp]: http://w3.org/TR/CSP11
-[report a violation]: http://www.w3.org/TR/CSP11/#dfn-report-a-violation
+[csp]: http://w3.org/TR/CSP2
+[report a violation]: http://www.w3.org/TR/CSP2/#report-a-violation
 [integrity policy]: #dfn-integrity-policy
 </section>
 
