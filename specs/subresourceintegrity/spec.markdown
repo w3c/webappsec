@@ -260,8 +260,7 @@ metadata</dfn>, which consists of the following pieces of information:
 
 The hash function and digest MUST be provided in order to validate a
 resource's integrity. The MIME type SHOULD be provided, as it mitigates the
-risk of certain attack vectors (see [MIME Type confusion][] in
-this document's Security Considerations section).
+risk of certain attack vectors.
 
 This metadata is generally encoded as a "named information" (`ni`) URI, as
 defined in RFC6920. [[!RFC6920]]
@@ -565,6 +564,7 @@ to enable the rest of this specification's work [[!FETCH]]:
 [fetch-response]: http://fetch.spec.whatwg.org/#concept-response
 [basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
 [CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
+[process request end-of-file]: https://fetch.spec.whatwg.org/#process-request-end-of-file
 </section>
 
 <section>
