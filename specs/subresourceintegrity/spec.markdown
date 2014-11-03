@@ -30,7 +30,7 @@ server, but also pin the _content_, ensuring that an exact representation of
 a resource, and _only_ that representation, loads and executes.
 
 This document specifies such a validation scheme, extending several HTML
-elements with a `integrity` attribute that contains a cryptographic hash of
+elements with an `integrity` attribute that contains a cryptographic hash of
 the representation of the resource the author expects to load. For instance,
 an author may wish to load jQuery from a shared server rather than hosting it
 on their own origin. Specifying that the _expected_ SHA-256 hash of
@@ -89,18 +89,12 @@ regardless of the URL from which they are loaded.
     libraries can be downloaded once, and only once, even if multiple
     instances with distinct URLs are requested.
 
-5.  (potentially) Relax mixed-content warnings for resources whose
-    integrity is verified. If the integrity metadata for a resource
-    is delivered over a secure channel, the user agent might choose to
-    allow loading the resource over an insecure channel.
-
-6.  (potentially) Allow resources to be downloaded from non-canonical
+5.  (potentially) Allow resources to be downloaded from non-canonical
     sources (for instance, over an insecure channel) for performance,
     but fall back to a canonical source if the non-canonical source
     fails an integrity check. 
 
-I'm not sure about #5 and #6. Get more detail from the WG about the
-benefits that such a fallback system would enable. (mkwst)
+Rather sure about #5. We also agreed to remove mixed-content relaxation. Declare this issue resolved? (mkwst,freddyb)
 {:.issue data-number="1"}
 </section><!-- /Introduction::Goals -->
 
@@ -131,6 +125,8 @@ benefits that such a fallback system would enable. (mkwst)
                 integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"></script>
     {:.example.highlight}
 
+<!-- Removed for minimum-viable-sri: no iframes
+
 *   An advertising network wishes to ensure that advertisements delivered via
     third-party servers matches the code which they reviewed in order to reduce
     the risk of accidental or malicious substitution of unreviewed content. By
@@ -141,6 +137,7 @@ benefits that such a fallback system would enable. (mkwst)
         <iframe src="https://awesome-ads.com/advertisement1.html"
                 integrity="ni:///sha-256;kasfdsaffs...eoirW-e?ct=text/html"></iframe>
     {:.example.highlight}
+-->
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
     HTML (for example, Chrome's New Tab Page) aren't manipulated before display.
@@ -204,6 +201,8 @@ Layer Security (TLS) [[!RFC2818]]).
 
 An <dfn>insecure channel</dfn> is any communication mechanism other than
 those the user agent has defined as "secure".
+
+Clarification needed whether we want to talk about (in)secure channels or (un)authenticated origins. This is Github issue 71 (freddyb). {:.issue data-number="71"}
 
 The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]
