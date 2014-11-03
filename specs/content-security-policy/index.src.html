@@ -67,11 +67,11 @@ At Risk: [[#directive-child-src]]
   current resource representation only. To supply a policy for an entire site,
   the server needs to supply a policy with each resource representation.
 
-  <h3 id="changes">Changes from Level 2</h3>
+  <h3 id="changes-from-level-2">Changes from Level 2</h3>
 
   This document describes an evolution of the
   <a href="http://w3.org/TR/CSP">Content Security Policy specification</a>.
-  Level 3 makes the following changes:
+  Level 3 makes the following changes from Level 2:
 
   <ol>
     <li>
@@ -84,6 +84,104 @@ At Risk: [[#directive-child-src]]
           [[!MANIFEST]].
         </li>
       </ol>
+    </li>
+  </ol>A
+
+  <h3 id="changes-from-level-1">Changes from Level 1</h3>
+
+  This document describes an evolution of the
+  <a href="http://w3.org/TR/CSP">Content Security Policy specification</a>.
+  Level 2 makes two breaking changes from Level 1, and adds support for a number
+  of new directives and capabilities which are summarized below:
+
+  <ol>
+    <li>
+      The following changes are backwards incompatible with the majority of
+      user agent's implementations of CSP 1:
+
+      <ol>
+        <li>
+          The path component of a source expression is now ignored if the
+          resource being loaded is the result of a redirect, as described in
+          [[#source-list-paths-and-redirects]].
+          
+          Note: Paths are technically new in CSP2, but they were already
+          implemented in many user agents before this revision of CSP was
+          completed, so noting the change here seems reasonable.
+        </li>
+        <li>
+          Redirects are blocked by default, and explicitly allowed with a new
+          <code>unsafe-redirect</code> expression.
+        </li>
+        <li>
+          A <a>protected resource</a>'s ability to load Workers is now controlled
+          via <a><code>child-src</code></a> rather than
+          <a><code>script-src</code></a>.
+        </li>
+        <li>
+          Workers now have their own policy, separate from the <a>protected
+          resource</a> which loaded them. This is described in
+          [[#processing-model-workers]].
+        </li>
+      </ol>
+    </li>
+    <li>
+      The following directives are brand new in this revision:
+
+      <ol>
+        <li>
+          <a><code>base-uri</code></a> controls the <a>protected
+          resource</a>'s ability to specify the <a spec="HTML5">document base
+          URL</a>.
+        </li>
+        <li>
+          <a><code>child-src</code></a> deprecates and replaces
+          <a><code>frame-src</code></a>, controlling the <a>protected
+          resource</a>'s ability to embed frames, and to load Workers.
+        </li>
+        <li>
+          <a><code>form-action</code></a> controls the <a>protected
+          resource</a>'s ability to submit forms.
+        </li>
+        <li>
+          <a><code>frame-ancestors</code></a> controls the <a>protected
+          resource</a>'s ability be embedded in other documents. It is meant
+          to supplant the <code>X-Frame-Options</code> HTTP request header.
+        </li>
+        <li>
+          <a><code>plugin-types</code></a> controls the <a>protected
+          resource</a>'s ability to load specific types of plugins.
+        </li>
+        <li>
+          <a><code>referrer</code></a> controls the <a>protected resource</a>'s
+          referrer policy [[!REFERRER]].
+        </li>
+        <li>
+          <a><code>reflected-xss</code></a> controls the user agent's built-in
+          heuristics to actively protect against XSS. It is meant to supplant
+          the <code>X-XSS-Protection</code> HTTP request header.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Individual inline scripts and stylesheets may be whitelisted via nonces
+      (as described in [[#source-list-valid-nonces]]) and hashes (as described
+      in [[#source-list-valid-hashes]]).
+    </li>
+    <li>
+      A <code>CSP</code> request header is now sent with relevant requests, as
+      described in [[#csp-request-header]].
+    </li>
+    <li>
+      A {{SecurityPolicyViolationEvent}} is fired upon violations, as described
+      in [[#firing-securitypolicyviolationevent-events]].
+    </li>
+    <li>
+      A number of new fields were added to violation reports (both those POSTED
+      via <a><code>report-uri</code></a>, and those handed to the DOM via
+      {{SecurityPolicyViolationEvent}} events. These include
+      {{effectiveDirective}}, {{statusCode}}, {{sourceFile}}, {{lineNumber}},
+      {{columnNumber}}.
     </li>
   </ol>
 </section>
