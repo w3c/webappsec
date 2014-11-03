@@ -1037,8 +1037,8 @@ secure channels.
 ### Hash collision attacks
 
 Digests are only as strong as the hash function used to generate them. User
-agents SHOULD refuse to support known-weak hashing functions like MD5, and
-SHOULD restrict supported hashing functions to those known to be
+agents SHOULD refuse to support known-weak hashing functions like MD5 or SHA-1,
+and SHOULD restrict supported hashing functions to those known to be
 collision-resistant. At the time of writing, SHA-256 is a good baseline.
 Moreover, user agents SHOULD reevaluate their supported hashing functions
 on a regular basis, and deprecate support for those functions shown to be
