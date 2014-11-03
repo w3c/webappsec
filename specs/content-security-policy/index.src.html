@@ -1581,6 +1581,106 @@ At Risk: [[#directive-child-src]]
   <h2 id="script-interfaces">Script Interfaces</h2>
 
   <section>
+    <h3>Strawman DOM API</h3>
+
+    This is a sketch of what an API might look like. It is neither complete nor
+    finalized; take it as an outline for discussion, nothing more. The general
+    idea is to model CSP as a set of <code>SecurityPolicy</code> objects, each
+    composed of a sequence of directives.
+
+    The following is what I think we'll need for source-list directives
+    ([[#source-list-syntax]]). It'll need some adjustment to deal well with
+    the other directive types.
+
+
+    <pre class="idl">
+      [ NoInterfaceObject ]
+      interface SecurityPolicySource {
+      };
+
+      [Constructor(DOMString sourceExpression)]
+      interface SecurityPolicySourceURL : SecurityPolicySource {
+          boolean matchesURL(DOMString url);
+
+          readonly attribute DOMString scheme;
+          readonly attribute DOMString host;
+          readonly attribute DOMString port;
+          readonly attribute DOMString path;
+  
+          readonly attribute boolean hostWildcard;
+          readonly attribute boolean portWildcard;
+      };
+
+      enum SecurityPolicyHashAlgorithm { "SHA-256", "SHA-384", "SHA-512" };
+
+      [Constructor(DOMString sourceExpression)]
+      interface SecurityPolicySourceHash : SecurityPolicySource {
+          boolean matchesNode(Node node);
+
+          readonly attribute SecurityPolicyHashAlgorithm algorithm;
+          readonly attribute DOMString hash;
+      };
+
+      [Constructor(DOMString sourceExpression)]
+      interface SecurityPolicySourceNonce : SecurityPolicySource {
+          boolean matchesNode(Node node);
+
+          readonly attribute DOMString nonce;
+      };
+    </pre>
+
+    <pre class="idl">
+      [ NoInterfaceObject ]
+      interface SecurityPolicyDirective {
+      };
+
+      [Constructor(DOMString directiveName, DOMString directiveValue)]
+      interface SecurityPolicySourceListDirective : SecurityPolicyDirective {
+          boolean matchesURL(DOMString url);
+          boolean matchesNode(Node node);
+
+          readonly attribute boolean allowRedirects;
+          readonly attribute boolean allowEval;
+
+          // TODO: Bikeshed doesn't like `Sequence<SecurityPolicySource>`?
+          readonly attribute SecurityPolicySource[] sources;
+          readonly attribute DOMString directive;
+      };
+    </pre>
+
+    <pre class="idl">
+      enum SecurityPolicyMode {
+          "EnforceMode",
+          "ReportOnlyMode"
+      };
+
+      [Constructor(DOMString policy, SecurityPolicyMode mode)]
+      interface SecurityPolicy {
+          // Fetch's 'Request' object has a URL and a RequestContext, which
+          // should be everything we need here to check outgoing network
+          // requests. It lacks a redirect flag; not sure how to model that
+          // yet. TODO.
+          boolean allowRequest(Request request);
+
+          // Inline checks can be done on a Node basis; given an HTMLScriptElement,
+          // we'd skim through the `script-src` directive's sources, checking for
+          // hash and nonce matches.
+          boolean allowNode(Node node);
+
+          // One-offs. Maybe there's a good way to fold these in somehow?
+          boolean allowEval();
+          boolean allowInlineEventHandler();
+
+          // TODO: Bikeshed doesn't like `Sequence<SecurityPolicyDirective>`?
+          readonly attribute SecurityPolicyDirective[] directives;
+
+          readonly attribute SecurityPolicyMode mode;
+          readonly attribute URL reportingEndpoint;
+      };
+    </pre>
+  </section>
+
+  <section>
     <h3 id="securitypolicyviolationevent-interface">
       <code>SecurityPolicyViolationEvent</code> Interface
     </h3>

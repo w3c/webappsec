@@ -223,9 +223,10 @@
 		<li><a href=#processing-model-iframe-srcdoc><span class=secno>5.2</span> <code>srcdoc</code> IFrames</a></ul>
 	<li><a href=#script-interfaces><span class=secno>6</span> Script Interfaces</a>
 		<ul class=toc>
-		<li><a href=#securitypolicyviolationevent-interface><span class=secno>6.1</span>        <code>SecurityPolicyViolationEvent</code> Interface     </a>
-		<li><a href=#securitypolicyviolationeventinit-interface><span class=secno>6.2</span>        <code>SecurityPolicyViolationEventInit</code> Interface     </a>
-		<li><a href=#firing-securitypolicyviolationevent-events><span class=secno>6.3</span> Firing Violation Events</a></ul>
+		<li><a href=#strawman-dom-api><span class=secno>6.1</span> Strawman DOM API</a>
+		<li><a href=#securitypolicyviolationevent-interface><span class=secno>6.2</span>        <code>SecurityPolicyViolationEvent</code> Interface     </a>
+		<li><a href=#securitypolicyviolationeventinit-interface><span class=secno>6.3</span>        <code>SecurityPolicyViolationEventInit</code> Interface     </a>
+		<li><a href=#firing-securitypolicyviolationevent-events><span class=secno>6.4</span> Firing Violation Events</a></ul>
 	<li><a href=#directives><span class=secno>7</span> Directives</a>
 		<ul class=toc>
 		<li><a href=#directive-base-uri><span class=secno>7.1</span> <code>base-uri</code></a>
@@ -442,7 +443,7 @@
     </li>
     <li>
       A <code class=idl><a data-link-type=idl href=#dom-securitypolicyviolationevent title=SecurityPolicyViolationEvent>SecurityPolicyViolationEvent</a></code> is fired upon violations, as described
-      in <a data-section="" href=#firing-securitypolicyviolationevent-events>§6.3 Firing Violation Events</a>.
+      in <a data-section="" href=#firing-securitypolicyviolationevent-events>§6.4 Firing Violation Events</a>.
     </li>
     <li>
       A number of new fields were added to violation reports (both those POSTED
@@ -1763,7 +1764,88 @@ Content-Security-Policy: <a data-link-type=dfn href=#connect-src title=connect-s
   <h2 class="heading settled" data-level=6 id=script-interfaces><span class=secno>6 </span><span class=content>Script Interfaces</span><a class=self-link href=#script-interfaces></a></h2>
 
   <section>
-    <h3 class="heading settled" data-level=6.1 id=securitypolicyviolationevent-interface><span class=secno>6.1 </span><span class=content>
+    <h3 class="heading settled" data-level=6.1 id=strawman-dom-api><span class=secno>6.1 </span><span class=content>Strawman DOM API</span><a class=self-link href=#strawman-dom-api></a></h3>
+
+<p>This is a sketch of what an API might look like. It is neither complete nor
+    finalized; take it as an outline for discussion, nothing more. The general
+    idea is to model CSP as a set of <code>SecurityPolicy</code> objects, each
+    composed of a sequence of directives.</p>
+
+<p>The following is what I think we’ll need for source-list directives
+    (<a data-section="" href=#source-list-syntax>§4.2 Source List Syntax</a>). It’ll need some adjustment to deal well with
+    the other directive types.</p>
+
+
+    <pre class=idl>[ NoInterfaceObject ]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-securitypolicysource>SecurityPolicySource<a class=self-link href=#dom-securitypolicysource></a></dfn> {
+};
+[Constructor(DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL/SecurityPolicySourceURL() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceURL<interface>/SecurityPolicySourceURL()<method>/sourceexpression<argument>" id=dom-securitypolicysourceurl-securitypolicysourceurl-sourceexpression>sourceExpression<a class=self-link href=#dom-securitypolicysourceurl-securitypolicysourceurl-sourceexpression></a></dfn>)]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-securitypolicysourceurl>SecurityPolicySourceURL<a class=self-link href=#dom-securitypolicysourceurl></a></dfn> : <a data-link-type=idl href=#dom-securitypolicysource title=SecurityPolicySource>SecurityPolicySource</a> {
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL data-dfn-type=method data-export="" data-global-name="SecurityPolicySourceURL<interface>/matchesurl()<method>" id=dom-securitypolicysourceurl-matchesurl title=matchesURL()>matchesURL<a class=self-link href=#dom-securitypolicysourceurl-matchesurl></a></dfn>(DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL/matchesURL() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceURL<interface>/matchesURL()<method>/url<argument>" id=dom-securitypolicysourceurl-matchesurl-url>url<a class=self-link href=#dom-securitypolicysourceurl-matchesurl-url></a></dfn>);
+    readonly attribute DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceURL<interface>/scheme<attribute>" data-readonly="" data-type="DOMString " id=dom-securitypolicysourceurl-scheme>scheme<a class=self-link href=#dom-securitypolicysourceurl-scheme></a></dfn>;
+    readonly attribute DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceURL<interface>/host<attribute>" data-readonly="" data-type="DOMString " id=dom-securitypolicysourceurl-host>host<a class=self-link href=#dom-securitypolicysourceurl-host></a></dfn>;
+    readonly attribute DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceURL<interface>/port<attribute>" data-readonly="" data-type="DOMString " id=dom-securitypolicysourceurl-port>port<a class=self-link href=#dom-securitypolicysourceurl-port></a></dfn>;
+    readonly attribute DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceURL<interface>/path<attribute>" data-readonly="" data-type="DOMString " id=dom-securitypolicysourceurl-path>path<a class=self-link href=#dom-securitypolicysourceurl-path></a></dfn>;
+    readonly attribute boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceURL<interface>/hostwildcard<attribute>" data-readonly="" data-type="boolean " id=dom-securitypolicysourceurl-hostwildcard>hostWildcard<a class=self-link href=#dom-securitypolicysourceurl-hostwildcard></a></dfn>;
+    readonly attribute boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceURL data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceURL<interface>/portwildcard<attribute>" data-readonly="" data-type="boolean " id=dom-securitypolicysourceurl-portwildcard>portWildcard<a class=self-link href=#dom-securitypolicysourceurl-portwildcard></a></dfn>;
+};
+enum <dfn class=idl-code data-dfn-type=enum data-export="" data-global-name="" id=enumdef-securitypolicyhashalgorithm>SecurityPolicyHashAlgorithm<a class=self-link href=#enumdef-securitypolicyhashalgorithm></a></dfn> { "SHA-256", "SHA-384", "SHA-512" };
+[Constructor(DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceHash/SecurityPolicySourceHash() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceHash<interface>/SecurityPolicySourceHash()<method>/sourceexpression<argument>" id=dom-securitypolicysourcehash-securitypolicysourcehash-sourceexpression>sourceExpression<a class=self-link href=#dom-securitypolicysourcehash-securitypolicysourcehash-sourceexpression></a></dfn>)]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-securitypolicysourcehash>SecurityPolicySourceHash<a class=self-link href=#dom-securitypolicysourcehash></a></dfn> : <a data-link-type=idl href=#dom-securitypolicysource title=SecurityPolicySource>SecurityPolicySource</a> {
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceHash data-dfn-type=method data-export="" data-global-name="SecurityPolicySourceHash<interface>/matchesnode()<method>" id=dom-securitypolicysourcehash-matchesnode title=matchesNode()>matchesNode<a class=self-link href=#dom-securitypolicysourcehash-matchesnode></a></dfn>(<a data-link-type=idl href=#dom-securitypolicysourcehash-matchesnode-node title=Node>Node</a> <dfn class=idl-code data-dfn-for=SecurityPolicySourceHash/matchesNode() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceHash<interface>/matchesNode()<method>/node<argument>" id=dom-securitypolicysourcehash-matchesnode-node>node<a class=self-link href=#dom-securitypolicysourcehash-matchesnode-node></a></dfn>);
+    readonly attribute <a data-link-type=idl href=#enumdef-securitypolicyhashalgorithm title=SecurityPolicyHashAlgorithm>SecurityPolicyHashAlgorithm</a> <dfn class=idl-code data-dfn-for=SecurityPolicySourceHash data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceHash<interface>/algorithm<attribute>" data-readonly="" data-type="SecurityPolicyHashAlgorithm " id=dom-securitypolicysourcehash-algorithm>algorithm<a class=self-link href=#dom-securitypolicysourcehash-algorithm></a></dfn>;
+    readonly attribute DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceHash data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceHash<interface>/hash<attribute>" data-readonly="" data-type="DOMString " id=dom-securitypolicysourcehash-hash>hash<a class=self-link href=#dom-securitypolicysourcehash-hash></a></dfn>;
+};
+[Constructor(DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceNonce/SecurityPolicySourceNonce() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceNonce<interface>/SecurityPolicySourceNonce()<method>/sourceexpression<argument>" id=dom-securitypolicysourcenonce-securitypolicysourcenonce-sourceexpression>sourceExpression<a class=self-link href=#dom-securitypolicysourcenonce-securitypolicysourcenonce-sourceexpression></a></dfn>)]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-securitypolicysourcenonce>SecurityPolicySourceNonce<a class=self-link href=#dom-securitypolicysourcenonce></a></dfn> : <a data-link-type=idl href=#dom-securitypolicysource title=SecurityPolicySource>SecurityPolicySource</a> {
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceNonce data-dfn-type=method data-export="" data-global-name="SecurityPolicySourceNonce<interface>/matchesnode()<method>" id=dom-securitypolicysourcenonce-matchesnode title=matchesNode()>matchesNode<a class=self-link href=#dom-securitypolicysourcenonce-matchesnode></a></dfn>(<a data-link-type=idl href=#dom-securitypolicysourcehash-matchesnode-node title=Node>Node</a> <dfn class=idl-code data-dfn-for=SecurityPolicySourceNonce/matchesNode() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceNonce<interface>/matchesNode()<method>/node<argument>" id=dom-securitypolicysourcenonce-matchesnode-node>node<a class=self-link href=#dom-securitypolicysourcenonce-matchesnode-node></a></dfn>);
+    readonly attribute DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceNonce data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceNonce<interface>/nonce<attribute>" data-readonly="" data-type="DOMString " id=dom-securitypolicysourcenonce-nonce>nonce<a class=self-link href=#dom-securitypolicysourcenonce-nonce></a></dfn>;
+};
+</pre>
+
+    <pre class=idl>[ NoInterfaceObject ]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-securitypolicydirective>SecurityPolicyDirective<a class=self-link href=#dom-securitypolicydirective></a></dfn> {
+};
+[Constructor(DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective/SecurityPolicySourceListDirective() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/SecurityPolicySourceListDirective()<method>/directivename<argument>" id=dom-securitypolicysourcelistdirective-securitypolicysourcelistdirective-directivename>directiveName<a class=self-link href=#dom-securitypolicysourcelistdirective-securitypolicysourcelistdirective-directivename></a></dfn>, DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective/SecurityPolicySourceListDirective() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/SecurityPolicySourceListDirective()<method>/directivevalue<argument>" id=dom-securitypolicysourcelistdirective-securitypolicysourcelistdirective-directivevalue>directiveValue<a class=self-link href=#dom-securitypolicysourcelistdirective-securitypolicysourcelistdirective-directivevalue></a></dfn>)]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-securitypolicysourcelistdirective>SecurityPolicySourceListDirective<a class=self-link href=#dom-securitypolicysourcelistdirective></a></dfn> : <a data-link-type=idl href=#dom-securitypolicydirective title=SecurityPolicyDirective>SecurityPolicyDirective</a> {
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective data-dfn-type=method data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/matchesurl()<method>" id=dom-securitypolicysourcelistdirective-matchesurl title=matchesURL()>matchesURL<a class=self-link href=#dom-securitypolicysourcelistdirective-matchesurl></a></dfn>(DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective/matchesURL() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/matchesURL()<method>/url<argument>" id=dom-securitypolicysourcelistdirective-matchesurl-url>url<a class=self-link href=#dom-securitypolicysourcelistdirective-matchesurl-url></a></dfn>);
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective data-dfn-type=method data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/matchesnode()<method>" id=dom-securitypolicysourcelistdirective-matchesnode title=matchesNode()>matchesNode<a class=self-link href=#dom-securitypolicysourcelistdirective-matchesnode></a></dfn>(<a data-link-type=idl href=#dom-securitypolicysourcehash-matchesnode-node title=Node>Node</a> <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective/matchesNode() data-dfn-type=argument data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/matchesNode()<method>/node<argument>" id=dom-securitypolicysourcelistdirective-matchesnode-node>node<a class=self-link href=#dom-securitypolicysourcelistdirective-matchesnode-node></a></dfn>);
+    readonly attribute boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/allowredirects<attribute>" data-readonly="" data-type="boolean " id=dom-securitypolicysourcelistdirective-allowredirects>allowRedirects<a class=self-link href=#dom-securitypolicysourcelistdirective-allowredirects></a></dfn>;
+    readonly attribute boolean <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/alloweval<attribute>" data-readonly="" data-type="boolean " id=dom-securitypolicysourcelistdirective-alloweval>allowEval<a class=self-link href=#dom-securitypolicysourcelistdirective-alloweval></a></dfn>;
+    // TODO: Bikeshed doesn’t like `Sequence`?
+    readonly attribute <a data-link-type=idl href=#dom-securitypolicysource title=SecurityPolicySource>SecurityPolicySource</a>[] <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/sources<attribute>" data-readonly="" data-type="SecurityPolicySource[] " id=dom-securitypolicysourcelistdirective-sources>sources<a class=self-link href=#dom-securitypolicysourcelistdirective-sources></a></dfn>;
+    readonly attribute DOMString <dfn class=idl-code data-dfn-for=SecurityPolicySourceListDirective data-dfn-type=attribute data-export="" data-global-name="SecurityPolicySourceListDirective<interface>/directive<attribute>" data-readonly="" data-type="DOMString " id=dom-securitypolicysourcelistdirective-directive>directive<a class=self-link href=#dom-securitypolicysourcelistdirective-directive></a></dfn>;
+};
+</pre>
+
+    <pre class=idl>enum <dfn class=idl-code data-dfn-type=enum data-export="" data-global-name="" id=enumdef-securitypolicymode>SecurityPolicyMode<a class=self-link href=#enumdef-securitypolicymode></a></dfn> {
+    "EnforceMode",
+    "ReportOnlyMode"
+};
+[Constructor(DOMString <dfn class=idl-code data-dfn-for=SecurityPolicy/SecurityPolicy() data-dfn-type=argument data-export="" data-global-name="SecurityPolicy<interface>/SecurityPolicy()<method>/policy<argument>" id=dom-securitypolicy-securitypolicy-policy>policy<a class=self-link href=#dom-securitypolicy-securitypolicy-policy></a></dfn>, <a data-link-type=idl href=#enumdef-securitypolicymode title=SecurityPolicyMode>SecurityPolicyMode</a> <dfn class=idl-code data-dfn-for=SecurityPolicy/SecurityPolicy() data-dfn-type=argument data-export="" data-global-name="SecurityPolicy<interface>/SecurityPolicy()<method>/mode<argument>" id=dom-securitypolicy-securitypolicy-mode>mode<a class=self-link href=#dom-securitypolicy-securitypolicy-mode></a></dfn>)]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-securitypolicy>SecurityPolicy<a class=self-link href=#dom-securitypolicy></a></dfn> {
+    // Fetch’s 'Request' object has a URL and a RequestContext, which
+    // should be everything we need here to check outgoing network
+    // requests. It lacks a redirect flag; not sure how to model that
+    // yet. TODO.
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicy data-dfn-type=method data-export="" data-global-name="SecurityPolicy<interface>/allowrequest()<method>" id=dom-securitypolicy-allowrequest title=allowRequest()>allowRequest<a class=self-link href=#dom-securitypolicy-allowrequest></a></dfn>(<a data-link-type=idl href=#dom-securitypolicy-allowrequest-request title=Request>Request</a> <dfn class=idl-code data-dfn-for=SecurityPolicy/allowRequest() data-dfn-type=argument data-export="" data-global-name="SecurityPolicy<interface>/allowRequest()<method>/request<argument>" id=dom-securitypolicy-allowrequest-request>request<a class=self-link href=#dom-securitypolicy-allowrequest-request></a></dfn>);
+    // Inline checks can be done on a Node basis; given an HTMLScriptElement,
+    // we’d skim through the `script-src` directive’s sources, checking for
+    // hash and nonce matches.
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicy data-dfn-type=method data-export="" data-global-name="SecurityPolicy<interface>/allownode()<method>" id=dom-securitypolicy-allownode title=allowNode()>allowNode<a class=self-link href=#dom-securitypolicy-allownode></a></dfn>(<a data-link-type=idl href=#dom-securitypolicysourcehash-matchesnode-node title=Node>Node</a> <dfn class=idl-code data-dfn-for=SecurityPolicy/allowNode() data-dfn-type=argument data-export="" data-global-name="SecurityPolicy<interface>/allowNode()<method>/node<argument>" id=dom-securitypolicy-allownode-node>node<a class=self-link href=#dom-securitypolicy-allownode-node></a></dfn>);
+    // One-offs. Maybe there’s a good way to fold these in somehow?
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicy data-dfn-type=method data-export="" data-global-name="SecurityPolicy<interface>/alloweval()<method>" id=dom-securitypolicy-alloweval title=allowEval()>allowEval<a class=self-link href=#dom-securitypolicy-alloweval></a></dfn>();
+    boolean <dfn class=idl-code data-dfn-for=SecurityPolicy data-dfn-type=method data-export="" data-global-name="SecurityPolicy<interface>/allowinlineeventhandler()<method>" id=dom-securitypolicy-allowinlineeventhandler title=allowInlineEventHandler()>allowInlineEventHandler<a class=self-link href=#dom-securitypolicy-allowinlineeventhandler></a></dfn>();
+    // TODO: Bikeshed doesn’t like `Sequence`?
+    readonly attribute <a data-link-type=idl href=#dom-securitypolicydirective title=SecurityPolicyDirective>SecurityPolicyDirective</a>[] <dfn class=idl-code data-dfn-for=SecurityPolicy data-dfn-type=attribute data-export="" data-global-name="SecurityPolicy<interface>/directives<attribute>" data-readonly="" data-type="SecurityPolicyDirective[] " id=dom-securitypolicy-directives>directives<a class=self-link href=#dom-securitypolicy-directives></a></dfn>;
+    readonly attribute <a data-link-type=idl href=#enumdef-securitypolicymode title=SecurityPolicyMode>SecurityPolicyMode</a> <dfn class=idl-code data-dfn-for=SecurityPolicy data-dfn-type=attribute data-export="" data-global-name="SecurityPolicy<interface>/mode<attribute>" data-readonly="" data-type="SecurityPolicyMode " id=dom-securitypolicy-mode>mode<a class=self-link href=#dom-securitypolicy-mode></a></dfn>;
+    readonly attribute <a data-link-type=idl href=#dom-securitypolicysourceurl-matchesurl-url title=URL>URL</a> <dfn class=idl-code data-dfn-for=SecurityPolicy data-dfn-type=attribute data-export="" data-global-name="SecurityPolicy<interface>/reportingendpoint<attribute>" data-readonly="" data-type="URL " id=dom-securitypolicy-reportingendpoint>reportingEndpoint<a class=self-link href=#dom-securitypolicy-reportingendpoint></a></dfn>;
+};
+</pre>
+  </section>
+
+  <section>
+    <h3 class="heading settled" data-level=6.2 id=securitypolicyviolationevent-interface><span class=secno>6.2 </span><span class=content>
       <code>SecurityPolicyViolationEvent</code> Interface
     </span><a class=self-link href=#securitypolicyviolationevent-interface></a></h3>
 
@@ -1805,7 +1887,7 @@ interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global
     </dl>
   </section>
   <section>
-    <h3 class="heading settled" data-level=6.2 id=securitypolicyviolationeventinit-interface><span class=secno>6.2 </span><span class=content>
+    <h3 class="heading settled" data-level=6.3 id=securitypolicyviolationeventinit-interface><span class=secno>6.3 </span><span class=content>
       <code>SecurityPolicyViolationEventInit</code> Interface
     </span><a class=self-link href=#securitypolicyviolationeventinit-interface></a></h3>
 
@@ -1843,7 +1925,7 @@ interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global
     </dl>
   </section>
   <section>
-    <h3 class="heading settled" data-level=6.3 id=firing-securitypolicyviolationevent-events><span class=secno>6.3 </span><span class=content>Firing Violation Events</span><a class=self-link href=#firing-securitypolicyviolationevent-events></a></h3>
+    <h3 class="heading settled" data-level=6.4 id=firing-securitypolicyviolationevent-events><span class=secno>6.4 </span><span class=content>Firing Violation Events</span><a class=self-link href=#firing-securitypolicyviolationevent-events></a></h3>
 
 <p>To <dfn data-dfn-type=dfn data-noexport="" id=fire-a-violation-event>fire a violation event<a class=self-link href=#fire-a-violation-event></a></dfn>, the user agent MUST use an algorithm
     equivalent to the following:</p>
@@ -3544,6 +3626,7 @@ Informative References</span><a class=self-link href=#informative></a></h3>
 <h2 class="no-num no-ref heading settled" id=index><span class=content>
 Index</span><a class=self-link href=#index></a></h2>
 <div data-fill-with=index><ul class=indexlist>
+<li>algorithm, <a href=#dom-securitypolicysourcehash-algorithm title="section 6.1">6.1</a>
 <li>allowed base URLs, <a href=#allowed-base-urls title="section 7.1">7.1</a>
 <li>allowed child sources, <a href=#allowed-child-sources title="section 7.2">7.2</a>
 <li>allowed connection targets, <a href=#allowed-connection-targets title="section 7.3">7.3</a>
@@ -3558,18 +3641,24 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>allowed plugin media types, <a href=#allowed-plugin-media-types title="section 7.13">7.13</a>
 <li>allowed script sources, <a href=#allowed-script-sources title="section 7.18">7.18</a>
 <li>allowed style sources, <a href=#allowed-style-sources title="section 7.19">7.19</a>
+<li>allowEval, <a href=#dom-securitypolicysourcelistdirective-alloweval title="section 6.1">6.1</a>
+<li>allowEval(), <a href=#dom-securitypolicy-alloweval title="section 6.1">6.1</a>
+<li>allowInlineEventHandler(), <a href=#dom-securitypolicy-allowinlineeventhandler title="section 6.1">6.1</a>
+<li>allowNode(), <a href=#dom-securitypolicy-allownode title="section 6.1">6.1</a>
+<li>allowRedirects, <a href=#dom-securitypolicysourcelistdirective-allowredirects title="section 6.1">6.1</a>
+<li>allowRequest(), <a href=#dom-securitypolicy-allowrequest title="section 6.1">6.1</a>
 <li>ALPHA, <a href=#alpha title="section 2.4">2.4</a>
 <li>ancestor-source, <a href=#ancestor-source title="section 7.7">7.7</a>
 <li>ancestor-source-list, <a href=#ancestor-source-list title="section 7.7">7.7</a>
 <li>base64-value, <a href=#base64-value title="section 4.2">4.2</a>
 <li>base-uri, <a href=#base-uri title="section 7.1">7.1</a>
-<li>blockedURL<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-blockedurl title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-blockedurl title="section 6.2">6.2</a>
+<li>blockedURL<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-blockedurl title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-blockedurl title="section 6.3">6.3</a>
 </ul><li>callable, <a href=#callable title="section 2.3">2.3</a>
 <li>callers, <a href=#callers title="section 2.3">2.3</a>
 <li>child-src, <a href=#child-src title="section 7.2">7.2</a>
-<li>columnNumber<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-columnnumber title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-columnnumber title="section 6.2">6.2</a>
+<li>columnNumber<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-columnnumber title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-columnnumber title="section 6.3">6.3</a>
 </ul><li>conformant server, <a href=#conformant-server title="section Unnumbered section">Unnumbered section</a>
 <li>conformant user agent, <a href=#conformant-user-agent title="section Unnumbered section">Unnumbered section</a>
 <li>connect-src, <a href=#connect-src title="section 7.3">7.3</a>
@@ -3583,20 +3672,24 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>default-src, <a href=#default-src title="section 7.4">7.4</a>
 <li>digest of element’s content, <a href=#digest-of-elements-content title="section 4.2.5">4.2.5</a>
 <li>DIGIT, <a href=#digit title="section 2.4">2.4</a>
-<li>directive, <a href=#security-policy-directive title="section 2.1">2.1</a>
+<li>directive<ul><li>definition of, <a href=#security-policy-directive title="section 2.1">2.1</a>
+<li>attribute for SecurityPolicySourceListDirective, <a href=#dom-securitypolicysourcelistdirective-directive title="section 6.1">6.1</a>
+</ul><li>directiveName, <a href=#dom-securitypolicysourcelistdirective-securitypolicysourcelistdirective-directivename title="section 6.1">6.1</a>
 <li>directive name, <a href=#security-policy-directive-name title="section 2.1">2.1</a>
 <li>directive-name, <a href=#directive-name title="section 4.1">4.1</a>
+<li>directives, <a href=#dom-securitypolicy-directives title="section 6.1">6.1</a>
 <li>directive-token, <a href=#directive-token title="section 4.1">4.1</a>
 <li>directive-value, <a href=#directive-value title="section 4.1">4.1</a>
+<li>directiveValue, <a href=#dom-securitypolicysourcelistdirective-securitypolicysourcelistdirective-directivevalue title="section 6.1">6.1</a>
 <li>directive value, <a href=#security-policy-directive-value title="section 2.1">2.1</a>
-<li>documentURL<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-documenturl title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-documenturl title="section 6.2">6.2</a>
-</ul><li>effectiveDirective<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-effectivedirective title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-effectivedirective title="section 6.2">6.2</a>
+<li>documentURL<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-documenturl title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-documenturl title="section 6.3">6.3</a>
+</ul><li>effectiveDirective<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-effectivedirective title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-effectivedirective title="section 6.3">6.3</a>
 </ul><li>element’s content, <a href=#elements-content title="section 4.2.5">4.2.5</a>
 <li>enforce, <a href=#enforce title="section 5">5</a>
-<li>eventInitDict, <a href=#dom-securitypolicyviolationevent-securitypolicyviolationevent-eventinitdict title="section 6.1">6.1</a>
-<li>fire a violation event, <a href=#fire-a-violation-event title="section 6.3">6.3</a>
+<li>eventInitDict, <a href=#dom-securitypolicyviolationevent-securitypolicyviolationevent-eventinitdict title="section 6.2">6.2</a>
+<li>fire a violation event, <a href=#fire-a-violation-event title="section 6.4">6.4</a>
 <li>font-src, <a href=#font-src title="section 7.5">7.5</a>
 <li>form-action, <a href=#form-action title="section 7.6">7.6</a>
 <li>frame-ancestors, <a href=#frame-ancestors title="section 7.7">7.7</a>
@@ -3604,92 +3697,129 @@ Index</span><a class=self-link href=#index></a></h2>
 <li>generate a violation report object, <a href=#generate-a-violation-report-object title="section 4.4">4.4</a>
 <li>generating a violation report object, <a href=#generate-a-violation-report-object title="section 4.4">4.4</a>
 <li>globally unique identifier, <a href=#globally-unique-identifier title="section 2.2">2.2</a>
+<li>hash, <a href=#dom-securitypolicysourcehash-hash title="section 6.1">6.1</a>
 <li>hash-algo, <a href=#hash-algo title="section 4.2">4.2</a>
 <li>hash-source, <a href=#hash-source title="section 4.2">4.2</a>
 <li>hash-value, <a href=#hash-value title="section 4.2">4.2</a>
+<li>host, <a href=#dom-securitypolicysourceurl-host title="section 6.1">6.1</a>
 <li>host-char, <a href=#host-char title="section 4.2">4.2</a>
 <li>host-part, <a href=#host-part title="section 4.2">4.2</a>
 <li>host-source, <a href=#host-source title="section 4.2">4.2</a>
+<li>hostWildcard, <a href=#dom-securitypolicysourceurl-hostwildcard title="section 6.1">6.1</a>
 <li>HTTP 200 response, <a href=#http-200-response title="section 2.2">2.2</a>
 <li>img-src, <a href=#img-src title="section 7.9">7.9</a>
 <li>JSON object, <a href=#json-object title="section 2.2">2.2</a>
 <li>JSON stringification, <a href=#json-stringification title="section 2.2">2.2</a>
 <li>keyword-source, <a href=#keyword-source title="section 4.2">4.2</a>
-<li>lineNumber<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-linenumber title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-linenumber title="section 6.2">6.2</a>
+<li>lineNumber<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-linenumber title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-linenumber title="section 6.3">6.3</a>
 </ul><li>manifest-src, <a href=#manifest-src title="section 7.10">7.10</a>
 <li>match a media type list, <a href=#match-a-media-type-list title="section 4.3.2">4.3.2</a>
 <li>match a source expression, <a href=#match-a-source-expression title="section 4.2.2">4.2.2</a>
 <li>match a source list, <a href=#match-a-source-list title="section 4.2.2">4.2.2</a>
-<li>media-src, <a href=#media-src title="section 7.11">7.11</a>
+<li>matchesNode()<ul><li>method for SecurityPolicySourceHash, <a href=#dom-securitypolicysourcehash-matchesnode title="section 6.1">6.1</a>
+<li>method for SecurityPolicySourceNonce, <a href=#dom-securitypolicysourcenonce-matchesnode title="section 6.1">6.1</a>
+<li>method for SecurityPolicySourceListDirective, <a href=#dom-securitypolicysourcelistdirective-matchesnode title="section 6.1">6.1</a>
+</ul><li>matchesURL()<ul><li>method for SecurityPolicySourceURL, <a href=#dom-securitypolicysourceurl-matchesurl title="section 6.1">6.1</a>
+<li>method for SecurityPolicySourceListDirective, <a href=#dom-securitypolicysourcelistdirective-matchesurl title="section 6.1">6.1</a>
+</ul><li>media-src, <a href=#media-src title="section 7.11">7.11</a>
 <li>media type, <a href=#media-type0 title="section 4.3">4.3</a>
 <li>media-type, <a href=#media-type title="section 4.3">4.3</a>
 <li>media type list, <a href=#media-type-list0 title="section 4.3">4.3</a>
 <li>media-type-list, <a href=#media-type-list1 title="section 4.3">4.3</a>
-<li>monitor, <a href=#monitor title="section 5">5</a>
-<li>nonce<ul><li>(element-attr), <a href=#element-attrdef-nonce title="section 4.2.3">4.2.3</a>
+<li>mode<ul><li>argument for SecurityPolicy/SecurityPolicy(), <a href=#dom-securitypolicy-securitypolicy-mode title="section 6.1">6.1</a>
+<li>attribute for SecurityPolicy, <a href=#dom-securitypolicy-mode title="section 6.1">6.1</a>
+</ul><li>monitor, <a href=#monitor title="section 5">5</a>
+<li>node<ul><li>argument for SecurityPolicySourceHash/matchesNode(), <a href=#dom-securitypolicysourcehash-matchesnode-node title="section 6.1">6.1</a>
+<li>argument for SecurityPolicySourceNonce/matchesNode(), <a href=#dom-securitypolicysourcenonce-matchesnode-node title="section 6.1">6.1</a>
+<li>argument for SecurityPolicySourceListDirective/matchesNode(), <a href=#dom-securitypolicysourcelistdirective-matchesnode-node title="section 6.1">6.1</a>
+<li>argument for SecurityPolicy/allowNode(), <a href=#dom-securitypolicy-allownode-node title="section 6.1">6.1</a>
+</ul><li>nonce<ul><li>(element-attr), <a href=#element-attrdef-nonce title="section 4.2.3">4.2.3</a>
 <li>attribute for HTMLScriptElement, <a href=#dom-htmlscriptelement-nonce title="section 4.2.3">4.2.3</a>
 <li>attribute for HTMLStyleElement, <a href=#dom-htmlstyleelement-nonce title="section 4.2.3">4.2.3</a>
+<li>attribute for SecurityPolicySourceNonce, <a href=#dom-securitypolicysourcenonce-nonce title="section 6.1">6.1</a>
 </ul><li>nonce-source, <a href=#nonce-source title="section 4.2">4.2</a>
 <li>nonce-value, <a href=#nonce-value title="section 4.2">4.2</a>
 <li>object-src, <a href=#object-src title="section 7.12">7.12</a>
 <li>origin, <a href=#origin title="section 2.2">2.2</a>
-<li>originalPolicy<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-originalpolicy title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-originalpolicy title="section 6.2">6.2</a>
+<li>originalPolicy<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-originalpolicy title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-originalpolicy title="section 6.3">6.3</a>
 </ul><li>parse a media type list, <a href=#parse-a-media-type-list title="section 4.3.1">4.3.1</a>
 <li>parse a source list, <a href=#parse-a-source-list title="section 4.2.1">4.2.1</a>
 <li>parse the policy, <a href=#parse-the-policy title="section 4.1.1">4.1.1</a>
+<li>path, <a href=#dom-securitypolicysourceurl-path title="section 6.1">6.1</a>
 <li>path-part, <a href=#path-part title="section 4.2">4.2</a>
 <li>plugin-types, <a href=#plugin-types title="section 7.13">7.13</a>
-<li>policy, <a href=#security-policy title="section 2.1">2.1</a>
-<li>policy-token, <a href=#policy-token title="section 4.1">4.1</a>
+<li>policy<ul><li>definition of, <a href=#security-policy title="section 2.1">2.1</a>
+<li>argument for SecurityPolicy/SecurityPolicy(), <a href=#dom-securitypolicy-securitypolicy-policy title="section 6.1">6.1</a>
+</ul><li>policy-token, <a href=#policy-token title="section 4.1">4.1</a>
+<li>port, <a href=#dom-securitypolicysourceurl-port title="section 6.1">6.1</a>
 <li>port-part, <a href=#port-part title="section 4.2">4.2</a>
+<li>portWildcard, <a href=#dom-securitypolicysourceurl-portwildcard title="section 6.1">6.1</a>
 <li>protected resource, <a href=#protected-resource title="section 2.1">2.1</a>
-<li>referrer<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-referrer title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-referrer title="section 6.2">6.2</a>
+<li>referrer<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-referrer title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-referrer title="section 6.3">6.3</a>
 <li>definition of, <a href=#referrer title="section 7.14">7.14</a>
 </ul><li>reflected-xss, <a href=#reflected-xss title="section 7.15">7.15</a>
 <li>report a violation, <a href=#report-a-violation title="section 4.4">4.4</a>
+<li>reportingEndpoint, <a href=#dom-securitypolicy-reportingendpoint title="section 6.1">6.1</a>
 <li>report-uri, <a href=#report-uri title="section 7.16">7.16</a>
 <li>representation, <a href=#resource-representation title="section 2.2">2.2</a>
+<li>request, <a href=#dom-securitypolicy-allowrequest-request title="section 6.1">6.1</a>
 <li>resource representation, <a href=#resource-representation title="section 2.2">2.2</a>
 <li>runs a worker, <a href=#runs-a-worker title="section 2.3">2.3</a>
 <li>sandbox, <a href=#sandbox title="section 7.17">7.17</a>
 <li>sandbox-token, <a href=#sandbox-token title="section 7.17">7.17</a>
+<li>scheme, <a href=#dom-securitypolicysourceurl-scheme title="section 6.1">6.1</a>
 <li>scheme-part, <a href=#scheme-part title="section 4.2">4.2</a>
 <li>scheme-source, <a href=#scheme-source title="section 4.2">4.2</a>
 <li>script-src, <a href=#script-src title="section 7.18">7.18</a>
+<li>SecurityPolicy, <a href=#dom-securitypolicy title="section 6.1">6.1</a>
 <li>security policy, <a href=#security-policy title="section 2.1">2.1</a>
+<li>SecurityPolicyDirective, <a href=#dom-securitypolicydirective title="section 6.1">6.1</a>
 <li>security policy directive, <a href=#security-policy-directive title="section 2.1">2.1</a>
 <li>security policy directive name, <a href=#security-policy-directive-name title="section 2.1">2.1</a>
 <li>security policy directive value, <a href=#security-policy-directive-value title="section 2.1">2.1</a>
-<li>SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent title="section 6.1">6.1</a>
-<li>SecurityPolicyViolationEventInit, <a href=#dictdef-securitypolicyviolationeventinit title="section 6.2">6.2</a>
+<li>SecurityPolicyHashAlgorithm, <a href=#enumdef-securitypolicyhashalgorithm title="section 6.1">6.1</a>
+<li>SecurityPolicyMode, <a href=#enumdef-securitypolicymode title="section 6.1">6.1</a>
+<li>SecurityPolicySource, <a href=#dom-securitypolicysource title="section 6.1">6.1</a>
+<li>SecurityPolicySourceHash, <a href=#dom-securitypolicysourcehash title="section 6.1">6.1</a>
+<li>SecurityPolicySourceListDirective, <a href=#dom-securitypolicysourcelistdirective title="section 6.1">6.1</a>
+<li>SecurityPolicySourceNonce, <a href=#dom-securitypolicysourcenonce title="section 6.1">6.1</a>
+<li>SecurityPolicySourceURL, <a href=#dom-securitypolicysourceurl title="section 6.1">6.1</a>
+<li>SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent title="section 6.2">6.2</a>
+<li>SecurityPolicyViolationEventInit, <a href=#dictdef-securitypolicyviolationeventinit title="section 6.3">6.3</a>
 <li>send violation reports, <a href=#send-violation-reports title="section 4.4">4.4</a>
 <li>set of report URLs, <a href=#set-of-report-urls title="section 7.16">7.16</a>
 <li>SHA-256, <a href=#sha-256 title="section 2.2">2.2</a>
 <li>SHA-384, <a href=#sha-384 title="section 2.2">2.2</a>
 <li>SHA-512, <a href=#sha-512 title="section 2.2">2.2</a>
 <li>source-expression, <a href=#source-expression title="section 4.2">4.2</a>
-<li>source expression, <a href=#source-expression0 title="section 4.2">4.2</a>
+<li>sourceExpression<ul><li>argument for SecurityPolicySourceURL/SecurityPolicySourceURL(), <a href=#dom-securitypolicysourceurl-securitypolicysourceurl-sourceexpression title="section 6.1">6.1</a>
+<li>argument for SecurityPolicySourceHash/SecurityPolicySourceHash(), <a href=#dom-securitypolicysourcehash-securitypolicysourcehash-sourceexpression title="section 6.1">6.1</a>
+<li>argument for SecurityPolicySourceNonce/SecurityPolicySourceNonce(), <a href=#dom-securitypolicysourcenonce-securitypolicysourcenonce-sourceexpression title="section 6.1">6.1</a>
+</ul><li>source expression, <a href=#source-expression0 title="section 4.2">4.2</a>
 <li>source-file, <a href=#source-file title="section 4.4">4.4</a>
-<li>sourceFile<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-sourcefile title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-sourcefile title="section 6.2">6.2</a>
+<li>sourceFile<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-sourcefile title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-sourcefile title="section 6.3">6.3</a>
 </ul><li>source-list, <a href=#source-list title="section 4.2">4.2</a>
 <li>source
     list, <a href=#source-list0 title="section 4.2">4.2</a>
-<li>statusCode, <a href=#dom-securitypolicyviolationevent-statuscode title="section 6.1">6.1</a>
+<li>sources, <a href=#dom-securitypolicysourcelistdirective-sources title="section 6.1">6.1</a>
+<li>statusCode, <a href=#dom-securitypolicyviolationevent-statuscode title="section 6.2">6.2</a>
 <li>stripped for reporting, <a href=#strip-uri-for-reporting title="section 4.4">4.4</a>
 <li>strip uri for reporting, <a href=#strip-uri-for-reporting title="section 4.4">4.4</a>
 <li>style-src, <a href=#style-src title="section 7.19">7.19</a>
-<li>type, <a href=#dom-securitypolicyviolationevent-securitypolicyviolationevent-type title="section 6.1">6.1</a>
+<li>type, <a href=#dom-securitypolicyviolationevent-securitypolicyviolationevent-type title="section 6.2">6.2</a>
 <li>uri-reference, <a href=#uri-reference title="section 7.16">7.16</a>
 <li>URL, <a href=#url title="section 2.2">2.2</a>
-<li>valid hash, <a href=#valid-hash title="section 4.2.5">4.2.5</a>
+<li>url<ul><li>argument for SecurityPolicySourceURL/matchesURL(), <a href=#dom-securitypolicysourceurl-matchesurl-url title="section 6.1">6.1</a>
+<li>argument for SecurityPolicySourceListDirective/matchesURL(), <a href=#dom-securitypolicysourcelistdirective-matchesurl-url title="section 6.1">6.1</a>
+</ul><li>valid hash, <a href=#valid-hash title="section 4.2.5">4.2.5</a>
 <li>valid nonce, <a href=#valid-nonce title="section 4.2.4">4.2.4</a>
 <li>VCHAR, <a href=#vchar title="section 2.4">2.4</a>
-<li>violatedDirective<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-violateddirective title="section 6.1">6.1</a>
-<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-violateddirective title="section 6.2">6.2</a>
+<li>violatedDirective<ul><li>attribute for SecurityPolicyViolationEvent, <a href=#dom-securitypolicyviolationevent-violateddirective title="section 6.2">6.2</a>
+<li>attribute for SecurityPolicyViolationEventInit, <a href=#dom-securitypolicyviolationeventinit-violateddirective title="section 6.3">6.3</a>
 </ul><li>wildcard-host, <a href=#wildcard-host title="section 4.2">4.2</a>
 <li>WSP, <a href=#wsp title="section 2.4">2.4</a>
 </ul></div>
