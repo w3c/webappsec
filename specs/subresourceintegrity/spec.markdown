@@ -987,10 +987,7 @@ switching state:
 [xhrnetworkerror]: http://dev.w3.org/2006/webapi/DOM4Core/#networkerror
 [xhrerror]: http://www.w3.org/TR/XMLHttpRequest/#event-xhr-error
 </section><!-- Framework::JS::XHR::validation -->
-
 </section><!-- /Framework::JS::XHR -->
-
-
 </section><!-- /Framework::JS -->
 </section><!-- /Framework -->
 
