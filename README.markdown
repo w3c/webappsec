@@ -9,12 +9,13 @@ Web Application Security Working Group
 ## Specifications
 
 * Content Security Policy
+    * Latest Editor's draft:
+        * <https://w3c.github.io/webappsec/specs/content-security-policy/>
+        * Source: <https://github.com/w3c/webappsec/tree/master/specs/content-security-policy/>
     * 1.0:
         * Candidate Recommendation: <http://w3.org/TR/CSP>
     * Level 2:
-        * Editor's Draft: <https://w3c.github.io/webappsec/specs/content-security-policy/>
         * Last Call Working Draft: <http://w3.org/TR/CSP2>
-    * Source: <https://github.com/w3c/webappsec/tree/master/specs/content-security-policy/>
 
 * Mixed Content
     * Editor's Draft: <https://w3c.github.io/webappsec/specs/mixedcontent/>
