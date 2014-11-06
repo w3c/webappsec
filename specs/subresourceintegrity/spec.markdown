@@ -30,7 +30,7 @@ server, but also pin the _content_, ensuring that an exact representation of
 a resource, and _only_ that representation, loads and executes.
 
 This document specifies such a validation scheme, extending several HTML
-elements with a `integrity` attribute that contains a cryptographic hash of
+elements with an `integrity` attribute that contains a cryptographic hash of
 the representation of the resource the author expects to load. For instance,
 an author may wish to load jQuery from a shared server rather than hosting it
 on their own origin. Specifying that the _expected_ SHA-256 hash of
@@ -89,18 +89,12 @@ regardless of the URL from which they are loaded.
     libraries can be downloaded once, and only once, even if multiple
     instances with distinct URLs are requested.
 
-5.  (potentially) Relax mixed-content warnings for resources whose
-    integrity is verified. If the integrity metadata for a resource
-    is delivered over a secure channel, the user agent might choose to
-    allow loading the resource over an insecure channel.
-
-6.  (potentially) Allow resources to be downloaded from non-canonical
+5.  (potentially) Allow resources to be downloaded from non-canonical
     sources (for instance, over an insecure channel) for performance,
     but fall back to a canonical source if the non-canonical source
     fails an integrity check. 
 
-I'm not sure about #5 and #6. Get more detail from the WG about the
-benefits that such a fallback system would enable. (mkwst)
+Rather sure about #5. We also agreed to remove mixed-content relaxation. Declare this issue resolved? (mkwst,freddyb)
 {:.issue data-number="1"}
 </section><!-- /Introduction::Goals -->
 
@@ -131,6 +125,8 @@ benefits that such a fallback system would enable. (mkwst)
                 integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"></script>
     {:.example.highlight}
 
+<!-- Removed for minimum-viable-sri: no iframes
+
 *   An advertising network wishes to ensure that advertisements delivered via
     third-party servers matches the code which they reviewed in order to reduce
     the risk of accidental or malicious substitution of unreviewed content. By
@@ -141,6 +137,7 @@ benefits that such a fallback system would enable. (mkwst)
         <iframe src="https://awesome-ads.com/advertisement1.html"
                 integrity="ni:///sha-256;kasfdsaffs...eoirW-e?ct=text/html"></iframe>
     {:.example.highlight}
+-->
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
     HTML (for example, Chrome's New Tab Page) aren't manipulated before display.
@@ -205,6 +202,8 @@ Layer Security (TLS) [[!RFC2818]]).
 An <dfn>insecure channel</dfn> is any communication mechanism other than
 those the user agent has defined as "secure".
 
+Clarification needed whether we want to talk about (in)secure channels or (un)authenticated origins. This is Github issue 71 (freddyb). {:.issue data-number="71"}
+
 The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]
 
@@ -261,8 +260,7 @@ metadata</dfn>, which consists of the following pieces of information:
 
 The hash function and digest MUST be provided in order to validate a
 resource's integrity. The MIME type SHOULD be provided, as it mitigates the
-risk of certain attack vectors (see [MIME Type confusion][] in
-this document's Security Considerations section).
+risk of certain attack vectors.
 
 This metadata is generally encoded as a "named information" (`ni`) URI, as
 defined in RFC6920. [[!RFC6920]]
@@ -566,6 +564,7 @@ to enable the rest of this specification's work [[!FETCH]]:
 [fetch-response]: http://fetch.spec.whatwg.org/#concept-response
 [basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
 [CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
+[process request end-of-file]: https://fetch.spec.whatwg.org/#process-request-end-of-file
 </section>
 
 <section>
@@ -575,15 +574,19 @@ A variety of HTML elements result in requests for resources that are to be
 embedded into the document, or executed in its context. To support integrity
 metadata for each of these, and new elements that are added in the future,
 a new `integrity` attribute is added to the list of content attributes for
-the `a`, `audio`, `embed`, `iframe`, `img`, `link`, `object`, `script`, `source`,
-`track`, and `video` elements.
+the `a`, `link`, and `script` elements.
 
 A corresponding `integrity` IDL attribute which [reflects][reflect] the
 value each element's `integrity` content attribute is added to the
-`HTMLAnchorElement`, `HTMLMediaElement`, `HTMLEmbedElement`,
-`HTMLIframeElement`, `HTMLLinkElement`, `HTMLObjectElement`,
-`HTMLScriptElement`, `HTMLSourceElement`, and `HTMLTrackElement`
+`HTMLAnchorElement`, `HTMLLinkElement`, and `HTMLScriptElement`.
 interfaces.
+
+<div class="note">
+A future revision of this specification is likely to include SRI support
+for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
+`link`, `object`, `script`, `source`, -`track`, and `video` elements.
+</div>
+</section>
 
 <section>
 #### The `integrity` attribute
@@ -651,30 +654,6 @@ attribute DOMString integrity
 {:.idl}
 </section><!-- /Framework::HTML::Interface extensions::HTMLAnchorElement -->
 <section>
-##### HTMLEmbedElement
-
-attribute DOMString integrity
-: The value of this element's `integrity` attribute
-{:title="partial interface HTMLObjectElement"}
-{:.idl}
-</section><!-- /Framework::HTML::Interface extensions::HTMLEmbedElement -->
-<section>
-##### HTMLIFrameElement
-
-attribute DOMString integrity
-: The value of this element's `integrity` attribute
-{:title="partial interface HTMLIFrameElement"}
-{:.idl}
-</section><!-- /Framework::HTML::Interface extensions::HTMLIFrameElement -->
-<section>
-##### HTMLImageElement
-
-attribute DOMString integrity
-: The value of this element's `integrity` attribute
-{:title="partial interface HTMLImageElement"}
-{:.idl}
-</section><!-- /Framework::HTML::Interface extensions::HTMLImageElement -->
-<section>
 ##### HTMLLinkElement
 
 attribute DOMString integrity
@@ -683,22 +662,6 @@ attribute DOMString integrity
 {:.idl}
 </section><!-- /Framework::HTML::Interface extensions::HTMLLinkElement -->
 <section>
-##### HTMLMediaElement
-
-attribute DOMString integrity
-: The value of this element's `integrity` attribute
-{:title="partial interface HTMLMediaElement"}
-{:.idl}
-</section><!-- /Framework::HTML::Interface extensions::HTMLMediaElement -->
-<section>
-##### HTMLObjectElement
-
-attribute DOMString integrity
-: The value of this element's `integrity` attribute
-{:title="partial interface HTMLObjectElement"}
-{:.idl}
-</section><!-- /Framework::HTML::Interface extensions::HTMLObjectElement -->
-<section>
 ##### HTMLScriptElement
 
 attribute DOMString integrity
@@ -706,15 +669,6 @@ attribute DOMString integrity
 {:title="partial interface HTMLScriptElement"}
 {:.idl}
 </section><!-- /Framework::HTML::Interface extensions::HTMLScriptElement -->
-<section>
-##### HTMLTrackElement
-
-attribute DOMString integrity
-: The value of this element's `integrity` attribute
-{:title="partial interface HTMLTrackElement"}
-{:.idl}
-</section><!-- /Framework::HTML::Interface extensions::HTMLTrackElement -->
-
 </section><!-- /Framework::HTML::Interface extensions -->
 <section>
 #### Handling integrity violations
@@ -754,8 +708,8 @@ MUST treat the lack of [integrity metadata][] for an resource as automatic
 failure, refuse to fetch the resource, and [report a violation][].
 {:.issue data-number="7"}
 
-[csp]: http://w3.org/TR/CSP11
-[report a violation]: http://www.w3.org/TR/CSP11/#dfn-report-a-violation
+[csp]: http://w3.org/TR/CSP2
+[report a violation]: http://www.w3.org/TR/CSP2/#report-a-violation
 [integrity policy]: #dfn-integrity-policy
 </section>
 
@@ -815,102 +769,10 @@ Note that this will cover _only_ downloads triggered explicitly by adding a
 </section><!-- /Framework::HTML::Elements::a -->
 
 <section>
-###### The `embed` element
-
-When fetching an URL via step 2 of the [`embed` element setup steps][embedsetup]
-algorithm:
-
-1.  Set the [integrity metadata][] of the request to the value
-    of the element's `integrity` attribute.
-
-Before running the task queued by the networking task source once the URL has
-been fetched, first perform the following steps:
-
-1.  If the response's integrity state is `corrupt`:
-    1.  If the document's [integrity policy][] is `block`:
-        1.  Set the element's `type` attribute to the empty string.
-        2.  Skip to step 4 of the algorithm.
-    2.  [Report a violation][].
-
-[embedsetup]: http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data
-</section><!-- /Framework::HTML::Elements::embed -->
-
-<section>
-###### The `iframe` element
-
-When content is to be loaded into the [child browsing context][] created
-by an `iframe`, perform fetches with the [integrity metadata][] set to the
-value of the `iframe` element's `integrity` attribute. Moreover:
-
-*   If the document's [integrity policy][] is `block`, then the user
-    agent MUST delay rendering the content until the
-    [fetching algorithm][]'s task to [process request end-of-file][]
-    completes.
-*   When the [process request end-of-file][] task completes:
-    3.  If the request's integrity state is `corrupt`:
-        1. If <var>resource</var> is [same origin][] with the document's
-           browsing context owner `iframe` element's Document's origin, then
-           [queue a task][] to [fire a simple event][] named `error` at the
-           `iframe` element (this will not fire for cross-origin requests, to
-           avoid leaking data about those resource's content).
-        2. [Report a violation][].
-        3. [Navigate][] the child browsing context to `about:blank`.
-
-<div class="note">
-Note that this will _only_ check the integrity of the `iframe`'s document source.
-No subsequent verification for the document's subresources is performed.
-If integrity checks for the document's subresources are desirable, the document
-loaded into the `iframe` needs to include [integrity metadata][] for its subresources.
-</div>
-
-How does this effect things like the preload scanner? How much work is it
-going to be for vendors to change the "display whatever we've got, ASAP!"
-behavior that makes things fast for users? How much impact will there be
-on user experience, especially for things like ads, where this kind of
-validation has the most value?
-{:.issue data-number="8"}
-
-How do we deal with navigations in the child browsing context? Are they
-simply disallowed? If so, does that make sense? It might for ads, but
-what about other use-cases?
-{:.issue data-number="9"}
-
-[child browsing context]: http://www.w3.org/TR/html5/browsers.html#child-browsing-context
-[navigate]: http://www.w3.org/TR/html5/browsers.html#navigate
-[process request end-of-file]: http://fetch.spec.whatwg.org/#process-request-end-of-file
-</section><!-- /Framework::HTML::iframe -->
-
-<section>
-###### The `img` element
-
-When fetching an image via step 12 of the [update the image data][]
-algorithm:
-
-1.  Set the [integrity metadata][] of the request to the value
-    of the element's `integrity` attribute.
-
-Before jumping one of the entries from the list in step 14 of the
-[update the image data][] algorithm, first perform the following
-steps:
-
-1.  If the response's integrity state is `corrupt`:
-    1.  If the document's [integrity policy][] is `block`:
-        1.  Abort the jump in progress.
-        2.  Perform the steps in the entry labeled "Otherwise" under step 14.
-    2.  [Report a violation][].
-
-How do we want to deal with [the `srcset` attribute][srcset]?
-{:.issue data-number="18"}
-
-[srcset]: http://www.w3.org/html/wg/drafts/srcset/w3c-srcset/
-[update the image data]: http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data
-</section><!-- /Framework::HTML::Elements::img -->
-
-<section>
-###### The `link` element
+###### The `link` element for stylesheets
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
-`link` element:
+`link` element that has a `rel` attribute with the value of `stylesheet` and a type of `text/css`:
 
 1.  Set the [integrity metadata][] of the request to the value
     of the element's `integrity` attribute.
@@ -930,27 +792,6 @@ the element:
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
 [same origin]: http://tools.ietf.org/html/rfc6454#section-5
 </section><!-- /Framework::HTML::link -->
-
-<section>
-###### The `object` element
-
-When fetching an image via step 4 of step 4 of the ["determine what the
-`object` element represents" algorithm][objectalgo]:
-
-1.  Set the [integrity metadata][] of the request to the value
-    of the element's `integrity` attribute.
-
-Before step 7 of the ["determine what the `object` element represents"
-algorithm][objectalgo], first perform the following steps:
-
-1.  If the response's integrity state is `corrupt`:
-    1.  If the document's [integrity policy][] is `block`:
-        1.  [Fire a simple event][] named `error` at the element.
-        2.  Jump to the step labeled <i>fallback</i>.
-    2.  [Report a violation][].
-
-[objectalgo]: http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data 
-</section><!-- /Framework::HTML::Elements::object -->
 
 <section>
 ###### The `script` element
@@ -982,46 +823,6 @@ Insert the following steps after step 5 of step 14 of HTML5's
 [bz]: http://lists.w3.org/Archives/Public/public-webappsec/2013Dec/0048.html
 </section><!-- /Framework::HTML::Elements::script -->
 
-<section>
-###### The `track` element
-
-When fetching the [track URL][] in step 10 of the [start the `track`
-processing model][track-process] algorithm:
-
-1.  Set the [integrity metadata][] of the request to the value
-    of the element's `integrity` attribute.
-
-Additionally, perform the following steps before performing the steps
-specified for a successful `track` fetch:
-
-1.  If the response's integrity state is `corrupt`:
-    1.  If the document's [integrity policy][] is `block`:
-        1.  Perform the steps specified for a failed `track` fetch.
-        2.  Abort the steps specified for a successful `track` fetch.
-    2.  [Report a violation][].
-
-[track URL]: http://www.w3.org/TR/html5/embedded-content-0.html#track-url
-[track-process]: http://www.w3.org/TR/html5/embedded-content-0.html#start-the-track-processing-model
-</section><!-- /Framework::HTML::Elements::track -->
-<section>
-###### The `audio` element (TODO)
-
-TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.issue data-number="10"}
-</section><!-- /Framework::HTML::Elements::audio -->
-<section>
-###### The `source` element (TODO)
-
-TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.issue data-number="11"}
-</section><!-- /Framework::HTML::Elements::source -->
-<section>
-###### The `video` element (TODO)
-
-TODO: Write this section? Might want to delay media elements until we have a solution to streaming.
-{:.issue data-number="12"}
-</section><!-- /Framework::HTML::Elements::video -->
-
 </section><!-- /Framework::HTML::Elements -->
 
 </section><!-- /Framework::HTML -->
@@ -1045,65 +846,6 @@ that would allow integrity checks in CSS.
 These sections are less fleshed out and debated than the HTML sections, where
 the WG has concentrated most of its time thus far.
 {:.issue data-number="14"}
-
-<section>
-#### Workers
-
-To validate the integrity of scripts which are to be run as workers, a new
-constructor is added for `Worker` and `SharedWorker` which accepts a second
-argument containing integrity metadata. This information is used when
-[running a worker][runworker] to perform validation, as outlined in the
-following sections: [[!WEBWORKERS]]
-
-[runworker]: http://dev.w3.org/html5/workers/#run-a-worker
-
-<section>
-#### Worker extension
-
-attribute DOMString integrity
-: The value of the Worker's `integrity` attribute. Defaults to the empty string.
-{:title="[Constructor (DOMString scriptURL, DOMString integrityMetadata)] partial interface Worker : EventTarget"}
-{:.idl}
-
-When the `Worker(scriptURL, integrityMetadata)` constructor is invoked:
-
-1. If `integrityMetadata` is not a valid "named information" (`ni`) URL,
-   throw a `SyntaxError` exception and abort these steps.
-2. Execute the `Worker(scriptURL)` constructor, and set the newly created
-   `Worker` object's `integrity` attribute to `integrityMetadata`.
-</section><!-- /Framework::JS::Workers::Worker -->
-<section>
-#### SharedWorker extension
-
-attribute DOMString integrity
-: The value of the SharedWorker's `integrity` attribute. Defaults to the empty string.
-{:title="[Constructor (DOMString scriptURL, DOMString name, DOMString integrityMetadata)] partial interface Worker : EventTarget"}
-{:.idl}
-
-When the `SharedWorker(scriptURL, name, integrityMetadata)` constructor is
-invoked:
-
-1. If `integrityMetadata` is not a valid "named information" (`ni`) URL,
-   throw a `SyntaxError` exception and abort these steps.
-2. Execute the `SharedWorker(scriptURL, name)` constructor, and set the
-   newly created `SharedWorker` object's `integrity` attribute to
-   `integrityMetadata`.
-</section><!-- /Framework::JS::Workers::SharedWorker -->
-
-<section>
-#### Validation
-
-Add the following step directly after step 4 of the [run a worker][runworker]
-algorithm:
-
-5. If the script resource fetched in step 4 has an integrity status of
-   `corrupt`, then for each `Worker` or `SharedWorker` object associated
-   with <var>worker global scope</var>, [queue a task][] to [fire a
-   simple event][] named `error` at that object. Abort these steps.
-{:start="5"}
-</section><!-- /Framework::JS::Workers::validation -->
-
-</section><!-- /Framework::JS::Workers -->
 
 <section>
 #### XMLHttpRequest
@@ -1190,134 +932,9 @@ switching state:
 [xhrnetworkerror]: http://dev.w3.org/2006/webapi/DOM4Core/#networkerror
 [xhrerror]: http://www.w3.org/TR/XMLHttpRequest/#event-xhr-error
 </section><!-- Framework::JS::XHR::validation -->
-
 </section><!-- /Framework::JS::XHR -->
-
-
 </section><!-- /Framework::JS -->
 </section><!-- /Framework -->
-
-<section>
-### Caching (Optional)
-
-The caching mechanism described in this section is OPTIONAL.
-
-JavaScript libraries are a good example of resources that are often loaded
-and reloaded from different locations as users browse the web:
-`http://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js` is
-exactly the same file as
-`https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js`. Both
-files are identifiable via the `ni` URL
-`ni:///sha-256;iaFenEC8axSAnyNu6M0-0epCOTwfbKVceFXNd5s_ki4?ct=application/javascript`.
-
-To reduce the performance impact of reloading the same data, user agents
-MAY use [integrity metadata][] as a new index to a local cache, meaning that
-a user who had already loaded a version of the file from `ajax.googleapis.com`
-wouldn't have to touch the network to load the `cdnjs.cloudflare.com` version.
-The user agent knows that the content is the same, and would be free to treat
-the latter as a cache hit, regardless of the location mismatch.
-
-<section>
-#### Risks
-
-This approach is good for performance, but can have security implications. See
-the [origin confusion][] and [MIME type confusion][] sections below for some
-details.
-
-<section>
-##### Origin confusion
-[origin confusion]: #origin-confusion
-
-User agents which set up a caching mechanism that uses only the integrity
-metadata to identify a resource are vulnerable to attacks which bypass
-same-origin restrictions unless they are very careful when choosing whether
-or not to read data straight from the cache.
-
-For instance:
-
-* [Runtime script errors][onerror] are sanitized for resources that are
-  [CORS-cross-origin][cors] to the page into which they are loaded. [[!HTML5]]
-
-* XMLHttpRequest may only load data from same-origin resources, or from
-  resources delivered with proper CORS headers. [[!XMLHTTPREQUEST]]
-
-* Content Security Policy performs origin-based security checks. [[!CSP]]
-
-More?
-{:.issue data-number="15"}
-
-<div class="note">
-The simple cache-poisoning version of this attack can be mitigated by
-requiring strong hash functions for cachable resources. More complex
-variants are more difficult to mitigate. Consider the following:
-
-1.  An attacker lures Alice to a page containing the following code:
-
-        <script src="http://evil.com/evil.js" integrity="ni://sha-256;123...789">
-    {:.example.highlight}
-
-2.  Alice's user agent loads `evil.js`, and stores it in her cache.
-
-3.  Though `bank.com` is protected by a CSP which allows only script from
-    `bank.com`, the attacker may still be able to exploit an XSS vulnerability
-    in `bank.com` which allows the injection of:
-
-        <script src="http://bank.com/awesome.js" integrity="ni://sha-256;123...789">
-    {:.example.highlight}
-
-    Since the script appears to come from `bank.com`, CSP allows it, even though
-    it doesn't actually exist on that server.
-</div>
-
-[onerror]: http://www.w3.org/TR/html5/webappapis.html#runtime-script-errors
-[cors]: http://www.w3.org/TR/html5/infrastructure.html#cors-cross-origin
-</section><!-- /Caching::Risks::Origin confusion -->
-
-<section>
-##### MIME type confusion
-[MIME Type confusion]: #mime-type-confusion
-
-User agents which set up a caching mechanism that uses only the integrity
-metadata to identify a resource are vulnerable to attacks which create
-resources that behave differently based on the context in which they are
-loaded. [Gifar][] is the canonical example of such an attack.
-
-Authors SHOULD mitigate this risk by specifying the expected content type
-along with the digest, as specified in [RFC 6920, section 3.1][contenttype].
-This means that the content type will be verified along with the digest when
-determining whether a [resource matches certain integrity
-metadata][match].
-
-[Gifar]: http://en.wikipedia.org/wiki/Gifar
-[contenttype]: http://tools.ietf.org/html/rfc6920#section-3.1
-</section><!-- /Caching::Risks::MIME Type confusion -->
-</section><!-- /Caching::Risks -->
-
-<section>
-#### Recommendations
-
-To mitigate the risk of cross-origin data leakage or type-sniffing
-exploitation, user agents that take this approach to caching MUST NOT
-use [integrity metadata][] as a cache identifier unless the following
-are all true:
-
-*   The integrity metadata contains a content type.
-*   The resource was delivered in response to an HTTP `GET` request (and not
-    `POST`, `OPTIONS`, `TRACE`, etc.)
-*   The resource was delivered with an `Access-Control-Allow-Origin` HTTP
-    header with a value of `*` [[!CORS]]
-*   The integrity metadata uses a hash function with very strong uniqueness
-    characteristics: SHA-512 or better.
-*   If a Content Security Policy is active in a context, the `script` or
-    `link` element which triggered the resource's fetch has a [valid nonce][].
-
-[valid nonce]: http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html
-
-More ideas? Limiting to resources with wide-open CORS headers and strong
-hash functions seems like a reasonable start...
-{:.issue data-number="16"}
-</section><!-- /Caching::Recommendations -->
-</section><!-- /Caching -->
 
 <section>
 ## Proxies
@@ -1362,8 +979,8 @@ secure channels.
 ### Hash collision attacks
 
 Digests are only as strong as the hash function used to generate them. User
-agents SHOULD refuse to support known-weak hashing functions like MD5, and
-SHOULD restrict supported hashing functions to those known to be
+agents SHOULD refuse to support known-weak hashing functions like MD5 or SHA-1,
+and SHOULD restrict supported hashing functions to those known to be
 collision-resistant. At the time of writing, SHA-256 is a good baseline.
 Moreover, user agents SHOULD reevaluate their supported hashing functions
 on a regular basis, and deprecate support for those functions shown to be
@@ -1381,12 +998,12 @@ contents. This might reveal, for example, whether or not a user is
 logged into a particular service.
 
 Moreover, attackers can brute-force specific values in an otherwise
-static resource: consider a document that looks like this:
+static resource: consider a JSON response that looks like this:
 
-    <html>{static content}<h1>Hello, $username!</h1>{static content}</html>
+    {'status': 'authenticated', 'username': 'Stephan Falken'}
 {:.example.highlight}
 
-An attacker can precompute hashes for the page with a variety of
+An attacker can precompute hashes for the response with a variety of
 common usernames, and specify those hashes while repeatedly attempting
 to load the document. By examining the reported violations, the attacker
 can obtain a user's username.
