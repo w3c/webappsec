@@ -390,7 +390,8 @@ the user agent.
         <var>token</var>.
     3.  If <var>algorithm</var> is a hash function recognized by the user
         agent, add <var>token</var> to <var>result</var>.
-4.  Return <var>result</var>.
+4.  Return `no metadata` if <var>result</var> is empty, otherwise return
+    <var>result</var>.
 
 [split-on-spaces]: http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces
 </section><!-- Algorithms::parse -->
