@@ -357,19 +357,17 @@ is a consistent ordering.
 <section>
 #### Apply <var>algorithm</var> to <var>resource</var>
 
-1.  If <var>algorithm</var> is not a hash function recognized and supported
-    by the user agent, return `null`.
-2.  Let <var>result</var> be the result of applying <var>algorithm</var> to
+1.  Let <var>result</var> be the result of applying <var>algorithm</var> to
     the [representation data][representationdata] without any content-codings
     applied, except when the user agent intends to consumes the content with
     content-encodings applied (e.g., saving a gzip’d file to disk). In the
     latter case, let <var>result</var> be the result of applying
     <var>algorithm</var> to the [representation data][representationdata].
-3.  Let <var>encodedResult</var> be result of base64url-encoding
+2.  Let <var>encodedResult</var> be result of base64url-encoding
     <var>result</var>.
-4.  Strip any trailing U+003D EQUALS SIGN (`=`) characters from
+3.  Strip any trailing U+003D EQUALS SIGN (`=`) characters from
     <var>encodedResult</var>.
-5.  Return <var>encodedResult</var>.
+4.  Return <var>encodedResult</var>.
 
 [apply-algorithm]: #apply-algorithm-to-resource
 </section><!-- Algorithms::apply -->
