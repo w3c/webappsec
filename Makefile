@@ -6,10 +6,10 @@ clean:
 	rm -rf ./writeonly/index.html
 
 spec/index.html: spec/index.src.html biblio.json
-	bikeshed -q spec ./spec/index.src.html ./spec/index.html
+	bikeshed -q spec ./spec/index.src.html index.html
 
 usecases/index.html: usecases/index.src.html biblio.json
-	bikeshed -q spec ./usecases/index.src.html ./usecases/index.html
+	bikeshed -q spec ./usecases/index.src.html index.html
 
 writeonly/index.html: writeonly/index.src.html biblio.json
-	bikeshed -q spec ./writeonly/index.src.html ./writeonly/index.html
+	bikeshed -q spec ./writeonly/index.src.html index.html
