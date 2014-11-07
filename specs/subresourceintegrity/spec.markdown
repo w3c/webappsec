@@ -283,7 +283,7 @@ Digests may be generated using any number of utilities. [OpenSSL][], for
 example, is quite commonly available. The example in this section is the
 result of the following command line:
 
-    echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 | sed -e 's/+/-/g' -e 's/\//_/g'
+    echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 | sed -e 's/+/-/g' -e 's/\//_/g' -e 's/=*$//g'
 
 [openssl]: http://www.openssl.org/
 </div>
