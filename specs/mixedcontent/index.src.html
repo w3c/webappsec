@@ -1,6 +1,8 @@
 <h1>Mixed Content</h1>
 <pre class="metadata">
-Status: ED
+Status: LCWD
+Date: 2014-11-11
+Deadline: 2014-12-11
 ED: https://w3c.github.io/webappsec/specs/mixedcontent/
 Shortname: MIX
 TR: http://www.w3c.org/TR/mixed-content/
@@ -9,11 +11,185 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes how user agents should handle rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
-Link Defaults: HTML5 (dfn) plugin / browsing context / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor / navigated / entry settings object / active document / global object / sandboxed origin browsing context flag / an iframe srcdoc document / browsing context container / relevant settings object for a script / responsible browsing context
-Link Defaults: HTML5 (interface) document
-Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
 Indent: 2
+</pre>
+<!--
+   ███    ██    ██  ██████  ██     ██  ███████  ████████   ██████ 
+  ██ ██   ███   ██ ██    ██ ██     ██ ██     ██ ██     ██ ██    ██
+ ██   ██  ████  ██ ██       ██     ██ ██     ██ ██     ██ ██      
+██     ██ ██ ██ ██ ██       █████████ ██     ██ ████████   ██████ 
+█████████ ██  ████ ██       ██     ██ ██     ██ ██   ██         ██
+██     ██ ██   ███ ██    ██ ██     ██ ██     ██ ██    ██  ██    ██
+██     ██ ██    ██  ██████  ██     ██  ███████  ██     ██  ██████ 
+-->
+<!--
+    HTML Definitions
+-->
+<pre class="anchors">
+[
+  {
+    "linkingText": "an iframe srcdoc document",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/embedded-content-0.html#an-iframe-srcdoc-document",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "browsing context",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#browsing-context",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "browsing context container",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#browsing-context-container",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "incumbent settings object",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "navigated",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#navigate",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "nested through",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#browsing-context-nested-through",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "plugin",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/infrastructure.html#plugin",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "plugin document",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#plugin-document",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "relevant settings object for a script",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/webappapis.html#relevant-settings-object-for-a-script",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "responsible document",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/webappapis.html#responsible-document",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "sandboxed origin browsing context flag",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#sandboxed-origin-browsing-context-flag",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "sandboxing flag set",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#sandboxing-flag-set",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "top-level browsing context",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context",
+    "shortname": "html5",
+    "level": 0
+  }
+]
+</pre>
+<!--
+    HTML Interfaces
+-->
+<pre class="anchors">
+[
+  {
+    "linkingText": "document",
+    "type": "interface",
+    "url": "http://www.w3.org/TR/html5/dom.html#the-document-object",
+    "shortname": "html5",
+    "level": 0
+  }
+]
+</pre>
+<!--
+    HTML Elements
+-->
+<pre class="anchors">
+[
+  {
+    "linkingText": "audio",
+    "type": "element",
+    "url": "http://www.w3.org/TR/html5/embedded-content-0.html#the-audio-element",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "frame",
+    "type": "element",
+    "url": "http://www.w3.org/TR/html5/obsolete.html#frame",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "iframe",
+    "type": "element",
+    "url": "http://www.w3.org/TR/html5/embedded-content-0.html#the-iframe-element",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "video",
+    "type": "element",
+    "url": "http://www.w3.org/TR/html5/embedded-content-0.html#the-video-element",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "script",
+    "type": "element",
+    "url": "http://www.w3.org/TR/html5/scripting-1.html#the-script-element",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "source",
+    "type": "element",
+    "url": "http://www.w3.org/TR/html5/embedded-content-0.html#the-source-element",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "track",
+    "type": "element",
+    "url": "http://www.w3.org/TR/html5/embedded-content-0.html#the-track-element",
+    "shortname": "html5",
+    "level": 0
+  }
+]
 </pre>
 
 <!--
@@ -64,17 +240,10 @@ Indent: 2
   resource whose status is mixed, as insecure requests are wide open for
   man-in-the-middle attacks. This scenario is unfortunately quite common.
 
-  Regardless of <code>example.com</code>'s own privacy, users' privacy and
-  security can be further impacted if a public resource can generate requests
-  to private resources on a local network. For example, public resources must
-  not be allowed to generate requests to a user's router, or an enterprise's
-  internal file server.
-
   This specification details how user agents can mitigate these risks to
   security and privacy by limiting a resource's ability to inadvertently
-  communicate in the clear, or to expose non-public resources to the web at
-  large.
-  
+  communicate in the clear.
+
   Note: Nothing described in this document is really new; everything covered
   here has appeared in one or more user agents over the years: Internet Explorer
   led the way, alerting users to mixed content since at least version 4.
@@ -98,21 +267,9 @@ Indent: 2
       <dfn export local-title="mixed">mixed content</dfn>
     </dt>
     <dd>
-      A resource is said to be <strong>mixed content</strong> if either of the
-      following conditions holds:
-
-      <ul>
-        <li>
-          The resource's <a>origin</a> is <a>insecure</a>, <strong>and</strong>
-          the <a>browsing context</a> responsible for loading it <a>restricts
-          mixed content</a>.
-        </li>
-        <li>
-          The resource's <a>origin</a> is <a>private</a> <strong>and</strong>
-          the <a>origin</a> of the <a>browsing context</a> responsible for
-          loading it is <a>public</a>.
-        </li>
-      </ul>
+      A resource is said to be <strong>mixed content</strong> if the resource's
+      <a>origin</a> is <a>insecure</a>, <strong>and</strong> the the context
+      responsible for loading it <a>restricts mixed content</a>.
 
       <div class="example">
         The image <code>http://example.com/image.png</code> is <strong>mixed
@@ -122,55 +279,6 @@ Indent: 2
         The image <code>http://127.0.0.1/image.png</code> is <strong>mixed
         content</strong> when loaded by <code>http://example.com/</code>.
       </div>
-    </dd>
-
-    <dt>
-      <dfn export local-title="private">private origin</dfn>
-    </dt>
-    <dt>
-      <dfn export>private URL</dfn>
-    </dt>
-    <dd>
-      An <a>origin</a> is considered a <strong>private origin</strong> if any
-      of the following conditions holds:
-
-      <ul>
-        <li>
-          The origin's <code>scheme</code> component is <code>file</code>.
-        </li>
-        <li>
-          The origin's <code>host</code> component is <code>localhost</code>,
-          or matches one of the CIDR notations <code>127.0.0.0/8</code> or
-          <code>::1/128</code> [[!RFC4632]]
-        </li>
-        <li>
-          The origin's <code>host</code> component matches one of the
-          <dfn>private address space</dfn> patterns defined in
-          <a href="http://tools.ietf.org/html/rfc1918#section-3">Section 3 of
-          RFC1918</a> (<code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>,
-          <code>192.168.0.0/16</code>) [[!RFC1918]].
-        </li>
-        <li>
-          The origin's <code>host</code> component is an <dfn>Internal
-          Name</dfn>, as defined by the CA/Browser Forum's Baseline
-          Requirements [[!CAB]].
-        </li>
-      </ul>
-
-      A URL whose <a>origin</a> is private is itself considered to be private.
-    </dd>
-
-    <dt>
-      <dfn export local-title="public">public origin</dfn>
-    </dt>
-    <dt>
-      <dfn export>public URL</dfn>
-    </dt>
-    <dd>
-      Any <a>origin</a> which is not <a>private</a> is said to be a
-      <strong>public origin</strong>.
-
-      A URL whose <a>origin</a> is public is itself considered to be public.
     </dd>
 
     <dt>
@@ -185,25 +293,11 @@ Indent: 2
     </dt>
     <dd>
       An <a>origin</a> is said to be <strong>potentially secure</strong>
-      if one of the following is true:
-
-      <ul>
-        <li>
-          The origin's scheme component is <code>HTTPS</code>,
-          <code>WSS</code>, or <code>about</code>.
-        </li>
-        <li>
-          The origin is a <a>globally unique identifier</a> (for example,
-          a <code>blob</code> URL).
-        </li>
-      </ul>
+      if the origin's scheme component is <code>HTTPS</code>, <code>WSS</code>,
+      or <code>about</code>.
 
       A URL whose <a>origin</a> is potentially secure is itself considered to
       be potentially secure.
-
-      Note: The mixed content checks take place <em>after</em> Strict
-      Transport Security is applied to resource URLs, which simplifies
-      determination of insecurity. [[RFC6797]]
     </dd>
 
     <dt>
@@ -246,14 +340,6 @@ Indent: 2
     </dd>
 
     <dt>
-      <dfn export>unsecured context</dfn>
-    </dt>
-    <dd>
-      A <a>browsing context</a> is called <strong>unsecured</strong> if it does
-      not <a>restrict mixed content</a>.
-    </dd>
-
-    <dt>
       <dfn export local-title="deprecated">
         deprecated TLS-protection
       </dfn>
@@ -264,8 +350,8 @@ Indent: 2
       refuse it anyway. This determination is vendor-specific.
 
       For example, a user agent may choose to reject resources for which the
-      server presented a publicly-trusted certificate for an <a>Internal
-      Name</a> (e.g. <code>https://intranet/</code>), a certificate with an
+      server presented a publicly-trusted certificate for an "Internal
+      Name" (e.g. <code>https://intranet/</code>), a certificate with an
       overly-long validity period, a certificate signed with SHA-1, or a
       certificate which otherwise fails to meet the
       <a href="https://cabforum.org/baseline-requirements-documents/">
@@ -273,27 +359,6 @@ Indent: 2
 
       Note: We recommend that user agents return network errors rather than
       fetching resources whose TLS-protection is deprecated.
-    </dd>
-
-    <dt>
-      <dfn export>authenticated origin</dfn>
-    </dt>
-    <dt>
-      <dfn export>authenticated browsing context</dfn>
-    </dt>
-    <dd>
-      An origin can be called <strong>authenticated</strong> when it either
-      refers to a source which is impossible not to trust (e.g.
-      <code>localhost</code>), or to a source which can be adequately verified
-      as authentic.
-
-      A <a>browsing context</a> can be called <strong>authenticated</strong>
-      if the origin of its <a>active document</a> is
-      <strong>authenticated</strong>.
-
-      These are spelled out in more detail in the
-      [[#is-origin-authenticated]] and [[#is-browsing-context-authenticated]]
-      algorithms.
     </dd>
   </dl>
 
@@ -334,7 +399,7 @@ Indent: 2
       This term is defined in
       <a href="http://tools.ietf.org/html/rfc6454#section-4">Section 4 of
       RFC6454</a>. [[!RFC6454]]
-    
+
       Note: URLs that do not use
       <a href="http://tools.ietf.org/html/rfc3986#section-3.2">hierarchical
       elements</a> as naming authorities (for example: <code>blob:</code>, and
@@ -353,6 +418,8 @@ Indent: 2
     <dt><dfn local-title="client">request client</dfn></dt>
     <dt><dfn local-title="context">request context</dfn></dt>
     <dt><dfn local-title="frame type">request context frame type</dfn></dt>
+    <dt><dfn local-title="tls state">request client TLS state</dfn></dt>
+    <dt><dfn>response TLS state</dfn></dt>
     <dd>
       These terms are defined in
       <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the
@@ -366,10 +433,31 @@ Indent: 2
       <a href="http://fetch.spec.whatwg.org/#responses">Section 2.3</a> of the
       Fetch living standard. [[!FETCH]]
     </dd>
+
+    <dt><dfn>environment settings object</dfn></dt>
+    <dd>
+      Defined in [[!HTML5]].
+    </dd>
+
+    <dt><dfn>embedding document</dfn></dt>
+    <dd>
+      Given a {{Document}} <var>A</var>, the <strong>embedding
+      document</strong> of <var>A</var> is the {{Document}}
+      <a title="nested through">through which</a> <var>A</var>'s <a>browsing
+      context</a> is nested.
+    </dd>
   </dl>
 </section>
 
-<!-- Big Text: Categories -->
+<!--
+ ██████     ███    ████████ ████████  ██████    ███████  ████████  ████ ████████  ██████ 
+██    ██   ██ ██      ██    ██       ██    ██  ██     ██ ██     ██  ██  ██       ██    ██
+██        ██   ██     ██    ██       ██        ██     ██ ██     ██  ██  ██       ██      
+██       ██     ██    ██    ██████   ██   ████ ██     ██ ████████   ██  ██████    ██████ 
+██       █████████    ██    ██       ██    ██  ██     ██ ██   ██    ██  ██             ██
+██    ██ ██     ██    ██    ██       ██    ██  ██     ██ ██    ██   ██  ██       ██    ██
+ ██████  ██     ██    ██    ████████  ██████    ███████  ██     ██ ████ ████████  ██████ 
+-->
 <section>
   <h2 id="categories">Content Categories</h2>
 
@@ -456,7 +544,7 @@ Indent: 2
         <a>Plugin</a> data (loaded, for example, through
         <a element>applet</a>, <a element>embed</a>, or <a element>object</a>
         elements; or through a <a>plugin document</a> loaded into an
-        <a element>iframe</a> or <a>frame</a> element) [[HTML5]]
+        <a element>iframe</a> or <a element>frame</a> element) [[HTML5]]
       </li>
       <li>SVG Documents [[SVG2]]</li>
       <li>XSL Transformations [[XSLT]]</li>
@@ -536,27 +624,35 @@ Indent: 2
     of the risk (for instance, presenting the user with a confirmation screen
     she must click through).
 
-    If a <a>browsing context</a> <a>restricts mixed content</a>, then user
-    agents MUST adhere to the following requirements when <a>fetching</a>
-    resources in response to its requests (including not only requests for a
-    <a interface>Document</a>'s subresources, but also requests made from
-    Workers, SharedWorkers, ServiceWorkers and so on):
+    If a {{Document}}'s <a>incumbent settings object</a> <a>restricts
+    mixed content</a>, or the <a>relevant settings object for a script</a>
+    <a>restricts mixed content</a>, then <a>fetching</a> resource in response
+    to requests (including not only requests for a {{Document}}'s subresources,
+    but also requests made from (Workers, SharedWorkers, Service Workers, and
+    so on) will exhibit the following behavior:
 
     <ol>
       <li>
         <a>Requests</a> for <a>blockable</a> resources from an
-        <a><em>a priori</em> insecure origin</a> MUST not generate network
-        traffic, and MUST instead return a synthetically generated <a>network
+        <a><em>a priori</em> insecure origin</a> will not generate network
+        traffic, but will instead return a synthetically generated <a>network
         error</a> response.
       </li>
 
       <li>
         <a>Responses</a> to <a>requests</a> for <a>blockable</a> resources from
-        an <a>insecure origin</a> MUST not be delivered to the requesting
-        <a>browsing context</a>, but instead MUST return a synthetically
-        generated <a>network error</a> response.
+        an <a>insecure origin</a> will not be delivered to the <a>request
+        client</a>, but instead will return a synthetically generated <a>network
+        error</a> response.
       </li>
+    </ol>
 
+    [[#fetch-integration]] and [[#algorithms]] detail how these fetching
+    requirements could be implemented.
+
+    User agents MAY take further action:
+
+    <ol>
       <li>
         <a>Requests</a> for <a>optionally-blockable</a> resources which
         are <a>mixed content</a> SHOULD be treated as <a>blockable</a> (and
@@ -576,60 +672,44 @@ Indent: 2
         protocol of the requested URL to <code>HTTPS</code> in certain cases.
       </li>
     </ol>
-
-    If a <a>browsing context</a>'s <a>active document</a>'s origin is a
-    <a>public origin</a>, then user agents MUST adhere to the following
-    requirements when <a>fetching</a> resources in response to the
-    browsing context's requests:
-
-    <ol>
-      <li>
-        <a>Requests</a> to <a>private origins</a> from <a>public origins</a>
-        MUST not generate network traffic (including traffic on loopback
-        interfaces), and MUST instead return a synthetically generated
-        <a>network error</a> response.
-      </li>
-    </ol>
-
-    [[#fetch-integration]] and [[#algorithms]] detail how these fetching
-    requirements could be implemented.
   </section>
 
   <section>
     <h3 id="requirements-script">Script APIs</h3>
 
-    If the <a>relevant settings object for a script</a> <var>script</var> has a
-    <a>responsible browsing context</a> which <a>restricts mixed content</a>,
-    then user agents MUST adhere to the following requirements when executing
-    the following APIs in the context of <var>script</var>:
+    If the <a>relevant settings object for a script</a> <var>script</var>
+    <a>restricts mixed content</a>, then user agents will model a mixed content
+    failure as a network error. This means that:
 
     <ol>
-      <li>When processing XMLHttpRequest's
-      <a href="http://www.w3.org/TR/XMLHttpRequest2/#the-open-method"><code>open()</code>
-      method</a>, throw a <code>SecurityError</code> exception and terminate the
-      method's execution if the <var>request URL</var> provided points to an
-      <a><em>a priori</em> insecure origin</a>. [[!XMLHTTPREQUEST]]</li>
+      <li>
+        An XMLHttpRequest rejected as mixed content will run the steps for a
+        network error during execution of the 
+        <a href="http://www.w3.org/TR/XMLHttpRequest2/#the-send-method"><code>send()</code>
+        method</a>. [[!XMLHTTPREQUEST]]
+      </li>
 
-      <li>When processing EventSource's
-      <a href="http://www.w3.org/TR/eventsource/#the-eventsource-interface">constructor</a>,
-      throw a <code>SecurityError</code> exception and terminate the constructor's
-      execution if the <var>url</var> provided points to an <a><em>a priori</em>
-      insecure origin</a>. [[!EVENTSOURCE]]</li>
+      <li>
+        An EventSource connection rejected as mixed content will cause the user agent to
+        <a href="http://www.w3.org/TR/eventsource/#fail-the-connection">fail the
+        connection</a>. [[!EVENTSOURCE]]
+      </li>
 
-      <li>When processing WebSocket's
-      <a href="http://www.w3.org/TR/websockets/#the-websocket-interface">constructor</a>,
-      throw a <code>SecurityError</code> exception and terminate the constructor's
-      execution if the <var>url</var> provided points to an <a><em>a priori</em>
-      insecure origin</a>. [[!WEBSOCKETS]]</li>
+      <li>
+        When processing WebSocket's
+        <a href="http://www.w3.org/TR/websockets/#the-websocket-interface">constructor</a>,
+        for an <a>a priori insecure origin</a>, a <code>SecurityError</code> exception will
+        be thrown. [[!WEBSOCKETS]]
+      </li>
     </ol>
   </section>
 
   <section>
     <h3 id="requirements-forms">Form Submission</h3>
 
-    If a <a>browsing context</a> <a>restricts mixed content</a>, then user
-    agents MAY <strong>optionally</strong> choose to warn users of the presence
-    of one or more <a element>form</a> elements with <a element-attr>action</a>
+    If a {{Document}}'s <a>incumbent settings object</a> <a>restricts mixed
+    content</a>, then user agents MAY choose to warn users of the presence of
+    one or more <a element>form</a> elements with <a element-attr>action</a>
     attributes whose values are <a>insecure URLs</a>.
 
     Note: Chrome, for example, currently gives the same UI treatment to a page
@@ -637,9 +717,10 @@ Indent: 2
     image.
 
     Further, user agents MAY <strong>optionally</strong> treat form submissions
-    in the <a>top-level browsing context</a> from a <a>browsing context</a>
-    which <a>restricts mixed content</a> as a request for <a>blockable
-    content</a> to protect users from accidental data leakage.
+    in the <a>top-level browsing context</a> from a {{Document}} whose
+    <a>incumbent settings object</a> <a>restricts mixed content</a> as a
+    request for <a>blockable content</a> to protect users from accidental data
+    leakage.
   </section>
 
   </section>
@@ -677,7 +758,7 @@ Indent: 2
     such a back door. That said, allowing mixed script is in particular a very
     dangerous option, and user agents
     <a href="http://tools.ietf.org/html/rfc6919#section-3">REALLY SHOULD NOT</a>
-    present such a choice to users without careful consideration and
+    [[RFC6919]] present such a choice to users without careful consideration and
     communication of the risk involved.
   </section>
 </section>
@@ -692,50 +773,59 @@ Indent: 2
 ██     ██ ████████  ██████    ███████  ██     ██ ████    ██    ██     ██ ██     ██  ██████
 -->
 <section>
-  <h2 id="algorithms">Algorithms</h2>
+  <h2 id="algorithms">Insecure Content in Secure Contexts</h2>
 
   <section>
-    <h3 id="categorize-browsing-context">
-      Does <var>browsing context</var> restrict mixed content?
+    <h3 id="categorize-settings-object">
+      Does <var>settings object</var> restrict mixed content?
     </h3>
 
-    Given a <a>browsing context</a> <var>context</var>, the user agent
-    determines whether <var>context</var>
-    <dfn export local-title="restrict mixed content">restricts mixed content</dfn>
-    via the following algorithm, which returns <strong>true</strong> if
-    <var>context</var> restricts mixed content, and <strong>false</strong>
-    otherwise.
+    Both documents and workers have <a>environment settings objects</a> which
+    may be examined according to the following algorithm in order to determine
+    whether they <dfn export local-title="restricts mixed content">restrict
+    mixed content</dfn>. This algorithm returns <code>Restricts Mixed
+    Content</code> or <code>Does Not Restrict Mixed Content</code>, as
+    appropriate.
+
+    Given an <a>environment settings object</a> <var>settings</var>:
 
     <ol>
       <li>
-        If <var>context</var> is <a>TLS-protected</a>, and that
-        TLS-protection is neither <a>weak</a> nor <a>deprecated</a>, then return
-        <strong>true</strong>.
+        If <var>settings</var>' <a>TLS state</a> is not
+        <code>unauthenticated</code>, then return <strong>Restricts Mixed
+        Content</strong>.
       </li>
       <li>
-        If <var>context</var> is a <a>nested browsing context</a>, then:
+        If <var>settings</var> has a <a>responsible document</a>
+        <var>document</var>, then:
 
         <ol>
-          <li>Let <var>ancestorList</var> be the list of all
-          <a>ancestors</a> of <var>context</var>.</li>
-
           <li>
-            For each <var>ancestorContext</var> in <var>ancestorList</var>:
+            While <var>document</var> has an <a>embedding document</a>:
 
             <ol>
-              <li>If <var>ancestorContext</var> is <a>TLS-protected</a>, and
-              that TLS-protection is neither <a>weak</a> nor <a>deprecated</a>,
-              then return <strong>true</strong>.</li>
+              <li>
+                Let <var>document</var> be <var>document</var>'s <a>embedding
+                document</a>.
+              </li>
+              <li>
+                Let <var>embedder settings</var> be <var>document</var>'s
+                <var>incumbent settings object</var>.
+              </li>
+              <li>
+                If <var>embedder settings</var>' <a>TLS state</a> is not
+                <code>unauthenticated</code>, then return <strong>Restricts
+                mixed content</strong>.
+              </li>
             </ol>
           </li>
         </ol>
       </li>
-
-      <li>Return <strong>false</strong>.</li>
+      <li>Return <strong>Does Not Restrict Mixed Content</strong>.</li>
     </ol>
 
     <div class="note">
-      If a document is a <a>nested browsing context</a>, user agents need to
+      If a document has an <a>embedding document</a>, user agents need to
       check not only the document itself, but also the <a>top-level browsing
       context</a> in which the document is nested, as that is the context
       which controls the user's expectations regarding the security status of
@@ -792,21 +882,12 @@ Indent: 2
         type</code>.
       </li>
       <li>
-        Let <var>browsing context</var> be <var>request</var>'s
-        <code>client</code>'s <a>responsible browsing context</a>.
-      </li>
-      <li>
         Let <var>origin</var> be the <a>origin</a> of <var>request</var>'s
         <strong>URL</strong>.
       </li>
       <li>
-        If <var>origin</var> is a <a>private origin</a>, and
-        <var>request</var>'s <code>client</code>'s <a>origin</a> is a
-        <a>public origin</a>, return <strong>blocked</strong>.
-      </li>
-      <li>
-        If <var>browsing context</var> does not <a>restrict mixed content</a>,
-        return <strong>allowed</strong>.
+        If <var>request</var>'s <a>client</a> does not <a>restrict mixed
+        content</a>, return <strong>allowed</strong>.
       </li>
       <li>
         If <var>request</var>'s <code>context frame type</code> is
@@ -856,12 +937,8 @@ Indent: 2
 
     <ol>
       <li>
-        Let <var>browsing context</var> be the <var>client</var>'s
-        <a>responsible browsing context</a>.
-      </li>
-      <li>
-        If <var>browsing context</var> does not <a>restrict mixed content</a>,
-        return <strong>allowed</strong>.
+        If <var>request</var>'s <a>client</a> does not <a>restrict mixed
+        content</a>, return <strong>allowed</strong>.
       </li>
       <li>
         Let <var>context</var> be the <a>request context</a> of
@@ -874,114 +951,50 @@ Indent: 2
 
         <ol>
           <li>
-            If the response is not <a>TLS-protected</a>, return
-            <strong>blocked</strong>.
+            If <var>response</var>'s <a>TLS state</a> is not
+            <code>authenticated</code>, return <strong>blocked</strong>.
 
-            Issue: This is intended to cover cases in which a ServiceWorker
-            responds to a request with an insecure resource. It's not clear
-            that this is the correct place to do that, however, as the
-            integration with Fetch isn't fully specified. It's also not really
-            clear what "insecure" should mean in a ServiceWorker context. We
-            accept <code>blob</code> resources, for instance: should we accept
-            responses synthesized by the service worker?
-          </li>
-          <li>
-            If the response is only <a>weakly TLS-protected</a>, return
-            <strong>blocked</strong>.
-
-            Note: If a user agent is configured to reject <a>weakly
-            TLS-protected</a> resources, we'll never hit this condition, as
-            <a href="http://fetch.spec.whatwg.org/#fetching">step 6 of the Fetch
-            algorithm</a> would have returned a network error. [[!FETCH]]
-          </li>
-          <li>
-            If the response's TLS-protection is <a>deprecated</a>, return
-            <strong>blocked</strong>.
-
-            Note: This covers cases in which the TLS handshake succeeds, and the
-            resource exceeds the definition of <a>weakly TLS-protected</a>, but
-            the user agent chooses to hold it to a higher standard. The definition
-            of <a>deprecated TLS-protection</a> has some examples of these kinds
-            of scenarios.
+            Note: This covers both cases in which unauthenticated resources are
+            requested, as well as cases in which the TLS handshake succeeds, and
+            the resource exceeds the definition of <a>weakly TLS-protected</a>,
+            but the user agent chooses to hold it to a higher standard. The
+            definition of <a>deprecated TLS-protection</a> has some examples of
+            these kinds of scenarios.
           </li>
         </ol>
       </li>
       <li>Return <strong>allowed</strong>.</li>
     </ol>
   </section>
+</section>
+
+<section>
+  <h2 id="powerful-features">
+    Secure Contexts for Powerful Features
+  </h2>
+
+  Tangentially related to a user agent's handling of insecure resources in
+  secure contexts, certain web platform features that have distinct impact
+  on a user's security or privacy wish to restrict themselves for use only
+  in sufficiently secure contexts. Service Workers, for instance, may only
+  be registered when the user agent is satisfied that doing so doesn't put
+  the user at risk.
+
+  Here, we define algorithms for such determination.
 
   <section>
-    <h3 id="is-origin-authenticated">
-      Is <var>origin</var> an <strong>authenticated origin</strong>?
+    <h3 id="may-document-use-powerful-features">
+      May <var>Document</var> use powerful features?
     </h3>
 
-    Given an <a>origin</a> <var>origin</var>, this algorithm returns
-    <code>authenticated</code> if the origin is an <a>authenticated origin</a>,
-    and <code>unauthenticated</code> otherwise.
+    Given a {{Document}} <var>document</var>, this algorithm returns
+    <code>Allowed</code> or <code>Not Allowed</code> as appropriate.
 
     <ol>
       <li>
-        If <var>origin</var> is <strong>not</strong> an <a>insecure origin</a>,
-        return <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>host</code> component is
-        <code>localhost</code>, return
-        <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>host</code> component matches one of the
-        CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
-        [[!RFC4632]], return <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>scheme</code> component is
-        <code>file</code>, return <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>scheme</code> component is one which the
-        user agent considers to be authenticated, return
-        <strong><code>authenticated</code></strong>.
-      </li>
-      <li>
-        Return <strong><code>unauthenticated</code></strong>.
-      </li>
-    </ol>
-
-    Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
-    is the origin of the context in which they were created. Therefore, blobs
-    created in an authenticated origin will themselves be authenticated. The
-    origin of <code>data:</code> and <code>javascript:</code> URLs is an
-    opaque identifier, which will not be considered authenticated.
-
-    Note: Step #5 above is meant to cover vendor-specific URL schemes whose
-    contents are authenticated by the user agent. For example, FirefoxOS
-    application resources are referred to with an URL whose <code>scheme</code>
-    component is <code>app:</code>. Likewise, Chrome's extensions and apps
-    live on <code>chrome-extension:</code> schemes. These could reasonably
-    be considered authenticated origins.
-  </section>
-
-  <section>
-    <h3 id="is-browsing-context-authenticated">
-      Is <var>browsing context</var> an <strong>authenticated browsing
-      context</strong>?
-    </h3>
-
-    Given a <a>browsing context</a> <var>browsing context</var>, this
-    algorithm returns <code>authenticated</code> if the browsing context is an
-    <a>authenticated browsing context</a>, and <code>unauthenticated</code>
-    otherwise.
-
-    <ol>
-      <li>
-        Let <var>document</var> be the {{Document}} object of the
-        <a>active document</a> of <var>browsing context</var>.
-      </li>
-      <li>
-        While <var>document</var> corresponds to <a>an iframe srcdoc Document</a>,
-        let <var>document</var> be that Document's <a>browsing context</a>'s
-        <a>browsing context container</a>'s {{Document}}.
+        While <var>document</var> corresponds to <a>an iframe srcdoc
+        Document</a>, let <var>document</var> be that Document's <a>browsing
+        context</a>'s <a>browsing context container</a>'s {{Document}}.
       </li>
       <li>
         If <var>document</var>'s active <a>sandboxing flag set</a> has its
@@ -995,17 +1008,116 @@ Indent: 2
         </ol>
       </li>
       <li>
-        Return the result of executing the [[#is-origin-authenticated]]
-        algorithm on <var>origin</var>.
+        If the result of executing the [[#is-origin-trusted]] algorithm
+        on <var>origin</var> is <code>Potentially Trusted</code>, return
+        <code>Allowed</code>.
+      </li>
+      <li>
+        Return the result of executing the [[#settings-powerful-features]]
+        algorithm on <var>browsing context</var>'s <a>incumbent settings
+        object</a>.
+      </li>
+    </ol>
+
+    Note: Sandboxed documents will have a unique origin. This algorithm uses the
+    location of a sandboxed document to determine whether it should be considered
+    authenticated. That is, the document inside
+    <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
+    would be considered to allow powerful features.
+  </section>
+
+  <section>
+    <h3 id="settings-powerful-features">
+      May <var>environment settings object</var> use powerful features?
+    </h3>
+
+    Given an <a>environment settings object</a> <var>settings</var>, this
+    algorithm returns <code>Allowed</code> if powerful features may be used
+    in the object's context, and <code>Not Allowed</code> otherwise.
+
+    <ol>
+      <li>
+        If <var>settings</var>' <a>TLS state</a> is
+        <code>authenticated</code>, return <code>Allowed</code>.
+      </li>
+      <li>
+        Otherwise:
+
+        <ol>
+          <li>
+            Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
+          </li>
+          <li>
+            If the result of executing the [[#is-origin-trusted]] algorithm
+            on <var>origin</var> is <code>Potentially Trusted</code>, return
+            <code>Allowed</code>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <code>Not Allowed</code>.
       </li>
     </ol>
   </section>
 
-  Note: Sandboxed documents will have a unique origin. This algorithm uses the
-  location of a sandboxed document to determine whether it should be considered
-  authenticated. That is, the document inside
-  <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
-  would be considered to have an <a>authenticated browsing context</a>.
+  <section>
+    <h3 id="is-origin-trusted">
+      Is <var>origin</var> potentially trusted?
+    </h3>
+
+    Certain origins are impossible for a user agent not to place trust in. In
+    particular, <code>file:</code> URLs and the loopback interface both expose
+    aspects of the machine on which the user agent is running. The user agent
+    has no choice but to trust these origins.
+
+    Certain user agents extend this trust to other, vendor-specific URL schemes
+    like <code>app:</code> or <code>chrome-extension:</code>.
+
+    Given an <a>origin</a> <var>origin</var>, the following algorithm returns
+    <code>Potentially Trusted</code> or <code>Not Trusted</code> as appropriate.
+
+    <ol>
+      <li>
+        If <var>origin</var> is a <a>potentially secure origin</a>,
+        return <code>Potentially Trusted</code>.
+
+        Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
+        is the origin of the context in which they were created. Therefore,
+        blobs created in an potentially secure origin will themselves be
+        potentially secure. The origin of <code>data:</code> and
+        <code>javascript:</code> URLs is an opaque identifier, which will not
+        be considered potentially secure.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>host</code> component is
+        <code>localhost</code>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>host</code> component matches one of
+        the CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
+        [[!RFC4632]], return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>scheme</code> component is
+        <code>file</code>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>scheme</code> component is one which
+        the user agent considers to be authenticated, return
+        <code>Potentially Trusted</code>.
+
+        Note: This is meant to cover vendor-specific URL schemes whose
+        contents are authenticated by the user agent. For example, FirefoxOS
+        application resources are referred to with an URL whose
+        <code>scheme</code> component is <code>app:</code>. Likewise, Chrome's
+        extensions and apps live on <code>chrome-extension:</code> schemes.
+        These could reasonably be considered trusted origins.
+      </li>
+      <li>
+        Return <code>Not Trusted</code>.
+      </li>
+    </ol>
+  </section>
 </section>
 
 <!--
@@ -1022,9 +1134,8 @@ Indent: 2
 
   When fetching resources, the mixed content checks described in the algorithms
   above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a><em>a priori</em> insecure origins</a> and <a>private
-  origins</a>, and at the bottom of the algorithm, to block responses from
-  <a>insecure origins</a>.
+  traffic to <a><em>a priori</em> insecure origins</a>, and at the bottom of
+  the algorithm, to block responses from <a>insecure origins</a>.
 
   Fetch calls the algorithm defined in
   [[#should-block-fetch]] during
@@ -1058,7 +1169,7 @@ Indent: 2
 -->
 <section>
   <h2 id="websockets-integration">Modifications to WebSockets</h2>
-  
+
   The <a href="http://www.w3.org/TR/2012/CR-websockets-20120920/#the-websocket-interface"><code>WebSocket()</code>
   constructor algorithm</a> [[!WEBSOCKETS]] is modified as follows:
 
@@ -1071,15 +1182,8 @@ Indent: 2
           If <var>secure</var> is <strong>false</strong>, but <var>entry
           script</var>'s
           <a title="relevant settings object for a script">relevant settings
-          object</a>'s <a>responsible browsing context</a> <a>restricts mixed
-          content</a>, then throw a <code>SecurityError</code> exception.
-        </li>
-        <li>
-          If <var>entry script</var>'s
-          <a title="relevant settings object for a script">relevant settings
-          object</a>'s <code>origin</code> is a <a>public origin</a>, and the
-          <a>origin</a> of the <var>url</var> argument is a <a>private
-          origin</a>, then throw a <code>SecurityError</code> exception.
+          object</a>'s <a>restricts mixed content</a>, then throw a
+          <code>SecurityError</code> exception.
         </li>
       </ol>
     </li>
