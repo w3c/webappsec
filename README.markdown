@@ -9,17 +9,22 @@ Web Application Security Working Group
 ## Specifications
 
 * Content Security Policy
-    * Latest Editor's draft:
+    * Editor's draft:
         * <https://w3c.github.io/webappsec/specs/content-security-policy/>
         * Source: <https://github.com/w3c/webappsec/tree/master/specs/content-security-policy/>
-    * 1.0:
+    * Level 1:
         * Candidate Recommendation: <http://w3.org/TR/CSP>
     * Level 2:
         * Last Call Working Draft: <http://w3.org/TR/CSP2>
 
-* Mixed Content
+* Credential Management:
+    * Editor's draft: <https://w3c.github.io/webappsec/specs/credentialmanagement/>
+        * Source: <https://github.com/w3c/webappsec/tree/master/specs/credentialmanagement/>
+    * Use Cases: <https://w3c.github.io/webappsec/usecases/credentialmanagement/>
+
+* Mixed Content (**LAST CALL**):
     * Editor's Draft: <https://w3c.github.io/webappsec/specs/mixedcontent/>
-    * Working Draft: <http://w3.org/TR/mixed-content>
+    * Last Call Working Draft: <http://w3.org/TR/mixed-content>
     * Source: <https://github.com/w3c/webappsec/tree/master/specs/mixedcontent>
 
 * Referrer Policy
