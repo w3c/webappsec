@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <script src="./credentialmanager.polyfill.js"></script>
+  <script>
+    function logCredential(c) {
+      var x = document.createElement('pre');
+      document.body.appendChild(x);
+
+      var type = c instanceof LocalCredential ? "LocalCredential" : "FederatedCredential";
+      x.innerText += "\n" + type + "\n---------------" +
+                     "\nID: '" + c.id + "'" +
+                     (c instanceof LocalCredential ?
+                         "\nPassword: '" + c.password + "'" :
+                         "\nFederation: '" + c.federation + "'") + 
+                     "\nName: '" + c.name + "'" +
+                     "\nAvatar: '" + c.avatarURL + "'\n";
+    }
+
+    function logSuccess() {
+      var x = document.createElement('pre');
+      document.body.appendChild(x);
+      x.innerText = "Success!\n";
+    }
+
+    function logError(e) {
+      var x = document.createElement('pre');
+      document.body.appendChild(x);
+      x.innerText = "ERROR ERROR ERROR\n-----------------\n" + e.name + ": " + e.message + "\n";
+    }
+  </script>
+
+</head>
+<body>
+  <button id="signin">Sign in!</button>
+  <script>
+    document.querySelector('#signin').addEventListener('click', function () {
+      console.log("Clicked!");
+
+      navigator.credentials.request().then(logCredential, logError);
+    });
+  </script>
+
+  <button id="signinwithgoogle">Sign in (with Google!)!</button>
+  <script>
+    document.querySelector('#signinwithgoogle').addEventListener('click', function () {
+      console.log("Clicked!");
+
+      navigator.credentials.request({
+        'federations': [ 'https://accounts.google.com' ]
+      }).then(logCredential, logError);
+    });
+  </script>
+
+  <button id="save">Save!</button>
+  <script>
+    document.querySelector('#save').addEventListener('click', function () {
+      console.log("Clicked!");
+
+      var c = new LocalCredential("an@email.com", "qwerty1", "A Name", "https://example.com/jpg.png");
+      navigator.credentials.notifySignedIn(c).then(logSuccess).catch(logError);
+    });
+  </script>
+</body>
+</html>

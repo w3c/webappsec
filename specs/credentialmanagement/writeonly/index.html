@@ -1,0 +1,1123 @@
+<!DOCTYPE html><html lang=en><head>
+  <meta content="text/html; charset=utf-8" http-equiv=Content-Type>
+  <title>Write-only Form Elements</title>
+  <style>
+@media print {
+  html { margin: 0 !important; }
+  body { font-family: serif; }
+  th, td { font-family: inherit; }
+  a { color: inherit !important; }
+  .example:before { font-family: serif !important; }
+  a:link, a:visited { text-decoration: none !important; }
+  a:link:after, a:visited:after { /* create a cross-ref "see..." */; }
+}
+@page {
+  margin: 1.5cm 1.1cm;
+}
+h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
+figure, div.figure, div.sidefigure, pre, table.propdef, table.propdef-extra,
+.example { page-break-inside: avoid; }
+dt { page-break-after: avoid; }
+
+body {
+  background: white;
+  /* background-image: floating-margin-image-goes-here; */
+  background-position: top left;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: black;
+  counter-reset: exampleno figure issue;
+  font-family: sans-serif;
+  line-height: 1.5;
+  margin: 0 auto;
+  max-width: 50em;
+  padding: 2em 1em 2em 70px;
+}
+
+/* General structural markup */
+
+h1, h2, h3, h4, h5, h6 { text-align: left; }
+h1, h2, h3 { color: #005A9C; }
+h1 { font: 170% sans-serif; }
+h2 { font: 140% sans-serif; }
+h3 { font: 120% sans-serif; }
+h4 { font: bold 100% sans-serif; }
+h5 { font: italic 100% sans-serif; }
+h6 { font: small-caps 100% sans-serif; }
+h2, h3, h4, h5, h6 { margin-top: 3em; }
+h1 + h2 { margin-top: 0em; }
+h2 + h3, h3 + h4, h4 + h5, h5 + h6 { margin-top: 1.2em; }
+
+.head { margin-bottom: 1em; }
+.head h1 { margin-top: 2em; clear: both; }
+.head table { margin-left: 2em; margin-top: 2em; }
+.head dd { margin-bottom: 0; }
+
+p.copyright { font-size: small; }
+p.copyright small { font-size: small; }
+
+pre { margin: 1em 0 1em 2em; overflow: auto; }
+pre, code, .idl-code {
+  font-size: .9em;
+  font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+dt dfn code { font-size: inherit; }
+
+dfn { font-weight: bolder; }
+dfn var { font-style: normal; }
+
+s, del {text-decoration: line-through; color: red; }
+u, ins {text-decoration: underline; background: #bfa; }
+
+sup {
+  vertical-align: super;
+  font-size: 80%
+}
+
+details { display: block; }
+
+dt { font-weight: bold; }
+dd { margin: 0 0 1em 2em; }
+ul, ol { margin-left: 0; padding-left: 2em; }
+li { margin: 0.25em 2em 0.5em 0; padding-left: 0; }
+[data-md] > :first-child { margin-top: 0; }
+[data-md] > :last-child { margin-bottom: 0; }
+
+td.pre {
+  white-space: pre-wrap;
+}
+
+.css, .property { color: #005a9c; }
+.property { white-space: nowrap; }
+
+
+/* Boilerplate sections */
+
+ul.indexlist { margin-left: 0; columns: 13em; }
+ul.indexlist li { margin-left: 0; list-style: none }
+ul.indexlist li li { margin-left: 1em; }
+ul.indexlist a { font-weight: bold; }
+ul.indexlist ul, ul.indexlist dl { font-size: smaller; }
+ul.indexlist dl { margin-top: 0; }
+ul.indexlist dt { margin: .2em 0 .2em 20px; }
+ul.indexlist dd { margin: .2em 0 .2em 40px; }
+
+.toc {
+  font-weight: bold;
+  line-height: 1.3;
+  list-style: none;
+  margin: 1em 0 0 5em;
+  padding: 0;
+}
+.toc ul { margin: 0; padding: 0; font-weight: normal; }
+.toc ul ul { margin: 0 0 0 2em; font-style: italic; }
+.toc ul ul ul { margin: 0}
+.toc > li { margin: 1.5em 0; padding: 0; }
+.toc li { clear: both; }
+.toc ul.toc li { margin: 0.3em 0 0 0; }
+.toc a { border-bottom-style: none; }
+.toc a:hover, ul.toc a:focus { border-bottom-style: solid; }
+/* Section numbers in a column of their own */
+.toc span.secno {float: left; width: 4em; margin-left: -5em}
+.toc ul ul span.secno { margin-left: -7em; }
+
+table.proptable {
+  font-size: small;
+  border-collapse: collapse;
+  border-spacing: 0;
+  text-align: left;
+  margin: 1em 0;
+}
+table.proptable td, table.proptable th {
+  padding: 0.4em;
+  text-align: center;
+}
+table.proptable tr:hover td { background: #DEF; }
+
+
+/* Links */
+
+a[href] { color: inherit; border-bottom: 1px solid silver; text-decoration: none; }
+a[href]:hover { background: #ffa; }
+a[href]:active { color: #C00; background: transparent; }
+img, a.logo { border-style: none; }
+.heading, .issue, .note, .example, li, dt { position: relative; }
+/* CSS-ish link types */
+[data-link-type="property"]::before,
+[data-link-type="propdesc"]::before,
+[data-link-type="descriptor"]::before,
+[data-link-type="value"]::before,
+[data-link-type="function"]::before,
+[data-link-type="at-rule"]::before,
+[data-link-type="selector"]::before,
+[data-link-type="maybe"]::before {content: "“";}
+[data-link-type="property"]::after,
+[data-link-type="propdesc"]::after,
+[data-link-type="descriptor"]::after,
+[data-link-type="value"]::after,
+[data-link-type="function"]::after,
+[data-link-type="at-rule"]::after,
+[data-link-type="selector"]::after,
+[data-link-type="maybe"]::after {content: "”";}
+[data-link-type].production::before,
+[data-link-type].production::after,
+.prod [data-link-type]::before,
+.prod [data-link-type]::after { content: ""; }
+/* Element-type link styling */
+[data-link-type=element] { font-family: monospace; }
+[data-link-type=element]::before { content: "<" }
+[data-link-type=element]::after { content: ">" }
+/* Self-links */
+a.self-link {
+  position: absolute;
+  top: 0;
+  left: -2.5em;
+  width: 2em;
+  height: 2em;
+  text-align: center;
+  border: none;
+  transition: opacity .2s;
+  opacity: .5;
+}
+a.self-link:hover {
+  opacity: 1;
+}
+.heading > a.self-link {
+  font-size: 83%;
+}
+li > a.self-link {
+  left: -3.5em;
+}
+dfn > a.self-link {
+  top: auto;
+  left: auto;
+  opacity: 0;
+  width: 1.5em;
+  height: 1.5em;
+  background: gray;
+  color: white;
+  font-style: normal;
+  transition: opacity .2s, background-color .2s, color .2s;
+}
+dfn:hover > a.self-link {
+  opacity: 1;
+}
+dfn > a.self-link:hover {
+  color: black;
+}
+a.self-link::before { content: "¶"; }
+.heading > a.self-link::before { content: "§"; }
+dfn > a.self-link::before { content: "#"; }
+
+
+/* Figures */
+
+figure {
+  display: block;
+  text-align: center;
+  margin: 2.5em 0;
+}
+figure.sidefigure {
+  float: right;
+  width: 50%;
+  margin: 0 0 0.5em 0.5em
+}
+figure pre {
+  text-align: left;
+  display: table;
+  margin: 1em auto;
+}
+figure table {
+  margin: auto;
+}
+figure img, figure object {
+  display: block;
+  margin: auto;
+  max-width: 100%
+}
+figcaption {
+  counter-increment: figure;
+  font-size: 90%;
+  font-style: italic;
+  text-align: center;
+}
+figcaption::before {
+  content: "Figure " counter(figure) ". ";
+  font-weight: bold;
+}
+dd figure { margin-left: -2em; }
+
+
+/* Definition tables */
+
+table.definition {
+  border-spacing: 0;
+  padding: 0 1em 0.5em;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1.2em 0;
+}
+table.definition td, table.definition th {
+  padding: 0.5em;
+  vertical-align: baseline;
+  border-bottom: 1px solid #bbd7e9;
+}
+table.definition th:first-child {
+  font-style: italic;
+  font-weight: normal;
+  text-align: left;
+  width: 8.3em;
+  padding-left: 1em;
+}
+table.definition > tbody > tr:last-child > th,
+table.definition > tbody > tr:last-child > td {
+  border-bottom: none;
+}
+table.definition tr:first-child > th,
+table.definition tr:first-child > td {
+  padding-top: 1em;
+}
+/* Footnotes at the bottom of a definition table */
+table.definition td.footnote {
+  font-style: normal;
+  padding-top: .6em;
+  width: auto;
+}
+table.definition td.footnote::before {
+  content: " ";
+  display: block;
+  height: 0.6em;
+  width: 4em;
+  border-top: thin solid;
+}
+
+
+/* IDL fragments */
+
+pre.idl {
+  padding: .5em 1em;
+  margin: 1.2em 0;
+}
+pre.idl :link, pre.idl :visited {
+  color:inherit;
+  background:transparent;
+}
+
+
+/* Data tables */
+/* Comes in plain, long, complex, or define varieties */
+
+.data {
+  margin: 1em auto;
+  border-collapse: collapse;
+  width: 100%;
+  border: hidden;
+}
+.data {
+  text-align: center;
+  width: auto;
+}
+.data caption {
+  width: 100%;
+}
+.data td, .data th {
+  padding: 0.5em;
+  border-width: 1px;
+  border-color: silver;
+  border-top-style: solid;
+}
+.data thead td:empty {
+  padding: 0;
+  border: 0;
+}
+.data thead th[scope="row"] {
+  text-align: right;
+  color: inherit;
+}
+.data thead,
+.data tbody {
+  color: inherit;
+  border-bottom: 2px solid;
+}
+.data colgroup {
+  border-left: 2px solid;
+}
+.data tbody th:first-child,
+.data tbody td[scope="row"]:first-child {
+  text-align: right;
+  color: inherit;
+  border-right: 2px solid;
+  border-top: 1px solid silver;
+  padding-right: 1em;
+}
+.data.define td:last-child {
+  text-align: left;
+}
+.data tbody th[rowspan],
+.data tbody td[rowspan] {
+  border-left: 1px solid silver;
+}
+.data tbody th[rowspan]:first-child,
+.data tbody td[rowspan]:first-child {
+  border-left: 0;
+  border-right: 1px solid silver;
+}
+.data.complex th,
+.data.complex td {
+  border: 1px solid silver;
+}
+.data td.long {
+ vertical-align: baseline;
+ text-align: left;
+}
+.data img {
+  vertical-align: middle;
+}
+
+
+/* Switch/case <dl>s */
+
+dl.switch {
+ padding-left: 2em;
+}
+dl.switch > dt {
+ text-indent: -1.5em;
+}
+dl.switch > dt:before {
+ content: '↪';
+ padding: 0 0.5em 0 0;
+ display: inline-block;
+ width: 1em;
+ text-align: right;
+ line-height: 0.5em;
+}
+
+
+/* Style for At Risk features (intended as editorial aid, not intended for publishing) */
+.atrisk::before {
+ position: absolute;
+ margin-left: -5em;
+ margin-top: -2px;
+ padding: 4px;
+ border: 1px solid;
+ content: 'At risk';
+ font-size: small;
+ background-color: white;
+ color: gray;
+ border-radius: 1em;
+ text-align: center;
+}
+
+
+/* Obsoletion notice */
+details.annoying-warning[open] {
+  background: #fdd;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: .5em;
+  border: thick solid red;
+  border-radius: 1em;
+  position: fixed;
+  left: 1em;
+  right: 1em;
+  bottom: 1em;
+  z-index: 1000;
+}
+details.annoying-warning:not([open]) > summary {
+  background: #fdd;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: .5em;
+}
+
+
+/* Examples */
+
+.example {
+  counter-increment: exampleno;
+}
+.example::before {
+  content: "Example";
+  content: "Example " counter(exampleno);
+  min-width: 7.5em;
+  text-transform: uppercase;
+  display: block;
+}
+.illegal-example::before {
+  content: "Invalid Example";
+  content: "Invalid Example" counter(exampleno);
+}
+.example, .illegal-example, .html, .illegal-html, .xml, .illegal-xml {
+  padding: 0.5em;
+  margin: 1em 0;
+  position: relative;
+  clear: both;
+}
+pre.example, pre.illegal-example, pre.html,
+pre.illegal-html, pre.xml, pre.illegal-xml {
+  padding-top: 1.5em;
+}
+.illegal-example { color: red; }
+.illegal-example p { color: black; }
+.html { color: #600; }
+.illegal-html { color: red; }
+.illegal-html p { color: black; }
+.xml { color: #600; }
+.illegal-xml { color: red; }
+.illegal-xml p { color: black; }
+code.css { font-family: inherit; font-size: 100% }
+code.html { color: #600 } /* inline HTML */
+code.xml { color: #600 }  /* inline XML */
+
+
+/* Issues */
+
+.issue {
+  border-color: #E05252;
+  background: #FBE9E9;
+  counter-increment: issue;
+}
+.issue:before {
+  content: "Issue " counter(issue);
+  padding-right: 1em;
+  text-transform: uppercase;
+  color: #E05252;
+}
+
+
+/* Whys */
+
+details.why > summary {
+  font-style: italic;
+}
+details.why[open] > summary {
+  border-bottom: 1px silver solid;
+}
+
+
+/* All the blocks get similarly styled */
+
+table.definition, pre.idl, .example, .note, details.why, .issue {
+  border: none;
+  border-left: .5em solid black;
+  border-left: .5rem solid black;
+}
+.issue, .note, .example, .why {
+  padding: .5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+table.definition, pre.idl {
+  background: hsl(210, 70%, 95%);
+  border-color: hsl(210, 80%, 75%);
+}
+.example {
+  background: hsl(50, 70%, 95%);
+  border-color: hsl(50, 70%, 60%);
+}
+.example::before {
+  color: hsl(50, 70%, 60%);
+}
+.note, details.why {
+  background: hsl(120, 70%, 95%);
+  border-color: hsl(120, 70%, 60%);
+}
+.note::before {
+  color: hsl(120, 70%, 60%);
+}
+.issue {
+  background: hsl(0, 70%, 95%);
+  border-color: hsl(0, 70%, 60%);
+}
+.issue::before {
+  color: hsl(0, 70%, 60%);
+}
+span.issue, span.note {
+  padding: .1em .5em .15em;
+  border-right-width: .5em;
+  border-right-style: solid;
+}
+  </style>
+</head>
+<body class=h-entry>
+<div class=head>
+  <p data-fill-with=logo></p>
+  <h1 class="p-name no-ref" id=title>Write-only Form Elements</h1>
+  <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>A Collection of Interesting Ideas,
+    <span class=dt-updated><span class=value-title title=20141015>15 October 2014</span></span></span></h2>
+  <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://mikewest.github.io/credentialmanagement/writeonly/>https://mikewest.github.io/credentialmanagement/writeonly/</a><dt>Version History:<dd><a href=https://github.com/mikewest/credentialmanagement/commits/master/writeonly/index.src.html>https://github.com/mikewest/credentialmanagement/commits/master/writeonly/index.src.html</a><dt>Editor:<dd><div class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)</div></dl></div>
+  <div data-fill-with=warning></div>
+  <p class=copyright data-fill-with=copyright>
+©2014 Google
+</p>
+  <hr title="Separator for header">
+</div>
+
+<h2 class="no-num no-toc no-ref heading settled" id=abstract><span class=content>Abstract</span></h2>
+<div class=p-summary data-fill-with=abstract><p>This specification describes how a website can ask a user agent to deny
+
+read access to form elements, which can mitigate the risk of credential
+leakage via cross-site scripting attacks.</p>
+
+</div>
+<div data-fill-with=at-risk></div>
+
+<h2 class="no-num no-toc no-ref heading settled" id=contents><span class=content>Table of Contents</span></h2>
+<div data-fill-with=table-of-contents><ul class=toc><li><a href=#introduction><span class=secno>1</span> <span class=content>Introduction</span></a><ul class=toc><li><a href=#introduction-examples><span class=secno>1.1</span> <span class=content>Examples</span></a><ul class=toc><li><a href=#examples-signin><span class=secno>1.1.1</span> <span class=content>Sign-in Form</span></a><li><a href=#examples-csp><span class=secno>1.1.2</span> <span class=content>Content Security Policy</span></a></ul></ul><li><a href=#prevent-dom-access><span class=secno>2</span> <span class=content>Preventing DOM access to form fields</span></a><ul class=toc><li><a href=#writeonly-attribute><span class=secno>2.1</span> <span class=content>The <code>writeonly</code> attribute</span></a><li><a href=#form-writeonly-directive><span class=secno>2.2</span> <span class=content>
+    The <code>form-writeonly</code> Content Security Policy directive
+  </span></a><li><a href=#input-behavior><span class=secno>2.3</span> <span class=content><code>&lt;input&gt;</code> element behavior</span></a><li><a href=#opaque-formdata><span class=secno>2.4</span> <span class=content>
+    Opaque <code>FormData</code> objects
+  </span></a><ul class=toc><li><a href=#opaque-formdata-algorithms><span class=secno>2.4.1</span> <span class=content>
+    Algorithm Modifications
+  </span></a><ul class=toc><li><a href=#xhr-formdata-constructor><span class=secno>2.4.1.1</span> <span class=content>XHR: <code>FormData</code> constructor</span></a><li><a href=#xhr-formdatas-get><span class=secno>2.4.1.2</span> <span class=content>XHR: <code>FormData</code>’s <code>get()</code></span></a><li><a href=#xhr-formdatas-getall><span class=secno>2.4.1.3</span> <span class=content>XHR: <code>FormData</code>’s <code>getAll()</code></span></a><li><a href=#fetch-request-objects><span class=secno>2.4.1.4</span> <span class=content>Fetch: <code>Request</code> objects</span></a><li><a href=#fetch-requests-constructor><span class=secno>2.4.1.5</span> <span class=content>Fetch: <code>Request</code>’s constructor</span></a><li><a href=#fetch-bodys-consume-body><span class=secno>2.4.1.6</span> <span class=content>Fetch: <code>Body</code>’s <code>consume body</code></span></a><li><a href=#fetch-extract-a-byte-stream><span class=secno>2.4.1.7</span> <span class=content>Fetch: Extract a byte stream</span></a><li><a href=#service-worker-handle-a-fetch><span class=secno>2.4.1.8</span> <span class=content>Service Worker: Handle a Fetch</span></a></ul></ul></ul><li><a href=#security-considerations><span class=secno>3</span> <span class=content>Security Considerations</span></a><ul class=toc><li><a href=#security-sandboxing><span class=secno>3.1</span> <span class=content>Sandboxing autofilled credential access</span></a></ul><li><a href=#authoring-considerations><span class=secno>4</span> <span class=content>Authoring Considerations</span></a><li><a href=#acknowledgements><span class=secno>5</span> <span class=content>Acknowledgements</span></a><li><a href=#conformance><span class=secno></span> <span class=content>
+Conformance</span></a><li><a href=#references><span class=secno></span> <span class=content>References</span></a><ul class=toc><li><a href=#normative><span class=secno></span> <span class=content>Normative References</span></a><li><a href=#informative><span class=secno></span> <span class=content>Informative References</span></a></ul><li><a href=#index><span class=secno></span> <span class=content>Index</span></a><li><a href=#idl-index><span class=secno></span> <span class=content>IDL Index</span></a><li><a href=#issues-index><span class=secno></span> <span class=content>Issues Index</span></a></ul></div>
+
+
+
+
+
+<section>
+  <h2 class="heading settled" data-level=1 id=introduction><span class=secno>1. </span><span class=content>Introduction</span><a class=self-link href=#introduction></a></h2>
+
+<p><em>This section is not normative.</em></p>
+
+<p>A user’s credentials are valuable, and are often the key target of phishing
+  and content injection attacks.</p>
+
+<p>Users can defend themselves from the former threat by using a credential
+  manager which enables the generation of strong, unique passwords for all the
+  sites they visit, and which only provides those credentials to the website
+  they’re tied to. If a user relies on a credential manager to keep track of her
+  passwords, and the credential manager refuses to fill them into forms on
+  unexpected origins, phishing becomes significantly more difficult.</p>
+
+<p>Content injection, on the other hand, can turn the credential manager against
+  the user, as demonstrated in "Automated Password Extraction Attack on Modern
+  Password Managers" <a data-biblio-type=informative data-link-type=biblio href=#biblio-lupin title=LUPIN>[LUPIN]</a>. If an attacker can inject a form into a website
+  and the credential manager can be tricked into filling it, the user’s
+  credentials will be available to the attacker directly via DOM APIs or
+  indirectly via form submission to a malicious endpoint. The latter risk can be
+  mitigated via the Content Security Policy <code>form-action</code> directive
+  <a data-biblio-type=normative data-link-type=biblio href=#biblio-csp2 title=CSP2>[CSP2]</a>, but the former is a real problem. If passwords are a simple "value"
+  accessor away, users are at risk.</p>
+
+<p>It is tempting to simply block read access to password fields, but many
+  websites do interesting things with password fields. They increasingly read
+  credential values in order to sign a user in via XMLHttpRequest, for instance,
+  rather than submitting a form. A blanket restriction is therefore unlikely to
+  be web-compatible.</p>
+
+<p>Instead, this document proposes an opt-in mechanism by which a website can
+  choose to deny itself read access to the values of particular form fields.
+  User agents could (and should!) allow credential managers to help users
+  sign-in by <em>writing</em> values into form fields, but those values would
+  remain opaque to the website’s JavaScript.</p>
+
+  <h3 class="heading settled" data-level=1.1 id=introduction-examples><span class=secno>1.1. </span><span class=content>Examples</span><a class=self-link href=#introduction-examples></a></h3>
+
+  <h4 class="heading settled" data-level=1.1.1 id=examples-signin><span class=secno>1.1.1. </span><span class=content>Sign-in Form</span><a class=self-link href=#examples-signin></a></h4>
+
+  <div class=example>
+    <pre>&lt;form action="/signin-endpoint" method="POST"&gt;
+  &lt;input type="text"
+         autofill="username"
+         name="username"&gt;
+  &lt;input type="password"
+         <strong><a data-link-type=idl href=#dom-htmlinputelement-writeonly title=writeonly>writeonly</a></strong>
+         autofill="current-password"
+         name="password"&gt;
+  &lt;input type="submit"&gt;
+&lt;/form&gt;
+</pre>
+  </div>
+
+  <h4 class="heading settled" data-level=1.1.2 id=examples-csp><span class=secno>1.1.2. </span><span class=content>Content Security Policy</span><a class=self-link href=#examples-csp></a></h4>
+
+  <div class=example>
+    <pre>Content-Security-Policy: <a data-link-type=dfn href=#form-writeonly title=form-writeonly>form-writeonly</a> current-password new-password;
+</pre>
+
+<p class=note>Note: A real page’s policy should also include
+    <a href=https://w3c.github.io/webappsec/specs/content-security-policy/#directive-form-action>form-action</a>
+    and
+    <a href=https://w3c.github.io/webappsec/specs/content-security-policy/#directive-connect-src>connect-src</a>
+    directives to mitigate the risk of exfiltration.</p>
+  </div>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=2 id=prevent-dom-access><span class=secno>2. </span><span class=content>Preventing DOM access to form fields</span><a class=self-link href=#prevent-dom-access></a></h2>
+
+<p>Developers may opt-into preventing DOM access to form fields by setting a
+  <code><a data-link-type=element-attr href=#element-attrdef-writeonly title=writeonly>writeonly</a></code> attribute on specific
+  <a data-link-type=element href=https://html.spec.whatwg.org/#the-form-element title=form>form</a> or <a data-link-type=dfn href=https://html.spec.whatwg.org/#form-associated-element title="form-associated elements">form-associated elements</a>, or by using the
+  <code><a data-link-type=dfn href=#form-writeonly title=form-writeonly>form-writeonly</a></code> Content Security Policy directive to
+  prevent DOM access to any and all <a data-link-type=dfn href=https://html.spec.whatwg.org/#form-associated-element title="form-associated elements">form-associated elements</a> based on
+  their <code><a data-link-type=element-attr href=https://html.spec.whatwg.org/#attr-form-autocomplete title=autocomplete>autocomplete</a></code> attributes. Both
+  mechanisms are described below:</p>
+
+  <h3 class="heading settled" data-level=2.1 id=writeonly-attribute><span class=secno>2.1. </span><span class=content>The <code>writeonly</code> attribute</span><a class=self-link href=#writeonly-attribute></a></h3>
+
+<p><code><dfn data-dfn-type=element-attr data-export="" id=element-attrdef-writeonly>writeonly<a class=self-link href=#element-attrdef-writeonly></a></dfn></code> is a <a data-link-type=dfn href=https://html.spec.whatwg.org/#boolean-attribute title="boolean attribute">boolean attribute</a>
+  that controls whether or not an element’s value may be read directly via the
+  <a data-link-for=HTMLInputElement data-link-type=idl href=https://html.spec.whatwg.org/#dom-input-value title=value>value</a> IDL attribute, or inferred via the
+  <a href=http://www.w3.org/TR/html5/forms.html#the-constraint-validation-api>constraint
+  validation API</a> <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=HTML5>[HTML5]</a>.</p>
+
+  <pre class=idl>partial interface <a class=idl-code data-global-name="" data-link-type=interface href=https://html.spec.whatwg.org/#htmlinputelement title=HTMLInputElement>HTMLInputElement</a> {
+    attribute boolean <a class=idl-code data-global-name="HTMLInputElement<interface>/writeonly<attribute>" data-link-for=HTMLInputElement data-link-type=attribute data-type="boolean " href=#dom-htmlinputelement-writeonly title=writeonly>writeonly</a>;
+};
+</pre>
+  <dl data-dfn-for=HTMLInputElement>
+    <dt><dfn class=idl-code data-dfn-for=HTMLInputElement data-dfn-type=attribute data-export="" id=dom-htmlinputelement-writeonly>writeonly<a class=self-link href=#dom-htmlinputelement-writeonly></a></dfn></dt>
+    <dd>This attribute <a data-link-spec=HTML5 data-link-type=dfn href=https://html.spec.whatwg.org/#reflect title=reflects>reflects</a> the value of the
+    element’s <code><a data-link-type=element-attr href=#element-attrdef-writeonly title=writeonly>writeonly</a></code> content attribute.</dd>
+  </dl>
+
+<p class=issue id=issue-732190b8><a class=self-link href=#issue-732190b8></a>Copy/paste this IDL for <a data-link-type=element href=https://html.spec.whatwg.org/#the-button-element title=button>button</a>, <a data-link-type=element href=https://html.spec.whatwg.org/#the-keygen-element title=keygen>keygen</a>,
+  <a data-link-type=element href=https://html.spec.whatwg.org/#the-object-element title=object>object</a>, <a data-link-type=element href=https://html.spec.whatwg.org/#the-select-element title=select>select</a>, and <a data-link-type=element href=https://html.spec.whatwg.org/#the-textarea-element title=textarea>textarea</a>.</p>
+
+  <pre class=idl>partial interface <a class=idl-code data-global-name="" data-link-type=interface href=https://html.spec.whatwg.org/#htmlformelement title=HTMLFormElement>HTMLFormElement</a> {
+    attribute boolean <a class=idl-code data-global-name="HTMLFormElement<interface>/writeonly<attribute>" data-link-for=HTMLFormElement data-link-type=attribute data-type="boolean " href=#dom-htmlformelement-writeonly title=writeonly>writeonly</a>;
+};
+</pre>
+  <dl data-dfn-for=HTMLFormElement>
+    <dt><dfn class=idl-code data-dfn-for=HTMLFormElement data-dfn-type=attribute data-export="" id=dom-htmlformelement-writeonly>writeonly<a class=self-link href=#dom-htmlformelement-writeonly></a></dfn></dt>
+    <dd>This attribute <a data-link-spec=HTML5 data-link-type=dfn href=https://html.spec.whatwg.org/#reflect title=reflects>reflects</a> the value of the
+    element’s <code><a data-link-type=element-attr href=#element-attrdef-writeonly title=writeonly>writeonly</a></code> content attribute.</dd>
+  </dl>
+
+<p>If the <code>writeonly</code> attribute is set for an <a data-link-type=element href=https://html.spec.whatwg.org/#the-input-element title=input>input</a> element
+  <var>input</var>, then set <var>input</var>’s <dfn data-dfn-type=dfn data-noexport="" id=write-only-value-flag>write-only value flag<a class=self-link href=#write-only-value-flag></a></dfn>
+  to <code>true</code>.</p>
+
+<p>If the <code>writeonly</code> attribute is set for a <a data-link-type=element href=https://html.spec.whatwg.org/#the-form-element title=form>form</a>
+  element <var>form</var>,then set the <a data-link-type=dfn href=#write-only-value-flag title="write-only value flag">write-only value flag</a> to
+  <code>true</code> for all <a data-link-type=dfn href=https://html.spec.whatwg.org/#category-submit title="submittable elements">submittable elements</a> whose <a data-link-type=dfn href=https://html.spec.whatwg.org/#form-owner title="form owner">form owner</a>
+  is <var>form</var>.</p>
+
+<p class=note>Note: Removing the <code><a data-link-type=element-attr href=#element-attrdef-writeonly title=writeonly>writeonly</a></code> attribute will
+  not clear an element’s <a data-link-type=dfn href=#write-only-value-flag title="write-only value flag">write-only value flag</a>. Once that flag is set for
+  an element, it cannot be cleared.</p>
+
+  <h3 class="heading settled" data-level=2.2 id=form-writeonly-directive><span class=secno>2.2. </span><span class=content>
+    The <code>form-writeonly</code> Content Security Policy directive
+  </span><a class=self-link href=#form-writeonly-directive></a></h3>
+
+<p>The <code><dfn data-dfn-type=dfn data-noexport="" id=form-writeonly>form-writeonly<a class=self-link href=#form-writeonly></a></dfn></code> directive specifies a policy
+  which affects how the user agent interprets <a data-link-type=element href=https://html.spec.whatwg.org/#the-input-element title=input>input</a> elements in
+  a protected resource. The syntax for the name and value of the directive are
+  described by the following ABNF grammar <a data-biblio-type=normative data-link-type=biblio href=#biblio-abnf title=ABNF>[ABNF]</a>:</p>
+
+  <pre>directive-name  = "form-writeonly"
+directive-value = "" / *WSP [ <a data-link-type=dfn href=#autocomplete-token title=autocomplete-token>autocomplete-token</a> *[ 1*WSP <a data-link-type=dfn href=#autocomplete-token title=autocomplete-token>autocomplete-token</a> ] *WSP ]
+<dfn data-dfn-type=dfn data-noexport="" id=autocomplete-token>autocomplete-token<a class=self-link href=#autocomplete-token></a></dfn> = &lt;any valid <a data-link-type=dfn href=https://html.spec.whatwg.org/#autofill-detail-tokens title="autofill detail tokens">autofill detail tokens</a>&gt;
+</pre>
+
+<p>When enforcing the credentials directive, the user agent MUST set the
+  protected resource’s <dfn data-dfn-type=dfn data-noexport="" id=forced-write-only-types>forced write-only types<a class=self-link href=#forced-write-only-types></a></dfn> to '<code>*</code>'
+  if the directive’s value is empty, or to the list of <a data-link-type=dfn href=https://html.spec.whatwg.org/#autofill-detail-tokens title="autofill detail tokens">autofill detail
+  tokens</a> specified by the directive’s value.</p>
+
+  <h3 class="heading settled" data-level=2.3 id=input-behavior><span class=secno>2.3. </span><span class=content><code>&lt;input&gt;</code> element behavior</span><a class=self-link href=#input-behavior></a></h3>
+
+<p class=issue id=issue-92c1983a><a class=self-link href=#issue-92c1983a></a>Expand this to include all <a data-link-type=dfn href=https://html.spec.whatwg.org/#category-submit title="submittable elements">submittable elements</a>.</p>
+
+<p>If an <a data-link-type=element href=https://html.spec.whatwg.org/#the-input-element title=input>input</a> element <var>input</var>’s <a data-link-type=dfn href=#write-only-value-flag title="write-only value flag">write-only value
+  flag</a> is <code>true</code>, <strong>or</strong> if <var>input</var>’s
+  <code class=idl><a data-link-type=idl href=https://html.spec.whatwg.org/#dom-document title=Document>Document</a></code>'s <a data-link-type=dfn href=#forced-write-only-types title="forced write-only types">forced write-only types</a> is '<code>*</code>',
+  <strong>or</strong> if <var>input</var>’s <a data-link-type=element-attr href=https://html.spec.whatwg.org/#attr-form-autocomplete title=autocomplete>autocomplete</a>
+  attribute contains one or more values which are also contained in
+  <var>input</var>’s <code class=idl><a data-link-type=idl href=https://html.spec.whatwg.org/#dom-document title=Document>Document</a></code>'s <a data-link-type=dfn href=#forced-write-only-types title="forced write-only types">forced write-only types</a>, then the
+  following restrictions apply:</p>
+
+  <ol>
+    <li>
+      When setting <var>input</var>’s
+      <code><a class=idl-code data-link-type=attribute href=https://html.spec.whatwg.org/#dom-form-autocomplete title=autocomplete>autocomplete</a></code> IDL attribute
+      <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=HTML5>[HTML5]</a>, <var>input</var>’s <a data-link-type=dfn href=#write-only-value-flag title="write-only value flag">write-only value flag</a> MUST also be
+      set to <code>true</code>.
+
+<p class=note>Note: This prevents attackers from bypassing the CSP directive by changing
+      the element’s <a data-link-type=element-attr href=https://html.spec.whatwg.org/#attr-form-autocomplete title=autocomplete>autocomplete</a> value from
+      <code>current-password</code> to something unprotected
+      (like <code>section-fake</code>).</p>
+    </li>
+    <li>
+      Getting <var>input</var>’s <a data-link-for=HTMLInputElement data-link-type=idl href=https://html.spec.whatwg.org/#dom-input-value title=value>value</a>,
+      <a data-link-for=HTMLInputElement data-link-type=idl href=https://html.spec.whatwg.org/#dom-input-valueasnumber title=valueAsNumber>valueAsNumber</a>, and
+      <a data-link-for=HTMLInputElement data-link-type=idl href=https://html.spec.whatwg.org/#dom-input-valueasdate title=valueAsDate>valueAsDate</a> IDL attributes
+      will throw an <code><a data-link-type=dfn href=https://html.spec.whatwg.org/#invalidstateerror title=InvalidStateError>InvalidStateError</a></code> exception. <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=HTML5>[HTML5]</a>
+
+<p class=note>Note: Setting these attributes is unaffected.</p>
+    </li>
+    <li>
+      Getting <var>input</var>’s <code class=idl><a data-link-type=idl href=https://html.spec.whatwg.org/#dom-textarea/input-selectionstart title=selectionStart>selectionStart</a></code> and <code class=idl><a data-link-type=idl href=https://html.spec.whatwg.org/#dom-textarea/input-selectionend title=selectionEnd>selectionEnd</a></code> IDL
+      attributes will throw an <code><a data-link-type=dfn href=https://html.spec.whatwg.org/#invalidstateerror title=InvalidStateError>InvalidStateError</a></code>
+      exception. <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=HTML5>[HTML5]</a>
+
+<p class=note>Note: Setting these attributes is unaffected.</p>
+    </li>
+    <li>
+      <var>input</var> is considered
+      <a data-link-type=dfn href=https://html.spec.whatwg.org/#barred-from-constraint-validation title="barred the element from constraint validation">barred from
+      constraint validation</a>.
+    </li>
+    <li>
+      The user agent MUST NOT fire <code>keydown</code>, <code>keyup</code>, or
+      <code>keypress</code> events on <var>input</var>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-dom-level-3-events title=DOM-LEVEL-3-EVENTS>[DOM-LEVEL-3-EVENTS]</a>
+    </li>
+    <li>
+      <a href=http://xhr.spec.whatwg.org/#interface-formdata><code>FormData</code></a>
+      objects constructed from the form which contains <var>input</var> are
+      opaque, as described in <a data-section="" href=#opaque-formdata>§2.4 
+    Opaque FormData objects
+  </a>
+    </li>
+  </ol>
+
+<p class=issue id=issue-eedb26e3><a class=self-link href=#issue-eedb26e3></a>Is this more or less exhaustive? I’m sure I’m missing some clever ways
+  of reading the value.</p>
+
+  <h3 class="heading settled" data-level=2.4 id=opaque-formdata><span class=secno>2.4. </span><span class=content>
+    Opaque <code>FormData</code> objects
+  </span><a class=self-link href=#opaque-formdata></a></h3>
+
+<p><code>FormData</code> objects have a <dfn data-dfn-type=dfn data-noexport="" id=opaque-flag>opaque flag<a class=self-link href=#opaque-flag></a></dfn>, unset by default,
+  and set only if the object is constructed from a <a data-link-type=element href=https://html.spec.whatwg.org/#the-form-element title=form>form</a>
+  containing one or more <a data-link-type=element href=https://html.spec.whatwg.org/#the-input-element title=input>input</a> elements whose <a data-link-type=dfn href=#write-only-value-flag title="write-only value flag">write-only value
+  flag</a>. Opaque <code>FormData</code> objects return <code>null</code> and
+  the empty sequence when their
+  <a href=http://xhr.spec.whatwg.org/#dom-formdata-get><code>get()</code></a>
+  and
+  <a href=http://xhr.spec.whatwg.org/#dom-formdata-getall><code>getAll()</code></a>
+  methods are executed, respectively. Further, data from opaque
+  <code>FormData</code> objects can only be
+  <a href=http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract>extracted</a>
+  in the context of executing 
+  <a href=http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send>XMLHttpRequest’s <code>send()</code> method</a>.</p>
+
+<p>Opaque <code>FormData</code> objects have the following properties:</p>
+
+  <ol>
+    <li>
+      Whenever the user agent would execute an opaque <code>FormData</code> object’s
+      <a href=http://xhr.spec.whatwg.org/#dom-formdata-get><code>get()</code></a>
+      method, it MUST return <code>null</code>.
+    </li>
+    <li>
+      Whenever the user agent would execute an opaque <code>FormData</code> object’s
+      <a href=http://xhr.spec.whatwg.org/#dom-formdata-getall><code>getAll()</code></a>
+      method, it MUST return the empty sequence.
+    </li>
+    <li>
+      Whenever the user agent would
+      <a href=http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract>extract a byte stream and <code>Content-Type</code></a>
+      from an opaque <code>FormData</code> object <var>formdata</var>, first
+      the following steps:
+
+      <ol>
+        <li>
+          If the extraction algorithm is being executed in the context of
+          <a href=http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send>XMLHttpRequest’s <code>send()</code> method</a>,
+          <a href=http://fetch.spec.whatwg.org/#dom-request>Fetch’s <code>Request</code> constructor</a>,
+          or
+          <a href=http://fetch.spec.whatwg.org/#dom-response>Fetch’s <code>Response</code> constructor</a>
+          then skip the next step and proceed executing the algorithm.
+        </li>
+        <li>
+          Otherwise, abort the extraction algorithm and return the result of
+          executing the
+          <a href=http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract>extract a byte stream and <code>Content-Type</code></a>
+          algorithm on a new (empty) <code>FormData</code> object.
+        </li>
+      </ol>
+    </li>
+    <li>
+      ISSUE: Determine the right spec text to impart the following: When a request
+      is handed off to Fetch, mark it as opaque if its' body is populated from an
+      opaque FormData object, or if it is the result of a form submission with
+      opaque contents.
+    </li>
+  </ol>
+
+  <h4 class="heading settled" data-level=2.4.1 id=opaque-formdata-algorithms><span class=secno>2.4.1. </span><span class=content>
+    Algorithm Modifications
+  </span><a class=self-link href=#opaque-formdata-algorithms></a></h4>
+
+<p class=issue id=issue-f5b10335><a class=self-link href=#issue-f5b10335></a>Monkey-patching! Hooray! Though, of course, that’s pretty much this
+  whole strawman...</p>
+
+  <h5 class="heading settled" data-level=2.4.1.1 id=xhr-formdata-constructor><span class=secno>2.4.1.1. </span><span class=content>XHR: <code>FormData</code> constructor</span><a class=self-link href=#xhr-formdata-constructor></a></h5>
+
+<p>Insert the following steps before step 3 of
+  <a href=http://xhr.spec.whatwg.org/#dom-formdata>the <code>FormData</code>
+  constructor’s algorithm</a>:</p>
+
+  <ol start=3>
+    <li>
+      Unset <var>fd</var>’s <a data-link-type=dfn href=#opaque-flag title="opaque flag">opaque flag</a>.
+    </li>
+    <li>
+      If <var>form</var> is given, then:
+
+      <ol>
+        <li>
+          Let <var>controls</var> be a list of all the submittable elements
+          whose form owner is <var>form</var>.
+        </li>
+        <li>
+          For each element <var>field</var> in <var>controls</var>:
+
+          <ol>
+            <li>
+              If <var>field</var>’s <a data-link-type=dfn href=#write-only-value-flag title="write-only value flag">write-only value flag</a> is
+              <code>true</code>, then set <var>fd</var>’s <a data-link-type=dfn href=#opaque-flag title="opaque flag">opaque flag</a>.
+            </li>
+          </ol>
+        </li>
+    
+  </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.2 id=xhr-formdatas-get><span class=secno>2.4.1.2. </span><span class=content>XHR: <code>FormData</code>’s <code>get()</code></span><a class=self-link href=#xhr-formdatas-get></a></h5>
+
+<p>Redefine <code>FormData</code>’s
+  <a href=http://xhr.spec.whatwg.org/#dom-formdata-get><code>get()</code></a>
+  method as follows:</p>
+
+  <ol>
+    <li>If the <a data-link-type=dfn href=#opaque-flag title="opaque flag">opaque flag</a> is set, return <code>null</code>.</li>
+    <li>
+      Otherwise, return the
+      <a href=http://xhr.spec.whatwg.org/#concept-formdata-entry-value>value</a>
+      of the first
+      <a href=http://xhr.spec.whatwg.org/#concept-formdata-entry>entry</a>
+      whose
+      <a href=http://xhr.spec.whatwg.org/#concept-formdata-entry-name>name</a>
+      is <var>name</var>, and <code>null</code> if no such
+      <a href=http://xhr.spec.whatwg.org/#concept-formdata-entry>entry</a>
+      exists.
+    </li>
+  </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.3 id=xhr-formdatas-getall><span class=secno>2.4.1.3. </span><span class=content>XHR: <code>FormData</code>’s <code>getAll()</code></span><a class=self-link href=#xhr-formdatas-getall></a></h5>
+
+<p>Redefine <code>FormData</code>’s
+  <a href=http://xhr.spec.whatwg.org/#dom-formdata-getall><code>getAll()</code></a>
+  method as follows:</p>
+
+  <ol>
+    <li>If the <a data-link-type=dfn href=#opaque-flag title="opaque flag">opaque flag</a> is set, return the empty sequence.</li>
+    <li>
+      Otherwise, return the
+      <a href=http://xhr.spec.whatwg.org/#concept-formdata-entry-value>values</a>
+      of all
+      <a href=http://xhr.spec.whatwg.org/#concept-formdata-entry>entries</a>
+      whose
+      <a href=http://xhr.spec.whatwg.org/#concept-formdata-entry-name>name</a>
+      is <var>name</var>, in list order, and the empty sequence if no such
+      <a href=http://xhr.spec.whatwg.org/#concept-formdata-entry>entry</a>
+      exists.
+    </li>
+  </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.4 id=fetch-request-objects><span class=secno>2.4.1.4. </span><span class=content>Fetch: <code>Request</code> objects</span><a class=self-link href=#fetch-request-objects></a></h5>
+
+<p>Add a new <dfn data-dfn-type=dfn data-noexport="" id=opaque-request-flag>opaque request flag<a class=self-link href=#opaque-request-flag></a></dfn> to
+  <a href=http://fetch.spec.whatwg.org/#request-class>Fetch’s <code>Request</code> objects</a>.
+  This flag is unset unless otherwise specified.</p>
+
+  <h5 class="heading settled" data-level=2.4.1.5 id=fetch-requests-constructor><span class=secno>2.4.1.5. </span><span class=content>Fetch: <code>Request</code>’s constructor</span><a class=self-link href=#fetch-requests-constructor></a></h5>
+
+<p>Add the following step after step 3 of step 17 of
+  <a href=http://fetch.spec.whatwg.org/#dom-request>Fetch’s <code>Request</code> constructor</a>:</p>
+
+  <ol>
+    <li>
+      If <var>init</var>’s <code>body</code> member is a <code>FormData</code>
+      object whose <a data-link-type=dfn href=#opaque-flag title="opaque flag">opaque flag</a> is set, set <var>r</var>’s <strong>opaque
+      flag</strong>.
+    </li>
+  </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.6 id=fetch-bodys-consume-body><span class=secno>2.4.1.6. </span><span class=content>Fetch: <code>Body</code>’s <code>consume body</code></span><a class=self-link href=#fetch-bodys-consume-body></a></h5>
+
+<p>Insert the following step after step 2 of step 3 of
+  <a href=http://fetch.spec.whatwg.org/#concept-body-consume-body><code>Body</code>’s <code>as generic</code></a>
+  algorithm:</p>
+
+  <ol start=3>
+    <li>
+      If <var>object</var>’s <a data-link-type=dfn href=#opaque-request-flag title="opaque request flag">opaque request flag</a> is set, set
+      <var>stream</var> to an empty byte sequence.
+    </li>
+  </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.7 id=fetch-extract-a-byte-stream><span class=secno>2.4.1.7. </span><span class=content>Fetch: Extract a byte stream</span><a class=self-link href=#fetch-extract-a-byte-stream></a></h5>
+
+<p>Redefine the <code>FormData</code> case of Fetch’s
+  <a href=http://fetch.spec.whatwg.org/#concept-fetchbodyinit-extract>extract a byte stream and <code>Content-Type</code></a>
+  algorithm as follows:</p>
+
+  <ol>
+    <li>
+      If <var>object</var>’s <a data-link-type=dfn href=#opaque-flag title="opaque flag">opaque flag</a> is <strong>not</strong> set,
+      or if the extraction algorithm is being executed in the context of
+      <a href=http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send>XMLHttpRequest’s <code>send()</code> method</a>
+      or
+      <a href=http://fetch.spec.whatwg.org/#dom-request>Fetch’s <code>Request</code> constructor</a>
+
+<p>then:</p>
+
+      <ol>
+        <li>
+          Push the result of running the multipart/form-data encoding algorithm, with object as form data set and with utf-8 as the explicit character encoding, to stream.
+        </li>
+        <li>
+          Set Content-Type to `multipart/form-data;boundary=`, followed by the multipart/form-data boundary string generated by the multipart/form-data encoding algorithm.
+        </li>
+      </ol>
+
+    </li>
+    <li>
+      Otherwise, set <var>Content-Type</var> to <code>text/plain;charset=UTF-8</code>.
+
+<p class=note>Note: In this case (e.g. <var>object</var> is opaque
+      and the algorithm isn’t being executed as a result of
+      <code>XHR.send()</code>), <var>stream</var> will remain an empty byte
+      stream.</p>
+    </li>
+  </ol>
+
+  <h5 class="heading settled" data-level=2.4.1.8 id=service-worker-handle-a-fetch><span class=secno>2.4.1.8. </span><span class=content>Service Worker: Handle a Fetch</span><a class=self-link href=#service-worker-handle-a-fetch></a></h5>
+
+<p class=issue id=issue-7ac73c88><a class=self-link href=#issue-7ac73c88></a>Figure out the right way to monkey-patch Service Worker’s
+  <a href=https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#handle-a-fetch>Handle a Fetch</a>
+  algorithm to do the right thing with opaque requests.</p>
+</ol></section>
+
+
+<section>
+  <h2 class="heading settled" data-level=3 id=security-considerations><span class=secno>3. </span><span class=content>Security Considerations</span><a class=self-link href=#security-considerations></a></h2>
+
+  <h3 class="heading settled" data-level=3.1 id=security-sandboxing><span class=secno>3.1. </span><span class=content>Sandboxing autofilled credential access</span><a class=self-link href=#security-sandboxing></a></h3>
+
+<p><em>This section is non-normative.</em></p>
+
+<p>Some user agents are implemented in such a way as to render websites via
+  low-privilege processes that don’t have direct access to the network. Network
+  requests are mediated by a more privileged parent process, which can protect
+  against a number of threats which arise if a clever attacker can exploit bugs
+  in the user agent to corrupt the website’s process.</p>
+
+<p>Even if we prevent DOM-level access to input fields, the form field is somehow
+  represented in memory that’s accessible to that child process. It is quite
+  conceivable that an attacker could exploit browser bugs which corrupt the
+  child process in such a way as to expose a user’s credentials.</p>
+
+<p>Marking fields as write-only might mitigate this risk in the case of
+  autofilled credentials. Since the webpage does not need access to a user’s
+  actual password, the parent process can generate a nonce when autofilling
+  credentials, and ask the child process to fill the password field with that
+  value instead of the actual password. Then, when the child process asks the
+  parent process to POST a form, the parent process can replace occurrences of
+  the nonce in the POST’s body with the actual password for a given credential.</p>
+
+<p>This approach means that the actual credentials are never provided to the
+  high-risk child process, which means that an attacker would have to break
+  out of the child’s sandbox in order to steal credentials.</p>
+
+<p>A more rigorous examination of this approach is undertaken in "Protecting
+  Users Against XSS-based Password Manager Abuse" <a data-biblio-type=informative data-link-type=biblio href=#biblio-stock title=STOCK>[STOCK]</a>. Their use of a
+  browser extension is instructive: there’s no reason that this scheme couldn’t
+  be implemented by a third-party credential manager, as long as it has access
+  to the data POSTed from one page to another.</p>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=4 id=authoring-considerations><span class=secno>4. </span><span class=content>Authoring Considerations</span><a class=self-link href=#authoring-considerations></a></h2>
+
+<p><em>This section is non-normative.</em></p>
+
+<p>In order to mitigate the risk of content injection attacks which steal user
+  credentials, we recommend that authors:</p>
+
+  <ol>
+    <li>
+      Set a Content Security Policy <a data-biblio-type=normative data-link-type=biblio href=#biblio-csp2 title=CSP2>[CSP2]</a> on every page of their sites
+      (including error pages, etc.), and ensure that the policy contains both
+      <code><a href=https://w3c.github.io/webappsec/specs/content-security-policy/#directive-form-action>form-action</a></code>,
+      <code><a href=https://w3c.github.io/webappsec/specs/content-security-policy/#directive-connect-src>connect-src</a></code>
+      and <code><a data-link-type=dfn href=#form-writeonly title=form-writeonly>form-writeonly</a></code> directives. The first will protect
+      against autofilled form submissions which exfiltrate data to an attacker’s
+      origin, the second against XHR-based submissions, and the last against
+      DOM-level content injection attacks.
+    </li>
+    <li>
+      Always place sign-in forms on TLS-protected pages, and always submit such
+      forms to TLS-protected endpoints. If credentials are sent in the clear,
+      they are trivially vulnerable to theft.
+    </li>
+  </ol>
+</section>
+
+<section>
+  <h2 class="heading settled" data-level=5 id=acknowledgements><span class=secno>5. </span><span class=content>Acknowledgements</span><a class=self-link href=#acknowledgements></a></h2>
+
+<p>This proposal is heavily inspired by Jacob S Hoffman-Andrews'
+  <a href=http://lists.w3.org/Archives/Public/public-webapps/2014JulSep/0145.html>comments
+  on public-webapps@</a>, as well as Brian Smith’s
+  <a href=http://lists.w3.org/Archives/Public/public-webapps/2014JulSep/0149.html>response</a>.
+  Anne van Kesteren helped immensely with the Fetch integration.</p>
+</section>
+
+<h2 class="no-ref no-num heading settled" id=conformance><span class=content>
+Conformance</span><a class=self-link href=#conformance></a></h2>
+
+    <p>
+        Conformance requirements are expressed with a combination of descriptive assertions and RFC 2119 terminology.
+        The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL”
+        in the normative parts of this document
+        are to be interpreted as described in RFC 2119.
+        However, for readability,
+        these words do not appear in all uppercase letters in this specification.
+
+    <p>
+        All of the text of this specification is normative
+        except sections explicitly marked as non-normative, examples, and notes. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc2119 title=RFC2119>[RFC2119]</a>
+
+    <p>
+        Examples in this specification are introduced with the words “for example”
+        or are set apart from the normative text with <code>class="example"</code>, like this:
+
+    <div class=example>
+        This is an example of an informative example.
+    </div>
+
+    <p>
+        Informative notes begin with the word “Note”
+        and are set apart from the normative text with <code>class="note"</code>, like this:
+
+    <p class=note>
+        Note, this is an informative note.
+
+
+
+<h2 class="no-num heading settled" id=references><span class=content>References</span><a class=self-link href=#references></a></h2><h3 class="no-num heading settled" id=normative><span class=content>Normative References</span><a class=self-link href=#normative></a></h3><dl><dt id=biblio-abnf title=ABNF><a class=self-link href=#biblio-abnf></a>[ABNF]<dd>Dave Crocker; Paul Overell. <a href=http://www.ietf.org/rfc/rfc5234.txt>Augmented BNF for Syntax Specifications: ABNF</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc5234.txt>http://www.ietf.org/rfc/rfc5234.txt</a><dt id=biblio-csp2 title=CSP2><a class=self-link href=#biblio-csp2></a>[CSP2]<dd>Mike West; Adam Barth; Dan Veditz. <a href=https://w3c.github.io/webappsec/content-security-policy/>Content Security Policy Level 2</a>. LCWD. URL: <a href=https://w3c.github.io/webappsec/content-security-policy/>https://w3c.github.io/webappsec/content-security-policy/</a><dt id=biblio-dom-level-3-events title=DOM-Level-3-Events><a class=self-link href=#biblio-dom-level-3-events></a>[DOM-Level-3-Events]<dd>Gary Kacmarcik; et al. <a href=http://www.w3.org/TR/DOM-Level-3-Events/>Document Object Model (DOM) Level 3 Events Specification</a>. 25 September 2014. WD. URL: <a href=http://www.w3.org/TR/DOM-Level-3-Events/>http://www.w3.org/TR/DOM-Level-3-Events/</a><dt id=biblio-html5 title=HTML5><a class=self-link href=#biblio-html5></a>[HTML5]<dd>Robin Berjon; et al. <a href=http://w3.org/TR/HTML5/>HTML5</a>. LCWD. URL: <a href=http://w3.org/TR/HTML5/>http://w3.org/TR/HTML5/</a><dt id=biblio-rfc2119 title=rfc2119><a class=self-link href=#biblio-rfc2119></a>[rfc2119]<dd>S. Bradner. <a href=http://www.ietf.org/rfc/rfc2119.txt>Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href=http://www.ietf.org/rfc/rfc2119.txt>http://www.ietf.org/rfc/rfc2119.txt</a></dl><h3 class="no-num heading settled" id=informative><span class=content>Informative References</span><a class=self-link href=#informative></a></h3><dl><dt id=biblio-lupin title=LUPIN><a class=self-link href=#biblio-lupin></a>[LUPIN]<dd>Raul Gonzalez; Eric Y. Chen; Collin Jackson. <a href=http://arxiv.org/pdf/1309.1416.pdf>Automated Password Extraction Attack on Modern Password Managers</a>. URL: <a href=http://arxiv.org/pdf/1309.1416.pdf>http://arxiv.org/pdf/1309.1416.pdf</a><dt id=biblio-stock title=STOCK><a class=self-link href=#biblio-stock></a>[STOCK]<dd>Ben Stock; Martin Johns. <a href=https://www.ben-stock.de/wp-content/uploads/asiacss2014.pdf>Protecting Users Against XSS-based Password Manager Abuse</a>. URL: <a href=https://www.ben-stock.de/wp-content/uploads/asiacss2014.pdf>https://www.ben-stock.de/wp-content/uploads/asiacss2014.pdf</a></dl><h2 class="no-num heading settled" id=index><span class=content>Index</span><a class=self-link href=#index></a></h2><ul class=indexlist><li>autocomplete-token, <a href=#autocomplete-token title="section 2.2">2.2</a><li>forced write-only types, <a href=#forced-write-only-types title="section 2.2">2.2</a><li>form-writeonly, <a href=#form-writeonly title="section 2.2">2.2</a><li>opaque flag, <a href=#opaque-flag title="section 2.4">2.4</a><li>opaque request flag, <a href=#opaque-request-flag title="section 2.4.1.4">2.4.1.4</a><li>writeonly<ul><li>(element-attr), <a href=#element-attrdef-writeonly title="section 2.1">2.1</a><li>attribute for HTMLInputElement, <a href=#dom-htmlinputelement-writeonly title="section 2.1">2.1</a><li>attribute for HTMLFormElement, <a href=#dom-htmlformelement-writeonly title="section 2.1">2.1</a></ul><li>write-only value flag, <a href=#write-only-value-flag title="section 2.1">2.1</a></ul><h2 class="no-num heading settled" id=idl-index><span class=content>IDL Index</span><a class=self-link href=#idl-index></a></h2><pre class=idl>partial interface <a class=idl-code data-global-name="" data-link-type=interface href=https://html.spec.whatwg.org/#htmlinputelement title=HTMLInputElement>HTMLInputElement</a> {
+    attribute boolean <a class=idl-code data-global-name="HTMLInputElement<interface>/writeonly<attribute>" data-link-for=HTMLInputElement data-link-type=attribute data-type="boolean " href=#dom-htmlinputelement-writeonly title=writeonly>writeonly</a>;
+};
+
+partial interface <a class=idl-code data-global-name="" data-link-type=interface href=https://html.spec.whatwg.org/#htmlformelement title=HTMLFormElement>HTMLFormElement</a> {
+    attribute boolean <a class=idl-code data-global-name="HTMLFormElement<interface>/writeonly<attribute>" data-link-for=HTMLFormElement data-link-type=attribute data-type="boolean " href=#dom-htmlformelement-writeonly title=writeonly>writeonly</a>;
+};
+
+</pre><h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style=counter-reset:issue><div class=issue>Copy/paste this IDL for <a data-link-type=element href=https://html.spec.whatwg.org/#the-button-element title=button>button</a>, <a data-link-type=element href=https://html.spec.whatwg.org/#the-keygen-element title=keygen>keygen</a>,
+  <a data-link-type=element href=https://html.spec.whatwg.org/#the-object-element title=object>object</a>, <a data-link-type=element href=https://html.spec.whatwg.org/#the-select-element title=select>select</a>, and <a data-link-type=element href=https://html.spec.whatwg.org/#the-textarea-element title=textarea>textarea</a>.<a href=#issue-732190b8> ↵ </a></div><div class=issue>Expand this to include all <a data-link-type=dfn href=https://html.spec.whatwg.org/#category-submit title="submittable elements">submittable elements</a>.<a href=#issue-92c1983a> ↵ </a></div><div class=issue>Is this more or less exhaustive? I’m sure I’m missing some clever ways
+  of reading the value.<a href=#issue-eedb26e3> ↵ </a></div><div class=issue>Monkey-patching! Hooray! Though, of course, that’s pretty much this
+  whole strawman...<a href=#issue-f5b10335> ↵ </a></div><div class=issue>Figure out the right way to monkey-patch Service Worker’s
+  <a href=https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#handle-a-fetch>Handle a Fetch</a>
+  algorithm to do the right thing with opaque requests.<a href=#issue-7ac73c88> ↵ </a></div></div>

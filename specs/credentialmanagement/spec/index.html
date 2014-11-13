@@ -1,0 +1,2082 @@
+<!DOCTYPE html><html lang=en><head>
+  <meta content="text/html; charset=utf-8" http-equiv=Content-Type>
+  <title>Credential Management</title>
+  <style>
+@media print {
+  html { margin: 0 !important; }
+  body { font-family: serif; }
+  th, td { font-family: inherit; }
+  a { color: inherit !important; }
+  .example:before { font-family: serif !important; }
+  a:link, a:visited { text-decoration: none !important; }
+  a:link:after, a:visited:after { /* create a cross-ref "see..." */; }
+}
+@page {
+  margin: 1.5cm 1.1cm;
+}
+h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
+figure, div.figure, div.sidefigure, pre, table.propdef, table.propdef-extra,
+.example { page-break-inside: avoid; }
+dt { page-break-after: avoid; }
+
+body {
+  background: white;
+  /* background-image: floating-margin-image-goes-here; */
+  background-position: top left;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: black;
+  counter-reset: exampleno figure issue;
+  font-family: sans-serif;
+  line-height: 1.5;
+  margin: 0 auto;
+  max-width: 50em;
+  padding: 2em 1em 2em 70px;
+}
+
+/* General structural markup */
+
+h1, h2, h3, h4, h5, h6 { text-align: left; }
+h1, h2, h3 { color: #005A9C; }
+h1 { font: 170% sans-serif; }
+h2 { font: 140% sans-serif; }
+h3 { font: 120% sans-serif; }
+h4 { font: bold 100% sans-serif; }
+h5 { font: italic 100% sans-serif; }
+h6 { font: small-caps 100% sans-serif; }
+h2, h3, h4, h5, h6 { margin-top: 3em; }
+h1 + h2 { margin-top: 0em; }
+h2 + h3, h3 + h4, h4 + h5, h5 + h6 { margin-top: 1.2em; }
+
+.head { margin-bottom: 1em; }
+.head h1 { margin-top: 2em; clear: both; }
+.head table { margin-left: 2em; margin-top: 2em; }
+.head dd { margin-bottom: 0; }
+
+p.copyright { font-size: small; }
+p.copyright small { font-size: small; }
+
+pre { margin: 1em 0 1em 2em; overflow: auto; }
+pre, code, .idl-code {
+  font-size: .9em;
+  font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+dt dfn code { font-size: inherit; }
+
+dfn { font-weight: bolder; }
+dfn var { font-style: normal; }
+
+s, del {text-decoration: line-through; color: red; }
+u, ins {text-decoration: underline; background: #bfa; }
+
+sup {
+  vertical-align: super;
+  font-size: 80%
+}
+
+details { display: block; }
+
+dt { font-weight: bold; }
+dd { margin: 0 0 1em 2em; }
+ul, ol { margin-left: 0; padding-left: 2em; }
+li { margin: 0.25em 2em 0.5em 0; padding-left: 0; }
+[data-md] > :first-child { margin-top: 0; }
+[data-md] > :last-child { margin-bottom: 0; }
+
+td.pre {
+  white-space: pre-wrap;
+}
+
+.css, .property { color: #005a9c; }
+.property { white-space: nowrap; }
+
+
+/* Boilerplate sections */
+
+ul.indexlist { margin-left: 0; columns: 13em; }
+ul.indexlist li { margin-left: 0; list-style: none }
+ul.indexlist li li { margin-left: 1em; }
+ul.indexlist a { font-weight: bold; }
+ul.indexlist ul, ul.indexlist dl { font-size: smaller; }
+ul.indexlist dl { margin-top: 0; }
+ul.indexlist dt { margin: .2em 0 .2em 20px; }
+ul.indexlist dd { margin: .2em 0 .2em 40px; }
+
+.toc {
+  font-weight: bold;
+  line-height: 1.3;
+  list-style: none;
+  margin: 1em 0 0 5em;
+  padding: 0;
+}
+.toc ul { margin: 0; padding: 0; font-weight: normal; }
+.toc ul ul { margin: 0 0 0 2em; font-style: italic; }
+.toc ul ul ul { margin: 0}
+.toc > li { margin: 1.5em 0; padding: 0; }
+.toc li { clear: both; }
+.toc ul.toc li { margin: 0.3em 0 0 0; }
+.toc a { border-bottom-style: none; }
+.toc a:hover, ul.toc a:focus { border-bottom-style: solid; }
+/* Section numbers in a column of their own */
+.toc span.secno {float: left; width: 4em; margin-left: -5em}
+.toc ul ul span.secno { margin-left: -7em; }
+
+table.proptable {
+  font-size: small;
+  border-collapse: collapse;
+  border-spacing: 0;
+  text-align: left;
+  margin: 1em 0;
+}
+table.proptable td, table.proptable th {
+  padding: 0.4em;
+  text-align: center;
+}
+table.proptable tr:hover td { background: #DEF; }
+
+
+/* Links */
+
+a[href] { color: inherit; border-bottom: 1px solid silver; text-decoration: none; }
+a[href]:hover { background: #ffa; }
+a[href]:active { color: #C00; background: transparent; }
+img, a.logo { border-style: none; }
+.heading, .issue, .note, .example, li, dt { position: relative; }
+/* CSS-ish link types */
+[data-link-type="property"]::before,
+[data-link-type="propdesc"]::before,
+[data-link-type="descriptor"]::before,
+[data-link-type="value"]::before,
+[data-link-type="function"]::before,
+[data-link-type="at-rule"]::before,
+[data-link-type="selector"]::before,
+[data-link-type="maybe"]::before {content: "“";}
+[data-link-type="property"]::after,
+[data-link-type="propdesc"]::after,
+[data-link-type="descriptor"]::after,
+[data-link-type="value"]::after,
+[data-link-type="function"]::after,
+[data-link-type="at-rule"]::after,
+[data-link-type="selector"]::after,
+[data-link-type="maybe"]::after {content: "”";}
+[data-link-type].production::before,
+[data-link-type].production::after,
+.prod [data-link-type]::before,
+.prod [data-link-type]::after { content: ""; }
+/* Element-type link styling */
+[data-link-type=element] { font-family: monospace; }
+[data-link-type=element]::before { content: "<" }
+[data-link-type=element]::after { content: ">" }
+/* Self-links */
+a.self-link {
+  position: absolute;
+  top: 0;
+  left: -2.5em;
+  width: 2em;
+  height: 2em;
+  text-align: center;
+  border: none;
+  transition: opacity .2s;
+  opacity: .5;
+}
+a.self-link:hover {
+  opacity: 1;
+}
+.heading > a.self-link {
+  font-size: 83%;
+}
+li > a.self-link {
+  left: -3.5em;
+}
+dfn > a.self-link {
+  top: auto;
+  left: auto;
+  opacity: 0;
+  width: 1.5em;
+  height: 1.5em;
+  background: gray;
+  color: white;
+  font-style: normal;
+  transition: opacity .2s, background-color .2s, color .2s;
+}
+dfn:hover > a.self-link {
+  opacity: 1;
+}
+dfn > a.self-link:hover {
+  color: black;
+}
+a.self-link::before { content: "¶"; }
+.heading > a.self-link::before { content: "§"; }
+dfn > a.self-link::before { content: "#"; }
+
+
+/* Figures */
+
+figure {
+  display: block;
+  text-align: center;
+  margin: 2.5em 0;
+}
+figure.sidefigure {
+  float: right;
+  width: 50%;
+  margin: 0 0 0.5em 0.5em
+}
+figure pre {
+  text-align: left;
+  display: table;
+  margin: 1em auto;
+}
+figure table {
+  margin: auto;
+}
+figure img, figure object {
+  display: block;
+  margin: auto;
+  max-width: 100%
+}
+figcaption {
+  counter-increment: figure;
+  font-size: 90%;
+  font-style: italic;
+  text-align: center;
+}
+figcaption::before {
+  content: "Figure " counter(figure) ". ";
+  font-weight: bold;
+}
+dd figure { margin-left: -2em; }
+
+
+/* Definition tables */
+
+table.definition {
+  border-spacing: 0;
+  padding: 0 1em 0.5em;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1.2em 0;
+}
+table.definition td, table.definition th {
+  padding: 0.5em;
+  vertical-align: baseline;
+  border-bottom: 1px solid #bbd7e9;
+}
+table.definition th:first-child {
+  font-style: italic;
+  font-weight: normal;
+  text-align: left;
+  width: 8.3em;
+  padding-left: 1em;
+}
+table.definition > tbody > tr:last-child > th,
+table.definition > tbody > tr:last-child > td {
+  border-bottom: none;
+}
+table.definition tr:first-child > th,
+table.definition tr:first-child > td {
+  padding-top: 1em;
+}
+/* Footnotes at the bottom of a definition table */
+table.definition td.footnote {
+  font-style: normal;
+  padding-top: .6em;
+  width: auto;
+}
+table.definition td.footnote::before {
+  content: " ";
+  display: block;
+  height: 0.6em;
+  width: 4em;
+  border-top: thin solid;
+}
+
+
+/* IDL fragments */
+
+pre.idl {
+  padding: .5em 1em;
+  margin: 1.2em 0;
+}
+pre.idl :link, pre.idl :visited {
+  color:inherit;
+  background:transparent;
+}
+
+
+/* Data tables */
+/* Comes in plain, long, complex, or define varieties */
+
+.data {
+  margin: 1em auto;
+  border-collapse: collapse;
+  width: 100%;
+  border: hidden;
+}
+.data {
+  text-align: center;
+  width: auto;
+}
+.data caption {
+  width: 100%;
+}
+.data td, .data th {
+  padding: 0.5em;
+  border-width: 1px;
+  border-color: silver;
+  border-top-style: solid;
+}
+.data thead td:empty {
+  padding: 0;
+  border: 0;
+}
+.data thead th[scope="row"] {
+  text-align: right;
+  color: inherit;
+}
+.data thead,
+.data tbody {
+  color: inherit;
+  border-bottom: 2px solid;
+}
+.data colgroup {
+  border-left: 2px solid;
+}
+.data tbody th:first-child,
+.data tbody td[scope="row"]:first-child {
+  text-align: right;
+  color: inherit;
+  border-right: 2px solid;
+  border-top: 1px solid silver;
+  padding-right: 1em;
+}
+.data.define td:last-child {
+  text-align: left;
+}
+.data tbody th[rowspan],
+.data tbody td[rowspan] {
+  border-left: 1px solid silver;
+}
+.data tbody th[rowspan]:first-child,
+.data tbody td[rowspan]:first-child {
+  border-left: 0;
+  border-right: 1px solid silver;
+}
+.data.complex th,
+.data.complex td {
+  border: 1px solid silver;
+}
+.data td.long {
+ vertical-align: baseline;
+ text-align: left;
+}
+.data img {
+  vertical-align: middle;
+}
+
+
+/* Switch/case <dl>s */
+
+dl.switch {
+ padding-left: 2em;
+}
+dl.switch > dt {
+ text-indent: -1.5em;
+}
+dl.switch > dt:before {
+ content: '↪';
+ padding: 0 0.5em 0 0;
+ display: inline-block;
+ width: 1em;
+ text-align: right;
+ line-height: 0.5em;
+}
+
+
+/* Style for At Risk features (intended as editorial aid, not intended for publishing) */
+.atrisk::before {
+ position: absolute;
+ margin-left: -5em;
+ margin-top: -2px;
+ padding: 4px;
+ border: 1px solid;
+ content: 'At risk';
+ font-size: small;
+ background-color: white;
+ color: gray;
+ border-radius: 1em;
+ text-align: center;
+}
+
+
+/* Obsoletion notice */
+details.annoying-warning[open] {
+  background: #fdd;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: .5em;
+  border: thick solid red;
+  border-radius: 1em;
+  position: fixed;
+  left: 1em;
+  right: 1em;
+  bottom: 1em;
+  z-index: 1000;
+}
+details.annoying-warning:not([open]) > summary {
+  background: #fdd;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: .5em;
+}
+
+
+/* Examples */
+
+.example {
+  counter-increment: exampleno;
+}
+.example::before {
+  content: "Example";
+  content: "Example " counter(exampleno);
+  min-width: 7.5em;
+  text-transform: uppercase;
+  display: block;
+}
+.illegal-example::before {
+  content: "Invalid Example";
+  content: "Invalid Example" counter(exampleno);
+}
+.example, .illegal-example, .html, .illegal-html, .xml, .illegal-xml {
+  padding: 0.5em;
+  margin: 1em 0;
+  position: relative;
+  clear: both;
+}
+pre.example, pre.illegal-example, pre.html,
+pre.illegal-html, pre.xml, pre.illegal-xml {
+  padding-top: 1.5em;
+}
+.illegal-example { color: red; }
+.illegal-example p { color: black; }
+.html { color: #600; }
+.illegal-html { color: red; }
+.illegal-html p { color: black; }
+.xml { color: #600; }
+.illegal-xml { color: red; }
+.illegal-xml p { color: black; }
+code.css { font-family: inherit; font-size: 100% }
+code.html { color: #600 } /* inline HTML */
+code.xml { color: #600 }  /* inline XML */
+
+
+/* Issues */
+
+.issue {
+  border-color: #E05252;
+  background: #FBE9E9;
+  counter-increment: issue;
+}
+.issue:before {
+  content: "Issue " counter(issue);
+  padding-right: 1em;
+  text-transform: uppercase;
+  color: #E05252;
+}
+
+
+/* Whys */
+
+details.why > summary {
+  font-style: italic;
+}
+details.why[open] > summary {
+  border-bottom: 1px silver solid;
+}
+
+
+/* All the blocks get similarly styled */
+
+table.definition, pre.idl, .example, .note, details.why, .issue {
+  border: none;
+  border-left: .5em solid black;
+  border-left: .5rem solid black;
+}
+.issue, .note, .example, .why {
+  padding: .5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+table.definition, pre.idl {
+  background: hsl(210, 70%, 95%);
+  border-color: hsl(210, 80%, 75%);
+}
+.example {
+  background: hsl(50, 70%, 95%);
+  border-color: hsl(50, 70%, 60%);
+}
+.example::before {
+  color: hsl(50, 70%, 60%);
+}
+.note, details.why {
+  background: hsl(120, 70%, 95%);
+  border-color: hsl(120, 70%, 60%);
+}
+.note::before {
+  color: hsl(120, 70%, 60%);
+}
+.issue {
+  background: hsl(0, 70%, 95%);
+  border-color: hsl(0, 70%, 60%);
+}
+.issue::before {
+  color: hsl(0, 70%, 60%);
+}
+span.issue, span.note {
+  padding: .1em .5em .15em;
+  border-right-width: .5em;
+  border-right-style: solid;
+}
+  </style>
+</head>
+<body class=h-entry>
+<div class=head>
+  <p data-fill-with=logo></p>
+  <h1 class="p-name no-ref" id=title>Credential Management</h1>
+  <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>A Collection of Interesting Ideas,
+    <span class=dt-updated><span class=value-title title=20141107>7 November 2014</span></span></span></h2>
+  <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://mikewest.github.io/credentialmanagement/spec/>https://mikewest.github.io/credentialmanagement/spec/</a><dt>Version History:<dd><a href=https://github.com/mikewest/credentialmanagement/commits/master/spec/index.src.html>https://github.com/mikewest/credentialmanagement/commits/master/spec/index.src.html</a><dt class=editor>Editor:<dd class=editor><div class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)</div><dt>Use Cases:<dd><span><a href=http://projects.mikewest.org/credentialmanagement/usecases/>http://projects.mikewest.org/credentialmanagement/usecases/</a></span></dl></div>
+  <div data-fill-with=warning></div>
+  <p class=copyright data-fill-with=copyright>
+©2014 Google
+</p>
+  <hr title="Separator for header">
+</div>
+
+<h2 class="no-num no-toc no-ref heading settled" id=abstract><span class=content>Abstract</span></h2>
+<div class=p-summary data-fill-with=abstract><p>This specification describes an imperative API enabling a website to request a user’s credentials in order to sign them in, and to help the user agent correctly store user credentials for future use.</p>
+
+</div>
+<div data-fill-with=at-risk></div>
+
+<h2 class="no-num no-toc no-ref heading settled" id=contents><span class=content>Table of Contents</span></h2>
+<div data-fill-with=table-of-contents role=navigation><ul class=toc role=directory><li><a href=#introduction><span class=secno>1</span> <span class=content>Introduction</span></a><ul class=toc><li><a href=#use-cases><span class=secno>1.1</span> <span class=content>Use Cases</span></a><li><a href=#introduction-examples><span class=secno>1.2</span> <span class=content>Examples</span></a><ul class=toc><li><a href=#examples-local-signin><span class=secno>1.2.1</span> <span class=content>Local Sign-in</span></a><li><a href=#examples-federated-signin><span class=secno>1.2.2</span> <span class=content>Federated Sign-in</span></a><li><a href=#examples-post-signin><span class=secno>1.2.3</span> <span class=content>Post-sign-in Confirmation</span></a><li><a href=#examples-sign-up><span class=secno>1.2.4</span> <span class=content>Sign-Up</span></a><li><a href=#examples-change-password><span class=secno>1.2.5</span> <span class=content>Change Password</span></a></ul><li><a href=#existing-solutions><span class=secno>1.3</span> <span class=content>
+      Haven’t we done this before? What about [<em>insert technology here</em>]?
+    </span></a><ul class=toc><li><a href=#existing-solutions-browserid><span class=secno>1.3.1</span> <span class=content>BrowserID/Persona</span></a><li><a href=#existing-solutions-webid><span class=secno>1.3.2</span> <span class=content>WebID</span></a></ul></ul><li><a href=#terms><span class=secno>2</span> <span class=content>Key Concepts and Terminology</span></a><ul class=toc><li><a href=#terms-defined-here><span class=secno>2.1</span> <span class=content>Terms defined by this specification</span></a><li><a href=#terms-defined-by-reference><span class=secno>2.2</span> <span class=content>Terms defined by reference</span></a></ul><li><a href=#interfaces><span class=secno>3</span> <span class=content>Interfaces</span></a><ul class=toc><li><a href=#interfaces-credential-types><span class=secno>3.1</span> <span class=content>Credential Types</span></a><ul class=toc><li><a href=#interfaces-credential-types-credential><span class=secno>3.1.1</span> <span class=content><code>Credential</code></span></a><li><a href=#interfaces-credential-types-localcredential><span class=secno>3.1.2</span> <span class=content><code>LocalCredential</code></span></a><li><a href=#interfaces-credential-types-federatedcredential><span class=secno>3.1.3</span> <span class=content><code>FederatedCredential</code></span></a><li><a href=#interfaces-credential-types-pendingcredential><span class=secno>3.1.4</span> <span class=content><code>PendingCredential</code></span></a></ul><li><a href=#interfaces-credential-manager><span class=secno>3.2</span> <span class=content>Credential Manager</span></a><li><a href=#interfaces-request-options><span class=secno>3.3</span> <span class=content>Request Options</span></a></ul><li><a href=#federations><span class=secno>4</span> <span class=content>Federated Identity Providers</span></a><ul class=toc><li><a href=#identity-provider-manifest><span class=secno>4.1</span> <span class=content>Identity Provider Manifests</span></a><ul class=toc><li><a href=#identity-provider-manifest-contents><span class=secno>4.1.1</span> <span class=content>Manifest Contents</span></a></ul><li><a href=#identifying-federations><span class=secno>4.2</span> <span class=content>Identifying Federations</span></a></ul><li><a href=#algorithms><span class=secno>5</span> <span class=content>Algorithms</span></a><ul class=toc><li><a href=#request-credential><span class=secno>5.1</span> <span class=content>
+    Request a <code>Credential</code> with <var>options</var>
+  </span></a><li><a href=#request-zeroclick-credential><span class=secno>5.2</span> <span class=content>
+    Request the zeroclick <code>Credential</code> for <var>origin</var> with
+    <var>options</var>.
+  </span></a><li><a href=#save-credential><span class=secno>5.3</span> <span class=content>
+    Save <var>credential</var>
+  </span></a><li><a href=#set-isFederation><span class=secno>5.4</span> <span class=content>
+    Set <var>credential</var>’s <code>[[isFederation]]</code> slot
+  </span></a><li><a href=#dezeroclickize-origin><span class=secno>5.5</span> <span class=content>
+    Dezeroclickize credentials for <var>origin</var>
+  </span></a></ul><li><a href=#user-mediation><span class=secno>6</span> <span class=content>User Mediation</span></a><ul class=toc><li><a href=#user-mediated-storage><span class=secno>6.1</span> <span class=content>Storing and Updating Credentials</span></a><li><a href=#user-mediated-zeroclickization><span class=secno>6.2</span> <span class=content>Zeroclickization</span></a><li><a href=#user-mediated-selection><span class=secno>6.3</span> <span class=content>Credential Selection</span></a></ul><li><a href=#security-considerations><span class=secno>7</span> <span class=content>Security Considerations</span></a><ul class=toc><li><a href=#security-cross-origin-leakage><span class=secno>7.1</span> <span class=content>Cross-origin Credential Leakage</span></a><li><a href=#security-origin-confusion><span class=secno>7.2</span> <span class=content>Origin Confusion</span></a><li><a href=#security-insecure-origins><span class=secno>7.3</span> <span class=content>Insecure Sites</span></a><li><a href=#security-autocomplete-off><span class=secno>7.4</span> <span class=content>
+    Reintroducing <code>autocomplete="off"</code>
+  </span></a></ul><li><a href=#privacy-considerations><span class=secno>8</span> <span class=content>Privacy Considerations</span></a><ul class=toc><li><a href=#privacy-timing-attacks><span class=secno>8.1</span> <span class=content>Timing Attacks</span></a><li><a href=#privacy-chooser-leakage><span class=secno>8.2</span> <span class=content>Chooser Leakage</span></a></ul><li><a href=#implementation-considerations><span class=secno>9</span> <span class=content>Implementation Considerations</span></a><ul class=toc><li><a href=#implementation-for-authors><span class=secno>9.1</span> <span class=content>Website Authors</span></a></ul><li><a href=#future-work><span class=secno>10</span> <span class=content>Future Work</span></a><li><a href=#conformance><span class=secno></span> <span class=content>
+Conformance</span></a><li><a href=#references><span class=secno></span> <span class=content>References</span></a><ul class=toc><li><a href=#normative><span class=secno></span> <span class=content>Normative References</span></a><li><a href=#informative><span class=secno></span> <span class=content>Informative References</span></a></ul><li><a href=#index><span class=secno></span> <span class=content>Index</span></a><li><a href=#idl-index><span class=secno></span> <span class=content>IDL Index</span></a><li><a href=#issues-index><span class=secno></span> <span class=content>Issues Index</span></a></ul></div>
+<main>
+
+
+
+
+
+
+
+
+<section>
+  <h2 class="heading settled" data-level=1 id=introduction><span class=secno>1. </span><span class=content>Introduction</span><a class=self-link href=#introduction></a></h2>
+
+<p><em>This section is not normative.</em></p>
+
+<p>Signing into websites is more difficult than it should be. The user agent is
+  in a unique position to improve the experience in a number of ways, and most
+  modern user agents have recognized this by providing some measure of
+  credential management natively in the browser. Users can save usernames and
+  passwords for websites, and those <a data-link-type=dfn href=#credentials title=credentials>credentials</a> are autofilled into
+  sign-in forms with varying degrees of success.</p>
+
+<p>The <code><a data-link-type=element-attr href=https://html.spec.whatwg.org/#attr-form-autocomplete title=autocomplete>autocomplete</a></code> attribute offers a
+  declarative mechanism by which websites can work with user agents to improve
+  the latter’s ability to detect and fill sign-in forms by marking specific
+  fields as "username" or "password", and user agents implement a wide variety
+  of detection heuristics to work with websites which haven’t taken the time to
+  provide this detail in markup.</p>
+
+<p>While this combination of heuristic and declarative detection works relatively
+  well, the status quo leaves some large gaps where detection is problematic.
+  Sites with uncommon sign-in mechanisms (submitting credentials via
+  XMLHttpRequest <a data-biblio-type=informative data-link-type=biblio href=#biblio-xmlhttprequest title=XMLHTTPREQUEST>[XMLHTTPREQUEST]</a>, for instance) are difficult to reliably
+  detect, as is the increasingly common case in which users wish to authenticate
+  themselves using a <a data-link-type=dfn href=#federated-identity-provider title="federated identity provider">federated identity provider</a>. Allowing websites to
+  more directly interact with the user agent’s credential manager would allow
+  the credential manager to be more accurate on the one hand, and to assist
+  users with federated sign-in on the other.</p>
+
+<p>These use cases are explored in more detail in <a data-section="" href=#use-cases>§1.1 Use Cases</a> and in
+  <a href=../usecases/>Credential Management: Use Cases and Requirements</a>;
+  this specification attempts to address many of the requirements that document
+  outlines by defining a Credential Manager API which a website can use to
+  request <a data-link-type=dfn href=#credentials title=credentials>credentials</a> for a user, and to notify the user agent that the
+  user successfully signed in, failed to sign in, or signed out.</p>
+
+<p class=note role=note>Note: The API defined here is intentionally small and simple: it does not
+  intend to provide authentication in and of itself, but is limited to providing
+  an interface to the existing credential managers implemented by existing user
+  agents. That functionality is valuable <em>right now</em>, without significant
+  effort on the part of either vendors or authors. There’s certainly quite a bit
+  more which could be done, of course. See <a data-section="" href=#future-work>§10 Future Work</a> for some thoughts
+  we’ve punted for now, but which could be explored in future iterations of this
+  API.</p>
+
+  <section>
+    <h3 class="heading settled" data-level=1.1 id=use-cases><span class=secno>1.1. </span><span class=content>Use Cases</span><a class=self-link href=#use-cases></a></h3>
+
+<p>Modern user agents generally offer users the capability to save passwords
+    when signing into a website, and likewise offer the capability to fill those
+    passwords into sign-in forms fully- or semi-automatically when users return
+    to a website. From the perspective of a website, this behavior is completely
+    invisible: the website doesn’t know that passwords have been stored, and it
+    isn’t notified that passwords have been filled. This is both good and bad.
+    On the one hand, a user agent’s password manager works regardless of whether
+    or not a site cooperates, which is excellent for users. On the other, the
+    password managers' behaviors are a fragile and proprietary hodgepodge of
+    heuristics meant to detect and fill sign-in forms, password change forms,
+    and etc.</p>
+
+<p>A few problems with the status quo stand out as being particularly
+    problematic:</p>
+
+    <ul>
+      <li>
+        User agents have an incredibly difficult time helping users with
+        federated identity providers. While detecting a username/password
+        form submission is fairly straightforward, detecting sign-in via a
+        third-party is quite difficult to reliably do well. It would be nice
+        if a website could help the user agent understand the intent behind the
+        redirects associated with a typical federated sign-in action.
+      </li>
+      <li>
+        Likewise, user agents struggle to detect more esoteric sign-in
+        mechanisms than simple username/password forms. Authors increasingly
+        asynchronously sign users in via XMLHttpRequest or similar mechanisms
+        in order to improve the experience and take more control over the
+        presentation. This is good for users, but tough for user agents to
+        integrate into their password managers. It would be nice if a website
+        could help the user agent make sense of the sign-in mechanism they
+        choose to use.
+      </li>
+      <li>
+        While signing into a website with a username and password is fairly well
+        supported, creating a new account on a website is more or less left up
+        to the user. The user agent has a good deal of information which could
+        help the user create an account, of course: for instance, it knows
+        whether the user has stored passwords for federated identity providers
+        which the website might support, it could help the user fill in commonly
+        used elements like email addresses, and so on.
+      </li>
+      <li>
+        Finally, changing passwords is less well-suppported than it could be if
+        the website explicitly informed the user agent that credentials had
+        changed.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h3 class="heading settled" data-level=1.2 id=introduction-examples><span class=secno>1.2. </span><span class=content>Examples</span><a class=self-link href=#introduction-examples></a></h3>
+
+    <h4 class="heading settled" data-level=1.2.1 id=examples-local-signin><span class=secno>1.2.1. </span><span class=content>Local Sign-in</span><a class=self-link href=#examples-local-signin></a></h4>
+
+<p>A website that supports only username/password pairs can request
+    credentials, and use them in existing sign-in forms:</p>
+
+    <div class=example>
+      <pre>if (!navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>) {
+  // Sadness! Return early.
+  return;
+}
+
+navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a>.then(
+    function(credential) {
+      if (!credential) {
+        // The user either doesn’t have credentials for this site, or
+        // refused to share them. Insert some code here to show a basic
+        // login form (or, ideally, do nothing, since this API should
+        // really be progressive enhancement on top of an existing form).
+        return;
+      }
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "https://example.com/loginEndpoint");
+      xhr.onreadystatechange = function () {
+        if (this.readyState != this.DONE)
+          return;
+
+        var loginSucceeded = // Process response: if login succeeded, yay! If not, boo!;
+        if (loginSucceeded) {
+          navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn</a>(credential);
+          // Notify the user that signin succeeded! Do amazing, signed-in things!
+        } else {
+          navigator.credentials.<a data-link-type=idl href=#dom-credentialscontainer-notifyfailedsignin title=notifyFailedSignIn()>notifyFailedSignIn</a>(credential);
+          // Notify the user that signin failed, and fall back to the usual experience.
+        }
+      };
+
+      xhr.send(credential.<a class=idl-code data-link-type=attribute href=#dom-localcredential-formdata title=formData>formData</a>);
+    });
+</pre>
+    </div>
+
+    <h4 class="heading settled" data-level=1.2.2 id=examples-federated-signin><span class=secno>1.2.2. </span><span class=content>Federated Sign-in</span><a class=self-link href=#examples-federated-signin></a></h4>
+
+<p>A website that supports <a data-link-type=dfn href=#federated-identity-provider title="federated identity providers">federated identity providers</a> can request
+    credentials, and use them to kick off the sign-in flow for the user’s
+    chosen provider:</p>
+
+    <div class=example>
+      <pre>if (!navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>) {
+  // Sadness! Return early.
+  return;
+}
+
+navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request</a>({
+  "<a data-link-type=idl href=#dom-credentialrequestoptions-federations title=federations>federations</a>": [ "https://federation.com" ]
+}).then(
+    function(credential) {
+      if (!credential) {
+        // The user either doesn’t have credentials for this site, or
+        // refused to share them. Insert some code here to show a basic
+        // login form (or, ideally, do nothing, since this API should
+        // really be progressive enhancement on top of an existing form).
+        return;
+      }
+
+      if (credential instanceof <a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a>) {
+        switch (credential.<a data-link-type=idl href=#dom-federatedcredential-federation title=federation>federation</a>) {
+          // Do something specific for each supported federation.
+        }
+      } else {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "https://example.com/loginEndpoint");
+        xhr.onreadystatechange = // Success handler from first example.
+        xhr.send(credential.<a class=idl-code data-link-type=attribute href=#dom-localcredential-formdata title=formData>formData</a>);
+      }
+    });
+</pre>
+
+<p class=note role=note>Note: This API is focused on a sign-in workflow, but could potentially
+      be useful for federated <strong>sign-up</strong> flows as well.</p>
+    </div>
+
+    <h4 class="heading settled" data-level=1.2.3 id=examples-post-signin><span class=secno>1.2.3. </span><span class=content>Post-sign-in Confirmation</span><a class=self-link href=#examples-post-signin></a></h4>
+
+<p>To ensure that credentials are persisted correctly, it may be useful for a
+    website to tell the credential manager that sign-in succeeded.</p>
+
+    <div class=example>
+      After navigation, the website won’t (shouldn’t) have access to the
+      password, but can rely on the user agent to have retained a pending
+      credential:
+
+      <pre>if (navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>)
+  navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn</a>(navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-pending title=pending>pending</a>);
+</pre>
+    </div>
+
+    <div class=example>
+      If we haven’t navigated (perhaps sign-in happened via XMLHttpRequest
+      <a data-biblio-type=informative data-link-type=biblio href=#biblio-xmlhttprequest title=XMLHTTPREQUEST>[XMLHTTPREQUEST]</a>), then we can explain exactly which credentials were
+      used:
+
+      <pre>if (navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>) {
+  navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn</a>(
+    new <a data-link-type=idl href=#dom-localcredential title=LocalCredential>LocalCredential</a>("username", "hunter1")
+  );
+}
+</pre>
+    </div>
+
+    <div class=example>
+      If we’re using a <a data-link-type=dfn href=#federated-identity-provider title="federated identity provider">federated identity provider</a>:
+
+      <pre>if (navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>) {
+  navigator.<a data-link-type=idl href=#dom-navigator-credentials title=credentials>credentials</a>.<a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn</a>(
+    new <a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a>("username", "https://federation.com")
+  );
+}
+</pre>
+    </div>
+
+    <h4 class="heading settled" data-level=1.2.4 id=examples-sign-up><span class=secno>1.2.4. </span><span class=content>Sign-Up</span><a class=self-link href=#examples-sign-up></a></h4>
+
+<p>The "federated sign-in" mechanism can be reused for "sign-up" with no
+    modifications: if the user has a credential from a supported federated
+    identity provider, it could be offered to the user via the same request
+    mechanism.</p>
+
+    <h4 class="heading settled" data-level=1.2.5 id=examples-change-password><span class=secno>1.2.5. </span><span class=content>Change Password</span><a class=self-link href=#examples-change-password></a></h4>
+
+<p>The "Local Sign-In" mechanism can be reused for "password change" with no
+    modifications: if the user changes her credentials, the website can notify
+    the user agent that she’s successfully signed in with new credentials. The
+    user agent can then update the credentials it stores.</p>
+  </section>
+
+  <section>
+    <h3 class="heading settled" data-level=1.3 id=existing-solutions><span class=secno>1.3. </span><span class=content>
+      Haven’t we done this before? What about [<em>insert technology here</em>]?
+    </span><a class=self-link href=#existing-solutions></a></h3>
+
+    <h4 class="heading settled" data-level=1.3.1 id=existing-solutions-browserid><span class=secno>1.3.1. </span><span class=content>BrowserID/Persona</span><a class=self-link href=#existing-solutions-browserid></a></h4>
+
+<p>BrowserID is a proposal for an API which allows websites to request an
+    assertion of a user’s email address ownership. <a data-biblio-type=informative data-link-type=biblio href=#biblio-browserid title=BROWSERID>[BROWSERID]</a></p>
+
+<p>The API specified here does not attempt to assert the user’s identity
+    directly: it only provides a more direct interface to the user agent’s
+    <a data-link-type=dfn href=#credential-store title="credential store">credential store</a>. Assertions about identity would still rely on
+    <a data-link-type=dfn href=#federated-identity-provider title="federated identity provider">federated identity provider</a>’s particular SDKs and workflows.</p>
+
+<p>BrowserID is complementary to this API, and could be tacked onto the
+    <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code> flow at some point in the future. For example, a
+    user who chooses a <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code> whose origin supports
+    BrowserID could perform the authentication steps in the background by
+    passing the user’s email address and public key to the relevant
+    <a data-link-type=dfn href=#federated-identity-provider title="identity provider">identity provider</a>, and adding a new property to the
+    <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code> given back to the website which contains the
+    signed certificate asserting the user’s identity.</p>
+
+<p>This document doesn’t specify any of that behavior, but is designed with
+    it in mind: the immediate goal is to give websites more direct access to
+    the user agent’s existing credential manager, as federations are completely
+    unsupported at the moment. Generating assertions is an obvious next step.
+    See <a data-section="" href=#future-work>§10 Future Work</a> for other thoughts on the subject.</p>
+
+    <h4 class="heading settled" data-level=1.3.2 id=existing-solutions-webid><span class=secno>1.3.2. </span><span class=content>WebID</span><a class=self-link href=#existing-solutions-webid></a></h4>
+
+<p>TODO</p>
+  </section>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=2 id=terms><span class=secno>2. </span><span class=content>Key Concepts and Terminology</span><a class=self-link href=#terms></a></h2>
+
+  <h3 class="heading settled" data-level=2.1 id=terms-defined-here><span class=secno>2.1. </span><span class=content>Terms defined by this specification</span><a class=self-link href=#terms-defined-here></a></h3>
+  <dl>
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" id=credentials>Credentials<a class=self-link href=#credentials></a></dfn>
+    </dt>
+    <dd>
+      A user authenticates herself to an <a data-link-type=dfn href=#origin title=origin>origin</a> by submitting a set of
+      <strong>credentials</strong>. This typically consists of either a
+      username/password pair, or a pointer out to a <a data-link-type=dfn href=#federated-identity-provider title="federated identity provider">federated identity
+      provider</a> which will authenticate the user on her behalf.
+    </dd>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" id=credential-store>Credential Store<a class=self-link href=#credential-store></a></dfn>
+    </dt>
+    <dd>
+      A <strong>credential store</strong> is an opaque storage mechanism which
+      offers a user agent the ability to save, retrieve, and modify
+      <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> objects.
+
+<p>The implementation is vendor-specific, and the interface provided is not
+      exposed to the web.</p>
+    </dd>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" data-local-title=zeroclick id=zeroclick-credential>Zeroclick Credential<a class=self-link href=#zeroclick-credential></a></dfn>
+    </dt>
+    <dd>
+      A <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> is said to be <strong>zeroclick</strong> for an origin
+      if a user has chosen to allow it to be provided without further
+      interaction when <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> is called. Further discussion in
+      [[#user-mediated-zeroclickization"]].
+    </dd>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" data-local-title=pending id=pending-credential>Pending Credential<a class=self-link href=#pending-credential></a></dfn>
+    </dt>
+    <dd>
+      A <strong>pending credential</strong> is a <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> object created
+      automatically by the user agent when it believes that a user has
+      signed-into, signed-up for, or changed credential on a website. For
+      example, a pending credential may be created as a result of a successful
+      form submission which contained a text field and a password field.
+
+<p>Pending credentials are created in a vendor-specific way, using
+      vendor-specific heuristics. They are retained for a <a data-link-type=dfn href=https://html.spec.whatwg.org/#browsing-context title="browsing context">browsing
+      context</a>, and MAY be retained across navigations, even cross-origin
+      navigations (consider <code>accounts.example.com</code> redirecting to
+      <code>webmail.example.com</code> upon successful sign-in).</p>
+    </dd>
+
+    <dt>
+      <dfn data-dfn-type=dfn data-export="" data-local-title="IDP|identity provider|federation" id=federated-identity-provider>
+        Federated Identity Provider
+      <a class=self-link href=#federated-identity-provider></a></dfn>
+    </dt>
+    <dd>
+      A <strong>federated identity provider</strong> is an entity which a
+      website trusts to correctly authenticate a user, and which provides an
+      API for that purpose. OAuth2 <a data-biblio-type=informative data-link-type=biblio href=#biblio-rfc6749 title=RFC6749>[RFC6749]</a> is an example of such an API,
+      used by a number of providers.
+    </dd>
+  </dl>
+
+  <h3 class="heading settled" data-level=2.2 id=terms-defined-by-reference><span class=secno>2.2. </span><span class=content>Terms defined by reference</span><a class=self-link href=#terms-defined-by-reference></a></h3>
+  <dl>
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=origin>origin<a class=self-link href=#origin></a></dfn></dt>
+    <dd>
+      An origin defines the scope of authority or privilege under which a
+      resource operates. It is defined in detail in the Origin specification.
+      <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=RFC6454>[RFC6454]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-local-title="ASCII serialization" data-noexport="" id=ascii-serialization-of-an-origin>ASCII serialization of an origin<a class=self-link href=#ascii-serialization-of-an-origin></a></dfn></dt>
+    <dd>
+      This algorithm is defined in
+      <a href=http://tools.ietf.org/html/rfc6454#section-6.2>Section 6.2</a>
+      of the Origin specification. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6454 title=RFC6454>[RFC6454]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=insecure-origin>insecure origin<a class=self-link href=#insecure-origin></a></dfn></dt>
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=insecure-url>insecure URL<a class=self-link href=#insecure-url></a></dfn></dt>
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=unsecured-environment>unsecured environment<a class=self-link href=#unsecured-environment></a></dfn><dt>
+    <dd>
+      The terms <strong>insecure URL</strong>, <strong>insecure origin</strong>,
+      and <strong>unsecured environment</strong> are defined in
+      <a href=https://w3c.github.io/webappsec/specs/mixedcontent/#insecure-url>Section
+      2.2 of the Mixed Content specification</a>. <a data-biblio-type=normative data-link-type=biblio href=#biblio-mix title=MIX>[MIX]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=javascript-global-environment title="JavaScript global environment|global environment">JavaScript global environment<a class=self-link href=#javascript-global-environment></a></dfn></dt>
+    <dd>
+      This term is defined in <a data-link-spec=HTML5 data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">Section
+      2.2.2</a> of the HTML5 specification. <a data-biblio-type=normative data-link-type=biblio href=#biblio-html5 title=HTML5>[HTML5]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=fetch>fetch<a class=self-link href=#fetch></a></dfn></dt>
+    <dd>
+      "fetching" is the process by which a user agent requests resources, and
+      delivers responses. It is defined in detail in the Fetch living standard.
+      <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=request>request<a class=self-link href=#request></a></dfn></dt>
+    <dd>
+      These terms are defined in
+      <a href=http://fetch.spec.whatwg.org/#requests>Section 2.2</a> of the
+      Fetch living standard. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=response>response<a class=self-link href=#response></a></dfn></dt>
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=network-error>network error<a class=self-link href=#network-error></a></dfn></dt>
+    <dd>
+      These terms are defined in detail in
+      <a href=http://fetch.spec.whatwg.org/#responses>Section 2.3</a> of the
+      Fetch living standard. <a data-biblio-type=normative data-link-type=biblio href=#biblio-fetch title=FETCH>[FETCH]</a>
+    </dd>
+
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=registerable-domain>registerable domain<a class=self-link href=#registerable-domain></a></dfn></dt>
+    <dt><dfn data-dfn-type=dfn data-noexport="" id=public-suffix>public suffix<a class=self-link href=#public-suffix></a></dfn></dt>
+    <dd>
+      An <a data-link-type=dfn href=#origin title=origin>origin</a>’s <strong>public suffix</strong> is defined via the
+      <a href=https://publicsuffix.org/>Public Suffix List</a>, and represents
+      the portion of the domain that is controlled by a public or private
+      registry (e.g. the public suffix of <code>https://www.example.com/</code>
+      is ".com"). The <strong>registerable domain</strong> is the public suffix
+      plus one additional label: the registerable domain of
+      <code>https://www.example.com/</code> is "example.com". <a data-biblio-type=normative data-link-type=biblio href=#biblio-psl title=PSL>[PSL]</a>
+    </dd>
+  </dl>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=3 id=interfaces><span class=secno>3. </span><span class=content>Interfaces</span><a class=self-link href=#interfaces></a></h2>
+
+  <h3 class="heading settled" data-level=3.1 id=interfaces-credential-types><span class=secno>3.1. </span><span class=content>Credential Types</span><a class=self-link href=#interfaces-credential-types></a></h3>
+
+<p>We define two types of credentials: <dfn data-dfn-type=dfn data-noexport="" id=local-credentials>local credentials<a class=self-link href=#local-credentials></a></dfn>, consisting
+  of a username/password pair that can be used to sign directly into a site, and
+  <dfn data-dfn-type=dfn data-noexport="" id=remote-credentials>remote credentials<a class=self-link href=#remote-credentials></a></dfn>, consisting of a username/federation pair that
+  can kick off some federated sign-in process (via Facebook Login, Firefox
+  Accounts, etc):</p>
+
+  <h4 class="heading settled" data-level=3.1.1 id=interfaces-credential-types-credential><span class=secno>3.1.1. </span><span class=content><code>Credential</code></span><a class=self-link href=#interfaces-credential-types-credential></a></h4>
+  <pre class=idl>[NoInterfaceObject]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-credential>Credential<a class=self-link href=#dom-credential></a></dfn> {
+  readonly attribute DOMString <a class=idl-code data-global-name="Credential<interface>/id<attribute>" data-link-for=Credential data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-credential-id title=id>id</a>;
+  readonly attribute DOMString <a class=idl-code data-global-name="Credential<interface>/name<attribute>" data-link-for=Credential data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-credential-name title=name>name</a>;
+  readonly attribute DOMString <a class=idl-code data-global-name="Credential<interface>/avatarurl<attribute>" data-link-for=Credential data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-credential-avatarurl title=avatarURL>avatarURL</a>;
+};
+</pre>
+  <dl data-dfn-for=Credential>
+    <dt><dfn class=idl-code data-dfn-for=Credential data-dfn-type=attribute data-export="" id=dom-credential-id>id<a class=self-link href=#dom-credential-id></a></dfn></dt>
+    <dd>The credential’s identifier. This might be a username or email address, for instance.</dd>
+
+    <dt><dfn class=idl-code data-dfn-for=Credential data-dfn-type=attribute data-export="" id=dom-credential-name>name<a class=self-link href=#dom-credential-name></a></dfn></dt>
+    <dd>
+      A name associated with the credential, intended as a human-understandable
+      public name.
+    </dd>
+
+    <dt><dfn class=idl-code data-dfn-for=Credential data-dfn-type=attribute data-export="" id=dom-credential-avatarurl>avatarURL<a class=self-link href=#dom-credential-avatarurl></a></dfn></dt>
+    <dd>
+      A URL pointing to an avatar image for the user. This URL MUST NOT be an
+      <a data-link-type=dfn href=#insecure-url title="insecure URL">insecure URL</a>.
+
+<p class=issue id=issue-0d5bd732><a class=self-link href=#issue-0d5bd732></a>How do we make this responsive? Adopt <a data-biblio-type=informative data-link-type=biblio href=#biblio-manifest title=MANIFEST>[MANIFEST]</a>'s icon syntax?</p>
+    </dd>
+
+  </dl>
+
+<p>All <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> objects have internal slots named
+  <code><dfn data-dfn-type=dfn data-noexport="" id=origin0>[[origin]]<a class=self-link href=#origin0></a></dfn></code>, <code><dfn data-dfn-type=dfn data-noexport="" id=isfederation>[[isFederation]]<a class=self-link href=#isfederation></a></dfn></code>,
+  and <code><dfn data-dfn-type=dfn data-noexport="" id=iszeroclick>[[isZeroClick]]<a class=self-link href=#iszeroclick></a></dfn></code>, which store the
+  <a data-link-type=dfn href=#origin title=origin>origin</a> for which the credential was saved, whether or not that origin
+  is an <a data-link-type=dfn href=#federated-identity-provider title="identity provider">identity provider</a>, and whether the credential is
+  <a data-link-type=dfn href=#zeroclick-credential title=zeroclick>zeroclick</a>. These properties are not directly exposed to the web.</p>
+
+  <h4 class="heading settled" data-level=3.1.2 id=interfaces-credential-types-localcredential><span class=secno>3.1.2. </span><span class=content><code>LocalCredential</code></span><a class=self-link href=#interfaces-credential-types-localcredential></a></h4>
+  <pre class=idl>[Constructor(DOMString <dfn class=idl-code data-dfn-for=LocalCredential/LocalCredential() data-dfn-type=argument data-export="" data-global-name="LocalCredential<interface>/LocalCredential()<method>/id<argument>" id=dom-localcredential-localcredential-id>id<a class=self-link href=#dom-localcredential-localcredential-id></a></dfn>, DOMString <dfn class=idl-code data-dfn-for=LocalCredential/LocalCredential() data-dfn-type=argument data-export="" data-global-name="LocalCredential<interface>/LocalCredential()<method>/password<argument>" id=dom-localcredential-localcredential-password>password<a class=self-link href=#dom-localcredential-localcredential-password></a></dfn>, optional DOMString <dfn class=idl-code data-dfn-for=LocalCredential/LocalCredential() data-dfn-type=argument data-export="" data-global-name="LocalCredential<interface>/LocalCredential()<method>/name<argument>" id=dom-localcredential-localcredential-name>name<a class=self-link href=#dom-localcredential-localcredential-name></a></dfn>, optional DOMString <dfn class=idl-code data-dfn-for=LocalCredential/LocalCredential() data-dfn-type=argument data-export="" data-global-name="LocalCredential<interface>/LocalCredential()<method>/avatarurl<argument>" id=dom-localcredential-localcredential-avatarurl>avatarURL<a class=self-link href=#dom-localcredential-localcredential-avatarurl></a></dfn>)]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-localcredential>LocalCredential<a class=self-link href=#dom-localcredential></a></dfn> : <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> {
+  readonly attribute <a data-link-type=idl-name href=https://xhr.spec.whatwg.org/#interface-formdata title=FormData>FormData</a> <a class=idl-code data-global-name="LocalCredential<interface>/formdata<attribute>" data-link-for=LocalCredential data-link-type=attribute data-readonly="" data-type="FormData " href=#dom-localcredential-formdata title=formData>formData</a>;
+};
+</pre>
+  <dl data-dfn-for=LocalCredential>
+    <dt><dfn class=idl-code data-dfn-for=LocalCredential data-dfn-type=attribute data-export="" id=dom-localcredential-formdata>formData<a class=self-link href=#dom-localcredential-formdata></a></dfn></dt>
+    <dd>An <a href=http://mikewest.github.io/credentialmanagement/writeonly/#opaque-formdata>opaque FormData object</a>,
+    containing two entries: one named <code>username</code>, the other named
+    <code>password</code>.</dd>
+  </dl>
+
+<p>All <code class=idl><a data-link-type=idl href=#dom-localcredential title=LocalCredential>LocalCredential</a></code> objects have an internal slot named <code><dfn data-dfn-type=dfn data-noexport="" id=password>[[password]]<a class=self-link href=#password></a></dfn></code>
+  which stores the credential’s password. This property is not directly exposed
+  to the web, but used to construct the <a class=idl-code data-link-type=attribute href=#dom-localcredential-formdata title=formData>formData</a> property that
+  is exposed to the web.</p>
+
+  <h4 class="heading settled" data-level=3.1.3 id=interfaces-credential-types-federatedcredential><span class=secno>3.1.3. </span><span class=content><code>FederatedCredential</code></span><a class=self-link href=#interfaces-credential-types-federatedcredential></a></h4>
+  <pre class=idl>[Constructor(DOMString <dfn class=idl-code data-dfn-for=FederatedCredential/FederatedCredential() data-dfn-type=argument data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential()<method>/id<argument>" id=dom-federatedcredential-federatedcredential-id>id<a class=self-link href=#dom-federatedcredential-federatedcredential-id></a></dfn>, DOMString <dfn class=idl-code data-dfn-for=FederatedCredential/FederatedCredential() data-dfn-type=argument data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential()<method>/federation<argument>" id=dom-federatedcredential-federatedcredential-federation>federation<a class=self-link href=#dom-federatedcredential-federatedcredential-federation></a></dfn>, optional DOMString <dfn class=idl-code data-dfn-for=FederatedCredential/FederatedCredential() data-dfn-type=argument data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential()<method>/name<argument>" id=dom-federatedcredential-federatedcredential-name>name<a class=self-link href=#dom-federatedcredential-federatedcredential-name></a></dfn>, optional DOMString <dfn class=idl-code data-dfn-for=FederatedCredential/FederatedCredential() data-dfn-type=argument data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential()<method>/avatarurl<argument>" id=dom-federatedcredential-federatedcredential-avatarurl>avatarURL<a class=self-link href=#dom-federatedcredential-federatedcredential-avatarurl></a></dfn>)]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-federatedcredential>FederatedCredential<a class=self-link href=#dom-federatedcredential></a></dfn> : <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> {
+  readonly attribute DOMString <a class=idl-code data-global-name="FederatedCredential<interface>/federation<attribute>" data-link-for=FederatedCredential data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-federatedcredential-federation title=federation>federation</a>;
+};
+</pre>
+  <dl data-dfn-for=FederatedCredential>
+    <dt><dfn class=idl-code data-dfn-for=FederatedCredential data-dfn-type=attribute data-export="" id=dom-federatedcredential-federation>federation<a class=self-link href=#dom-federatedcredential-federation></a></dfn></dt>
+    <dd>
+      The credential’s federation. For details regarding valid formats, see
+      <a data-section="" href=#identifying-federations>§4.2 Identifying Federations</a>
+    </dd>
+  </dl>
+
+  <h4 class="heading settled" data-level=3.1.4 id=interfaces-credential-types-pendingcredential><span class=secno>3.1.4. </span><span class=content><code>PendingCredential</code></span><a class=self-link href=#interfaces-credential-types-pendingcredential></a></h4>
+
+<p>A <code class=idl><a data-link-type=idl href=#dom-pendingcredential title=PendingCredential>PendingCredential</a></code> has no properties, and acts as a placeholder for the
+  vendor-specific process of transiently holding onto credentials after a form
+  submission causes navigation. If such a credential has been stored, then
+  <code>navigator.credentials.pending</code> will be a <code class=idl><a data-link-type=idl href=#dom-pendingcredential title=PendingCredential>PendingCredential</a></code>
+  object. If not, it will be <code>undefined</code>. The <code class=idl><a data-link-type=idl href=#dom-pendingcredential title=PendingCredential>PendingCredential</a></code>
+  may be passed to <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn()</a></code> or <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-notifyfailedsignin title=notifyFailedSignIn()>notifyFailedSignIn()</a></code> in order
+  to clearly express the site’s intentions to the user agent. See
+  <a data-section="" href=#examples-post-signin>§1.2.3 Post-sign-in Confirmation</a> for an example.</p>
+
+  <pre class=idl>[NoInterfaceObject]
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-pendingcredential>PendingCredential<a class=self-link href=#dom-pendingcredential></a></dfn> : <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> {
+};
+</pre>
+
+  <h3 class="heading settled" data-level=3.2 id=interfaces-credential-manager><span class=secno>3.2. </span><span class=content>Credential Manager</span><a class=self-link href=#interfaces-credential-manager></a></h3>
+
+<p>The credential manager hangs off of the <code class=idl><a data-link-type=idl href=https://html.spec.whatwg.org/#dom-navigator title=navigator>navigator</a></code> object, and exposes
+  methods to request credentials, and to notify the user agent when interesting
+  events occur: successful sign in, failed sign in, and sign out.</p>
+
+  <pre class=idl>partial interface <a class=idl-code data-global-name="" data-link-type=interface href=https://html.spec.whatwg.org/#navigator title=Navigator>Navigator</a> {
+  readonly attribute <a data-link-type=idl-name href=#dom-credentialscontainer title=CredentialsContainer>CredentialsContainer</a> <dfn class=idl-code data-dfn-for=Navigator data-dfn-type=attribute data-export="" data-global-name="Navigator<interface>/credentials<attribute>" data-readonly="" data-type="CredentialsContainer " id=dom-navigator-credentials>credentials<a class=self-link href=#dom-navigator-credentials></a></dfn>;
+};
+
+interface <dfn class=idl-code data-dfn-type=interface data-export="" data-global-name="" id=dom-credentialscontainer>CredentialsContainer<a class=self-link href=#dom-credentialscontainer></a></dfn> {
+  Promise&lt;<a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a>?&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/request()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-request title=request()>request</a>(optional <a data-link-type=idl-name href=#dictdef-credentialrequestoptions title=CredentialRequestOptions>CredentialRequestOptions</a> <dfn class=idl-code data-dfn-for=CredentialsContainer/request() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/request()<method>/options<argument>" id=dom-credentialscontainer-request-options>options<a class=self-link href=#dom-credentialscontainer-request-options></a></dfn>);
+  Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifysignedin()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn</a>(optional <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> <dfn class=idl-code data-dfn-for=CredentialsContainer/notifySignedIn() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/notifySignedIn()<method>/credential<argument>" id=dom-credentialscontainer-notifysignedin-credential>credential<a class=self-link href=#dom-credentialscontainer-notifysignedin-credential></a></dfn>);
+  Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifyfailedsignin()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifyfailedsignin title=notifyFailedSignIn()>notifyFailedSignIn</a>(optional <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> <dfn class=idl-code data-dfn-for=CredentialsContainer/notifyFailedSignIn() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/notifyFailedSignIn()<method>/credential<argument>" id=dom-credentialscontainer-notifyfailedsignin-credential>credential<a class=self-link href=#dom-credentialscontainer-notifyfailedsignin-credential></a></dfn>);
+  Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifysignedout()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifysignedout title=notifySignedOut()>notifySignedOut</a>();
+
+  readonly attribute <a data-link-type=idl-name href=#dom-pendingcredential title=PendingCredential>PendingCredential</a>? <a class=idl-code data-global-name="CredentialsContainer<interface>/pending<attribute>" data-link-for=CredentialsContainer data-link-type=attribute data-readonly="" data-type="PendingCredential? " href=#dom-credentialscontainer-pending title=pending>pending</a>;
+};
+</pre>
+  <dl data-dfn-for=CredentialsContainer>
+    <dt><dfn class=idl-code data-dfn-for=CredentialsContainer data-dfn-type=method data-export="" id=dom-credentialscontainer-request>request()<a class=self-link href=#dom-credentialscontainer-request></a></dfn></dt>
+    <dd>
+      Request a credential from the credential manager. The user agent MUST
+      execute the algorithm defined in <a data-section="" href=#request-credential>§5.1 
+    Request a Credential with options
+  </a> with
+      <var>options</var> as an argument.
+    </dd>
+    <dt><dfn class=idl-code data-dfn-for=CredentialsContainer data-dfn-type=method data-export="" id=dom-credentialscontainer-notifysignedin>notifySignedIn()<a class=self-link href=#dom-credentialscontainer-notifysignedin></a></dfn></dt>
+    <dd>
+      Notify the credential manager that the user has successfully signed-in
+      using a credential. The user agent MUST execute the algorithm defined
+      in <a data-section="" href=#save-credential>§5.3 
+    Save credential
+  </a> with <var>credential</var> as an argument.
+    </dd>
+    <dt><dfn class=idl-code data-dfn-for=CredentialsContainer data-dfn-type=method data-export="" id=dom-credentialscontainer-notifyfailedsignin>notifyFailedSignIn()<a class=self-link href=#dom-credentialscontainer-notifyfailedsignin></a></dfn></dt>
+    <dd>
+      Notify the credential manager that the user has failed to sign-in
+      using a credential. The user agent MUST execute the algorithm defined
+      in #TODO with <var>credential</var> as an argument.
+    </dd>
+    <dt><dfn class=idl-code data-dfn-for=CredentialsContainer data-dfn-type=method data-export="" id=dom-credentialscontainer-notifysignedout>notifySignedOut()<a class=self-link href=#dom-credentialscontainer-notifysignedout></a></dfn></dt>
+    <dd>
+      Notify the credential manager that the user is signing out. The user
+      agent MUST execute the algorithm defined in <a data-section="" href=#dezeroclickize-origin>§5.5 
+    Dezeroclickize credentials for origin
+  </a>
+      with the <a data-link-type=dfn href=#origin title=origin>origin</a> of the <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript global environment</a> in
+      which this method is called.
+    </dd>
+    <dt><dfn class=idl-code data-dfn-for=CredentialsContainer data-dfn-type=attribute data-export="" id=dom-credentialscontainer-pending>pending<a class=self-link href=#dom-credentialscontainer-pending></a></dfn></dt>
+    <dd>
+      If the user agent has a <a data-link-type=dfn href=#pending-credential title="pending credential">pending credential</a> for the current page,
+      this attribute will hold a <code class=idl><a data-link-type=idl href=#dom-pendingcredential title=PendingCredential>PendingCredential</a></code> object which may be
+      passed to <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn()</a></code> or <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-notifyfailedsignin title=notifyFailedSignIn()>notifyFailedSignIn()</a></code>. If not, this
+      attribute will be <code>undefined</code>.
+    </dd>
+  </dl>
+
+<p class=issue id=issue-1a314ee6><a class=self-link href=#issue-1a314ee6></a>We should support explicit sign-up via <code class=idl><a data-link-type=idl href=#dom-localcredential title=LocalCredential>LocalCredential</a></code>s with
+  generated passwords. Perhaps something similar to iOS8’s
+  <code>SecCreateSharedWebCredentialPassword</code>.</p>
+
+<p class=issue id=issue-6cfbbbbc><a class=self-link href=#issue-6cfbbbbc></a>Should we add <code>notifyChange(optional Credential credential)</code>?
+  The functionality is currently wrapped up in <a data-section="" href=#save-credential>§5.3 
+    Save credential
+  </a>, but could
+  be trivially pushed out into a separate API if that makes things more clear.</p>
+
+  <h3 class="heading settled" data-level=3.3 id=interfaces-request-options><span class=secno>3.3. </span><span class=content>Request Options</span><a class=self-link href=#interfaces-request-options></a></h3>
+
+  <pre class=idl>dictionary <dfn class=idl-code data-dfn-type=dictionary data-export="" data-global-name="" id=dictdef-credentialrequestoptions>CredentialRequestOptions<a class=self-link href=#dictdef-credentialrequestoptions></a></dfn> {
+  boolean <dfn class=idl-code data-default=false data-dfn-for=CredentialRequestOptions data-dfn-type=dict-member data-export="" data-global-name="CredentialRequestOptions<dictionary>/zeroclickonly<dict-member>" data-type="boolean " id=dom-credentialrequestoptions-zeroclickonly>zeroClickOnly<a class=self-link href=#dom-credentialrequestoptions-zeroclickonly></a></dfn> = false;
+  sequence&lt;DOMString&gt; <dfn class=idl-code data-dfn-for=CredentialRequestOptions data-dfn-type=dict-member data-export="" data-global-name="CredentialRequestOptions<dictionary>/federations<dict-member>" data-type="sequence<DOMString> " id=dom-credentialrequestoptions-federations>federations<a class=self-link href=#dom-credentialrequestoptions-federations></a></dfn>;
+};
+</pre>
+  <dl data-dfn-for=CredentialRequestOptions>
+    <dt><dfn class=idl-code data-dfn-for=CredentialRequestOptions data-dfn-type=attribute data-export="" id=dom-credentialrequestoptions-zeroclickonly0>zeroClickOnly<a class=self-link href=#dom-credentialrequestoptions-zeroclickonly0></a></dfn></dt>
+    <dd>
+      If <code>true</code>, the user agent will only attempt to provide a
+      <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> without user interaction: if the user has explicitly
+      opted-into always giving a particular site access to a particular set of
+      credentials, they will be provided. If not, the promise will resolve with
+      <code>undefined</code>. For processing details, see the algorithm defined
+      in <a data-section="" href=#request-credential>§5.1 
+    Request a Credential with options
+  </a>.
+    </dd>
+    <dt><dfn class=idl-code data-dfn-for=CredentialRequestOptions data-dfn-type=attribute data-export="" id=dom-credentialrequestoptions-federations0>federations<a class=self-link href=#dom-credentialrequestoptions-federations0></a></dfn></dt>
+    <dd>
+      An array of federation identifiers. For details regarding valid formats
+      see <a data-section="" href=#identifying-federations>§4.2 Identifying Federations</a>
+    </dd>
+  </dl>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=4 id=federations><span class=secno>4. </span><span class=content>Federated Identity Providers</span><a class=self-link href=#federations></a></h2>
+
+<p>It would be useful indeed for a user agent to be able to identify which of the
+  credentials it has stored for a user are tied to an <a data-link-type=dfn href=#federated-identity-provider title="identity provider">identity provider</a>.
+  If such identification is possible, then a user who has stored credentials
+  for (for example) Facebook might be able to reuse those credentials when
+  attempting to sign into sites that support Facebook Login.</p>
+
+<p>To this end, <a data-link-type=dfn href=#federated-identity-provider title="federated identity providers">federated identity providers</a> SHOULD declare themselves
+  as such by placing a <a data-link-type=dfn href=#identity-provider-manifest0 title=manifest>manifest</a> on the <a data-link-type=dfn href=#origin title=origin>origin</a> used to sign into
+  the provider.</p>
+
+  <h3 class="heading settled" data-level=4.1 id=identity-provider-manifest><span class=secno>4.1. </span><span class=content>Identity Provider Manifests</span><a class=self-link href=#identity-provider-manifest></a></h3>
+
+<p>An <dfn data-dfn-type=dfn data-local-title=manifest data-noexport="" id=identity-provider-manifest0>identity provider manifest<a class=self-link href=#identity-provider-manifest0></a></dfn> identifies an
+  <a data-link-type=dfn href=#origin title=origin>origin</a> as belonging to a <a data-link-type=dfn href=#federated-identity-provider title="federated identity provider">federated identity provider</a>, and
+  provides metadata that may be useful for user agents or other entities that
+  wish to help users authenticate themselves via a third-party.</p>
+
+<p><a data-link-type=dfn href=#federated-identity-provider title="Federated identity providers">Federated identity providers</a> SHOULD declare themselves as such by
+  placing a <a data-link-type=dfn href=#identity-provider-manifest0 title=manifest>manifest</a> at the following "well-known" location at the
+  <a data-link-type=dfn href=#origin title=origin>origin</a> used to sign into the provider: <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc5785 title=RFC5785>[RFC5785]</a></p>
+
+  <pre>/.well-known/identity-provider.manifest
+</pre>
+
+<p class=issue id=issue-18b06374><a class=self-link href=#issue-18b06374></a>Register this URL as defined in
+  <a href=http://tools.ietf.org/html/rfc5785.html#section-5.1>section 5.1 of
+  the RFC</a>, if we decide that this is a sane route to go down.</p>
+
+<p>The manifest MUST be served with a content type of
+  <code>application/identity-provider-manifest</code>.</p>
+
+<p class=issue id=issue-654bf5f0><a class=self-link href=#issue-654bf5f0></a>Register the content type somewhere.</p>
+
+<p>When the credential manager stores a credential, it MAY asynchronously attempt
+  to fetch this URL from the <a data-link-type=dfn href=#origin title=origin>origin</a> tied to the credential. If the
+  attempt is successful, the credential could be flagged as being an identity
+  provider. For detailed processing instructions, see the algorithm defined in
+  <a data-section="" href=#save-credential>§5.3 
+    Save credential
+  </a>.</p>
+
+  <div class=example>
+    Users sign into Facebook at <code>https://www.facebook.com/login/</code>, and
+    into Firefox at <code>https://accounts.firefox.com/signup</code>. To identify
+    themselves as <a data-link-type=dfn href=#federated-identity-provider title="identity providers">identity providers</a>, Facebook would place a manifest at
+    <code>https://www.facebook.com/.well-known/identity-provider.manifest</code>
+    and Firefox at
+    <code>https://accounts.firefox.com/.well-known/identity-provider.manifest</code>.
+  </div>
+
+  <h4 class="heading settled" data-level=4.1.1 id=identity-provider-manifest-contents><span class=secno>4.1.1. </span><span class=content>Manifest Contents</span><a class=self-link href=#identity-provider-manifest-contents></a></h4>
+
+<p>The manifest is a JSON document that contains metadata concerning a specific
+  identity provider. It supports the following two member properties as defined
+  in <a data-biblio-type=normative data-link-type=biblio href=#biblio-manifest title=MANIFEST>[MANIFEST]</a>:</p>
+
+  <ul>
+    <li><code><a href=http://w3c.github.io/manifest/#name-member>name</a></code></li>
+    <li><code><a href=http://w3c.github.io/manifest/#icons-member>icons</a></code></li>
+  </ul>
+
+<p>User agents MAY use these properties when rendering the <a data-link-type=dfn href=#credential-chooser title="credential chooser">credential
+  chooser</a> described in <a data-section="" href=#user-mediated-selection>§6.3 Credential Selection</a>. For example, the
+  <a data-link-type=dfn href=#federated-identity-provider title=federation>federation</a>’s icon may be used to brand <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code> items
+  in the list in order to make their affiliations more apparent to users.</p>
+
+<p><em>The remainder of this section is non-normative.</em></p>
+
+<p>Currently, there’s not a lot of value in actually putting any content into the
+  manifest. However, there are a number of things that the user agent could do on
+  the user’s behalf in The Future™:</p>
+
+  <ul>
+    <li>
+      Provide some trusted UI for the authentication process; this might include
+      a logo, brand-color, or name provided by the IDP.
+    </li>
+    <li>
+      Hook the IDP up to an authenticator extension in the browser, or an app
+      installed locally on Android. Could be done via a public key in the
+      manifest.
+    </li>
+    <li>
+      Hard-code the authentication dance for some well-known, well-used
+      providers. You could imagine built-in support for basic OAuth2, for
+      instance, and hard-coded support for Facebook’s, Firefox’s, Google’s,
+      etc. variant.
+    </li>
+    <li>
+      Indicate endpoints from which additional data about a user can be
+      retrieved (name, avatar, etc).
+
+<p class=issue id=issue-89c8f370><a class=self-link href=#issue-89c8f370></a>Spec this out in more detail. Perhaps make use of OpenID Connect?</p>
+    </li>
+  </ul>
+
+<p class=issue id=issue-8674200b><a class=self-link href=#issue-8674200b></a>What can we do to provide trusted UI for Facebook without at the same
+  time enabling evil.com to present _the same_ UI?</p>
+
+<p class=issue id=issue-725e9f8f><a class=self-link href=#issue-725e9f8f></a>Other stuff?</p>
+
+  <h3 class="heading settled" data-level=4.2 id=identifying-federations><span class=secno>4.2. </span><span class=content>Identifying Federations</span><a class=self-link href=#identifying-federations></a></h3>
+
+<p>Every site should use the same identifier when referring to a specific
+  <a data-link-type=dfn href=#federated-identity-provider title="federated identity provider">federated identity provider</a>. For example,
+  <a href=https://developers.facebook.com/docs/facebook-login/v2.0>Facebook Login</a>
+  shouldn’t be "Facebook" and "Facebook Login" and "FB" and "FBL" and
+  "Facebook.com" and so on. It should have a canonical identifier which everyone
+  can make use of, as consistent identification makes it possible for user
+  agents to be helpful.</p>
+
+<p>For consistency, federations passed into the APIs defined in this document
+  (e.g. <code class=idl><a data-link-type=idl href=#dom-credentialscontainer title=CredentialsContainer>CredentialsContainer</a></code>'s <code class=idl><a data-link-type=idl href=#dom-credentialrequestoptions-federations title=federations>federations</a></code> array, or
+  <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code>'s <code class=idl><a data-link-type=idl href=#dom-federatedcredential-federation title=federation>federation</a></code> property) MUST be identified by the
+  <a data-link-type=dfn href=#ascii-serialization-of-an-origin title="ASCII serialization">ASCII serialization</a> of the origin the provider uses for sign in. That
+  is, Facebook would be represented by <code>https://www.facebook.com</code>
+  and Google by <code>https://accounts.google.com</code>.</p>
+
+<p>The ASCII serialization of an origin does <em>not</em> include a trailing
+  U+002F SOLIDUS ("<code>/</code>"), but user agents SHOULD accept them
+  silently: <code>https://accounts.google.com/</code> is clearly intended to
+  be the same as <code>https://accounts.google.com</code>.</p>
+</section>
+
+
+
+<section>
+  <h2 class="heading settled" data-level=5 id=algorithms><span class=secno>5. </span><span class=content>Algorithms</span><a class=self-link href=#algorithms></a></h2>
+
+  <h3 class="heading settled" data-level=5.1 id=request-credential><span class=secno>5.1. </span><span class=content>
+    Request a <code>Credential</code> with <var>options</var>
+  </span><a class=self-link href=#request-credential></a></h3>
+
+<p>This algorithm accepts a <code class=idl><a data-link-type=idl href=#dictdef-credentialrequestoptions title=CredentialRequestOptions>CredentialRequestOptions</a></code> <var>options</var>, and
+  returns a <code>Promise</code> which resolves with either a single
+  <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> object if one could be obtained, or with <code>undefined</code>
+  if no credential was available (either because the user refused to share a
+  credential with this page, or because no credentials were available, period).</p>
+
+<p>If called from an <a data-link-type=dfn href=#unsecured-environment title="unsecured environment">unsecured environment</a>, or from somewhere other than
+  a <a data-link-type=dfn href=https://html.spec.whatwg.org/#top-level-browsing-context title="top-level browsing context">top-level browsing context</a>, the <code>Promise</code> will be rejected
+  with a <code>SecurityError</code>.</p>
+
+  <ol>
+    <li>
+      Let <var>promise</var> be a newly created <code>Promise</code> object.
+    </li>
+    <li>
+      Return <var>promise</var>, and execute the remaining steps asynchronously.
+    </li>
+    <li>
+      Let <var>environment</var> be the <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript global environment</a> in
+      which which this algorithm is executing.
+    </li>
+    <li>
+      If <var>environment</var> is not a <a data-link-type=dfn href=https://html.spec.whatwg.org/#top-level-browsing-context title="top-level browsing context">top-level browsing context</a>,
+      or <var>environment</var> is an <a data-link-type=dfn href=#unsecured-environment title="unsecured environment">unsecured environment</a>, then reject
+      <var>promise</var> with a <code>SecurityError</code>
+      <strong>and</strong> terminate this algorithm.
+    </li>
+    <li>
+      Let <var>origin</var> be the <a data-link-type=dfn href=#origin title=origin>origin</a> of the <var>environment</var>.
+    </li>
+    <li>
+      Let <var>credential</var> be the result of executing the algorithm
+      defined in <a data-section="" href=#request-zeroclick-credential>§5.2 
+    Request the zeroclick Credential for origin with
+    options.
+  </a>.
+    </li>
+    <li>
+      If <var>credential</var> is not <code>null</code>, resolve
+      <var>promise</var> with <var>credential</var> and terminate this
+      algorithm.
+    </li>
+    <li>
+      If <var>options</var> is <code>undefined</code>, or if <code>options</code>'
+      <code class=idl><a data-link-type=idl href=#dom-credentialrequestoptions-zeroclickonly title=zeroClickOnly>zeroClickOnly</a></code> property is <code>false</code>, then:
+
+      <ol>
+        <li>
+          Ask the user which <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> to share.
+
+<p class=note role=note>Note: This behavior is vendor-specific. Guidelines for user agent
+          behavior are presented in <a data-section="" href=#user-mediation>§6 User Mediation</a>.</p>
+        </li>
+        <li>
+          Let <var>credential</var> be the <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> the user chose, or
+          <code>null</code> if the user chose not to share a credential with
+          <var>origin</var>.
+        </li>
+        <li>
+          If <var>credential</var> is not <code>null</code>:
+
+          <ol>
+            <li>
+              Let <var>data</var> be a new <a class=idl-code data-link-type=interface href=https://xhr.spec.whatwg.org/#interface-formdata title=FormData>FormData</a>
+              object.
+            </li>
+            <li>
+              Let <var>username entry</var> be the result of
+              <a href=https://xhr.spec.whatwg.org/#create-an-entry>creating
+              an entry</a> named "username" with a value of
+              <var>credential</var>’s <code class=idl><a data-link-type=idl href=#dom-credential-id title=id>id</a></code> attribute.
+            </li>
+            <li>
+              Let <var>password entry</var> be the result of
+              <a href=https://xhr.spec.whatwg.org/#create-an-entry>creating
+              an entry</a> named "password" with a value of
+              <var>credential</var>’s <code><a data-link-type=dfn href=#password title=[[password]]>[[password]]</a></code> slot.
+            </li>
+            <li>
+              Append <var>username entry</var> and <var>password entry</var>
+              to <var>data</var>.
+            </li>
+            <li>
+              Set <var>data</var>’s
+              <a href=http://mikewest.github.io/credentialmanagement/writeonly/#opaque-flag>opaque
+              flag</a> to <code>true</code>.
+            </li>
+            <li>
+              Set <var>credential</var>’s <a class=idl-code data-link-type=attribute href=#dom-localcredential-formdata title=formData>formData</a> attribute to
+              <var>data</var>.
+            </li>
+            <li>
+              Resolve <var>promise</var> with <var>credential</var> and
+              terminate this algorithm.
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li>
+      No <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> is available: terminate this algorithm by resolving
+      <var>promise</var>.
+    </li>
+  </ol>
+
+  <h3 class="heading settled" data-level=5.2 id=request-zeroclick-credential><span class=secno>5.2. </span><span class=content>
+    Request the zeroclick <code>Credential</code> for <var>origin</var> with
+    <var>options</var>.
+  </span><a class=self-link href=#request-zeroclick-credential></a></h3>
+
+<p>This algorithm accepts an <a data-link-type=dfn href=#origin title=origin>origin</a> <var>origin</var> and a
+  <code class=idl><a data-link-type=idl href=#dictdef-credentialrequestoptions title=CredentialRequestOptions>CredentialRequestOptions</a></code> <var>options</var>, and returns either a single
+  <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> object if one exists, or <code>null</code> if not.</p>
+
+  <ol>
+    <li>
+      Let <var>credential</var> be the <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> in the <a data-link-type=dfn href=#credential-store title="credential store">credential
+      store</a> whose <code><a data-link-type=dfn href=#origin0 title=[[origin]]>[[origin]]</a></code> slot is <var>origin</var>
+      and whose <code><a data-link-type=dfn href=#iszeroclick title=[[isZeroClick]]>[[isZeroClick]]</a></code> slot is <code>true</code>,
+      or <code>null</code> if no such object exists.
+
+<p class=note role=note>Note: This is an exact match, not a <a data-link-type=dfn href=#registerable-domain title="registerable domain">registerable domain</a> match.
+      See <a data-section="" href=#security-cross-origin-leakage>§7.1 Cross-origin Credential Leakage</a> for details as to why.</p>
+    </li>
+    <li>
+      If <var>credential</var> is a <code>FederatedCredential</code>, and
+      the value of <var>credential</var>’s <code class=idl><a data-link-type=idl href=#dom-federatedcredential-federation title=federation>federation</a></code> attribute does not
+      appear in <var>options</var>' <code class=idl><a data-link-type=idl href=#dom-credentialrequestoptions-federations title=federations>federations</a></code> array, return
+      <code>null</code>.
+    </li>
+    <li>
+      Return <var>credential</var>.
+    </li>
+  </ol>
+
+<p class=note role=note>Note: If a user agent implements some sort of "private browsing" mode, we
+  recommend that this algorithm always return <code>null</code> when the user
+  has enabled private browsing.</p>
+
+  <h3 class="heading settled" data-level=5.3 id=save-credential><span class=secno>5.3. </span><span class=content>
+    Save <var>credential</var>
+  </span><a class=self-link href=#save-credential></a></h3>
+
+<p>This algorithm accepts a <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> <var>credential</var>, and hands it
+  to the internal credential manager for processing. It returns a
+  <code>Promise</code> which resolves with no arguments once credential is
+  successfully persisted to the credential manager, or when the user rejects
+  storage:</p>
+
+  <ol>
+    <li>
+      Let <var>promise</var> be a newly created <code>Promise</code> object.
+    </li>
+    <li>
+      Return <var>promise</var>, and execute the remaining steps asynchronously.
+    </li>
+    <li>
+      Let <var>environment</var> be the <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript global environment</a> in
+      which which this algorithm is executing.
+    </li>
+    <li>
+      If <var>environment</var> is not a <a data-link-type=dfn href=https://html.spec.whatwg.org/#top-level-browsing-context title="top-level browsing context">top-level browsing context</a>,
+      or <var>environment</var> is an <a data-link-type=dfn href=#unsecured-environment title="unsecured environment">unsecured environment</a>, then reject
+      <var>promise</var> with a <code>SecurityError</code>
+      <strong>and</strong> terminate this algorithm.
+    </li>
+    <li>
+      Let <var>origin</var> be the <a data-link-type=dfn href=#origin title=origin>origin</a> of the <var>environment</var>.
+    </li>
+    <li>
+      If <var>credential</var> is a <code class=idl><a data-link-type=idl href=#dom-pendingcredential title=PendingCredential>PendingCredential</a></code>:
+
+      <ol>
+        <li>
+          If the user agent has stored a <a data-link-type=dfn href=#pending-credential title="pending credential">pending credential</a>, then set
+          <var>credential</var> to that <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code>.
+        </li>
+        <li>
+          Otherwise, reject <var>Promise</var> with
+          <code>InvalidStateError</code> and terminate this algorithm.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Set <var>credential</var>’s <code><a data-link-type=dfn href=#isfederation title=[[isFederation]]>[[isFederation]]</a></code>slot
+      to <code>false</code>.
+    </li>
+    <li>
+      Set <var>credential</var>’s <code><a data-link-type=dfn href=#iszeroclick title=[[isZeroClick]]>[[isZeroClick]]</a></code> slot
+      to <code>false</code>.
+    </li>
+    <li>
+      Set <var>credential</var>’s <code><a data-link-type=dfn href=#origin0 title=[[origin]]>[[origin]]</a></code> slot
+      to <var>origin</var>.
+    </li>
+    <li>
+      If <var>credential</var>’s <code class=idl><a data-link-type=idl href=#dom-credential-avatarurl title=avatarURL>avatarURL</a></code> is an <a data-link-type=dfn href=#insecure-url title="insecure URL">insecure URL</a>,
+      reject <var>promise</var> with a <code>SecurityError</code> and terminate
+      this algorithm.
+    </li>
+    <li>
+      If <var>credential</var> is a <code class=idl><a data-link-type=idl href=#dom-localcredential title=LocalCredential>LocalCredential</a></code>, then:
+
+      <ol>
+        <li>
+          If the user agent’s credential manager contains a <code class=idl><a data-link-type=idl href=#dom-localcredential title=LocalCredential>LocalCredential</a></code>
+          <var>storedCredential</var> whose <code class=idl><a data-link-type=idl href=#dom-credential-name title=name>name</a></code> attribute is
+          <var>credential</var>’s <code class=idl><a data-link-type=idl href=#dom-credential-name title=name>name</a></code> and whose
+          <code><a data-link-type=dfn href=#origin0 title=[[origin]]>[[origin]]</a></code> slot is <var>origin</var>, then:
+
+          <ol>
+            <li>
+              If the user grants <var>origin</var> permission to update
+              credentials (as discussed in <a data-section="" href=#user-mediated-storage>§6.1 Storing and Updating Credentials</a>), then:
+
+              <ol>
+                <li>
+                  Set <var>storedCredential</var>’s
+                  <code><a data-link-type=dfn href=#password title=[[password]]>[[password]]</a></code> to the value of
+                  <var>credential</var>’s <code><a data-link-type=dfn href=#password title=[[password]]>[[password]]</a></code>
+                  slot.
+                </li>
+                <li>
+                  Set <var>storedCredential</var>’s <code class=idl><a data-link-type=idl href=#dom-credential-name title=name>name</a></code> to the value of
+                  <var>credential</var>’s <code class=idl><a data-link-type=idl href=#dom-credential-name title=name>name</a></code>.
+                </li>
+                <li>
+                  Set <var>storedCredential</var>’s <code class=idl><a data-link-type=idl href=#dom-credential-avatarurl title=avatarURL>avatarURL</a></code> to the value
+                  of <var>credential</var>’s <code class=idl><a data-link-type=idl href=#dom-credential-avatarurl title=avatarURL>avatarURL</a></code>.
+                </li>
+              </ol>
+            </li>
+            <li>
+              Resolve <var>promise</var>.
+            </li>
+          </ol>
+        </li>
+        <li>
+          Otherwise:
+
+          <ol>
+            <li>
+              If the user grants <var>origin</var> permission to store
+              credentials (as discussed in <a data-section="" href=#user-mediated-storage>§6.1 Storing and Updating Credentials</a>), then
+              store <var>credential</var> in the <a data-link-type=dfn href=#credential-store title="credential store">credential store</a>.
+            </li>
+            <li>
+              Resolve <var>promise</var> and execute the remaining steps
+              asynchronously.
+            </li>
+            <li>
+              Execute the algorithm defined in <a data-section="" href=#set-isFederation>§5.4 
+    Set credential’s [[isFederation]] slot
+  </a> on
+              <var>credential</var>.
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li>
+      Otherwise, <var>credential</var> is a <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code>:
+
+      <ol>
+        <li>
+          If the user agent’s credential manager contains a
+          <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code> <var>storedCredential</var> whose <code class=idl><a data-link-type=idl href=#dom-credential-name title=name>name</a></code>
+          attribute is <var>credential</var>’s <code class=idl><a data-link-type=idl href=#dom-credential-name title=name>name</a></code> and whose <code class=idl><a data-link-type=idl href=#dom-federatedcredential-federation title=federation>federation</a></code>
+          attribute is <var>credential</var>’s <code class=idl><a data-link-type=idl href=#dom-federatedcredential-federation title=federation>federation</a></code>, then resolve
+          <var>promise</var>.
+        </li>
+        <li>
+          Otherwise:
+
+          <ol>
+            <li>
+              If the user grants <var>origin</var> permission to store
+              credentials (as discussed in <a data-section="" href=#user-mediated-storage>§6.1 Storing and Updating Credentials</a>), then
+              store <var>credential</var> in the <a data-link-type=dfn href=#credential-store title="credential store">credential store</a>.
+            </li>
+            <li>
+              Resolve <var>promise</var> and execute the remaining steps
+              asynchronously.
+            </li>
+            <li>
+              Execute the algorithm defined in <a data-section="" href=#set-isFederation>§5.4 
+    Set credential’s [[isFederation]] slot
+  </a> on
+              <var>credential</var>.
+
+<p class=note role=note>Note: We need to perform this step even though this is a
+              <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code>, as there’s nothing preventing a user from
+              using an <a data-link-type=dfn href=#federated-identity-provider title="identity provider">identity provider</a> to log into another <a data-link-type=dfn href=#federated-identity-provider title="identity provider">identity
+              provider</a>.</p>
+            </li>
+          </ol>
+        </li>
+
+      </ol>
+    </li>
+  </ol>
+
+  <h3 class="heading settled" data-level=5.4 id=set-isFederation><span class=secno>5.4. </span><span class=content>
+    Set <var>credential</var>’s <code>[[isFederation]]</code> slot
+  </span><a class=self-link href=#set-isFederation></a></h3>
+
+  <ol>
+    <li>
+      If the value of <var>credential</var>’s <code><a data-link-type=dfn href=#origin0 title=[[origin]]>[[origin]]</a></code>
+      slot is an <a data-link-type=dfn href=#insecure-origin title="insecure origin">insecure origin</a>, set <var>credential</var>’s
+      <code><a data-link-type=dfn href=#isfederation title=[[isFederation]]>[[isFederation]]</a></code> slot to <code>false</code>
+      and terminate this algorithm.
+    </li>
+    <li>
+      Let <var>url</var> be the result of
+      <a data-link-spec=HTML5 data-link-type=dfn href=https://html.spec.whatwg.org/#resolve-a-url title="resolve a url">resolving</a>
+      <code>/.well-known/identity-provider.manifest</code> against the URL of
+      the <var>credential</var>’s <code><a data-link-type=dfn href=#origin0 title=[[origin]]>[[origin]]</a></code> slot.
+    </li>
+    <li>
+      Let <var>request</var> be a <a data-link-type=dfn href=#request title=Request>Request</a> with the following properties
+      set:
+
+      <ul>
+        <li>
+          <var>request</var>’s <code>client</code> is the <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environment">JavaScript
+          global environment</a> in which this algorithm is executing.
+        </li>
+        <li>
+          <var>request</var>’s <code>context</code> is <code>ping</code>.
+        </li>
+        <li>
+          <var>request</var>’s <code>origin</code> is the value of
+          <var>credential</var>’s <code><a data-link-type=dfn href=#origin0 title=[[origin]]>[[origin]]</a></code> slot.
+        </li>
+        <li>
+          <var>request</var>’s <code>referrer</code> is <code>none</code>.
+        </li>
+        <li>
+          <var>request</var>’s <code>credentials mode</code> is
+          <code>omit</code>.
+        </li>
+      </ul>
+    </li>
+    <li>
+      Fetch <var>request</var>, and let <var>response</var> be the
+      <a data-link-type=dfn href=#response title=Response>Response</a>.
+    </li>
+    <li>
+      If <var>response</var>’s status is <code>200</code> and the result of
+      <a href=http://fetch.spec.whatwg.org/#concept-header-extract-mime-type>extracting
+      a MIME type</a> from its <code>header list</code> is
+      <code>application/identity-provider-manifest</code>, set
+      <var>credential</var>’s <code><a data-link-type=dfn href=#isfederation title=[[isFederation]]>[[isFederation]]</a></code> slot
+      to <code>true</code>.
+    </li>
+    <li>
+      Otherwise, set <var>credential</var>’s
+      <code><a data-link-type=dfn href=#isfederation title=[[isFederation]]>[[isFederation]]</a></code> slot to <code>false</code>.
+    </li>
+  </ol>
+
+  <h3 class="heading settled" data-level=5.5 id=dezeroclickize-origin><span class=secno>5.5. </span><span class=content>
+    Dezeroclickize credentials for <var>origin</var>
+  </span><a class=self-link href=#dezeroclickize-origin></a></h3>
+
+  <ol>
+    <li>
+      Let <var>credentials</var> be the set of all <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> objects in
+      the <a data-link-type=dfn href=#credential-store title="credential store">credential store</a> whose <code><a data-link-type=dfn href=#origin0 title=[[origin]]>[[origin]]</a></code> is
+      <var>origin</var>.
+    </li>
+    <li>
+      For each <var>credential</var> in <var>credentials</var>:
+
+      <ol>
+        <li>Set <var>credential</var>’s <code><a data-link-type=dfn href=#iszeroclick title=[[isZeroClick]]>[[isZeroClick]]</a></code>
+        slot to <code>false</code>.
+      </ol>
+    </li>
+  </ol>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=6 id=user-mediation><span class=secno>6. </span><span class=content>User Mediation</span><a class=self-link href=#user-mediation></a></h2>
+
+<p>Exposing credential information to the web via an API has a number of
+  potential impacts on user privacy. The user agent, therefore, MUST
+  involve the user in a number of cases in order to ensure that she clearly
+  understands what’s going on, and with whom her credentials are being shared.</p>
+
+  <h3 class="heading settled" data-level=6.1 id=user-mediated-storage><span class=secno>6.1. </span><span class=content>Storing and Updating Credentials</span><a class=self-link href=#user-mediated-storage></a></h3>
+
+<p>Credential information is sensitive data, and users MUST remain in control
+  of that information’s storage. Inadvertent credential storage could, for
+  instance, unexpectedly link a user’s local profile on a particular device to
+  a specific online persona. To mitigate the risk of surprise:</p>
+
+  <ol>
+    <li>
+      Credential information MUST NOT be stored or updated without explicit
+      user consent. For example, the user agent could display a "Save this
+      password?" dialog box to the user in response to each call to
+      <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn()</a></code>.
+    </li>
+    <li>
+      User consent MAY be requested every time a credential is stored or
+      updated, <strong>or</strong> the user agent MAY request a more persistent
+      grant of consent which would apply to some or all subsequent API
+      operations.
+
+<p>For example, a user agent may offer an option to "Always save passwords",
+      or "Always save password on this site".</p>
+    </li>
+    <li>
+      User agents SHOULD notify users when credentials are stored. This might
+      take the form of an icon in the address bar, or some similar location.
+    </li>
+    <li>
+      User agents MUST allow users to manually remove stored credentials. This
+      functionality might be implemented as a settings page, or via interaction
+      with a notification as described above.
+    </li>
+  </ol>
+
+  <h3 class="heading settled" data-level=6.2 id=user-mediated-zeroclickization><span class=secno>6.2. </span><span class=content>Zeroclickization</span><a class=self-link href=#user-mediated-zeroclickization></a></h3>
+
+<p>If a credential is considered <a data-link-type=dfn href=#zeroclick-credential title=zeroclick>zeroclick</a> for an origin, it will be
+  provided to pages on that origin without user interaction in response to
+  a call to <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code>. The user will be signed-in to that origin,
+  persistently, which might surprise her.</p>
+
+<p>If the user agent syncs the zeroclick state of a credential between
+  devices, an origin could explicitly tie the devices together in a way which
+  might surprise their owner.</p>
+
+<p>A user with multiple accounts for an origin might be surprised at which
+  credential is considered zeroclick, leading to confusion when switching
+  between accounts, or when logging out entirely.</p>
+
+<p>To mitigate the risk of surprise:</p>
+
+  <ol>
+    <li>
+      By default, <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> objects MUST NOT be considered <a data-link-type=dfn href=#zeroclick-credential title=zeroclick>zeroclick</a>
+      for the origin on which they’re saved.
+    </li>
+    <li>
+      User agents MUST NOT set the <code><a data-link-type=dfn href=#iszeroclick title=[[isZeroClick]]>[[isZeroClick]]</a></code> slot
+      value to <code>true</code> without explicit user consent. For example, the
+      <a data-link-type=dfn href=#credential-chooser title="credential chooser">credential chooser</a> described in <a data-section="" href=#user-mediated-selection>§6.3 Credential Selection</a> could
+      have a checkbox which the user could toggle to mark the selected
+      credential as <a data-link-type=dfn href=#zeroclick-credential title=zeroclick>zeroclick</a> for the origin.
+    </li>
+    <li>
+      User agents MUST notify users when credentials are provided to an
+      origin. This might take the form of an icon in the address bar, or some
+      similar location.
+    </li>
+    <li>
+      User agents MUST allow users to manually de-zeroclickize credentials.
+      This functionality might be implemented as a settings page, or via
+      interaction with a notification as described above.
+    </li>
+    <li>
+      If a user clears her browsing data for an origin (cookies, localStorage,
+      and so on), the user agent MUST de-zeroclickize credentials for that origin
+      by executing the algorithm defined in <a data-section="" href=#dezeroclickize-origin>§5.5 
+    Dezeroclickize credentials for origin
+  </a>.
+    </li>
+  </ol>
+
+  <h3 class="heading settled" data-level=6.3 id=user-mediated-selection><span class=secno>6.3. </span><span class=content>Credential Selection</span><a class=self-link href=#user-mediated-selection></a></h3>
+
+<p>When responding to a call to <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> on an origin without <a data-link-type=dfn href=#zeroclick-credential title="zeroclick credentials">zeroclick
+  credentials</a>, user agents MUST ask the user for permission to share
+  credential information. This SHOULD take the form of a
+  <dfn data-dfn-type=dfn data-local-title=chooser data-noexport="" id=credential-chooser>credential chooser<a class=self-link href=#credential-chooser></a></dfn> which presents the user
+  with a list of credentials that are available for use on a site, allowing her
+  to select one which should be provided to the website, or to reject the
+  request entirely.</p>
+
+<p>The chooser interface SHOULD be implemented in such a way as to be
+  distinguishable from UI which a website could produce. For example, the
+  chooser might overlap the user agent’s UI in some unspoofable way.</p>
+
+<p>The chooser interface SHOULD include an indication of the origin which is
+  requesting credentials.</p>
+
+<p>The chooser interface SHOULD include all <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> objects associated
+  with the origin that requested credentials. It MAY also include credentials
+  associated with <a data-link-type=dfn href=#federated-identity-provider title="federated identity providers">federated identity providers</a> which the origin supports.
+  For example, a credential associated with
+  <code>https://www.facebook.com</code> might be suggested as a
+  <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code> on <code>https://example.com</code> if the latter
+  lists the former as an accepted identity provider.</p>
+
+<p class=note role=note>Note: The credentials suggested in the chooser are not exposed to the web
+  unless the user explicitly allows it. The user agent is therefore free to
+  synthesize <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code> objects for use in the chooser without
+  risking a user’s privacy.</p>
+
+<p><em>The following image is an exceptionally non-normative mock:</em></p>
+
+<p><img alt="A mockup of what a chooser might look like." src=./mock-chooser.png></p>
+
+<p>User agents MAY internally associate information with each <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code>
+  object beyond the attributes specified in this document in order to enhance
+  the utility of such a chooser. For example, favicons could help disambiguate
+  identity providers, etc. Any additional information stored MUST not be
+  exposed directly to the web.</p>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=7 id=security-considerations><span class=secno>7. </span><span class=content>Security Considerations</span><a class=self-link href=#security-considerations></a></h2>
+
+  <h3 class="heading settled" data-level=7.1 id=security-cross-origin-leakage><span class=secno>7.1. </span><span class=content>Cross-origin Credential Leakage</span><a class=self-link href=#security-cross-origin-leakage></a></h3>
+
+<p>Credentials are sensitive information, and user agents need to exercise
+  caution in determining when they can be safely shared with a website. The
+  safest option is to restrict credential sharing to the exact origin on
+  which they were saved. That is likely too restrictive for the web, however:
+  consider sites which divide functionality into subdomains:
+  <code>example.com</code> vs <code>admin.example.com</code>.</p>
+
+<p>As a compromise between annoying users, and securing their credentials, user
+  agents:</p>
+
+  <ol>
+    <li>
+      MUST NOT share credentials between origins whose scheme components are
+      not the same. That is: credentials saved on
+      <code>https://example.com/</code> will never be available to
+      <code>http://example.com/</code> via <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code>
+    </li>
+    <li>
+      MAY use the Public Suffix List <a data-biblio-type=normative data-link-type=biblio href=#biblio-psl title=PSL>[PSL]</a> to determine the effective scope
+      of a credential by comparing the <a data-link-type=dfn href=#registerable-domain title="registerable domains">registerable domains</a> of the
+      credential’s <code>[[origin]]</code> with the origin in which
+      <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> is called. That is: credentials saved on
+      <code>https://admin.example.com/</code> and
+      <code>https://example.com/</code> MAY be offered to users when
+      <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> is called from <code>https://www.example.com/</code>
+    </li>
+    <li>
+      MUST NOT offer <a data-link-type=dfn href=#zeroclick-credential title=zeroclick>zeroclick</a> credentials to an origin in response
+      to <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> if the credential’s origin is not an exact match for
+      the calling origin. That is, <a data-link-type=dfn href=#zeroclick-credential title=zeroclick>zeroclick</a> credentials for
+      <code>https://example.com</code> would not be returned directly to
+      <code>https://www.example.com</code>, but would be offered to the user
+      via the chooser.
+    </li>
+  </ol>
+
+  <h3 class="heading settled" data-level=7.2 id=security-origin-confusion><span class=secno>7.2. </span><span class=content>Origin Confusion</span><a class=self-link href=#security-origin-confusion></a></h3>
+
+<p>If framed pages have access to the APIs defined here, it might be possible
+  to confuse a user into granting access to credentials for an origin other
+  than the <a data-link-type=dfn href=https://html.spec.whatwg.org/#top-level-browsing-context title="top-level browsing context">top-level browsing context</a>, which is the only security origin
+  which users can reasonably be expected to understand.</p>
+
+<p>Therefore, <a data-link-type=dfn href=https://html.spec.whatwg.org/#nested-browsing-context title="Nested browsing contexts">Nested browsing contexts</a> and other <a data-link-type=dfn href=#javascript-global-environment title="JavaScript global environments">JavaScript global
+  environments</a> like Workers <a data-biblio-type=informative data-link-type=biblio href=#biblio-workers title=WORKERS>[WORKERS]</a> cannot receive or store
+  <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code> objects; the user agent MUST reject promises generated by
+  calls to <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> and <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn()</a></code> with a
+  <code>SecurityError</code> when called from a context which is not a
+  <a data-link-type=dfn href=https://html.spec.whatwg.org/#top-level-browsing-context title="top-level browsing context">top-level browsing context</a>.</p>
+
+<p>See the algorithms defined in <a data-section="" href=#request-credential>§5.1 
+    Request a Credential with options
+  </a> and <a data-section="" href=#save-credential>§5.3 
+    Save credential
+  </a>
+  for details.</p>
+
+<p class=issue id=issue-bc2c9b42><a class=self-link href=#issue-bc2c9b42></a>Is this a meaningful restriction for Service Workers? Probably not.</p>
+
+  <h3 class="heading settled" data-level=7.3 id=security-insecure-origins><span class=secno>7.3. </span><span class=content>Insecure Sites</span><a class=self-link href=#security-insecure-origins></a></h3>
+
+<p>User agents MUST NOT expose credential information via the APIs defined here
+  to <a data-link-type=dfn href=#unsecured-environment title="unsecured environments">unsecured environments</a>. User agents MAY implement autofill
+  mechanisms which store user credentials and fill sign-in forms on <a data-link-type=dfn href=#insecure-origin title="insecure origins">insecure
+  origins</a>, but those sites cannot be trusted to interact directly with the
+  credential manager in any meaningful way.</p>
+
+  <h3 class="heading settled" data-level=7.4 id=security-autocomplete-off><span class=secno>7.4. </span><span class=content>
+    Reintroducing <code>autocomplete="off"</code>
+  </span><a class=self-link href=#security-autocomplete-off></a></h3>
+
+<p>Some user agents have decided not to implement the
+  <a data-link-type=element-attr href=https://html.spec.whatwg.org/#attr-form-autocomplete title=autocomplete>autocomplete</a> attribute in such a way as to
+  prevent users from saving credentials. The APIs defined here SHOULD be
+  implemented such that they don’t provide an automatic way of bypassing that
+  decision. Some of the requirements in <a data-section="" href=#user-mediated-storage>§6.1 Storing and Updating Credentials</a> are in place
+  for exactly this reason.</p>
+</section>
+
+<section>
+  <h2 class="heading settled" data-level=8 id=privacy-considerations><span class=secno>8. </span><span class=content>Privacy Considerations</span><a class=self-link href=#privacy-considerations></a></h2>
+
+  <h3 class="heading settled" data-level=8.1 id=privacy-timing-attacks><span class=secno>8.1. </span><span class=content>Timing Attacks</span><a class=self-link href=#privacy-timing-attacks></a></h3>
+
+<p>If the user has no credentials for an origin, a call to <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> will
+  resolve very quickly indeed. A malicious website could distinguish between
+  a user with no credentials and a user with credentials who chooses not to
+  share them.</p>
+
+<p>This could allow a malicious website to determine if a user has credentials
+  saved for particular federated identity providers by repeatedly calling
+  <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> with a single item in the <code class=idl><a data-link-type=idl href=#dom-credentialrequestoptions-federations title=federations>federations</a></code> array. The risk is
+  mitigated by the fact that the user would, sooner or later, be prompted to
+  provide credentials to the site, which would certainly raise her suspicions
+  as to its behavior.</p>
+
+<p class=issue id=issue-f05422b3><a class=self-link href=#issue-f05422b3></a>Perhaps we should tie <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> to a user gesture, or otherwise
+  rate-limit calls to further mitigate the risk.</p>
+
+  <h3 class="heading settled" data-level=8.2 id=privacy-chooser-leakage><span class=secno>8.2. </span><span class=content>Chooser Leakage</span><a class=self-link href=#privacy-chooser-leakage></a></h3>
+
+<p>If a user agent displayes images supplied by a website or federation (for
+  example, if a <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code>'s <code class=idl><a data-link-type=idl href=#dom-credential-avatarurl title=avatarURL>avatarURL</a></code> is displayed), requests for these
+  images MUST NOT be directly tied to instantiating the chooser in order to
+  avoid leaking chooser usage. One option would be to fetch the images in the
+  background when saving or updating a <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code>, and to cache them for the
+  lifetime of the <code class=idl><a data-link-type=idl href=#dom-credential title=Credential>Credential</a></code>.</p>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=9 id=implementation-considerations><span class=secno>9. </span><span class=content>Implementation Considerations</span><a class=self-link href=#implementation-considerations></a></h2>
+
+  <h3 class="heading settled" data-level=9.1 id=implementation-for-authors><span class=secno>9.1. </span><span class=content>Website Authors</span><a class=self-link href=#implementation-for-authors></a></h3>
+
+<p><em>This section is non-normative.</em></p>
+
+<p class=issue id=issue-ec4d9bac><a class=self-link href=#issue-ec4d9bac></a>Add some thoughts here about when and how the API should be used,
+  especially with regard to <code class=idl><a data-link-type=idl href=#dom-credentialrequestoptions-zeroclickonly title=zeroClickOnly>zeroClickOnly</a></code>.</p>
+</section>
+
+
+<section>
+  <h2 class="heading settled" data-level=10 id=future-work><span class=secno>10. </span><span class=content>Future Work</span><a class=self-link href=#future-work></a></h2>
+
+<p><em>This section is non-normative.</em></p>
+
+<p>The API defined here does the bare minimum to expose user agent’s credential
+  managers to the web, and allows the web to help those credential managers
+  understand when <a data-link-type=dfn href=#federated-identity-provider title="federated identity providers">federated identity providers</a> are in use. The next
+  logical step will be along the lines sketched in documents like <a data-biblio-type=informative data-link-type=biblio href=#biblio-web-login title=WEB-LOGIN>[WEB-LOGIN]</a>
+  (and, to some extent, Mozilla’s BrowserID <a data-biblio-type=informative data-link-type=biblio href=#biblio-browserid title=BROWSERID>[BROWSERID]</a>).</p>
+
+<p>The user agent is in the unique position of being able to effectively mediate
+  the relationship between users, identity providers, and websites. If the user
+  agent can remove some of the risk and confusion associated with the typical
+  authentication flows, users will be in a significantly better position than
+  today.</p>
+
+<p>The natural way to expose this information is to extend the
+  <code class=idl><a data-link-type=idl href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a></code> interface with properties like authentication tokens,
+  and the <a data-link-type=dfn href=#identity-provider-manifest0 title=manifest>manifest</a> format with properties which declare the
+  authentication type which the provider supports.</p>
+
+<p>Baby steps.</p>
+</section>
+
+</main>
+<h2 class="no-ref no-num heading settled" id=conformance><span class=content>
+Conformance</span><a class=self-link href=#conformance></a></h2>
+
+    <p>
+        Conformance requirements are expressed with a combination of descriptive assertions and RFC 2119 terminology.
+        The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL”
+        in the normative parts of this document
+        are to be interpreted as described in RFC 2119.
+        However, for readability,
+        these words do not appear in all uppercase letters in this specification.
+
+    <p>
+        All of the text of this specification is normative
+        except sections explicitly marked as non-normative, examples, and notes. <a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc2119 title=RFC2119>[RFC2119]</a>
+
+    <p>
+        Examples in this specification are introduced with the words “for example”
+        or are set apart from the normative text with <code>class="example"</code>, like this:
+
+    <div class=example>
+        This is an example of an informative example.
+    </div>
+
+    <p>
+        Informative notes begin with the word “Note”
+        and are set apart from the normative text with <code>class="note"</code>, like this:
+
+    <p class=note role=note>
+        Note, this is an informative note.
+
+
+
+<h2 class="no-num heading settled" id=references><span class=content>References</span><a class=self-link href=#references></a></h2><h3 class="no-num heading settled" id=normative><span class=content>Normative References</span><a class=self-link href=#normative></a></h3><dl><dt id=biblio-fetch title=FETCH><a class=self-link href=#biblio-fetch></a>[FETCH]<dd>Anne van Kesteren. <a href=http://fetch.spec.whatwg.org/>Fetch</a>. Living Standard. URL: <a href=http://fetch.spec.whatwg.org/>http://fetch.spec.whatwg.org/</a><dt id=biblio-html5 title=HTML5><a class=self-link href=#biblio-html5></a>[HTML5]<dd>Robin Berjon; et al. <a href=http://w3.org/TR/HTML5/>HTML5</a>. LCWD. URL: <a href=http://w3.org/TR/HTML5/>http://w3.org/TR/HTML5/</a><dt id=biblio-manifest title=MANIFEST><a class=self-link href=#biblio-manifest></a>[MANIFEST]<dd>Marcos Caceres; Anssi Kostiainen; Kenneth Rohde Christiansen; et al. <a href=http://w3c.github.io/manifest/>Manifest for web application</a>. WD. URL: <a href=http://w3c.github.io/manifest/>http://w3c.github.io/manifest/</a><dt id=biblio-mix title=MIX><a class=self-link href=#biblio-mix></a>[MIX]<dd>Mike West. <a href=https://w3c.github.io/webappsec/specs/mixedcontent/>Mixed Content</a>. ED. URL: <a href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a><dt id=biblio-psl title=PSL><a class=self-link href=#biblio-psl></a>[PSL]<dd>Mozilla Foundation. <a href=https://publicsuffix.org/>Public Suffix List</a>. URL: <a href=https://publicsuffix.org/>https://publicsuffix.org/</a><dt id=biblio-rfc5785 title=RFC5785><a class=self-link href=#biblio-rfc5785></a>[RFC5785]<dd>Mark Nottingham; Eran Hammer-Lahav. <a href=http://www.ietf.org/rfc/rfc5785.txt>Defining Well-Known Uniform Resource Identifiers (URIs)</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc5785.txt>http://www.ietf.org/rfc/rfc5785.txt</a><dt id=biblio-rfc6454 title=RFC6454><a class=self-link href=#biblio-rfc6454></a>[RFC6454]<dd>Adam Barth. <a href=http://www.ietf.org/rfc/rfc6454.txt>The Web Origin Concept</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6454.txt>http://www.ietf.org/rfc/rfc6454.txt</a><dt id=biblio-rfc2119 title=rfc2119><a class=self-link href=#biblio-rfc2119></a>[rfc2119]<dd>S. Bradner. <a href=http://www.ietf.org/rfc/rfc2119.txt>Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href=http://www.ietf.org/rfc/rfc2119.txt>http://www.ietf.org/rfc/rfc2119.txt</a></dl><h3 class="no-num heading settled" id=informative><span class=content>Informative References</span><a class=self-link href=#informative></a></h3><dl><dt id=biblio-browserid title=BROWSERID><a class=self-link href=#biblio-browserid></a>[BROWSERID]<dd>Ben Adida; et al. <a href=https://github.com/mozilla/id-specs/blob/prod/browserid/index.md>BrowserID</a>. URL: <a href=https://github.com/mozilla/id-specs/blob/prod/browserid/index.md>https://github.com/mozilla/id-specs/blob/prod/browserid/index.md</a><dt id=biblio-rfc6749 title=RFC6749><a class=self-link href=#biblio-rfc6749></a>[RFC6749]<dd>Dick Hardt; et al. <a href=http://www.ietf.org/rfc/rfc6749.txt>The OAuth 2.0 Authorization Framework</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6749.txt>http://www.ietf.org/rfc/rfc6749.txt</a><dt id=biblio-web-login title=WEB-LOGIN><a class=self-link href=#biblio-web-login></a>[WEB-LOGIN]<dd>Jason Denizac; Robin Berjon; Anne van Kesteren. <a href=https://github.com/jden/web-login>web-login</a>. URL: <a href=https://github.com/jden/web-login>https://github.com/jden/web-login</a><dt id=biblio-xmlhttprequest title=XMLHttpRequest><a class=self-link href=#biblio-xmlhttprequest></a>[XMLHttpRequest]<dd>Anne van Kesteren; et al. <a href=http://www.w3.org/TR/XMLHttpRequest/>XMLHttpRequest Level 1</a>. 30 January 2014. WD. URL: <a href=http://www.w3.org/TR/XMLHttpRequest/>http://www.w3.org/TR/XMLHttpRequest/</a><dt id=biblio-workers title=workers><a class=self-link href=#biblio-workers></a>[workers]<dd>Ian Hickson. <a href=http://www.w3.org/TR/workers/>Web Workers</a>. 1 May 2012. CR. URL: <a href=http://www.w3.org/TR/workers/>http://www.w3.org/TR/workers/</a></dl><h2 class="no-num heading settled" id=index><span class=content>Index</span><a class=self-link href=#index></a></h2><ul class=indexlist><li>ASCII serialization, <a href=#ascii-serialization-of-an-origin title="section 2.2">2.2</a><li>ASCII serialization of an origin, <a href=#ascii-serialization-of-an-origin title="section 2.2">2.2</a><li>avatarURL<ul><li>attribute for Credential, <a href=#dom-credential-avatarurl title="section 3.1.1">3.1.1</a><li>argument for LocalCredential/LocalCredential(), <a href=#dom-localcredential-localcredential-avatarurl title="section 3.1.2">3.1.2</a><li>argument for FederatedCredential/FederatedCredential(), <a href=#dom-federatedcredential-federatedcredential-avatarurl title="section 3.1.3">3.1.3</a></ul><li>chooser, <a href=#credential-chooser title="section 6.3">6.3</a><li>credential<ul><li>argument for CredentialsContainer/notifySignedIn(), <a href=#dom-credentialscontainer-notifysignedin-credential title="section 3.2">3.2</a><li>argument for CredentialsContainer/notifyFailedSignIn(), <a href=#dom-credentialscontainer-notifyfailedsignin-credential title="section 3.2">3.2</a></ul><li>Credential, <a href=#dom-credential title="section 3.1.1">3.1.1</a><li>credential chooser, <a href=#credential-chooser title="section 6.3">6.3</a><li>CredentialRequestOptions, <a href=#dictdef-credentialrequestoptions title="section 3.3">3.3</a><li>credentials, <a href=#dom-navigator-credentials title="section 3.2">3.2</a><li>Credentials, <a href=#credentials title="section 2.1">2.1</a><li>CredentialsContainer, <a href=#dom-credentialscontainer title="section 3.2">3.2</a><li>Credential Store, <a href=#credential-store title="section 2.1">2.1</a><li>FederatedCredential, <a href=#dom-federatedcredential title="section 3.1.3">3.1.3</a><li>Federated Identity Provider, <a href=#federated-identity-provider title="section 2.1">2.1</a><li>federation<ul><li>definition of, <a href=#federated-identity-provider title="section 2.1">2.1</a><li>argument for FederatedCredential/FederatedCredential(), <a href=#dom-federatedcredential-federatedcredential-federation title="section 3.1.3">3.1.3</a><li>attribute for FederatedCredential, <a href=#dom-federatedcredential-federation title="section 3.1.3">3.1.3</a></ul><li>federations<ul><li>dict-member for CredentialRequestOptions, <a href=#dom-credentialrequestoptions-federations title="section 3.3">3.3</a><li>attribute for CredentialRequestOptions, <a href=#dom-credentialrequestoptions-federations0 title="section 3.3">3.3</a></ul><li>fetch, <a href=#fetch title="section 2.2">2.2</a><li>formData, <a href=#dom-localcredential-formdata title="section 3.1.2">3.1.2</a><li>global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a><li>id<ul><li>attribute for Credential, <a href=#dom-credential-id title="section 3.1.1">3.1.1</a><li>argument for LocalCredential/LocalCredential(), <a href=#dom-localcredential-localcredential-id title="section 3.1.2">3.1.2</a><li>argument for FederatedCredential/FederatedCredential(), <a href=#dom-federatedcredential-federatedcredential-id title="section 3.1.3">3.1.3</a></ul><li>identity provider, <a href=#federated-identity-provider title="section 2.1">2.1</a><li>identity provider manifest, <a href=#identity-provider-manifest0 title="section 4.1">4.1</a><li>IDP, <a href=#federated-identity-provider title="section 2.1">2.1</a><li>insecure origin, <a href=#insecure-origin title="section 2.2">2.2</a><li>insecure URL, <a href=#insecure-url title="section 2.2">2.2</a><li>[[isFederation]], <a href=#isfederation title="section 3.1.1">3.1.1</a><li>[[isZeroClick]], <a href=#iszeroclick title="section 3.1.1">3.1.1</a><li>JavaScript global environment, <a href=#javascript-global-environment title="section 2.2">2.2</a><li>LocalCredential, <a href=#dom-localcredential title="section 3.1.2">3.1.2</a><li>local credentials, <a href=#local-credentials title="section 3.1">3.1</a><li>manifest, <a href=#identity-provider-manifest0 title="section 4.1">4.1</a><li>name<ul><li>attribute for Credential, <a href=#dom-credential-name title="section 3.1.1">3.1.1</a><li>argument for LocalCredential/LocalCredential(), <a href=#dom-localcredential-localcredential-name title="section 3.1.2">3.1.2</a><li>argument for FederatedCredential/FederatedCredential(), <a href=#dom-federatedcredential-federatedcredential-name title="section 3.1.3">3.1.3</a></ul><li>network error, <a href=#network-error title="section 2.2">2.2</a><li>notifyFailedSignIn(), <a href=#dom-credentialscontainer-notifyfailedsignin title="section 3.2">3.2</a><li>notifySignedIn(), <a href=#dom-credentialscontainer-notifysignedin title="section 3.2">3.2</a><li>notifySignedOut(), <a href=#dom-credentialscontainer-notifysignedout title="section 3.2">3.2</a><li>options, <a href=#dom-credentialscontainer-request-options title="section 3.2">3.2</a><li>origin, <a href=#origin title="section 2.2">2.2</a><li>[[origin]], <a href=#origin0 title="section 3.1.1">3.1.1</a><li>[[password]], <a href=#password title="section 3.1.2">3.1.2</a><li>password, <a href=#dom-localcredential-localcredential-password title="section 3.1.2">3.1.2</a><li>pending<ul><li>definition of, <a href=#pending-credential title="section 2.1">2.1</a><li>attribute for CredentialsContainer, <a href=#dom-credentialscontainer-pending title="section 3.2">3.2</a></ul><li>Pending Credential, <a href=#pending-credential title="section 2.1">2.1</a><li>PendingCredential, <a href=#dom-pendingcredential title="section 3.1.4">3.1.4</a><li>public suffix, <a href=#public-suffix title="section 2.2">2.2</a><li>registerable domain, <a href=#registerable-domain title="section 2.2">2.2</a><li>remote credentials, <a href=#remote-credentials title="section 3.1">3.1</a><li>request(), <a href=#dom-credentialscontainer-request title="section 3.2">3.2</a><li>request, <a href=#request title="section 2.2">2.2</a><li>response, <a href=#response title="section 2.2">2.2</a><li>unsecured environment, <a href=#unsecured-environment title="section 2.2">2.2</a><li>zeroclick, <a href=#zeroclick-credential title="section 2.1">2.1</a><li>Zeroclick Credential, <a href=#zeroclick-credential title="section 2.1">2.1</a><li>zeroClickOnly<ul><li>dict-member for CredentialRequestOptions, <a href=#dom-credentialrequestoptions-zeroclickonly title="section 3.3">3.3</a><li>attribute for CredentialRequestOptions, <a href=#dom-credentialrequestoptions-zeroclickonly0 title="section 3.3">3.3</a></ul></ul><h2 class="no-num heading settled" id=idl-index><span class=content>IDL Index</span><a class=self-link href=#idl-index></a></h2><pre class=idl>[NoInterfaceObject]
+interface <a data-dfn-type=interface data-export="" data-global-name="" href=#dom-credential title=Credential>Credential</a> {
+  readonly attribute DOMString <a class=idl-code data-global-name="Credential<interface>/id<attribute>" data-link-for=Credential data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-credential-id title=id>id</a>;
+  readonly attribute DOMString <a class=idl-code data-global-name="Credential<interface>/name<attribute>" data-link-for=Credential data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-credential-name title=name>name</a>;
+  readonly attribute DOMString <a class=idl-code data-global-name="Credential<interface>/avatarurl<attribute>" data-link-for=Credential data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-credential-avatarurl title=avatarURL>avatarURL</a>;
+};
+
+[Constructor(DOMString <a data-dfn-for=LocalCredential/LocalCredential() data-dfn-type=argument data-export="" data-global-name="LocalCredential<interface>/LocalCredential()<method>/id<argument>" href=#dom-localcredential-localcredential-id title=id>id</a>, DOMString <a data-dfn-for=LocalCredential/LocalCredential() data-dfn-type=argument data-export="" data-global-name="LocalCredential<interface>/LocalCredential()<method>/password<argument>" href=#dom-localcredential-localcredential-password title=password>password</a>, optional DOMString <a data-dfn-for=LocalCredential/LocalCredential() data-dfn-type=argument data-export="" data-global-name="LocalCredential<interface>/LocalCredential()<method>/name<argument>" href=#dom-localcredential-localcredential-name title=name>name</a>, optional DOMString <a data-dfn-for=LocalCredential/LocalCredential() data-dfn-type=argument data-export="" data-global-name="LocalCredential<interface>/LocalCredential()<method>/avatarurl<argument>" href=#dom-localcredential-localcredential-avatarurl title=avatarURL>avatarURL</a>)]
+interface <a data-dfn-type=interface data-export="" data-global-name="" href=#dom-localcredential title=LocalCredential>LocalCredential</a> : <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> {
+  readonly attribute <a data-link-type=idl-name href=https://xhr.spec.whatwg.org/#interface-formdata title=FormData>FormData</a> <a class=idl-code data-global-name="LocalCredential<interface>/formdata<attribute>" data-link-for=LocalCredential data-link-type=attribute data-readonly="" data-type="FormData " href=#dom-localcredential-formdata title=formData>formData</a>;
+};
+
+[Constructor(DOMString <a data-dfn-for=FederatedCredential/FederatedCredential() data-dfn-type=argument data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential()<method>/id<argument>" href=#dom-federatedcredential-federatedcredential-id title=id>id</a>, DOMString <a data-dfn-for=FederatedCredential/FederatedCredential() data-dfn-type=argument data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential()<method>/federation<argument>" href=#dom-federatedcredential-federatedcredential-federation title=federation>federation</a>, optional DOMString <a data-dfn-for=FederatedCredential/FederatedCredential() data-dfn-type=argument data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential()<method>/name<argument>" href=#dom-federatedcredential-federatedcredential-name title=name>name</a>, optional DOMString <a data-dfn-for=FederatedCredential/FederatedCredential() data-dfn-type=argument data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential()<method>/avatarurl<argument>" href=#dom-federatedcredential-federatedcredential-avatarurl title=avatarURL>avatarURL</a>)]
+interface <a data-dfn-type=interface data-export="" data-global-name="" href=#dom-federatedcredential title=FederatedCredential>FederatedCredential</a> : <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> {
+  readonly attribute DOMString <a class=idl-code data-global-name="FederatedCredential<interface>/federation<attribute>" data-link-for=FederatedCredential data-link-type=attribute data-readonly="" data-type="DOMString " href=#dom-federatedcredential-federation title=federation>federation</a>;
+};
+
+[NoInterfaceObject]
+interface <a data-dfn-type=interface data-export="" data-global-name="" href=#dom-pendingcredential title=PendingCredential>PendingCredential</a> : <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> {
+};
+
+partial interface <a class=idl-code data-global-name="" data-link-type=interface href=https://html.spec.whatwg.org/#navigator title=Navigator>Navigator</a> {
+  readonly attribute <a data-link-type=idl-name href=#dom-credentialscontainer title=CredentialsContainer>CredentialsContainer</a> <a data-dfn-for=Navigator data-dfn-type=attribute data-export="" data-global-name="Navigator<interface>/credentials<attribute>" data-readonly="" data-type="CredentialsContainer " href=#dom-navigator-credentials title=credentials>credentials</a>;
+};
+
+interface <a data-dfn-type=interface data-export="" data-global-name="" href=#dom-credentialscontainer title=CredentialsContainer>CredentialsContainer</a> {
+  Promise&lt;<a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a>?&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/request()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-request title=request()>request</a>(optional <a data-link-type=idl-name href=#dictdef-credentialrequestoptions title=CredentialRequestOptions>CredentialRequestOptions</a> <a data-dfn-for=CredentialsContainer/request() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/request()<method>/options<argument>" href=#dom-credentialscontainer-request-options title=options>options</a>);
+  Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifysignedin()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifysignedin title=notifySignedIn()>notifySignedIn</a>(optional <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> <a data-dfn-for=CredentialsContainer/notifySignedIn() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/notifySignedIn()<method>/credential<argument>" href=#dom-credentialscontainer-notifysignedin-credential title=credential>credential</a>);
+  Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifyfailedsignin()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifyfailedsignin title=notifyFailedSignIn()>notifyFailedSignIn</a>(optional <a data-link-type=idl-name href=#dom-credential title=Credential>Credential</a> <a data-dfn-for=CredentialsContainer/notifyFailedSignIn() data-dfn-type=argument data-export="" data-global-name="CredentialsContainer<interface>/notifyFailedSignIn()<method>/credential<argument>" href=#dom-credentialscontainer-notifyfailedsignin-credential title=credential>credential</a>);
+  Promise&lt;any&gt; <a class=idl-code data-global-name="CredentialsContainer<interface>/notifysignedout()<method>" data-link-for=CredentialsContainer data-link-type=method href=#dom-credentialscontainer-notifysignedout title=notifySignedOut()>notifySignedOut</a>();
+
+  readonly attribute <a data-link-type=idl-name href=#dom-pendingcredential title=PendingCredential>PendingCredential</a>? <a class=idl-code data-global-name="CredentialsContainer<interface>/pending<attribute>" data-link-for=CredentialsContainer data-link-type=attribute data-readonly="" data-type="PendingCredential? " href=#dom-credentialscontainer-pending title=pending>pending</a>;
+};
+
+dictionary <a data-dfn-type=dictionary data-export="" data-global-name="" href=#dictdef-credentialrequestoptions title=CredentialRequestOptions>CredentialRequestOptions</a> {
+  boolean <a data-default=false data-dfn-for=CredentialRequestOptions data-dfn-type=dict-member data-export="" data-global-name="CredentialRequestOptions<dictionary>/zeroclickonly<dict-member>" data-type="boolean " href=#dom-credentialrequestoptions-zeroclickonly title=zeroClickOnly>zeroClickOnly</a> = false;
+  sequence&lt;DOMString&gt; <a data-dfn-for=CredentialRequestOptions data-dfn-type=dict-member data-export="" data-global-name="CredentialRequestOptions<dictionary>/federations<dict-member>" data-type="sequence<DOMString> " href=#dom-credentialrequestoptions-federations title=federations>federations</a>;
+};
+
+</pre><h2 class="no-num heading settled" id=issues-index><span class=content>Issues Index</span><a class=self-link href=#issues-index></a></h2><div style=counter-reset:issue><div class=issue>How do we make this responsive? Adopt <a data-biblio-type=informative data-link-type=biblio href=#biblio-manifest title=MANIFEST>[MANIFEST]</a>'s icon syntax?<a href=#issue-0d5bd732> ↵ </a></div><div class=issue>We should support explicit sign-up via <code class=idl><a data-link-type=idl href=#dom-localcredential title=LocalCredential>LocalCredential</a></code>s with
+  generated passwords. Perhaps something similar to iOS8’s
+  <code>SecCreateSharedWebCredentialPassword</code>.<a href=#issue-1a314ee6> ↵ </a></div><div class=issue>Should we add <code>notifyChange(optional Credential credential)</code>?
+  The functionality is currently wrapped up in <a data-section="" href=#save-credential>§5.3 
+    Save credential
+  </a>, but could
+  be trivially pushed out into a separate API if that makes things more clear.<a href=#issue-6cfbbbbc> ↵ </a></div><div class=issue>Register this URL as defined in
+  <a href=http://tools.ietf.org/html/rfc5785.html#section-5.1>section 5.1 of
+  the RFC</a>, if we decide that this is a sane route to go down.<a href=#issue-18b06374> ↵ </a></div><div class=issue>Register the content type somewhere.<a href=#issue-654bf5f0> ↵ </a></div><div class=issue>Spec this out in more detail. Perhaps make use of OpenID Connect?<a href=#issue-89c8f370> ↵ </a></div><div class=issue>What can we do to provide trusted UI for Facebook without at the same
+  time enabling evil.com to present _the same_ UI?<a href=#issue-8674200b> ↵ </a></div><div class=issue>Other stuff?<a href=#issue-725e9f8f> ↵ </a></div><div class=issue>Is this a meaningful restriction for Service Workers? Probably not.<a href=#issue-bc2c9b42> ↵ </a></div><div class=issue>Perhaps we should tie <code class=idl><a data-link-type=idl href=#dom-credentialscontainer-request title=request()>request()</a></code> to a user gesture, or otherwise
+  rate-limit calls to further mitigate the risk.<a href=#issue-f05422b3> ↵ </a></div><div class=issue>Add some thoughts here about when and how the API should be used,
+  especially with regard to <code class=idl><a data-link-type=idl href=#dom-credentialrequestoptions-zeroclickonly title=zeroClickOnly>zeroClickOnly</a></code>.<a href=#issue-ec4d9bac> ↵ </a></div></div>
