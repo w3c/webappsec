@@ -1,0 +1,331 @@
+<!DOCTYPE html><html lang=en><head>
+  <meta content="text/html; charset=utf-8" http-equiv=Content-Type>
+  <title>Credential Management: Use Cases and Requirements</title>
+  <link href=../default.css rel=stylesheet type=text/css>
+  <style>
+  body {
+    background: url("https://www.w3.org/StyleSheets/TR/logo-unofficial.png") top left no-repeat white;
+    background-attachment: fixed;
+    color: black;
+    font-family: sans-serif;
+    margin: 0 auto;
+    max-width: 50em;
+    padding: 2em 1em 2em 70px;
+  }
+  :link { color: #00C; background: transparent }
+  :visited { color: #609; background: transparent }
+  a[href]:active { color: #C00; background: transparent }
+  a[href]:hover { background: #ffa }
+
+  a[href] img { border-style: none }
+
+  h1, h2, h3, h4, h5, h6 { text-align: left }
+  h1, h2, h3 { color: #005A9C; }
+  h1 { font: 170% sans-serif }
+  h2 { font: 140% sans-serif }
+  h3 { font: 120% sans-serif }
+  h4 { font: bold 100% sans-serif }
+  h5 { font: italic 100% sans-serif }
+  h6 { font: small-caps 100% sans-serif }
+
+  .hide { display: none }
+
+  div.head { margin-bottom: 1em }
+  div.head h1 { margin-top: 2em; clear: both }
+  div.head table { margin-left: 2em; margin-top: 2em }
+
+  p.copyright { font-size: small }
+  p.copyright small { font-size: small }
+
+  pre { margin-left: 2em }
+  dt { font-weight: bold }
+
+  ul.toc, ol.toc {
+    list-style: none;
+  }
+  </style>
+<style>
+  img {
+    display: block;
+    margin: 0 auto;
+    border: 1px solid #333;
+  }
+</style>
+
+</head>
+<body class=h-entry>
+<div class=head>
+  <p data-fill-with=logo></p>
+  <h1 class="p-name no-ref" id=title>Credential Management: Use Cases and Requirements</h1>
+  <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>A Collection of Interesting Ideas,
+    <span class=dt-updated><span class=value-title title=20140905>5 September 2014</span></span></span></h2>
+  <div data-fill-with=spec-metadata><dl>
+	<dt>This version:
+	<dd><a class=u-url href=https://mikewest.github.io/credentialmanagement/usecases/>https://mikewest.github.io/credentialmanagement/usecases/</a>
+	<dt>Version History:
+	<dd><a href=https://github.com/mikewest/credentialmanagement/commits/master/usecases/index.src.html>https://github.com/mikewest/credentialmanagement/commits/master/usecases/index.src.html</a>
+	<dt>Editor:
+	<dd><dd class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)
+</dl>
+</div>
+  <div data-fill-with=warning></div>
+  <p class=copyright data-fill-with=copyright><a href=http://creativecommons.org/publicdomain/zero/1.0/ rel=license><img alt=CC0 src=https://i.creativecommons.org/p/zero/1.0/80x15.png></a>
+To the extent possible under law, the editors have waived all copyright 
+and related or neighboring rights to this work. 
+In addition, as of 5 September 2014, 
+the editors have made this specification available under the
+<a href=http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0 rel=license>Open Web Foundation Agreement Version 1.0</a>,
+which is available at http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0.
+Parts of this work may be from an existing specification document.  If so, those parts are instead covered by the license of the existing specification document.
+</p>
+  <hr title="Separator for header">
+</div>
+
+<h2 class="no-num no-toc no-ref heading settled" id=abstract><span class=content>Abstract</span></h2>
+<div class=p-summary data-fill-with=abstract><p>Signing into websites is more difficult than it ought to be; user agents address this by providing password managment functionality. It works pretty well, but could work even better (and more consistently) by involving the websites more deeply in the process of requesting and storing credentials.
+
+This document outlines the use cases that would motivate such an API, examines the similar APIs available to native applications, and sketches a set of requirements which would drive specification of such an API.</p>
+</div>
+
+<h2 class="no-num no-toc no-ref heading settled" id=status><span class=content>Status of this document</span></h2>
+<div data-fill-with=status><p>
+	This is a <strong>really</strong> unofficial draft.
+	It’s not meant to capture any consensus,
+	beyond my own personal feelings about what sounds interesting.
+	It is provided for discussion only and may change at any moment,
+	and should not be taken as "official" or even "unofficial, but planned".
+	Its publication here does not imply endorsement of its contents by W3C. 
+	Don’t cite this document other than as a collection of interesting ideas.</div>
+<div data-fill-with=at-risk></div>
+
+<h2 class="no-num no-toc no-ref heading settled" id=contents><span class=content>Table of Contents</span></h2>
+<div data-fill-with=table-of-contents><ul class=toc>
+	<li><a href=#status-quo><span class=secno>1</span> Status Quo</a>
+		<ul class=toc>
+		<li><a href=#autocomplete-attributes><span class=secno>1.1</span> <code>autocomplete</code> Attributes</a></ul>
+	<li><a href=#signing-in><span class=secno>2</span> Signing In</a>
+		<ul class=toc>
+		<li><a href=#username-password0><span class=secno>2.1</span> Username/password</a>
+			<ul class=toc>
+			<li><a href=#changing-passwords><span class=secno>2.1.1</span> Changing Passwords</a>
+			<li><a href=#forgotten-password><span class=secno>2.1.2</span> Forgotten Password</a></ul>
+		<li><a href=#federated-identity-provider0><span class=secno>2.2</span> Federated Identity Provider</a></ul>
+	<li><a href=#signing-up><span class=secno>3</span> Signing Up</a>
+		<ul class=toc>
+		<li><a href=#username-password><span class=secno>3.1</span> Username/password</a>
+		<li><a href=#federated-identity-provider><span class=secno>3.2</span> Federated Identity Provider</a></ul>
+	<li><a href=#requirements><span class=secno>4</span> Requirements</a>
+	<li><a href=#references><span class=secno></span>  References</a>
+		<ul class=toc>
+		<li><a href=#normative><span class=secno></span>  Normative References</a>
+		<li><a href=#informative><span class=secno></span>  Informative References</a></ul>
+	<li><a href=#index><span class=secno></span>  Index</a>
+	<li><a href=#property-index><span class=secno></span>  Property index</a></ul></div>
+
+
+
+
+<h2 class="heading settled" data-level=1 id=status-quo><span class=secno>1 </span><span class=content>Status Quo</span><a class=self-link href=#status-quo></a></h2>
+
+<p>When using an application (native or web), users often choose to authenticate
+themselves in some way the application can verify in order to obtain access to
+information and services. This process may involve handing over some set of
+credentials which the application can directly verify (a username and password,
+for example), or the application may rely on a third-party identity provider to
+authenticate the user on their behalf.</p>
+
+<p>User agents attempt to make this process as smooth and secure as possible for
+users by offering password management capabilities. These differ in ancillary
+functionality, but at their core, they all store username/password pairs, and
+tie them to a particular origin.</p>
+
+<p><img alt="Chrome’s password manager: offering to save a user’s password." src=./statusquo-save-password.png></p>
+
+<p>Stored username/password pairs are then filled into sign in forms on that origin
+when the user agent detects them via vendor-specific heuristics. Filling
+behavior differs between user agents; some fill sign in forms automatically,
+without user interaction, others require the user to actively choose to fill a
+form.</p>
+
+<p><img alt="Chrome’s password manager autofills passwords." src=./statusquo-filled-password.png></p>
+
+<p>Websites have very little insight into or control over these behaviors. This is
+partially intentional: user agents don’t want websites to prevent users from
+storing credentials. Still, this lack of interaction means that user agents'
+password managers can’t be as effective as they could be. The whole system is
+based on heuristics to detect sign-in forms, and to detect when users have
+successfully signed in using such a form.</p>
+
+<h3 class="heading settled" data-level=1.1 id=autocomplete-attributes><span class=secno>1.1 </span><span class=content><code>autocomplete</code> Attributes</span><a class=self-link href=#autocomplete-attributes></a></h3>
+
+<p>Sign in forms' markup is, practically, the only way which websites can currently
+influence user agent’s credential management behavior. Adding specific
+<code><a data-link-spec=HTML5 data-link-type=element-attr href=http://www.w3.org/html/wg/drafts/html/CR/forms.html#attr-form-autocomplete title=autocomplete>autocomplete</a></code> attributes <a data-biblio-type=informative data-link-type=biblio href=#biblio-html5 title=biblio-HTML5>[HTML5]</a>
+can identify individual form fields as "username" or "current-password" for sign
+in forms, or as "username" and "current-password"/"new-password" for password
+change forms. It is significantly simpler for user agents to correctly parse
+forms when these attributes are present, and browser vendors strongly suggest
+that authors use them when constructing forms.</p>
+
+<h2 class="heading settled" data-level=2 id=signing-in><span class=secno>2 </span><span class=content>Signing In</span><a class=self-link href=#signing-in></a></h2>
+
+<h3 class="heading settled" data-level=2.1 id=username-password0><span class=secno>2.1 </span><span class=content>Username/password</span><a class=self-link href=#username-password0></a></h3>
+
+<p>Users are generally familiar with sign-in forms. They ask for a username and
+password, and are either present directly on an application’s landing page, or
+are one or so clicks away behind a "Sign in!" button.</p>
+
+<p>Users may, of course, type in a username and password. That requires them to
+<em>remember</em> a username and password, which in turn requires the password
+to be easy to remember. This encouages users to choose simple passwords, and to
+reuse them across sites.</p>
+
+<p>Credential managers remove some of that burden (and make signing into websites
+from mobile devices significantly easier, as typing complex passwords is
+difficult enough on a "real" keyboard; thumbs make it nearly impossible to get
+things right on the first try), and can enable significant security improvements
+such as password generation.</p>
+
+<p>Native applications generally have access to some sort of "keychain" API to
+store and retrieve these sorts of credentials in order to ensure that users only
+have to type in their credentials once. Apple has documented workflows for
+<a href=https://developer.apple.com/library/mac/documentation/security/conceptual/keychainServConcepts/iPhoneTasks/iPhoneTasks.html#//apple_ref/doc/uid/TP30000897-CH208-SW1>iOS Keychain Services</a>
+and 
+<a href=https://developer.apple.com/library/mac/documentation/security/conceptual/keychainServConcepts/03tasks/tasks.html#//apple_ref/doc/uid/TP30000897-CH205-TP9>OS X Keychain Services</a>.
+The concepts are the same on Windows and Android, but there’s no platform-level
+equivalant on the web.</p>
+
+<p>Interestingly, iOS8 introduces a new method which enables native applications
+to reach into Safari’s credential store to request a website’s credentials and
+apply them to an app: <code>SecRequestSharedWebCredential</code>. Calling this
+method will pop up a picker which allows users to grant the application access
+to a specific set of credentials:</p>
+
+<p><img alt="iOS8’s picker" src=./ios8-picker.png></p>
+
+<h4 class="heading settled" data-level=2.1.1 id=changing-passwords><span class=secno>2.1.1 </span><span class=content>Changing Passwords</span><a class=self-link href=#changing-passwords></a></h4>
+
+<p>TODO</p>
+
+<h4 class="heading settled" data-level=2.1.2 id=forgotten-password><span class=secno>2.1.2 </span><span class=content>Forgotten Password</span><a class=self-link href=#forgotten-password></a></h4>
+
+<p>TODO</p>
+
+<h3 class="heading settled" data-level=2.2 id=federated-identity-provider0><span class=secno>2.2 </span><span class=content>Federated Identity Provider</span><a class=self-link href=#federated-identity-provider0></a></h3>
+
+<p>If a user has signed into a website via a third-party identity provider, she’s
+more or less on her own: user agents don’t currently support federations well,
+if at all. The website will present a list of supported federations for a user
+to choose from:</p>
+
+<p><img alt="Stack Overflow has a _lot_ of federated sign-in options." src=./signin-nascar.png></p>
+
+<p>The user will choose one, and then go through a provider-specific sign-in flow.
+The user agent’s credential manager can help with this bit (it might autofill
+the provider’s sign-in form), but no credential manager I tested (Chrome,
+Firefox, IE, Opera) has the ability to remind a user that she used Facebook to
+sign into this site, and Twitter to sign into that site. She’s on her own, and
+is quite likely to end up with multiple accounts somewhere because of this
+confusion.</p>
+
+<p>Again, native applications will use the platform-level keychain APIs in order
+to store this information themselves, and may also store authentication tokens
+provided by the identity provider (e.g. OAuth 2.0’s "refresh tokens"
+<a data-biblio-type=normative data-link-type=biblio href=#biblio-rfc6749 title=biblio-RFC6749>[RFC6749]</a>). Apps are generally on their own for the authentication dance with
+the provider, however: each will provide its own SDK (e.g.
+<a href=https://developers.facebook.com/docs/android/login-with-facebook/v2.0>Facebook SDK for Android</a>,
+or <a href=https://developers.google.com/+/mobile/ios/sign-in>Google+ Sign-In for iOS</a>).</p>
+
+<p>Sign-in is therefore a two-step process: the application must first retrieve the
+federation the user used to sign in, and then go talk to that federation.</p>
+
+<p>The new iOS8 methods don’t seem to attempt to provide this functionality: apps
+are on their own.</p>
+
+<h2 class="heading settled" data-level=3 id=signing-up><span class=secno>3 </span><span class=content>Signing Up</span><a class=self-link href=#signing-up></a></h2>
+
+<h3 class="heading settled" data-level=3.1 id=username-password><span class=secno>3.1 </span><span class=content>Username/password</span><a class=self-link href=#username-password></a></h3>
+
+<p>Signing up is quite similar to signing in</p>
+
+<p>Again, iOS8 has introduced a new method allowing native applications to store
+credentials for associated websites: <code>SecAddSharedWebCredential</code>.
+This doesn’t appear to prompt users to save the new credential, but it does
+prompt when updating:</p>
+
+<p><img alt="... would like to update the Safari Saved Password for 'example.com'" src=./ios8-update-credentials.png></p>
+
+<h3 class="heading settled" data-level=3.2 id=federated-identity-provider><span class=secno>3.2 </span><span class=content>Federated Identity Provider</span><a class=self-link href=#federated-identity-provider></a></h3>
+
+<h2 class="heading settled" data-level=4 id=requirements><span class=secno>4 </span><span class=content>Requirements</span><a class=self-link href=#requirements></a></h2>
+
+<p>A standardized API to address these use cases:</p>
+
+<ol>
+  <li>
+    MUST support credentials in the form of traditional username/password
+    pairs (e.g. "mikewest"/"pencil") <strong>and</strong> in the form of
+    federated username/federated identity provider pairs (e.g.
+    "mkwst@google.com"/"https://accounts.firefox.com").
+  </li>
+  <li>
+    MUST provide an imperative mechanism for a website to request credentials.
+  </li>
+  <li>
+    MUST provide an imperative mechanism for a website to suggest that a set of
+    credentials be stored (e.g. "The user successfully signed in with this
+    username/password pair." or "The user signed in using Firefox Accounts").
+  </li>
+  <li>
+    MUST provide an imperative mechanism for a website to suggest that a set of
+    credentials be removed (e.g. "This username/password pair failed; perhaps
+    the user changed her password?").
+  </li>
+  <li>
+    MUST NOT provide credentials to a website without obtaining the user’s
+    permission. For user convinience, this MAY take the form of a persistent
+    permission grant.
+  </li>
+  <li>
+    SHOULD provide an imperative mechanism for notifying the user agent that the
+    user has signed out (which would enable the user agent to clear a persistent
+    credential permission grant, for example).
+  </li>
+  <li>
+    SHOULD respond to a user clearing an origin’s cookies by also clearing any
+    persistent credential permission granted to that origin.
+  </li>
+  <li>
+    SHOULD do whatever possible to ease the burden of the authentication dances
+    each provider requires. If the user agent knows that a provider speaks a
+    specific dialect of OAuth 2.0, for instance, perhaps it can provide a
+    generic API which would lead the user through the flow, and return an
+    access or refresh token to the application directly.
+  </li>
+</ol>
+
+<h2 class="no-num no-ref heading settled" id=references><span class=content>
+References</span><a class=self-link href=#references></a></h2>
+
+<h3 class="no-num no-ref heading settled" id=normative><span class=content>
+Normative References</span><a class=self-link href=#normative></a></h3>
+<div data-fill-with=normative-references><dl>
+<dt id=biblio-rfc6749 title=RFC6749><a class=self-link href=#biblio-rfc6749></a>[RFC6749]<dd>Dick Hardt; et al. <a href=http://www.ietf.org/rfc/rfc6749.txt>The OAuth 2.0 Authorization Framework</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6749.txt>http://www.ietf.org/rfc/rfc6749.txt</a></dd>
+</dl></div>
+
+<h3 class="no-num no-ref heading settled" id=informative><span class=content>
+Informative References</span><a class=self-link href=#informative></a></h3>
+<div data-fill-with=informative-references><dl>
+<dt id=biblio-html5 title=HTML5><a class=self-link href=#biblio-html5></a>[HTML5]<dd>Robin Berjon; et al. <a href=http://w3.org/TR/HTML5/>HTML5</a>. LCWD. URL: <a href=http://w3.org/TR/HTML5/>http://w3.org/TR/HTML5/</a></dd>
+</dl></div>
+
+<h2 class="no-num no-ref heading settled" id=index><span class=content>
+Index</span><a class=self-link href=#index></a></h2>
+<div data-fill-with=index><ul class=indexlist>
+</ul></div>
+
+<h2 class="no-num no-ref heading settled" id=property-index><span class=content>
+Property index</span><a class=self-link href=#property-index></a></h2>
+<div data-fill-with=property-index><p>No properties defined.</div>
+
+
