@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20141111>11 November 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20141114>14 November 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a><dt>Latest version:<dd><a href=http://www.w3c.org/TR/mixed-content/>http://www.w3c.org/TR/mixed-content/</a><dt>Previous Versions:<dd><a href=http://www.w3.org/TR/2014/WD-mixed-content-20140722/ rel=previous>http://www.w3.org/TR/2014/WD-mixed-content-20140722/</a><dt>Version History:<dd><a href=https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html>https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html</a><dt>Feedback:<dd><span><a href="mailto:public-webappsec@w3.org?subject=%5BMIX%5D%20feedback">public-webappsec@w3.org</a> with subject line “<kbd>[MIX] <var>… message topic …</var></kbd>” (<a href=http://lists.w3.org/Archives/Public/public-webappsec/ rel=discussion>archives</a>)</span><dt class=editor>Editor:<dd class=editor><div class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)</div></dl></div>
   <div data-fill-with=warning></div>
   <p class=copyright data-fill-with=copyright><a href=http://www.w3.org/Consortium/Legal/ipr-notice#Copyright>Copyright</a> © 2014
@@ -206,16 +206,13 @@
     </dt>
     <dd>
       A resource is said to be <strong>mixed content</strong> if the resource’s
-      <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#insecure-origin title=insecure>insecure</a>, <strong>and</strong> the the context
+      <a data-link-type=dfn href=#origin title=origin>origin</a> is <a data-link-type=dfn href=#insecure-origin title=insecure>insecure</a>, <strong>and</strong> the context
       responsible for loading it <a data-link-type=dfn href=#restrict-mixed-content title="restricts mixed content">restricts mixed content</a>.
 
       <div class=example>
         The image <code>http://example.com/image.png</code> is <strong>mixed
         content</strong> when loaded by
         <code>https://not.example.com/</code>.
-
-<p>The image <code>http://127.0.0.1/image.png</code> is <strong>mixed
-        content</strong> when loaded by <code>http://example.com/</code>.</p>
       </div>
     </dd>
 
@@ -422,7 +419,8 @@
       <li>
         Images loaded via <a data-link-type=element href=https://html.spec.whatwg.org/#the-img-element title=img>img</a>
 
-<p class=note role=note>Note: This includes SVG documents loaded as images.</p>
+<p class=note role=note>Note: This includes SVG documents loaded as images, as they are banned from
+        executing script or loading subresources.</p>
       </li>
       <li>
         Video loaded via <a data-link-type=element href=http://www.w3.org/TR/html5/embedded-content-0.html#the-video-element title=video>video</a> and <a data-link-type=element href=http://www.w3.org/TR/html5/embedded-content-0.html#the-source-element title=source>source</a>
@@ -479,7 +477,11 @@
         elements; or through a <a data-link-type=dfn href=http://www.w3.org/TR/html5/browsers.html#plugin-document title="plugin document">plugin document</a> loaded into an
         <a data-link-type=element href=http://www.w3.org/TR/html5/embedded-content-0.html#the-iframe-element title=iframe>iframe</a> or <a data-link-type=element href=http://www.w3.org/TR/html5/obsolete.html#frame title=frame>frame</a> element) <a data-biblio-type=informative data-link-type=biblio href=#biblio-html5 title=HTML5>[HTML5]</a>
       </li>
-      <li>SVG Documents <a data-biblio-type=informative data-link-type=biblio href=#biblio-svg2 title=SVG2>[SVG2]</a></li>
+      <li>
+        SVG Documents <a data-biblio-type=informative data-link-type=biblio href=#biblio-svg2 title=SVG2>[SVG2]</a>
+
+<p class=note role=note>Note: This excludes SVG documents loaded as images.</p>
+      </li>
       <li>XSL Transformations <a data-biblio-type=informative data-link-type=biblio href=#biblio-xslt title=XSLT>[XSLT]</a></li>
       <li>HTML Imports <a data-biblio-type=informative data-link-type=biblio href=#biblio-html-imports title=HTML-IMPORTS>[HTML-IMPORTS]</a></li>
       <li>HTML Manifests <a data-biblio-type=informative data-link-type=biblio href=#biblio-manifest title=MANIFEST>[MANIFEST]</a></li>
@@ -824,8 +826,8 @@
             <strong>blocked</strong>.
           </li>
           <li>
-            If <var>context</var> is a <a data-link-type=dfn href=#blockable-request-contexts title="blockable request context">blockable request context</a>, return
-            <strong>blocked</strong>.
+            If <var>context</var> is not an <a data-link-type=dfn href=#optionally-blockable-request-contexts title="optionally-blockable request context">optionally-blockable request
+            context</a>, return <strong>blocked</strong>.
           </li>
           <li>
             If the user agent is configured to block <a data-link-type=dfn href=#optionally-blockable-content title=optionally-blockable>optionally-blockable</a>
@@ -866,9 +868,9 @@
         <var>request</var>.
       </li>
       <li>
-        If <var>context</var> is an <a data-link-type=dfn href=#blockable-request-contexts title="blockable request context">blockable request context</a> or the
-        user agent is configured to block <a data-link-type=dfn href=#optionally-blockable-content title=optionally-blockable>optionally-blockable</a> mixed
-        content:
+        If <var>context</var> is not an <a data-link-type=dfn href=#optionally-blockable-request-contexts title="optionally-blockable request context">optionally-blockable request
+        context</a> or the user agent is configured to block
+        <a data-link-type=dfn href=#optionally-blockable-content title=optionally-blockable>optionally-blockable</a> mixed content:
 
         <ol>
           <li>
