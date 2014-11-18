@@ -330,7 +330,7 @@ Indent: 2
       An resource's origin is said to be <strong>insecure</strong> if it is
       either <a><em>a priori</em> insecure</a>, or the user agent discovers
       only after performing a TLS-handshake that the TLS-protection offered
-      is either <a>weak</a> or <a>deprecated</a>.
+      is <a>deprecated</a>.
 
       A URL whose <a>origin</a> is insecure is itself considered to be insecure.
     </dd>
@@ -342,48 +342,26 @@ Indent: 2
     </dt>
     <dd>
       A resource's TLS-protection is said to be <strong>deprecated</strong> if
-      a user agent refuses to trust the resource's TLS handshake, even if it
-      doesn't sink down to the level of <a>weakly TLS-protected</a>. This
+      a user agent refuses to trust the resource's TLS handshake. This
       determination is vendor-specific.
 
       For example, a user agent may choose to reject resources for which the
       server presented a publicly-trusted certificate for an "Internal
       Name" (e.g. <code>https://intranet/</code>), a certificate with an
-      overly-long validity period, a certificate signed with SHA-1, or a
-      certificate which otherwise fails to meet the
-      <a href="https://cabforum.org/baseline-requirements-documents/">
-      CA/Browser Forum's Baseline Requirements</a> [[!CAB]].
+      overly-long validity period, a certificate with a weak cipher suite, a
+      certificate signed with SHA-1, or a certificate which otherwise fails
+      to meet the CA/Browser Forum's Baseline Requirements [[!CAB]].
 
       Note: We recommend that a user agent return network errors rather than
       fetching resources whose TLS-protection is deprecated.
+
+      Note: [[WSC-UI]] defines "weakly TLS-protected", which is <i>de facto</i>
+      included in user agents' interpretation of what "deprecated" means.
     </dd>
   </dl>
 
   <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
   <dl>
-    <dt><dfn>TLS-protected</dfn></dt>
-    <dt><dfn local-title="weak">weakly TLS-protected</dfn></dt>
-    <dd>
-      These terms are defined in
-      <a href="http://www.w3.org/TR/2010/REC-wsc-ui-20100812/#typesoftls">§5.2
-      of "Web Security Context: User Interface Guidelines"</a> [[!WSC-UI]].
-      A resource is <strong>TLS-protected</strong> when it is delivered over an
-      encrypted channel. <strong>Weakly TLS-protected</strong> refers to a
-      subset of those resources delivered over a channel that doesn't offer
-      strong protection of its content.
-
-      For example, resources would be considered weakly TLS-protected when
-      delivered by a server presenting a self-signed certificate which does not
-      chain to a root certificate in the user agent's local trust store, as
-      such a certificate only weakly authenticates the server. Similarly, a
-      server which negotiates down to a weak cipher suite (such as
-      <code>TLS_RSA_WITH_NULL_MD5</code>) would only weakly protect resources
-      it serves.
-
-      Note: We recommend that a user agent return network errors rather than
-      fetching resources whose TLS-protection is weak.
-    </dd>
-
     <dt><dfn>origin</dfn></dt>
     <dd>
       An origin defines the scope of authority or privilege under which a
@@ -560,10 +538,10 @@ Indent: 2
   <section>
     <h3 id="requirements-fetching">Resource Fetching</h3>
 
-    A user agent SHOULD reject <a>weakly TLS-protected</a> resources entirely
-    by failing the TLS handshake or by requiring explicit user acceptance
-    of the risk (for instance, presenting the user with a confirmation screen
-    she must click through).
+    A user agent SHOULD entirely reject resources whose TLS-protection is
+    <a>deprecated</a> by failing the TLS handshake or by requiring explicit
+    user acceptance of the risk (for instance, presenting the user with a
+    confirmation screen she must click through).
 
     If a {{Document}}'s <a>incumbent settings object</a> <a>restricts
     mixed content</a>, or the <a>relevant settings object for a script</a>
@@ -898,8 +876,7 @@ Indent: 2
             <code>authenticated</code>, return <strong>blocked</strong>.
 
             Note: This covers both cases in which unauthenticated resources are
-            requested, as well as cases in which the TLS handshake succeeds, and
-            the resource exceeds the definition of <a>weakly TLS-protected</a>,
+            requested, as well as cases in which the TLS handshake succeeds,
             but the user agent chooses to hold it to a higher standard. The
             definition of <a>deprecated TLS-protection</a> has some examples of
             these kinds of scenarios.
@@ -1145,8 +1122,8 @@ Indent: 2
       <ol>
         <li>
           If secure is <strong>true</strong>, and the TLS handshake performed
-          in step 5 results in a <a>weakly TLS-protected</a> connection, or the
-          TLS-protection is <a>deprecated</a>,then the client MUST
+          in step 5 results in TLS-protection which is is <a>deprecated</a>,
+          then the client MUST
           <a href="http://tools.ietf.org/html/rfc6455#section-7.1.7">Fail the
           WebSocket Connection</a> and abort the connection [[!RFC6455]].
         </li>
