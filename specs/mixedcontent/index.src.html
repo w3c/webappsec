@@ -524,167 +524,6 @@ Indent: 2
 </section>
 
 <!--
-██     ██    ███          ████████  ████████  ███████  ██     ██ ████ ████████  ████████ ██     ██ ████████ ██    ██ ████████  ██████
-██     ██   ██ ██         ██     ██ ██       ██     ██ ██     ██  ██  ██     ██ ██       ███   ███ ██       ███   ██    ██    ██    ██
-██     ██  ██   ██        ██     ██ ██       ██     ██ ██     ██  ██  ██     ██ ██       ████ ████ ██       ████  ██    ██    ██
-██     ██ ██     ██       ████████  ██████   ██     ██ ██     ██  ██  ████████  ██████   ██ ███ ██ ██████   ██ ██ ██    ██     ██████
-██     ██ █████████       ██   ██   ██       ██  ██ ██ ██     ██  ██  ██   ██   ██       ██     ██ ██       ██  ████    ██          ██
-██     ██ ██     ██       ██    ██  ██       ██    ██  ██     ██  ██  ██    ██  ██       ██     ██ ██       ██   ███    ██    ██    ██
- ███████  ██     ██       ██     ██ ████████  █████ ██  ███████  ████ ██     ██ ████████ ██     ██ ████████ ██    ██    ██     ██████
--->
-<section>
-  <h2 id="requirements">User Agent Requirements</h2>
-
-  <section>
-    <h3 id="requirements-fetching">Resource Fetching</h3>
-
-    A user agent SHOULD entirely reject resources whose TLS-protection is
-    <a>deprecated</a> by failing the TLS handshake or by requiring explicit
-    user acceptance of the risk (for instance, presenting the user with a
-    confirmation screen she must click through).
-
-    If a {{Document}}'s <a>incumbent settings object</a> <a>restricts
-    mixed content</a>, or the <a>relevant settings object for a script</a>
-    <a>restricts mixed content</a>, then <a>fetching</a> resource in response
-    to requests (including not only requests for a {{Document}}'s subresources,
-    but also requests made from (Workers, SharedWorkers, Service Workers, and
-    so on) will exhibit the following behavior:
-
-    <ol>
-      <li>
-        <a>Requests</a> for <a>blockable</a> resources from an
-        <a><em>a priori</em> insecure origin</a> will not generate network
-        traffic, but will instead return a synthetically generated <a>network
-        error</a> response.
-      </li>
-
-      <li>
-        <a>Responses</a> to <a>requests</a> for <a>blockable</a> resources from
-        an <a>insecure origin</a> will not be delivered to the <a>request
-        client</a>, but instead will return a synthetically generated <a>network
-        error</a> response.
-      </li>
-    </ol>
-
-    [[#fetch-integration]] and [[#algorithms]] detail how these fetching
-    requirements could be implemented.
-
-    A user agent MAY take further action:
-
-    <ol>
-      <li>
-        <a>Requests</a> for <a>optionally-blockable</a> resources which
-        are <a>mixed content</a> SHOULD be treated as <a>blockable</a> (and
-        therefore returned as a <a>network error</a> as described above), but
-        a user agent MAY allow them to load normally.
-
-        Note: For instance, a user agent could interpret the presence of a
-        <code>Strict-Transport-Security</code> header field as forcing all
-        such content into the <a>blockable</a> category [[RFC6797]].
-      </li>
-
-      <li>
-        <a>Requests</a> for <a>optionally-blockable</a> resources which
-        are <a>mixed content</a> MAY be modified to reduce the risk to users.
-        For example, cookies and other authentication tokens could be stripped
-        from the requests, or the user agent could automatically change the
-        protocol of the requested URL to <code>HTTPS</code> in certain cases.
-      </li>
-    </ol>
-  </section>
-
-  <section>
-    <h3 id="requirements-script">Script APIs</h3>
-
-    If the <a>relevant settings object for a script</a> <var>script</var>
-    <a>restricts mixed content</a>, then a user agent will model a mixed content
-    failure as a network error. This means that:
-
-    <ol>
-      <li>
-        An XMLHttpRequest rejected as mixed content will run the steps for a
-        network error during execution of the 
-        <a href="http://www.w3.org/TR/XMLHttpRequest2/#the-send-method"><code>send()</code>
-        method</a> [[!XMLHTTPREQUEST]].
-      </li>
-
-      <li>
-        An EventSource connection rejected as mixed content will cause the user agent to
-        <a href="http://www.w3.org/TR/eventsource/#fail-the-connection">fail the
-        connection</a> [[!EVENTSOURCE]].
-      </li>
-
-      <li>
-        When processing WebSocket's
-        <a href="http://www.w3.org/TR/websockets/#the-websocket-interface">constructor</a>,
-        for an <a>a priori insecure origin</a>, a <code>SecurityError</code> exception will
-        be thrown [[!WEBSOCKETS]].
-      </li>
-    </ol>
-  </section>
-
-  <section>
-    <h3 id="requirements-forms">Form Submission</h3>
-
-    If a {{Document}}'s <a>incumbent settings object</a> <a>restricts mixed
-    content</a>, then a user agent MAY choose to warn users of the presence of
-    one or more <a element>form</a> elements with <a element-attr>action</a>
-    attributes whose values are <a>insecure URLs</a>.
-
-    Note: Chrome, for example, currently gives the same UI treatment to a page
-    with an insecure form action as it does for a page that displays an insecure
-    image.
-
-    Further, a user agent MAY <strong>optionally</strong> treat form submissions
-    in the <a>top-level browsing context</a> from a {{Document}} whose
-    <a>incumbent settings object</a> <a>restricts mixed content</a> as a
-    request for <a>blockable content</a> to protect users from accidental data
-    leakage.
-  </section>
-
-  </section>
-
-  <section>
-    <h3 id="requirements-ux">UI Requirements</h3>
-
-    If a user agent would normally display a visible indication that the
-    <a>top-level browsing context</a> is secure (for instance, via a green lock
-    icon), then when the user agent services a <a>request</a> for an
-    <a>optionally-blockable</a> resource which is <a>mixed content</a>, then the
-    user agent MUST NOT provide the user with that same visible indication. The
-    user agent SHOULD instead display a visible indication that <a>mixed
-    content</a> is present.
-
-    Note: This requirement holds even in the context of an   
-    <a href="https://cabforum.org/about-ev-ssl/">EV status</a> [[!CAB]]. An EV
-    certificate's visible indicator does not override the necessity to notify
-    users of mixed content violations.
-  </section>
-
-  <section>
-    <h3 id="requirements-user-controls">User Controls</h3>
-
-    A user agent MAY offer users the ability to directly decide whether or not
-    to treat <strong>all</strong> <a>mixed content</a> as <a>blockable</a>
-    (meaning that even <a>optionally-blockable</a> would be blocked in a
-    mixed context).
-
-    Note: It is <em>strongly recommended</em> that users take advantage of such
-    an option if provided.
-
-    A user agent MAY offer users the ability to override its decision to block
-    <a>blockable</a> mixed content on a particular page.
-
-    Note: Practically, a user agent probably can't get away with not offering
-    such a back door. That said, allowing mixed script is in particular a very
-    dangerous option, and each user agent
-    <a href="http://tools.ietf.org/html/rfc6919#section-3">REALLY SHOULD NOT</a>
-    [[RFC6919]] present such a choice to users without careful consideration and
-    communication of the risk involved.
-  </section>
-</section>
-
-<!--
    ███    ██        ██████    ███████  ████████  ████ ████████ ██     ██ ██     ██  ██████
   ██ ██   ██       ██    ██  ██     ██ ██     ██  ██     ██    ██     ██ ███   ███ ██    ██
  ██   ██  ██       ██        ██     ██ ██     ██  ██     ██    ██     ██ ████ ████ ██
@@ -695,6 +534,34 @@ Indent: 2
 -->
 <section>
   <h2 id="algorithms">Insecure Content in Secure Contexts</h2>
+
+  At a high level, the following algorithms allow user agents to determine
+  whether particular requests should succeed, or should result in network
+  errors.
+
+  When fetching resources, the mixed content checks described in the algorithms
+  below should be inserted at the top of the Fetch algorithm to block network
+  traffic to <a><em>a priori</em> insecure origins</a>, and at the bottom of
+  the algorithm, to block responses from <a>insecure origins</a>.
+
+  Fetch calls the algorithm defined in
+  [[#should-block-fetch]] during
+  <a href="http://fetch.spec.whatwg.org/#fetching">Step 4 of the Fetching
+  algorithm</a> [[!FETCH]].
+
+  Note: Hooking into Fetch here ensures that we catch not only the initial
+  request, but all redirects as well. That is certainly the intent.
+
+  Further, Fetch calls the algorithm defined in
+  [[#should-block-response]] during
+  <a href="http://fetch.spec.whatwg.org/#fetching">Step 7 of the Fetching
+  algorithm</a> [[!FETCH]].
+
+  Note: This hook is necessary to detect resources modified or
+  synthesized by a ServiceWorker, as well as to determine whether a
+  resource is <a>insecure</a> once the TLS-handshake has finished. See
+  steps 4.1 and 4.2 of the algorithm defined in [[#should-block-response]] for
+  detail.
 
   <section>
     <h3 id="categorize-settings-object">
@@ -811,6 +678,11 @@ Indent: 2
         content</a>, return <strong>allowed</strong>.
       </li>
       <li>
+        If the user agent has been instructed to allow <a>mixed content</a>
+        (as outlined in [[#requirements-user-controls]]), return
+        <strong>allowed</strong>.
+      </li>
+      <li>
         If <var>request</var>'s <code>context frame type</code> is
         <code>top-level</code>, return <strong>allowed</strong>.
       </li>
@@ -860,6 +732,11 @@ Indent: 2
       <li>
         If <var>request</var>'s <a>client</a> does not <a>restrict mixed
         content</a>, return <strong>allowed</strong>.
+      </li>
+      <li>
+        If the user agent has been instructed to allow <a>mixed content</a>
+        (as outlined in [[#requirements-user-controls]]), return
+        <strong>allowed</strong>.
       </li>
       <li>
         Let <var>context</var> be the <a>request context</a> of
@@ -1044,44 +921,6 @@ Indent: 2
 </section>
 
 <!--
-████████ ████████ ████████  ██████  ██     ██
-██       ██          ██    ██    ██ ██     ██
-██       ██          ██    ██       ██     ██
-██████   ██████      ██    ██       █████████
-██       ██          ██    ██       ██     ██
-██       ██          ██    ██    ██ ██     ██
-██       ████████    ██     ██████  ██     ██
--->
-<section>
-  <h2 id="fetch-integration">Integration with Fetch</h2>
-
-  When fetching resources, the mixed content checks described in the algorithms
-  above should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a><em>a priori</em> insecure origins</a>, and at the bottom of
-  the algorithm, to block responses from <a>insecure origins</a>.
-
-  Fetch calls the algorithm defined in
-  [[#should-block-fetch]] during
-  <a href="http://fetch.spec.whatwg.org/#fetching">Step 4 of the Fetching
-  algorithm</a> [[!FETCH]].
-
-  Note: Hooking into Fetch here ensures that we catch not only the initial
-  request, but all redirects as well. That is certainly the intent.
-
-  Further, Fetch calls the algorithm defined in
-  [[#should-block-response]] during
-  <a href="http://fetch.spec.whatwg.org/#fetching">Step 7 of the Fetching
-  algorithm</a> [[!FETCH]].
-
-  Note: This hook is necessary to detect resources modified or
-  synthesized by a ServiceWorker, as well as to determine whether a
-  resource is <a>insecure</a> once the TLS-handshake has finished. See
-  steps 4.1 and 4.2 of the algorithm defined in [[#should-block-response]] for
-  detail.
-
-</section>
-
-<!--
 ██      ██ ████████ ████████   ██████   ███████   ██████  ██    ██ ████████ ████████  ██████
 ██  ██  ██ ██       ██     ██ ██    ██ ██     ██ ██    ██ ██   ██  ██          ██    ██    ██
 ██  ██  ██ ██       ██     ██ ██       ██     ██ ██       ██  ██   ██          ██    ██
@@ -1130,6 +969,101 @@ Indent: 2
       </ol>
     </li>
   </ul>
+</section>
+
+<!--
+ ██████  ████████  ██████  ██     ██ ████████  ████ ████████ ██    ██
+██    ██ ██       ██    ██ ██     ██ ██     ██  ██     ██     ██  ██ 
+██       ██       ██       ██     ██ ██     ██  ██     ██      ████  
+ ██████  ██████   ██       ██     ██ ████████   ██     ██       ██   
+      ██ ██       ██       ██     ██ ██   ██    ██     ██       ██   
+██    ██ ██       ██    ██ ██     ██ ██    ██   ██     ██       ██   
+ ██████  ████████  ██████   ███████  ██     ██ ████    ██       ██   
+-->
+<section>
+  <h2 id="security-considerations">Security Considerations</h2>
+
+  <section>
+    <h3 id="requirements-forms">Form Submission</h3>
+
+    If a {{Document}}'s <a>incumbent settings object</a> <a>restricts mixed
+    content</a>, then a user agent MAY choose to warn users of the presence of
+    one or more <a element>form</a> elements with <a element-attr>action</a>
+    attributes whose values are <a>insecure URLs</a>.
+
+    Note: Chrome, for example, currently gives the same UI treatment to a page
+    with an insecure form action as it does for a page that displays an insecure
+    image.
+
+    Further, a user agent MAY <strong>optionally</strong> treat form submissions
+    in the <a>top-level browsing context</a> from a {{Document}} whose
+    <a>incumbent settings object</a> <a>restricts mixed content</a> as a
+    request for <a>blockable content</a> to protect users from accidental data
+    leakage.
+  </section>
+
+  <section>
+    <h3 id="requirements-ux">UI Requirements</h3>
+
+    If a user agent would normally display a visible indication that the
+    <a>top-level browsing context</a> is secure (for instance, via a green lock
+    icon), then when the user agent services a <a>request</a> for an
+    <a>optionally-blockable</a> resource which is <a>mixed content</a>, then the
+    user agent MUST NOT provide the user with that same visible indication. The
+    user agent SHOULD instead display a visible indication that <a>mixed
+    content</a> is present.
+
+    Note: This requirement holds even in the context of an   
+    <a href="https://cabforum.org/about-ev-ssl/">EV status</a> [[!CAB]]. An EV
+    certificate's visible indicator does not override the necessity to notify
+    users of mixed content violations.
+  </section>
+
+  <section>
+    <h3 id="requirements-user-controls">User Controls</h3>
+
+    A user agent MAY offer users the ability to directly decide whether or not
+    to treat <strong>all</strong> <a>mixed content</a> as <a>blockable</a>
+    (meaning that even <a>optionally-blockable</a> would be blocked in a
+    mixed context).
+
+    Note: It is <em>strongly recommended</em> that users take advantage of such
+    an option if provided.
+
+    A user agent MAY offer users the ability to override its decision to block
+    <a>blockable</a> mixed content on a particular page.
+
+    Note: Practically, a user agent probably can't get away with not offering
+    such a back door. That said, allowing mixed script is in particular a very
+    dangerous option, and each user agent
+    <a href="http://tools.ietf.org/html/rfc6919#section-3">REALLY SHOULD NOT</a>
+    [[RFC6919]] present such a choice to users without careful consideration and
+    communication of the risk involved.
+  </section>
+
+  <section>
+    <h3 id="further-action">Further Action</h3>
+
+    A user agent is encouraged to take further action above and beyond the
+    requirements this document outlines in order to discourage developers from
+    embedding mixed content.
+
+    For instance, a user agent could:
+    
+    <ol>
+      <li>
+        Interpret the presence of a <code>Strict-Transport-Security</code>
+        header field as forcing all content into the <a>blockable</a> category
+        [[RFC6797]].
+      </li>
+      <li>
+        Modify requests for <a>optionally-blockable</a> resources which are
+        <a>mixed content</a> in order to reduce the risk to users: cookies
+        and other authentication tokens could be stripped from the requests,
+        automatic scheme upgrades could be attempted, and so on.
+      </li>
+    </ol>
+  </section>
 </section>
 
 <!--
