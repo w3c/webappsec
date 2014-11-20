@@ -1,0 +1,428 @@
+<h1>Requirements for Powerful Features</h1>
+<pre class="metadata">
+Status: ED
+ED: https://w3c.github.io/webappsec/specs/powerfulfeatures/
+Shortname: POWER
+TR: http://www.w3c.org/TR/powerful-features/
+Level: 1
+Editor: Mike West, Google Inc., mkwst@google.com
+Group: webappsec
+Abstract:
+  This specification prescribes guidelines for user agents' implementations of
+  certain kinds of APIs which are powerful enough to be restricted to secure
+  contexts.
+Version History: https://github.com/w3c/webappsec/commits/master/specs/powerfulfeatures/index.src.html
+Indent: 2
+</pre>
+<!--
+   ███    ██    ██  ██████  ██     ██  ███████  ████████   ██████ 
+  ██ ██   ███   ██ ██    ██ ██     ██ ██     ██ ██     ██ ██    ██
+ ██   ██  ████  ██ ██       ██     ██ ██     ██ ██     ██ ██      
+██     ██ ██ ██ ██ ██       █████████ ██     ██ ████████   ██████ 
+█████████ ██  ████ ██       ██     ██ ██     ██ ██   ██         ██
+██     ██ ██   ███ ██    ██ ██     ██ ██     ██ ██    ██  ██    ██
+██     ██ ██    ██  ██████  ██     ██  ███████  ██     ██  ██████ 
+-->
+<!--
+    HTML Definitions
+-->
+<pre class="anchors">
+[
+  {
+    "linkingText": "an iframe srcdoc document",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/embedded-content-0.html#an-iframe-srcdoc-document",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "browsing context",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#browsing-context",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "browsing context container",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#browsing-context-container",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "incumbent settings object",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "nested through",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#browsing-context-nested-through",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "sandboxed origin browsing context flag",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#sandboxed-origin-browsing-context-flag",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "sandboxing flag set",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#sandboxing-flag-set",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "top-level browsing context",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context",
+    "shortname": "html5",
+    "level": 0
+  }
+]
+</pre>
+<!--
+    HTML Interfaces
+-->
+<pre class="anchors">
+[
+  {
+    "linkingText": "document",
+    "type": "interface",
+    "url": "http://www.w3.org/TR/html5/dom.html#the-document-object",
+    "shortname": "html5",
+    "level": 0
+  }
+]
+</pre>
+
+<!--
+████ ██    ██ ████████ ████████   ███████
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████
+-->
+<section>
+  <h2 id="intro">Introduction</h2>
+
+  <em>This section is not normative.</em>
+
+  <em>
+    This section is also not yet an introduction. Someone should totally fix
+    that. TODO(mkwst).
+  </em>
+</section>
+
+<!--
+████████  ████████ ████████ ████ ██    ██ ████ ████████ ████  ███████  ██    ██  ██████
+██     ██ ██       ██        ██  ███   ██  ██     ██     ██  ██     ██ ███   ██ ██    ██
+██     ██ ██       ██        ██  ████  ██  ██     ██     ██  ██     ██ ████  ██ ██
+██     ██ ██████   ██████    ██  ██ ██ ██  ██     ██     ██  ██     ██ ██ ██ ██  ██████
+██     ██ ██       ██        ██  ██  ████  ██     ██     ██  ██     ██ ██  ████       ██
+██     ██ ██       ██        ██  ██   ███  ██     ██     ██  ██     ██ ██   ███ ██    ██
+████████  ████████ ██       ████ ██    ██ ████    ██    ████  ███████  ██    ██  ██████
+-->
+<section>
+  <h2 id="terms">Key Concepts and Terminology</h2>
+
+  <h3 id="terms-defined-here">Terms defined by this specification</h3>
+  <dl>
+    <dt><dfn>powerful feature</dfn></dt>
+    <dd>
+      The considerations around categorizing a feature as
+      <strong>powerful</strong> are explored in more detail in
+      [[#is-feature-powerful]].
+    </dd>
+
+    <dt><dfn export>secure enough</dfn></dt>
+    <dd>
+      A {{Document}} or <a>environment settings object</a> is considered
+      <strong>secure enough</strong> to use <a>powerful features</a> if and
+      only if the algorithm defined in [[#document-powerful-features]]
+      or [[#settings-powerful-features]], respectively, returns
+      <code>Allowed</code> when executed upon it.
+    </dd>
+  </dl>
+
+  <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
+  <dl>
+    <dt><dfn>origin</dfn></dt>
+    <dd>
+      An origin defines the scope of authority or privilege under which a
+      resource operates. It is defined in detail in the Origin specification
+      [[!RFC6454]].
+    </dd>
+
+    <dt>
+      <dfn local-title="potentially secure">
+        potentially secure origin
+      </dfn>
+    </dt>
+    <dd>
+      The term <strong>potentially secure origin</strong> is defined in the
+      Mixed Content specification [[!MIX]].
+    </dd>
+
+    <dt><dfn>globally unique identifier</dfn></dt>
+    <dd>
+      This term is defined in
+      <a href="http://tools.ietf.org/html/rfc6454#section-4">Section 4 of
+      RFC6454</a> [[!RFC6454]].
+
+      Note: URLs that do not use
+      <a href="http://tools.ietf.org/html/rfc3986#section-3.2">hierarchical
+      elements</a> as naming authorities (for example: <code>blob:</code>, and
+      <code>data:</code>) have origins which are globally unique identifiers
+      [[URI]].
+    </dd>
+
+    <dt><dfn local-title="tls state">request client TLS state</dfn></dt>
+    <dt><dfn>response TLS state</dfn></dt>
+    <dd>
+      These terms are defined in
+      <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the
+      Fetch living standard [[!FETCH]].
+    </dd>
+
+    <dt><dfn>environment settings object</dfn></dt>
+    <dd>
+      Defined in [[!HTML5]].
+    </dd>
+
+    <dt><dfn>embedding document</dfn></dt>
+    <dd>
+      Given a {{Document}} <var>A</var>, the <strong>embedding
+      document</strong> of <var>A</var> is the {{Document}}
+      <a title="nested through">through which</a> <var>A</var>'s <a>browsing
+      context</a> is nested.
+    </dd>
+  </dl>
+</section>
+
+<section>
+  <h2 id="is-feature-powerful">
+    Is <var>[insert feature here]</var> powerful?
+  </h2>
+
+  Tangentially related to a user agent's handling of insecure resources in
+  secure contexts, certain web platform features that have distinct impact
+  on a user's security or privacy wish to restrict themselves for use only
+  in sufficiently secure contexts. Service Workers, for instance, may only
+  be registered when the user agent is satisfied that doing so doesn't put
+  the user at risk.
+
+  <h3 id="threat-models">Threat Models</h3>
+
+  <h4>Passive Network Attacker</h4>
+
+  Oh, pervasive monitoring. How we love thee (not really: see [[RFC7258]]).
+
+  <h4>Active Network Attacker</h4>
+
+  It would be nice if your local active network attacker (e.g. the coffee shop
+  around the corner whose WiFi you use all the time) wasn't able to abuse the
+  permissions you've granted to an insecure origin as you surf around unrelated
+  sites on the net.
+
+  <h3 id="examples">Examples</h3>
+
+  <h4 id="webcrypto">Web Crypto</h4>
+
+  [[WEBCRYPTOAPI]]
+
+  <h4 id="eme">Encrypted Media Extensions</h4>
+
+  [[ENCRYPTED-MEDIA]]
+
+  <h4 id="geolocation">Geolocation</h4>
+
+  [[GEOLOCATION-API]]
+
+  <h4 id="serviceworkers">Service Workers</h4>
+
+  [[SERVICE-WORKERS]]
+</section>
+
+<section>
+  <h2 id="algorithms">Algorithms</h2>
+
+  <section>
+    <h3 id="document-powerful-features">
+      May <var>Document</var> use powerful features?
+    </h3>
+
+    Given a {{Document}} <var>document</var>, this algorithm returns
+    <code>Allowed</code> or <code>Not Allowed</code> as appropriate.
+
+    <ol>
+      <li>
+        While <var>document</var> corresponds to <a>an iframe srcdoc
+        Document</a>, let <var>document</var> be that Document's <a>browsing
+        context</a>'s <a>browsing context container</a>'s {{Document}}.
+      </li>
+      <li>
+        Let <var>origin</var> be the <a>origin</a> of <var>document</var>.
+      </li>
+      <li>
+        If <var>document</var>'s active <a>sandboxing flag set</a> has its
+        <a>sandboxed origin browsing context flag</a> set:
+
+        <ol>
+          <li>
+            Set <var>origin</var> to the <a>origin</a> of
+            <var>document</var>'s address.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Let <var>result</var> be the result of executing the
+        [[#settings-powerful-features]] algorithm on <var>document</var>'s
+        <a>incumbent settings object</a>.
+      </li>
+      <li>
+        If <var>result</var> is <code>Not Allowed</code>, return <code>Not
+        Allowed</code>.
+      </li>
+      <li>
+        Otherwise:
+
+        <ol>
+          <li>
+            If <var>document</var> has an <a>embedding document</a>, return the
+            result of executing [[#document-powerful-features]] on
+            <var>document</var>'s <a>embedding document</a> with the
+            <var>ancestors flag</var> set to <code>true</code>.
+          </li>
+          <li>
+            Otherwise, return <var>result</var>.
+          </li>
+        </ol>
+      </li>
+    </ol>
+
+    Note: Sandboxed documents will have a unique origin. This algorithm uses the
+    location of a sandboxed document to determine whether it should be considered
+    authenticated. That is, the document inside
+    <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
+    would be considered to allow powerful features.
+  </section>
+
+  <section>
+    <h3 id="settings-powerful-features">
+      May <var>environment settings object</var> use powerful features?
+    </h3>
+
+    Given an <a>environment settings object</a> <var>settings</var>, this
+    algorithm returns <code>Allowed</code> if powerful features may be used
+    in the object's context, and <code>Not Allowed</code> otherwise.
+
+    <ol>
+      <li>
+        If <var>settings</var>' <a>TLS state</a> is
+        <code>authenticated</code>, return <code>Allowed</code>.
+      </li>
+      <li>
+        Otherwise:
+
+        <ol>
+          <li>
+            Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
+          </li>
+          <li>
+            If the result of executing the [[#is-origin-trusted]] algorithm
+            on <var>origin</var> is <code>Potentially Trusted</code>, return
+            <code>Allowed</code>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <code>Not Allowed</code>.
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h3 id="is-origin-trusted">
+      Is <var>origin</var> potentially trusted?
+    </h3>
+
+    Certain origins are impossible for a user agent not to place trust in. In
+    particular, <code>file:</code> URLs and the loopback interface both expose
+    aspects of the machine on which the user agent is running. The user agent
+    has no choice but to trust these origins.
+
+    A user agent MAY choose to extend this trust to other, vendor-specific URL
+    schemes like <code>app:</code> or <code>chrome-extension:</code>.
+
+    Given an <a>origin</a> <var>origin</var>, the following algorithm returns
+    <code>Potentially Trusted</code> or <code>Not Trusted</code> as appropriate.
+
+    <ol>
+      <li>
+        If <var>origin</var> is a <a>potentially secure origin</a>,
+        return <code>Potentially Trusted</code>.
+
+        Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
+        is the origin of the context in which they were created. Therefore,
+        blobs created in an potentially secure origin will themselves be
+        potentially secure. The origin of <code>data:</code> and
+        <code>javascript:</code> URLs is an opaque identifier, which will not
+        be considered potentially secure.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>host</code> component is
+        <code>localhost</code>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>host</code> component matches one of
+        the CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
+        [[!RFC4632]], return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>scheme</code> component is
+        <code>file</code>, return <code>Potentially Trusted</code>.
+      </li>
+      <li>
+        If <var>origin</var>'s <code>scheme</code> component is one which
+        the user agent considers to be authenticated, return
+        <code>Potentially Trusted</code>.
+
+        Note: This is meant to cover vendor-specific URL schemes whose
+        contents are authenticated by the user agent. For example, FirefoxOS
+        application resources are referred to with an URL whose
+        <code>scheme</code> component is <code>app:</code>. Likewise, Chrome's
+        extensions and apps live on <code>chrome-extension:</code> schemes.
+        These could reasonably be considered trusted origins.
+      </li>
+      <li>
+        Return <code>Not Trusted</code>.
+      </li>
+    </ol>
+  </section>
+</section>
+
+<!--
+   ███     ██████  ██    ██ ██    ██  ███████  ██      ██ ██       ████████ ████████   ██████   ████████ ██     ██ ████████ ██    ██ ████████  ██████
+  ██ ██   ██    ██ ██   ██  ███   ██ ██     ██ ██  ██  ██ ██       ██       ██     ██ ██    ██  ██       ███   ███ ██       ███   ██    ██    ██    ██
+ ██   ██  ██       ██  ██   ████  ██ ██     ██ ██  ██  ██ ██       ██       ██     ██ ██        ██       ████ ████ ██       ████  ██    ██    ██
+██     ██ ██       █████    ██ ██ ██ ██     ██ ██  ██  ██ ██       ██████   ██     ██ ██   ████ ██████   ██ ███ ██ ██████   ██ ██ ██    ██     ██████
+█████████ ██       ██  ██   ██  ████ ██     ██ ██  ██  ██ ██       ██       ██     ██ ██    ██  ██       ██     ██ ██       ██  ████    ██          ██
+██     ██ ██    ██ ██   ██  ██   ███ ██     ██ ██  ██  ██ ██       ██       ██     ██ ██    ██  ██       ██     ██ ██       ██   ███    ██    ██    ██
+██     ██  ██████  ██    ██ ██    ██  ███████   ███  ███  ████████ ████████ ████████   ██████   ████████ ██     ██ ████████ ██    ██    ██     ██████
+-->
+<section>
+  <h2 id="acknowledgements">Acknowledgements</h2>
+
+  This document is largely based on the Chrome Security team's work on
+  [[POWERFUL-NEW-FEATURES]]. Chris Palmer, Ryan Sleevi, and David Dorwin have
+  been particularly engaged. Anne van Kesteren and Henri Sivonen have also
+  provided very helpful feedback.
+</section>

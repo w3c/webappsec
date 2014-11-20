@@ -18,5 +18,8 @@ mixedcontent/index.html: mixedcontent/index.src.html
 referrer-policy/index.html: referrer-policy/index.src.html
 	bikeshed -q spec ./referrer-policy/index.src.html index.html
 
+powerfulfeatures/index.html: powerfulfeatures/index.src.html
+	bikeshed -q spec ./powerfulfeatures/index.src.html index.html
+
 publish: all
 	git push origin master master:gh-pages
