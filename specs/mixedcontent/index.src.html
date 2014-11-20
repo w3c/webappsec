@@ -784,8 +784,13 @@ Indent: 2
       May <var>Document</var> use powerful features?
     </h3>
 
-    Given a {{Document}} <var>document</var>, this algorithm returns
-    <code>Allowed</code> or <code>Not Allowed</code> as appropriate.
+    Given a {{Document}} <var>document</var>, and an <var>ancestors flag</var>
+    this algorithm returns <code>Allowed</code> or <code>Not Allowed</code> as
+    appropriate.
+
+    If <var>ancestors flag</var> is set, this algorithm will check the given
+    {{Document}} as well as its entire ancestor chain. <var>ancestors flag</var>
+    defaults to <code>true</code> if not provided.
 
     <ol>
       <li>
@@ -808,14 +813,29 @@ Indent: 2
         </ol>
       </li>
       <li>
-        If the result of executing the [[#is-origin-trusted]] algorithm
-        on <var>origin</var> is <code>Potentially Trusted</code>, return
-        <code>Allowed</code>.
+        Let <var>result</var> be the result of executing the
+        [[#settings-powerful-features]] algorithm on <var>document</var>'s
+        <a>incumbent settings object</a>.
       </li>
       <li>
-        Return the result of executing the [[#settings-powerful-features]]
-        algorithm on <var>browsing context</var>'s <a>incumbent settings
-        object</a>.
+        If <var>result</var> is <code>Not Allowed</code>, return <code>Not
+        Allowed</code>.
+      </li>
+      <li>
+        Otherwise:
+
+        <ol>
+          <li>
+            If <var>ancestors flag</var> is <code>true</code>, and
+            <var>document</var> has an <a>embedding document</a>, return the
+            result of executing [[#may-document-use-powerful-features]] on
+            <var>document</var>'s <a>embedding document</a> with the
+            <var>ancestors flag</var> set to <code>true</code>.
+          </li>
+          <li>
+            Otherwise, return <var>result</var>.
+          </li>
+        </ol>
       </li>
     </ol>
 

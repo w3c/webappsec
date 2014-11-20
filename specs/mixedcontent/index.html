@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Mixed Content</h1>
   <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20141118>18 November 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20141120>20 November 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a><dt>Latest version:<dd><a href=http://www.w3c.org/TR/mixed-content/>http://www.w3c.org/TR/mixed-content/</a><dt>Previous Versions:<dd><a href=http://www.w3.org/TR/2014/WD-mixed-content-20140722/ rel=previous>http://www.w3.org/TR/2014/WD-mixed-content-20140722/</a><dt>Version History:<dd><a href=https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html>https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html</a><dt>Feedback:<dd><span><a href="mailto:public-webappsec@w3.org?subject=%5BMIX%5D%20feedback">public-webappsec@w3.org</a> with subject line “<kbd>[MIX] <var>… message topic …</var></kbd>” (<a href=http://lists.w3.org/Archives/Public/public-webappsec/ rel=discussion>archives</a>)</span><dt class=editor>Editor:<dd class=editor><div class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)</div></dl></div>
   <div data-fill-with=warning></div>
   <p class=copyright data-fill-with=copyright><a href=http://www.w3.org/Consortium/Legal/ipr-notice#Copyright>Copyright</a> © 2014
@@ -719,8 +719,13 @@
       May <var>Document</var> use powerful features?
     </span><a class=self-link href=#may-document-use-powerful-features></a></h3>
 
-<p>Given a <code class=idl><a data-link-type=idl href=http://www.w3.org/TR/html5/dom.html#the-document-object title=Document>Document</a></code> <var>document</var>, this algorithm returns
-    <code>Allowed</code> or <code>Not Allowed</code> as appropriate.</p>
+<p>Given a <code class=idl><a data-link-type=idl href=http://www.w3.org/TR/html5/dom.html#the-document-object title=Document>Document</a></code> <var>document</var>, and an <var>ancestors flag</var>
+    this algorithm returns <code>Allowed</code> or <code>Not Allowed</code> as
+    appropriate.</p>
+
+<p>If <var>ancestors flag</var> is set, this algorithm will check the given
+    <code class=idl><a data-link-type=idl href=http://www.w3.org/TR/html5/dom.html#the-document-object title=Document>Document</a></code> as well as its entire ancestor chain. <var>ancestors flag</var>
+    defaults to <code>true</code> if not provided.</p>
 
     <ol>
       <li>
@@ -743,18 +748,33 @@
         </ol>
       </li>
       <li>
-        If the result of executing the <a data-section="" href=#is-origin-trusted>§5.3 
-      Is origin potentially trusted?
-    </a> algorithm
-        on <var>origin</var> is <code>Potentially Trusted</code>, return
-        <code>Allowed</code>.
+        Let <var>result</var> be the result of executing the
+        <a data-section="" href=#settings-powerful-features>§5.2 
+      May environment settings object use powerful features?
+    </a> algorithm on <var>document</var>’s
+        <a data-link-type=dfn href=http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object title="incumbent settings object">incumbent settings object</a>.
       </li>
       <li>
-        Return the result of executing the <a data-section="" href=#settings-powerful-features>§5.2 
-      May environment settings object use powerful features?
-    </a>
-        algorithm on <var>browsing context</var>’s <a data-link-type=dfn href=http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object title="incumbent settings object">incumbent settings
-        object</a>.
+        If <var>result</var> is <code>Not Allowed</code>, return <code>Not
+        Allowed</code>.
+      </li>
+      <li>
+        Otherwise:
+
+        <ol>
+          <li>
+            If <var>ancestors flag</var> is <code>true</code>, and
+            <var>document</var> has an <a data-link-type=dfn href=#embedding-document title="embedding document">embedding document</a>, return the
+            result of executing <a data-section="" href=#may-document-use-powerful-features>§5.1 
+      May Document use powerful features?
+    </a> on
+            <var>document</var>’s <a data-link-type=dfn href=#embedding-document title="embedding document">embedding document</a> with the
+            <var>ancestors flag</var> set to <code>true</code>.
+          </li>
+          <li>
+            Otherwise, return <var>result</var>.
+          </li>
+        </ol>
       </li>
     </ol>
 
