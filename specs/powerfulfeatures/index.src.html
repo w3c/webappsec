@@ -151,13 +151,13 @@ Indent: 2
     </dd>
 
     <dt><dfn export>
-      sufficiently secure
+      sufficiently secure context
     </dfn></dt>
     <dd>
       A {{Document}} or <a>environment settings object</a> is considered
       <strong>sufficiently secure</strong> to use <a>powerful features</a> if
-      and only if the algorithm defined in [[#document-powerful-features]]
-      or [[#settings-powerful-features]], respectively, returns
+      and only if the algorithm defined in [[#document-sufficiently-secure]]
+      or [[#settings-sufficiently-secure]], respectively, returns
       <code>Allowed</code> when executed upon it.
 
       The algorithms noted above are the normative reference, but they boil down
@@ -244,7 +244,7 @@ Indent: 2
 
   Certain web platform features that have distinct impact on a user's
   security or privacy should be available for use only in <a>sufficiently
-  secure</a> contexts.
+  secure contexts</a>.
 
   Broadly speaking, we consider a feature powerful enough to restrict when it
   fits into one or more of the following categories:
@@ -283,8 +283,8 @@ Indent: 2
   This list is non-exhaustive, but should give you a feel for the types of
   features you should be concerned about.
 
-  Note: While restricting the feature itself to <a>sufficiently secure</a>
-  contexts is critical, we ought not forget that facilities that carry such
+  Note: While restricting the feature itself to <a>sufficiently secure
+  contexts</a> is critical, we ought not forget that facilities that carry such
   information (such as new network access mechanisms, or other generic
   functions with access to network data) are equally sensitive.
 
@@ -317,12 +317,13 @@ Indent: 2
   <h2 id="algorithms">Algorithms</h2>
 
   <section>
-    <h3 id="document-powerful-features">
-      May <var>Document</var> use powerful features?
+    <h3 id="document-sufficiently-secure">
+      Is <var>Document</var> a sufficiently secure context?
     </h3>
 
     Given a {{Document}} <var>document</var>, this algorithm returns
-    <code>Allowed</code> or <code>Not Allowed</code> as appropriate.
+    <code>Sufficiently Secure</code> if the {{Document}} represents a
+    <a>sufficiently secure context</a> or <code>Insecure</code> otherwise.
 
     <ol>
       <li>
@@ -346,12 +347,12 @@ Indent: 2
       </li>
       <li>
         Let <var>result</var> be the result of executing the
-        [[#settings-powerful-features]] algorithm on <var>document</var>'s
+        [[#settings-sufficiently-secure]] algorithm on <var>document</var>'s
         <a>incumbent settings object</a>.
       </li>
       <li>
-        If <var>result</var> is <code>Not Allowed</code>, return <code>Not
-        Allowed</code>.
+        If <var>result</var> is <code>Insecure</code>, return
+        <code>Insecure</code>.
       </li>
       <li>
         Otherwise:
@@ -359,7 +360,7 @@ Indent: 2
         <ol>
           <li>
             If <var>document</var> has an <a>embedding document</a>, return the
-            result of executing [[#document-powerful-features]] on
+            result of executing [[#document-sufficiently-secure]] on
             <var>document</var>'s <a>embedding document</a> with the
             <var>ancestors flag</var> set to <code>true</code>.
           </li>
@@ -378,18 +379,18 @@ Indent: 2
   </section>
 
   <section>
-    <h3 id="settings-powerful-features">
-      May <var>environment settings object</var> use powerful features?
+    <h3 id="settings-sufficiently-secure">
+      Is <var>environment settings object</var> a sufficiently secure context?
     </h3>
 
     Given an <a>environment settings object</a> <var>settings</var>, this
-    algorithm returns <code>Allowed</code> if powerful features may be used
-    in the object's context, and <code>Not Allowed</code> otherwise.
+    algorithm returns <code>Sufficiently Secure</code> if the object represents
+    a <a>sufficiently secure context</a>, and <code>Insecure</code> otherwise.
 
     <ol>
       <li>
         If <var>settings</var>' <a>TLS state</a> is
-        <code>authenticated</code>, return <code>Allowed</code>.
+        <code>authenticated</code>, return <code>Sufficiently Secure</code>.
       </li>
       <li>
         Otherwise:
@@ -399,20 +400,20 @@ Indent: 2
             Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
           </li>
           <li>
-            If the result of executing the [[#is-origin-trusted]] algorithm
+            If the result of executing the [[#is-origin-trustworthy]] algorithm
             on <var>origin</var> is <code>Potentially Trustworthy</code>, return
-            <code>Allowed</code>.
+            <code>Sufficiently Secure</code>.
           </li>
         </ol>
       </li>
       <li>
-        Return <code>Not Allowed</code>.
+        Return <code>Insecure</code>.
       </li>
     </ol>
   </section>
 
   <section>
-    <h3 id="is-origin-trusted">
+    <h3 id="is-origin-trustworthy">
       Is <var>origin</var> potentially trustworthy?
     </h3>
 
