@@ -8,9 +8,9 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract:
-  This specification provides guidelines for user agent implementors when
-  implementing features whose properties dictate that they only be exposed to
-  the web when delivered into a trustworthy environment.
+  This specification provides guidelines for user agent implementors and spec
+  authors for implementing features whose properties dictate that they only be
+  exposed to the web within a trustworthy environment.
 Version History: https://github.com/w3c/webappsec/commits/master/specs/powerfulfeatures/index.src.html
 Indent: 2
 </pre>
@@ -150,15 +150,35 @@ Indent: 2
       [[#is-feature-powerful]].
     </dd>
 
-    <dt><dfn export local-title="sufficiently secure">
-      secure enough
+    <dt><dfn export>
+      sufficiently secure
     </dfn></dt>
     <dd>
       A {{Document}} or <a>environment settings object</a> is considered
-      <strong>secure enough</strong> to use <a>powerful features</a> if and
-      only if the algorithm defined in [[#document-powerful-features]]
+      <strong>sufficiently secure</strong> to use <a>powerful features</a> if
+      and only if the algorithm defined in [[#document-powerful-features]]
       or [[#settings-powerful-features]], respectively, returns
       <code>Allowed</code> when executed upon it.
+
+      The algorithms noted above are the normative reference, but they boil down
+      to the assertion that <a>powerful features</a> are only usable in the
+      context of an <a>origin</a> with one or more of the following
+      characteristics:
+     
+      <ol>
+        <li>
+          The scheme component is either <code>https</code>, <code>wss</code>,
+          or <code>file</code>.
+        </li>
+        <li>
+          The host component is or falls within "localhost." [[!RFC6761]]
+        </li>
+        <li>
+          The host component is an IP address within a
+          <dfn>loopback special-purpose IP address range</dfn> (i.e.
+          <code>127.0.0.0/8</code> or <code>::1/128</code>) [[!RFC6890]].
+        </li>
+      </ol>
     </dd>
   </dl>
 
@@ -253,6 +273,10 @@ Indent: 2
     <li>
       The feature introduces some state for an origin which persists across
       browsing sessions. [[SERVICE-WORKERS]] is a great example.
+    </li>
+    <li>
+      The feature introduces some functionality for which user permission will
+      be required.
     </li>
   </ol>
 
@@ -376,7 +400,7 @@ Indent: 2
           </li>
           <li>
             If the result of executing the [[#is-origin-trusted]] algorithm
-            on <var>origin</var> is <code>Potentially Trusted</code>, return
+            on <var>origin</var> is <code>Potentially Trustworthy</code>, return
             <code>Allowed</code>.
           </li>
         </ol>
@@ -389,16 +413,11 @@ Indent: 2
 
   <section>
     <h3 id="is-origin-trusted">
-      Is <var>origin</var> potentially trusted?
+      Is <var>origin</var> potentially trustworthy?
     </h3>
 
-    TODO(palmer,mkwst): Decide if we mean "potentially trustworthy", not
-    "potentially trusted". I think "trusted" is a decision for the human
-    user; whereas "potentially trustworthy" is advice the UA can give the
-    user. Therefore we probably mean "trustworthy".
-
     Certain origins are always potentially trustworthy. In particular, UAs
-    MUST treat <code>file:</code> URLs and URLs with hostnames names equivalent
+    MUST treat <code>file</code> URLs and URLs with hostnames names equivalent
     to "localhost" as potentially trustworthy. In principle the UA could treat
     local files and local web servers as untrustworthy. However, <em>given the
     information that is available to the UA at runtime</em>, the resources
@@ -410,12 +429,13 @@ Indent: 2
     schemes like <code>app:</code> or <code>chrome-extension:</code>.
 
     Given an <a>origin</a> <var>origin</var>, the following algorithm returns
-    <code>Potentially Trusted</code> or <code>Not Trusted</code> as appropriate.
+    <code>Potentially Trustworthy</code> or <code>Not Trustworthy</code> as
+    appropriate.
 
     <ol>
       <li>
         If <var>origin</var> is a <a>potentially secure origin</a>,
-        return <code>Potentially Trusted</code>.
+        return <code>Potentially Trustworthy</code>.
 
         Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
         is the origin of the context in which they were created. Therefore,
@@ -425,8 +445,9 @@ Indent: 2
         be considered potentially secure.
       </li>
       <li>
-        If <var>origin</var>'s <code>host</code> component is
-        <code>localhost</code>, return <code>Potentially Trusted</code>.
+        If <var>origin</var>'s <code>host</code> component is or falls within
+        <code>localhost.</code> [[!RFC6761]], return <code>Potentially
+        Trustworthy</code>.
       </li>
       <li>
         If <var>origin</var>'s <code>host</code> component matches one of
