@@ -120,7 +120,7 @@ has the ability to inject arbitrary content.</p>
 
   <p>Delivering resources over a secure channel mitigates some of this risk: with
 TLS, <a href="http://tools.ietf.org/html/rfc6797">HSTS</a>, and <a href="http://tools.ietf.org/html/draft-ietf-websec-key-pinning">pinned public keys</a>, a user agent can be fairly certain
-that it is indeed speaking with the server it believes it&#8217;s talking to. These
+that it is indeed speaking with the server it believes it’s talking to. These
 mechanisms, however, authenticate <em>only</em> the server, <em>not</em> the content. An
 attacker (or admin!) with access to the server can manipulate content with
 impunity. Ideally, authors would not only be able to pin the keys of a
@@ -128,7 +128,7 @@ server, but also pin the <em>content</em>, ensuring that an exact representation
 a resource, and <em>only</em> that representation, loads and executes.</p>
 
   <p>This document specifies such a validation scheme, extending several HTML
-elements with a <code>integrity</code> attribute that contains a cryptographic hash of
+elements with an <code>integrity</code> attribute that contains a cryptographic hash of
 the representation of the resource the author expects to load. For instance,
 an author may wish to load jQuery from a shared server rather than hosting it
 on their own origin. Specifying that the <em>expected</em> SHA-256 hash of
@@ -142,7 +142,7 @@ substitute malicious content.</p>
   <p>This example can be communicated to a user agent by adding the hash to a
 <code>script</code> element, like so:</p>
 
-  <pre class="example highlight"><code>&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"
+  <pre><code>&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"
         integrity="ni:///sha-256;C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg?ct=application/javascript"&gt;
 </code></pre>
 
@@ -185,15 +185,9 @@ to run on her site, but flagging violations for manual review.</p>
       </li>
       <li>
         <p>The metadata provided for verification may enable improvements to
-user agents&#8217; caching schemes: common resources such as JavaScript
+user agents’ caching schemes: common resources such as JavaScript
 libraries can be downloaded once, and only once, even if multiple
 instances with distinct URLs are requested.</p>
-      </li>
-      <li>
-        <p>(potentially) Relax mixed-content warnings for resources whose
-integrity is verified. If the integrity metadata for a resource
-is delivered over a secure channel, the user agent might choose to
-allow loading the resource over an insecure channel.</p>
       </li>
       <li>
         <p>(potentially) Allow resources to be downloaded from non-canonical
@@ -203,8 +197,7 @@ fails an integrity check. </p>
       </li>
     </ol>
 
-    <p class="issue" data-number="1">I&#8217;m not sure about #5 and #6. Get more detail from the WG about the
-benefits that such a fallback system would enable. (mkwst)</p>
+    <p class="issue" data-number="1">Rather sure about #5. We also agreed to remove mixed-content relaxation. Declare this issue resolved? (mkwst,freddyb)</p>
   </section>
   <!-- /Introduction::Goals -->
 
@@ -218,43 +211,48 @@ benefits that such a fallback system would enable. (mkwst)</p>
         <li>
           <p>An author wishes to use a content delivery network to improve performance
 for her globally-distributed users. She wishes to ensure, however, that
-the CDN&#8217;s servers deliver <em>only</em> the code she expects them to deliver. She
+the CDN’s servers deliver <em>only</em> the code she expects them to deliver. She
 can mitigate the risk that CDN compromise (or unexpectedly malicious
 behavior) would change her code in unfortunate ways by adding
 <a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>script</code> element included on her page:</p>
 
-          <pre class="example highlight"><code>&lt;script src="https://site53.cdn.net/include.js"
+          <pre><code>&lt;script src="https://site53.cdn.net/include.js"
         integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"&gt;&lt;/script&gt;
 </code></pre>
         </li>
         <li>
           <p>An author wants to include JavaScript provided by a third-party
 analytics service on her site. She wants, however, to ensure that only
-the code she&#8217;s carefully reviewed is executed. She can do so by generating
-<a href="#dfn-integrity-metadata">integrity metadata</a> for the script she&#8217;s planning on including, and
+the code she’s carefully reviewed is executed. She can do so by generating
+<a href="#dfn-integrity-metadata">integrity metadata</a> for the script she’s planning on including, and
 adding it to the <code>script</code> element she includes on her page:</p>
 
-          <pre class="example highlight"><code>&lt;script src="https://analytics-r-us.com/v1.0/include.js"
+          <pre><code>&lt;script src="https://analytics-r-us.com/v1.0/include.js"
         integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"&gt;&lt;/script&gt;
 </code></pre>
         </li>
-        <li>
-          <p>An advertising network wishes to ensure that advertisements delivered via
-third-party servers matches the code which they reviewed in order to reduce
-the risk of accidental or malicious substitution of unreviewed content. By
-adding <a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>iframe</code> element wrapping the
-advertisement, they can ensure that the third-party server delivers only
-the agreed-upon content.</p>
+      </ul>
 
-          <pre class="example highlight"><code>&lt;iframe src="https://awesome-ads.com/advertisement1.html"
-        integrity="ni:///sha-256;kasfdsaffs...eoirW-e?ct=text/html"&gt;&lt;/iframe&gt;
-</code></pre>
-        </li>
+      <!-- Removed for minimum-viable-sri: no iframes
+
+*   An advertising network wishes to ensure that advertisements delivered via
+    third-party servers matches the code which they reviewed in order to reduce
+    the risk of accidental or malicious substitution of unreviewed content. By
+    adding [integrity metadata][] to the `iframe` element wrapping the
+    advertisement, they can ensure that the third-party server delivers only
+    the agreed-upon content.
+    
+        <iframe src="https://awesome-ads.com/advertisement1.html"
+                integrity="ni:///sha-256;kasfdsaffs...eoirW-e?ct=text/html"></iframe>
+    {:.example.highlight}
+-->
+
+      <ul>
         <li>
           <p>A user agent wishes to ensure that pieces of its UI which are rendered via
-HTML (for example, Chrome&#8217;s New Tab Page) aren&#8217;t manipulated before display.
+HTML (for example, Chrome’s New Tab Page) aren’t manipulated before display.
 <a href="#dfn-integrity-metadata">Integrity metadata</a> mitigates the risk that altered JavaScript will run
-in these page&#8217;s high-privilege context.</p>
+in these page’s high-privilege context.</p>
         </li>
         <li>
           <p>The author of a mash-up wants to make sure her creation remains in a working
@@ -275,7 +273,7 @@ functionality to be notified of changes to the included resources.</p>
 downloaded. It can do so by adding <a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>a</code>
 elements which users click on to trigger a download:</p>
 
-          <pre class="example highlight"><code>&lt;a href="https://software-is-nice.com/awesome.exe"
+          <pre><code>&lt;a href="https://software-is-nice.com/awesome.exe"
    integrity="ni:///sha-256;fkfrewFRFEFHJR...wfjfrErw?ct=application/octet-stream"
    download&gt;...&lt;/a&gt;
 </code></pre>
@@ -294,7 +292,7 @@ trusted proxy which unavoidably transcodes data for security, performance,
 or other reasons. She can do this by adding <a href="#dfn-integrity-metadata">integrity metadata</a> and a
 <a href="#the-noncanonical-src-attribute-todo">non-canonical source</a> to the <code>script</code> element:</p>
 
-          <pre class="example highlight"><code>&lt;script src="https://my-trusted-server.com/script.js"
+          <pre><code>&lt;script src="https://my-trusted-server.com/script.js"
         noncanonical-src="https://my-cdn.net/script.js"
         integrity="ni:///sha-256;asijfiqu4t12...woeji3W?ct=application/javascript"&gt;&lt;/script&gt;
 </code></pre>
@@ -324,11 +322,13 @@ are encouraged to optimize.</p>
 executing a cryptographic hash function on an arbitrary block of data.</p>
 
     <p>A <dfn>secure channel</dfn> is any communication mechanism that the user
-agent has defined as &#8220;secure&#8221; (typically limited to HTTP over Transport
+agent has defined as “secure” (typically limited to HTTP over Transport
 Layer Security (TLS) [[!RFC2818]]).</p>
 
     <p>An <dfn>insecure channel</dfn> is any communication mechanism other than
-those the user agent has defined as &#8220;secure&#8221;.</p>
+those the user agent has defined as “secure”.</p>
+
+    <p>Clarification needed whether we want to talk about (in)secure channels or (un)authenticated origins. This is Github issue 71 (freddyb). {:.issue data-number=”71”}</p>
 
     <p>The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]</p>
@@ -353,7 +353,7 @@ specified in RFC 5234. [[!ABNF]]</p>
 
     <p>The <dfn>SHA-256</dfn>, <dfn>SHA-384</dfn>, and <dfn>SHA-512</dfn> are part
 of the <dfn>SHA-2</dfn> set of cryptographic hash functions defined by the
-NIST in <a href="http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf">&#8220;Descriptions of SHA-256, SHA-384, and SHA-512&#8221;</a>.</p>
+NIST in <a href="http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf">“Descriptions of SHA-256, SHA-384, and SHA-512”</a>.</p>
 
   </section>
 </section>
@@ -375,28 +375,27 @@ metadata</dfn>, which consists of the following pieces of information:</p>
     <ul>
       <li>cryptographic hash function</li>
       <li><a href="#dfn-digest">digest</a></li>
-      <li>the resource&#8217;s MIME type</li>
+      <li>the resource’s MIME type</li>
     </ul>
 
     <p>The hash function and digest MUST be provided in order to validate a
-resource&#8217;s integrity. The MIME type SHOULD be provided, as it mitigates the
-risk of certain attack vectors (see <a href="#mime-type-confusion">MIME Type confusion</a> in
-this document&#8217;s Security Considerations section).</p>
+resource’s integrity. The MIME type SHOULD be provided, as it mitigates the
+risk of certain attack vectors.</p>
 
-    <p>This metadata is generally encoded as a &#8220;named information&#8221; (<code>ni</code>) URI, as
+    <p>This metadata is generally encoded as a “named information” (<code>ni</code>) URI, as
 defined in RFC6920. [[!RFC6920]]</p>
 
-    <p>For example, given a resource containing only the string &#8220;Hello, world!&#8221;,
+    <p>For example, given a resource containing only the string “Hello, world!”,
 an author might choose <a href="#dfn-sha-2">SHA-256</a> as a hash function.
 <code>-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8</code> is the base64url-encoded
 digest that results. This can be encoded as an <code>ni</code> URI as follows:</p>
 
-    <pre class="example highlight"><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8
+    <pre><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8
 </code></pre>
 
     <p>Or, if the author further wishes to specify the content type (<code>text/plain</code>):</p>
 
-    <pre class="example highlight"><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+    <pre><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
 </code></pre>
 
     <div class="note">
@@ -404,7 +403,7 @@ digest that results. This can be encoded as an <code>ni</code> URI as follows:</
 example, is quite commonly available. The example in this section is the
 result of the following command line:</p>
 
-      <pre><code>echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 | sed -e 's/+/-/g' -e 's/\//_/g'
+      <pre><code>echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 | sed -e 's/+/-/g' -e 's/\//_/g' -e 's/=*$//g'
 </code></pre>
 
     </div>
@@ -416,7 +415,7 @@ result of the following command line:</p>
     <h3 id="cryptographic-hash-functions">Cryptographic hash functions</h3>
 
     <p>Conformant user agents MUST support the <a href="#dfn-sha-2">SHA-256</a> and <a href="#dfn-sha-2">SHA-512</a>
-cryptographic hash functions for use as part of a resource&#8217;s
+cryptographic hash functions for use as part of a resource’s
 <a href="#dfn-integrity-metadata">integrity metadata</a>, and MAY support additional hash functions.</p>
 
     <section>
@@ -424,10 +423,10 @@ cryptographic hash functions for use as part of a resource&#8217;s
 
       <p>Multiple sets of <a href="#dfn-integrity-metadata">integrity metadata</a> may be associated with a single
 resource in order to provide agility in the face of future discoveries.
-For example, the &#8220;Hello, world.&#8221; resource described above may be described
+For example, the “Hello, world.” resource described above may be described
 either of the following <code>ni</code> URLs:</p>
 
-      <pre class="example highlight"><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+      <pre><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
 ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==?ct=text/plain
 </code></pre>
 
@@ -443,15 +442,15 @@ ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERd
 
       <p>In this case, the user agent will choose the strongest hash function in the
 list, and use that metadata to validate the resource (as described below in
-the &#8220;<a href="#parse-metadata.x">parse metadata</a>&#8221; and &#8220;<a href="#get-the-strongest-metadata-from-set.x">get the strongest metadata from
-set</a>&#8221; algorithms).</p>
+the “<a href="#parse-metadata.x">parse metadata</a>” and “<a href="#get-the-strongest-metadata-from-set.x">get the strongest metadata from
+set</a>” algorithms).</p>
 
       <p>When a hash function is determined to be insecure, user agents MUST deprecate
 and eventually remove support for integrity validation using that hash
 function.</p>
 
-      <p>Validation using unsupported hash functions always fails (see the &#8220;<a href="#does-resource-match-metadatalist">Does
-resource match metadataList</a>&#8221; algorithm below). Authors are therefore
+      <p>Validation using unsupported hash functions always fails (see the “<a href="#does-resource-match-metadatalist">Does
+resource match metadataList</a>” algorithm below). Authors are therefore
 encouraged to use strong hash functions, and to begin migrating to stronger
 hash functions as they become available.</p>
     </section>
@@ -481,8 +480,6 @@ is a consistent ordering.</p>
       <h4 id="apply-varalgorithmvar-to-varresourcevar">Apply <var>algorithm</var> to <var>resource</var></h4>
 
       <ol>
-        <li>If <var>algorithm</var> is not a hash function recognized and supported
-by the user agent, return <code>null</code>.</li>
         <li>Let <var>result</var> be the result of applying <var>algorithm</var> to
 the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a> without any content-codings
 applied, except when the user agent intends to consumes the content with
@@ -501,7 +498,7 @@ latter case, let <var>result</var> be the result of applying
     <section>
       <h4 id="is-varresourcevar-eligible-for-integrity-validation">Is <var>resource</var> eligible for integrity validation</h4>
 
-      <p>In order to mitigate an attacker&#8217;s ability to read data cross-origin by
+      <p>In order to mitigate an attacker’s ability to read data cross-origin by
 brute-forcing values via integrity checks, resources are only eligible
 for such checks if they are same-origin, publicly cachable, or are the
 result of explicit access granted to the loading origin via CORS. [[!CORS]]</p>
@@ -535,15 +532,15 @@ return <code>false</code>:
         <li>If the <a href="http://fetch.spec.whatwg.org/#concept-request-mode">mode</a> of <var>request</var> is <code>CORS</code>,
 return <code>true</code>.</li>
         <li>If the <a href="http://fetch.spec.whatwg.org/#concept-request-origin">origin</a> of <var>request</var> is
-<var>resource</var>&#8217;s origin, return <code>true</code>.</li>
+<var>resource</var>’s origin, return <code>true</code>.</li>
         <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc7234#section-3">cachable by a shared cache</a>, as defined
 in [[!RFC7234]], return <code>true</code>.</li>
         <li>Return <code>false</code>.</li>
       </ol>
 
       <p class="note">Step 2 returns <code>true</code> if the resource was a CORS-enabled request. If the
-resource failed the CORS checks, it won&#8217;t be available to us for integrity
-checking because it won&#8217;t have loaded successfully.</p>
+resource failed the CORS checks, it won’t be available to us for integrity
+checking because it won’t have loaded successfully.</p>
 
     </section>
     <!-- Algorithms::eligible -->
@@ -551,7 +548,7 @@ checking because it won&#8217;t have loaded successfully.</p>
       <h4 id="parse-varmetadatavar">Parse <var>metadata</var>.</h4>
 
       <p>This algorithm accepts a string, and returns either <code>no metadata</code>, or a set of
-valid &#8220;named information&#8221; (<code>ni</code>) URLs whose hash functions are understood by
+valid “named information” (<code>ni</code>) URLs whose hash functions are understood by
 the user agent.</p>
 
       <ol>
@@ -560,7 +557,7 @@ the user agent.</p>
         <li>For each <var>token</var> returned by <a href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">splitting <var>metadata</var> on
 spaces</a>:
           <ol>
-            <li>If <var>token</var> is not a valid &#8220;named information&#8221; (<code>ni</code>) URI,
+            <li>If <var>token</var> is not a valid “named information” (<code>ni</code>) URI,
 skip the remaining steps, and proceed to the next token.</li>
             <li>Let <var>algorithm</var> be the <var>alg</var> component of
 <var>token</var>.</li>
@@ -580,7 +577,7 @@ agent, add <var>token</var> to <var>result</var>.</li>
         <li>Let <var>strongest</var> be the empty string.</li>
         <li>For each <var>item</var> in <var>set</var>:
           <ol>
-            <li>If <var>item</var> is not a valid &#8220;named information&#8221; (<code>ni</code>) URL,
+            <li>If <var>item</var> is not a valid “named information” (<code>ni</code>) URL,
 skip to the next <var>item</var>.</li>
             <li>If <var>strongest</var> is the empty string, set <var>strongest</var>
 to <var>item</var>, skip to the next
@@ -603,7 +600,7 @@ is <var>newAlgorithm</var>, set <var>strongest</var> to
       <h4 id="does-varresourcevar-match-varmetadatalistvar">Does <var>resource</var> match <var>metadataList</var>?</h4>
 
       <ol>
-        <li>If <var>resource</var>&#8217;s URL&#8217;s scheme is <code>about</code>, return <code>true</code>.</li>
+        <li>If <var>resource</var>’s URL’s scheme is <code>about</code>, return <code>true</code>.</li>
         <li>If <a href="#is-resource-eligible-for-integrity-validation"><var>resource</var> is not eligible for integrity
 validation</a>, return <code>false</code>.</li>
         <li>Let <var>parsedMetadata</var> be the result of
@@ -616,10 +613,10 @@ metadata from <var>parsedMetadata</var></a>.</li>
 <var>metadata</var>.</li>
         <li>Let <var>expectedValue</var> be the <var>val</var> component of
 <var>metadata</var>.</li>
-        <li>Let <var>expectedType</var> be the value of <var>metadata</var>&#8217;s <code>ct</code>
+        <li>Let <var>expectedType</var> be the value of <var>metadata</var>’s <code>ct</code>
 query string parameter.</li>
         <li>If <var>expectedType</var> is not the empty string, and is not a
-case-insensitive match for <var>resource</var>&#8217;s MIME type,
+case-insensitive match for <var>resource</var>’s MIME type,
 return <code>false</code>.</li>
         <li>Let <var>actualValue</var> be the result of <a href="#apply-algorithm-to-resource">applying
 <var>algorithm</var> to <var>resource</var></a>.</li>
@@ -629,7 +626,7 @@ return <code>false</code>.</li>
       </ol>
 
       <p class="note">If <var>expectedType</var> is the empty string in #10, it would
-be reasonable for the user agent to warn the page&#8217;s author about the
+be reasonable for the user agent to warn the page’s author about the
 dangers of MIME type confusion attacks via its developer console.</p>
 
       <p class="note">User agents may allow users to modify the result of this algorithm via user
@@ -647,38 +644,38 @@ correctly, even if the HTTPS version of a resource differs from the HTTP version
     <h3 id="modifications-to-fetch">Modifications to Fetch</h3>
 
     <p>The Fetch specification should contain the following modifications in order
-to enable the rest of this specification&#8217;s work [[!FETCH]]:</p>
+to enable the rest of this specification’s work [[!FETCH]]:</p>
 
     <ol>
       <li>
-        <p>The following text should be added to <a href="http://fetch.spec.whatwg.org/#requests">section 2.2</a>: &#8220;A
+        <p>The following text should be added to <a href="http://fetch.spec.whatwg.org/#requests">section 2.2</a>: “A
 <a href="http://fetch.spec.whatwg.org/#concept-request">request</a> has an associated <a href="#dfn-integrity-metadata">integrity metadata</a>.
-Unless stated otherwise, a request&#8217;s integrity metadata is the empty
-string.&#8221;</p>
+Unless stated otherwise, a request’s integrity metadata is the empty
+string.”</p>
       </li>
       <li>
-        <p>The following text should be added to <a href="http://fetch.spec.whatwg.org/#responses">section 2.3</a>: &#8220;A
+        <p>The following text should be added to <a href="http://fetch.spec.whatwg.org/#responses">section 2.3</a>: “A
 <a href="http://fetch.spec.whatwg.org/#concept-response">response</a> has an associated integrity state, which
 is one of <code>indeterminate</code>, <code>pending</code>, <code>corrupt</code>, and <code>intact</code>. Unless
 stated otherwise, it is <code>indeterminate</code>.</p>
       </li>
       <li>
-        <p>Perform the following steps before executing both the &#8220;<a href="http://fetch.spec.whatwg.org/#basic-fetch">basic fetch</a>&#8221; and
-&#8220;<a href="http://fetch.spec.whatwg.org/#cors-fetch-with-preflight">CORS fetch with preflight</a>&#8221; algorithms:</p>
+        <p>Perform the following steps before executing both the “<a href="http://fetch.spec.whatwg.org/#basic-fetch">basic fetch</a>” and
+“<a href="http://fetch.spec.whatwg.org/#cors-fetch-with-preflight">CORS fetch with preflight</a>” algorithms:</p>
 
         <ol>
           <li>
-            <p>If <var>request</var>&#8217;s integrity metadata is the empty string, set
-<var>response</var>&#8217;s integrity state to <code>indeterminate</code>. Otherwise:</p>
+            <p>If <var>request</var>’s integrity metadata is the empty string, set
+<var>response</var>’s integrity state to <code>indeterminate</code>. Otherwise:</p>
 
             <ol>
-              <li>Set <var>response</var>&#8217;s integrity state to <code>pending</code>.</li>
-              <li>Include a <code>Cache-Control</code> header whose value is &#8220;no-transform&#8221;.</li>
-              <li>If <var>request</var>&#8217;s integrity metadata contains a content
+              <li>Set <var>response</var>’s integrity state to <code>pending</code>.</li>
+              <li>Include a <code>Cache-Control</code> header whose value is “no-transform”.</li>
+              <li>If <var>request</var>’s integrity metadata contains a content
 type:
                 <ol>
-                  <li>Set <var>request</var>&#8217;s <code>Accept</code> header value to the value
-of <var>request</var>&#8217;s integrity metadata&#8217;s content type.</li>
+                  <li>Set <var>request</var>’s <code>Accept</code> header value to the value
+of <var>request</var>’s integrity metadata’s content type.</li>
                 </ol>
               </li>
             </ol>
@@ -687,32 +684,32 @@ of <var>request</var>&#8217;s integrity metadata&#8217;s content type.</li>
       </li>
       <li>
         <p>Add the following step before step #1 of the handling of 401 status
-codes for both &#8220;<a href="http://fetch.spec.whatwg.org/#basic-fetch">basic fetch</a>&#8221; and &#8220;<a href="http://fetch.spec.whatwg.org/#cors-fetch-with-preflight">CORS fetch with preflight</a>&#8221;
+codes for both “<a href="http://fetch.spec.whatwg.org/#basic-fetch">basic fetch</a>” and “<a href="http://fetch.spec.whatwg.org/#cors-fetch-with-preflight">CORS fetch with preflight</a>”
 algorithms:</p>
 
         <ol>
-          <li>If <var>request</var>&#8217;s integrity state is <code>pending</code>, set
-<var>response</var>&#8217;s integrity state to <code>corrupt</code> and return
+          <li>If <var>request</var>’s integrity state is <code>pending</code>, set
+<var>response</var>’s integrity state to <code>corrupt</code> and return
 <var>response</var>.</li>
         </ol>
       </li>
       <li>
-        <p>Before firing the <a href="http://fetch.spec.whatwg.org/#process-request-end-of-file">process request end-of-file</a> event for any
+        <p>Before firing the <a href="https://fetch.spec.whatwg.org/#process-request-end-of-file">process request end-of-file</a> event for any
 <var>request</var>:</p>
 
         <ol>
           <li>
-            <p>If the <var>request</var>&#8217;s integrity metadata is the empty string, set
-the <var>response</var>&#8217;s integrity state to <code>indeterminate</code> and
+            <p>If the <var>request</var>’s integrity metadata is the empty string, set
+the <var>response</var>’s integrity state to <code>indeterminate</code> and
 skip directly to firing the event.</p>
           </li>
           <li>
-            <p>If <var>response</var> <a href="#does-resource-match-metadatalist">matches</a> the request&#8217;s integrity
-metadata, set the <var>response</var>&#8217;s integrity state to <code>intact</code>
+            <p>If <var>response</var> <a href="#does-resource-match-metadatalist">matches</a> the request’s integrity
+metadata, set the <var>response</var>’s integrity state to <code>intact</code>
 and skip directly to firing the event.</p>
           </li>
           <li>
-            <p>Set the <var>response</var>&#8217;s integrity state to <code>corrupt</code>
+            <p>Set the <var>response</var>’s integrity state to <code>corrupt</code>
 and skip directly to firing the event.</p>
           </li>
         </ol>
@@ -728,199 +725,148 @@ and skip directly to firing the event.</p>
 embedded into the document, or executed in its context. To support integrity
 metadata for each of these, and new elements that are added in the future,
 a new <code>integrity</code> attribute is added to the list of content attributes for
-the <code>a</code>, <code>audio</code>, <code>embed</code>, <code>iframe</code>, <code>img</code>, <code>link</code>, <code>object</code>, <code>script</code>, <code>source</code>,
-<code>track</code>, and <code>video</code> elements.</p>
+the <code>a</code>, <code>link</code>, and <code>script</code> elements.</p>
 
     <p>A corresponding <code>integrity</code> IDL attribute which <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflects</a> the
-value each element&#8217;s <code>integrity</code> content attribute is added to the
-<code>HTMLAnchorElement</code>, <code>HTMLMediaElement</code>, <code>HTMLEmbedElement</code>,
-<code>HTMLIframeElement</code>, <code>HTMLLinkElement</code>, <code>HTMLObjectElement</code>,
-<code>HTMLScriptElement</code>, <code>HTMLSourceElement</code>, and <code>HTMLTrackElement</code>
+value each element’s <code>integrity</code> content attribute is added to the
+<code>HTMLAnchorElement</code>, <code>HTMLLinkElement</code>, and <code>HTMLScriptElement</code>.
 interfaces.</p>
 
-    <section>
-      <h4 id="the-integrity-attribute">The <code>integrity</code> attribute</h4>
+    <div class="note">
+      <p>A future revision of this specification is likely to include SRI support
+for all possible subresources, i.e., <code>a</code>, <code>audio</code>, <code>embed</code>, <code>iframe</code>, <code>img</code>,
+<code>link</code>, <code>object</code>, <code>script</code>, <code>source</code>, -<code>track</code>, and <code>video</code> elements.</p>
+    </div>
+  </section>
 
-      <p>The <code>integrity</code> attribute represents <a href="#dfn-integrity-metadata">integrity metadata</a> for an element.
+  <section>
+    <h4 id="the-integrity-attribute">The <code>integrity</code> attribute</h4>
+
+    <p>The <code>integrity</code> attribute represents <a href="#dfn-integrity-metadata">integrity metadata</a> for an element.
 The value of the attribute MUST be either the empty string, or at least one
-valid &#8220;named information&#8221; (<code>ni</code>) URI [[!RFC6920]], as described by the
+valid “named information” (<code>ni</code>) URI [[!RFC6920]], as described by the
 following ABNF grammar:</p>
 
-      <pre><code>integrity-metatata = "" / 1*( *WSP NI-URL ) *WSP ]
+    <pre><code>integrity-metatata = "" / 1*( *WSP NI-URL ) *WSP ]
 </code></pre>
 
-      <p>The <code>NI-URL</code> rule is defined in <a href="http://tools.ietf.org/html/rfc6920#section-3">RFC6920, section 3, figure 4</a>.</p>
+    <p>The <code>NI-URL</code> rule is defined in <a href="http://tools.ietf.org/html/rfc6920#section-3">RFC6920, section 3, figure 4</a>.</p>
 
-      <p>The <code>integrity</code> IDL attribute must <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a> the <code>integrity</code> content attribute.</p>
+    <p>The <code>integrity</code> IDL attribute must <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a> the <code>integrity</code> content attribute.</p>
 
-    </section>
-    <!-- /Framework::HTML::integrity -->
+  </section>
+  <!-- /Framework::HTML::integrity -->
 
-    <section>
-      <h4 id="the-noncanonical-src-attribute-todo">The <code>noncanonical-src</code> attribute (TODO)</h4>
+  <section>
+    <h4 id="the-noncanonical-src-attribute-todo">The <code>noncanonical-src</code> attribute (TODO)</h4>
 
-      <p>Authors MAY opt-in to a fallback mechanism whereby user agents would initially
+    <p>Authors MAY opt-in to a fallback mechanism whereby user agents would initially
 attempt to load resources from a non-canonical source. If that fetch fails an
-integrity check, the user agent would <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>, and retry the
+integrity check, the user agent would <a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a violation</a>, and retry the
 fetch using a canonical URL.</p>
 
-      <p>The non-canonical URL is specified via a <code>noncanonical-src</code> attribute. For
+    <p>The non-canonical URL is specified via a <code>noncanonical-src</code> attribute. For
 example:</p>
 
-      <pre class="example highlight"><code>&lt;script src="https://example.com/script.js"
+    <pre><code>&lt;script src="https://example.com/script.js"
         noncanonical-src="https://cdn.example.com/script.js"
         integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq?ct=application/javascript"&gt;&lt;/script&gt;
 </code></pre>
 
-      <p>The <code>noncanonicalSrc</code> IDL attribute MUST <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a> the <code>noncanonical-src</code>
+    <p>The <code>noncanonicalSrc</code> IDL attribute MUST <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a> the <code>noncanonical-src</code>
 content attribute.</p>
 
-      <p>The noncanonical resource MUST be fetched with its <a href="http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode">omit credentials
+    <p>The noncanonical resource MUST be fetched with its <a href="http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode">omit credentials
 mode</a> set to <code>always</code>.</p>
 
-      <p class="issue" data-number="5">More detailed discussion of the use-case and behavior here is probably necessary
+    <p class="issue" data-number="5">More detailed discussion of the use-case and behavior here is probably necessary
 going forward. The goal is to have a fallback mechanism which would not be
 integrity checked. Perhaps it would be hosted on the same server as the page
-itself; you wouldn&#8217;t get the benefits of your globally awesome CDN, but you&#8217;d
+itself; you wouldn’t get the benefits of your globally awesome CDN, but you’d
 trust (at least) the source of the file. This would enable your application to
 function correctly in environments that would be otherwise entirely broken
 (Global MegaCorp with its draconian IT department, for example).</p>
-    </section>
-    <!-- /Framework::HTML::noncanonical-src -->
+  </section>
+  <!-- /Framework::HTML::noncanonical-src -->
+
+  <section>
+    <h4 id="element-interface-extensions">Element interface extensions</h4>
 
     <section>
-      <h4 id="element-interface-extensions">Element interface extensions</h4>
+      <h5 id="htmlanchorelement">HTMLAnchorElement</h5>
 
-      <section>
-        <h5 id="htmlanchorelement">HTMLAnchorElement</h5>
-
-        <dl title="partial interface HTMLAnchorElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLAnchorElement -->
-      <section>
-        <h5 id="htmlembedelement">HTMLEmbedElement</h5>
-
-        <dl title="partial interface HTMLObjectElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLEmbedElement -->
-      <section>
-        <h5 id="htmliframeelement">HTMLIFrameElement</h5>
-
-        <dl title="partial interface HTMLIFrameElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLIFrameElement -->
-      <section>
-        <h5 id="htmlimageelement">HTMLImageElement</h5>
-
-        <dl title="partial interface HTMLImageElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLImageElement -->
-      <section>
-        <h5 id="htmllinkelement">HTMLLinkElement</h5>
-
-        <dl title="partial interface HTMLLinkElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLLinkElement -->
-      <section>
-        <h5 id="htmlmediaelement">HTMLMediaElement</h5>
-
-        <dl title="partial interface HTMLMediaElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLMediaElement -->
-      <section>
-        <h5 id="htmlobjectelement">HTMLObjectElement</h5>
-
-        <dl title="partial interface HTMLObjectElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLObjectElement -->
-      <section>
-        <h5 id="htmlscriptelement">HTMLScriptElement</h5>
-
-        <dl title="partial interface HTMLScriptElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLScriptElement -->
-      <section>
-        <h5 id="htmltrackelement">HTMLTrackElement</h5>
-
-        <dl title="partial interface HTMLTrackElement" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of this element&#8217;s <code>integrity</code> attribute</dd>
-        </dl>
-      </section>
-      <!-- /Framework::HTML::Interface extensions::HTMLTrackElement -->
-
+      <dl title="partial interface HTMLAnchorElement" class="idl">
+        <dt>attribute DOMString integrity</dt>
+        <dd>The value of this element’s <code>integrity</code> attribute</dd>
+      </dl>
     </section>
-    <!-- /Framework::HTML::Interface extensions -->
+    <!-- /Framework::HTML::Interface extensions::HTMLAnchorElement -->
     <section>
-      <h4 id="handling-integrity-violations">Handling integrity violations</h4>
+      <h5 id="htmllinkelement">HTMLLinkElement</h5>
 
-      <p>Documents may specify the behavior of a failed integrity check by delivering
-a <a href="http://w3.org/TR/CSP11">Content Security Policy</a> which contains an <code>integrity-policy</code>
+      <dl title="partial interface HTMLLinkElement" class="idl">
+        <dt>attribute DOMString integrity</dt>
+        <dd>The value of this element’s <code>integrity</code> attribute</dd>
+      </dl>
+    </section>
+    <!-- /Framework::HTML::Interface extensions::HTMLLinkElement -->
+    <section>
+      <h5 id="htmlscriptelement">HTMLScriptElement</h5>
+
+      <dl title="partial interface HTMLScriptElement" class="idl">
+        <dt>attribute DOMString integrity</dt>
+        <dd>The value of this element’s <code>integrity</code> attribute</dd>
+      </dl>
+    </section>
+    <!-- /Framework::HTML::Interface extensions::HTMLScriptElement -->
+  </section>
+  <!-- /Framework::HTML::Interface extensions -->
+  <section>
+    <h4 id="handling-integrity-violations">Handling integrity violations</h4>
+
+    <p>Documents may specify the behavior of a failed integrity check by delivering
+a <a href="http://w3.org/TR/CSP2">Content Security Policy</a> which contains an <code>integrity-policy</code>
 directive, defined by the following ABNF grammar:</p>
 
-      <pre><code>directive-name  = "integrity-policy"
+    <pre><code>directive-name  = "integrity-policy"
 directive-value = 1#failure-mode [ "require-for-all" ]
 failure-mode    = ( "block" / "report" / "fallback" )
 </code></pre>
 
-      <p>A document&#8217;s <dfn>integrity policy</dfn> is the value of the
+    <p>A document’s <dfn>integrity policy</dfn> is the value of the
 <code>integrity-policy</code> directive, if explicitly provided as part of the
-document&#8217;s Content Security Policy, or <code>block</code> otherwise.</p>
+document’s Content Security Policy, or <code>block</code> otherwise.</p>
 
-      <p>If the document&#8217;s integrity policy contains <code>block</code>, the user agent MUST refuse
+    <p>If the document’s integrity policy contains <code>block</code>, the user agent MUST refuse
 to render or execute resources that fail an integrity check, <em>and</em> MUST
-<a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>.</p>
+<a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a violation</a>.</p>
 
-      <p>If the document&#8217;s integrity policy contains <code>report</code>, the user agent MAY render
+    <p>If the document’s integrity policy contains <code>report</code>, the user agent MAY render
 or execute resources that fail an integrity check, <em>but</em> MUST
-<a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>.</p>
+<a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a violation</a>.</p>
 
-      <p class="issue" data-number="6">If the document&#8217;s integrity policy contains <code>fallback</code>, the user agent MUST
+    <p class="issue" data-number="6">If the document’s integrity policy contains <code>fallback</code>, the user agent MUST
 refuse to render or execute resources that fail an integrity check, <em>and</em>
-MUST <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>. The user agent MAY additionally choose to load
+MUST <a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a violation</a>. The user agent MAY additionally choose to load
 a fallback resource as specified for each relevant element. If the fallback
 resource fails an integrity check, the user agent MUST refuse to render or
-execute the resource, <em>and</em> MUST <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a(nother)
+execute the resource, <em>and</em> MUST <a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a(nother)
 violation</a>. (See <a href="#the-noncanonical-src-attribute-todo">the <code>noncanonical-src</code>
 attribute</a> for a strawman of how that might look).</p>
 
-      <p class="issue" data-number="7">If the document&#8217;s integrity policy contains <code>require-for-all</code>, the user agent
+    <p class="issue" data-number="7">If the document’s integrity policy contains <code>require-for-all</code>, the user agent
 MUST treat the lack of <a href="#dfn-integrity-metadata">integrity metadata</a> for an resource as automatic
-failure, refuse to fetch the resource, and <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>.</p>
+failure, refuse to fetch the resource, and <a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a violation</a>.</p>
 
-    </section>
+  </section>
+
+  <section>
+    <h5 id="elements">Elements</h5>
 
     <section>
-      <h5 id="elements">Elements</h5>
+      <h6 id="the-a-element">The <code>a</code> element</h6>
 
-      <section>
-        <h6 id="the-a-element">The <code>a</code> element</h6>
-
-        <p>If an <code>a</code> element has both <code>integrity</code> and <code>download</code> attributes, the user
+      <p>If an <code>a</code> element has both <code>integrity</code> and <code>download</code> attributes, the user
 agent has all the data it needs in order to verify the integrity of the
 downloaded resource. This is the only type of download we can safely make
 promises about, so it is the only type of download that we support. If
@@ -928,651 +874,257 @@ integrity metadata is added to any <code>a</code> element that does not explicit
 request that the resource it points to be downloaded, user agents MUST
 treat the link as broken.</p>
 
-        <p>Before <a href="http://www.w3.org/TR/html5/links.html#following-hyperlinks">following a hyperlink</a>, the user agent MUST run the following steps:</p>
+      <p>Before <a href="http://www.w3.org/TR/html5/links.html#following-hyperlinks">following a hyperlink</a>, the user agent MUST run the following steps:</p>
 
-        <ol>
-          <li>If <var>subject</var> has an <code>integrity</code> attribute whose value is not the
+      <ol>
+        <li>If <var>subject</var> has an <code>integrity</code> attribute whose value is not the
 empty string, then:
-            <ol>
-              <li>The user agent MAY report an error to the user in a
+          <ol>
+            <li>The user agent MAY report an error to the user in a
 user-agent-specific manner.</li>
-              <li>Abort the <a href="http://www.w3.org/TR/html5/links.html#following-hyperlinks">following a hyperlink</a> algorithm.</li>
-            </ol>
-          </li>
-        </ol>
+            <li>Abort the <a href="http://www.w3.org/TR/html5/links.html#following-hyperlinks">following a hyperlink</a> algorithm.</li>
+          </ol>
+        </li>
+      </ol>
 
-        <p>Replace step 6 of the <a href="http://www.w3.org/TR/html5/links.html#downloading-hyperlinks">downloads a hyperlink</a> algorithm with the following:</p>
+      <p>Replace step 6 of the <a href="http://www.w3.org/TR/html5/links.html#downloading-hyperlinks">downloads a hyperlink</a> algorithm with the following:</p>
 
-        <ol start="6">
-          <li>If the <code>integrity</code> attribute of that element is not the empty string, and
+      <ol start="6">
+        <li>If the <code>integrity</code> attribute of that element is not the empty string, and
 the element <em>does not</em> have a <code>download</code> attribute, abort these steps.</li>
-          <li>Fetch <var>URL</var> with <a href="#dfn-integrity-metadata">integrity metadata</a> set to the value of the
+        <li>Fetch <var>URL</var> with <a href="#dfn-integrity-metadata">integrity metadata</a> set to the value of the
 <code>integrity</code> attribute of that element, and handle the resulting resource
 <a href="http://www.w3.org/TR/html5/links.html#as-a-download">as a download</a>.</li>
-        </ol>
+      </ol>
 
-        <p>When handling a resource <a href="http://www.w3.org/TR/html5/links.html#as-a-download">as a download</a>, perform the following step before
+      <p>When handling a resource <a href="http://www.w3.org/TR/html5/links.html#as-a-download">as a download</a>, perform the following step before
 providing a user with a way to save the resource for later use:</p>
 
-        <ol>
-          <li>If  <var>response</var>&#8217;s integrity state is <code>corrupt</code>:
-            <ol>
-              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-                <ol>
-                  <li>Abort the download.</li>
-                </ol>
-              </li>
-              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
-            </ol>
-          </li>
-        </ol>
+      <ol>
+        <li>If  <var>response</var>’s integrity state is <code>corrupt</code>:
+          <ol>
+            <li>If the document’s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+              <ol>
+                <li>Abort the download.</li>
+              </ol>
+            </li>
+            <li><a href="http://www.w3.org/TR/CSP2/#report-a-violation">Report a violation</a>.</li>
+          </ol>
+        </li>
+      </ol>
 
-        <div class="note">
-          <p>Note that this will cover <em>only</em> downloads triggered explicitly by adding a
+      <div class="note">
+        <p>Note that this will cover <em>only</em> downloads triggered explicitly by adding a
 <code>download</code> attribute to an <code>a</code> element. Such a link might look like the following:</p>
 
-          <pre class="example highlight"><code>&lt;a href="https://example.com/file.zip"
+        <pre><code>&lt;a href="https://example.com/file.zip"
    integrity="ni:///sha256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
    download&gt;Download!&lt;/a&gt;
 </code></pre>
-        </div>
-
-      </section>
-      <!-- /Framework::HTML::Elements::a -->
-
-      <section>
-        <h6 id="the-embed-element">The <code>embed</code> element</h6>
-
-        <p>When fetching an URL via step 2 of the <a href="http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data"><code>embed</code> element setup steps</a>
-algorithm:</p>
-
-        <ol>
-          <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element&#8217;s <code>integrity</code> attribute.</li>
-        </ol>
-
-        <p>Before running the task queued by the networking task source once the URL has
-been fetched, first perform the following steps:</p>
-
-        <ol>
-          <li>If the response&#8217;s integrity state is <code>corrupt</code>:
-            <ol>
-              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-                <ol>
-                  <li>Set the element&#8217;s <code>type</code> attribute to the empty string.</li>
-                  <li>Skip to step 4 of the algorithm.</li>
-                </ol>
-              </li>
-              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
-            </ol>
-          </li>
-        </ol>
-
-      </section>
-      <!-- /Framework::HTML::Elements::embed -->
-
-      <section>
-        <h6 id="the-iframe-element">The <code>iframe</code> element</h6>
-
-        <p>When content is to be loaded into the <a href="http://www.w3.org/TR/html5/browsers.html#child-browsing-context">child browsing context</a> created
-by an <code>iframe</code>, perform fetches with the <a href="#dfn-integrity-metadata">integrity metadata</a> set to the
-value of the <code>iframe</code> element&#8217;s <code>integrity</code> attribute. Moreover:</p>
-
-        <ul>
-          <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>, then the user
-agent MUST delay rendering the content until the
-<a href="http://www.w3.org/TR/html5/infrastructure.html#fetch">fetching algorithm</a>&#8217;s task to <a href="http://fetch.spec.whatwg.org/#process-request-end-of-file">process request end-of-file</a>
-completes.</li>
-          <li>When the <a href="http://fetch.spec.whatwg.org/#process-request-end-of-file">process request end-of-file</a> task completes:
-            <ol>
-              <li>If the request&#8217;s integrity state is <code>corrupt</code>:
-                <ol>
-                  <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the document&#8217;s
-browsing context owner <code>iframe</code> element&#8217;s Document&#8217;s origin, then
-<a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the
-<code>iframe</code> element (this will not fire for cross-origin requests, to
-avoid leaking data about those resource&#8217;s content).</li>
-                  <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
-                  <li><a href="http://www.w3.org/TR/html5/browsers.html#navigate">Navigate</a> the child browsing context to <code>about:blank</code>.</li>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ul>
-
-        <div class="note">
-          <p>Note that this will <em>only</em> check the integrity of the <code>iframe</code>&#8217;s document source.
-No subsequent verification for the document&#8217;s subresources is performed.
-If integrity checks for the document&#8217;s subresources are desirable, the document
-loaded into the <code>iframe</code> needs to include <a href="#dfn-integrity-metadata">integrity metadata</a> for its subresources.</p>
-        </div>
-
-        <p class="issue" data-number="8">How does this effect things like the preload scanner? How much work is it
-going to be for vendors to change the &#8220;display whatever we&#8217;ve got, ASAP!&#8221;
-behavior that makes things fast for users? How much impact will there be
-on user experience, especially for things like ads, where this kind of
-validation has the most value?</p>
-
-        <p class="issue" data-number="9">How do we deal with navigations in the child browsing context? Are they
-simply disallowed? If so, does that make sense? It might for ads, but
-what about other use-cases?</p>
-
-      </section>
-      <!-- /Framework::HTML::iframe -->
-
-      <section>
-        <h6 id="the-img-element">The <code>img</code> element</h6>
-
-        <p>When fetching an image via step 12 of the <a href="http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data">update the image data</a>
-algorithm:</p>
-
-        <ol>
-          <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element&#8217;s <code>integrity</code> attribute.</li>
-        </ol>
-
-        <p>Before jumping one of the entries from the list in step 14 of the
-<a href="http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data">update the image data</a> algorithm, first perform the following
-steps:</p>
-
-        <ol>
-          <li>If the response&#8217;s integrity state is <code>corrupt</code>:
-            <ol>
-              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-                <ol>
-                  <li>Abort the jump in progress.</li>
-                  <li>Perform the steps in the entry labeled &#8220;Otherwise&#8221; under step 14.</li>
-                </ol>
-              </li>
-              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
-            </ol>
-          </li>
-        </ol>
-
-        <p class="issue" data-number="18">How do we want to deal with <a href="http://www.w3.org/html/wg/drafts/srcset/w3c-srcset/">the <code>srcset</code> attribute</a>?</p>
-
-      </section>
-      <!-- /Framework::HTML::Elements::img -->
-
-      <section>
-        <h6 id="the-link-element">The <code>link</code> element</h6>
-
-        <p>Whenever a user agent attempts to <a href="http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain">obtain a resource</a> pointed to by a
-<code>link</code> element:</p>
-
-        <ol>
-          <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element&#8217;s <code>integrity</code> attribute.</li>
-        </ol>
-
-        <p>Additionally, perform the following steps before firing a <code>load</code> event at
-the element:</p>
-
-        <ol>
-          <li>If the response&#8217;s integrity state is <code>corrupt</code>:
-            <ol>
-              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-                <ol>
-                  <li>Abort the <code>load</code> event, and treat the resource as having failed
-to load.</li>
-                  <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the origin of
-the <code>link</code> element&#8217;s Document, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
-<a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the <code>link</code> element.</li>
-                </ol>
-              </li>
-              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
-            </ol>
-          </li>
-        </ol>
-
-      </section>
-      <!-- /Framework::HTML::link -->
-
-      <section>
-        <h6 id="the-object-element">The <code>object</code> element</h6>
-
-        <p>When fetching an image via step 4 of step 4 of the <a href="http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data">&#8220;determine what the
-<code>object</code> element represents&#8221; algorithm</a>:</p>
-
-        <ol>
-          <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element&#8217;s <code>integrity</code> attribute.</li>
-        </ol>
-
-        <p>Before step 7 of the <a href="http://www.w3.org/TR/html5/embedded-content-0.html#update-the-image-data">&#8220;determine what the <code>object</code> element represents&#8221;
-algorithm</a>, first perform the following steps:</p>
-
-        <ol>
-          <li>If the response&#8217;s integrity state is <code>corrupt</code>:
-            <ol>
-              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-                <ol>
-                  <li><a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">Fire a simple event</a> named <code>error</code> at the element.</li>
-                  <li>Jump to the step labeled <i>fallback</i>.</li>
-                </ol>
-              </li>
-              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
-            </ol>
-          </li>
-        </ol>
-
-      </section>
-      <!-- /Framework::HTML::Elements::object -->
-
-      <section>
-        <h6 id="the-script-element">The <code>script</code> element</h6>
-
-        <p>When executing step 5 of step 14 of HTML5&#8217;s
-<a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">&#8220;prepare a script&#8221; algorithm</a>:</p>
-
-        <ol>
-          <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element&#8217;s <code>integrity</code> attribute.</li>
-        </ol>
-
-        <p>Insert the following steps after step 5 of step 14 of HTML5&#8217;s
-<a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">&#8220;prepare a script&#8221; algorithm</a>:</p>
-
-        <ol start="6">
-          <li>Once the <a href="http://www.w3.org/TR/html5/infrastructure.html#fetch">fetching algorithm</a> has completed:
-            <ol>
-              <li>If the response&#8217;s integrity state is <code>corrupt</code>:
-                <ol>
-                  <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-                    <ol>
-                      <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the <code>link</code>
-element&#8217;s Document&#8217;s origin, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
-<a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the element, and
-abort these steps.</li>
-                    </ol>
-                  </li>
-                  <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
-                </ol>
-              </li>
-            </ol>
-          </li>
-        </ol>
-
-      </section>
-      <!-- /Framework::HTML::Elements::script -->
-
-      <section>
-        <h6 id="the-track-element">The <code>track</code> element</h6>
-
-        <p>When fetching the <a href="http://www.w3.org/TR/html5/embedded-content-0.html#track-url">track URL</a> in step 10 of the <a href="http://www.w3.org/TR/html5/embedded-content-0.html#start-the-track-processing-model">start the <code>track</code>
-processing model</a> algorithm:</p>
-
-        <ol>
-          <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element&#8217;s <code>integrity</code> attribute.</li>
-        </ol>
-
-        <p>Additionally, perform the following steps before performing the steps
-specified for a successful <code>track</code> fetch:</p>
-
-        <ol>
-          <li>If the response&#8217;s integrity state is <code>corrupt</code>:
-            <ol>
-              <li>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-                <ol>
-                  <li>Perform the steps specified for a failed <code>track</code> fetch.</li>
-                  <li>Abort the steps specified for a successful <code>track</code> fetch.</li>
-                </ol>
-              </li>
-              <li><a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">Report a violation</a>.</li>
-            </ol>
-          </li>
-        </ol>
-
-      </section>
-      <!-- /Framework::HTML::Elements::track -->
-      <section>
-        <h6 id="the-audio-element-todo">The <code>audio</code> element (TODO)</h6>
-
-        <p class="issue" data-number="10">TODO: Write this section? Might want to delay media elements until we have a solution to streaming.</p>
-      </section>
-      <!-- /Framework::HTML::Elements::audio -->
-      <section>
-        <h6 id="the-source-element-todo">The <code>source</code> element (TODO)</h6>
-
-        <p class="issue" data-number="11">TODO: Write this section? Might want to delay media elements until we have a solution to streaming.</p>
-      </section>
-      <!-- /Framework::HTML::Elements::source -->
-      <section>
-        <h6 id="the-video-element-todo">The <code>video</code> element (TODO)</h6>
-
-        <p class="issue" data-number="12">TODO: Write this section? Might want to delay media elements until we have a solution to streaming.</p>
-      </section>
-      <!-- /Framework::HTML::Elements::video -->
+      </div>
 
     </section>
-    <!-- /Framework::HTML::Elements -->
+    <!-- /Framework::HTML::Elements::a -->
+
+    <section>
+      <h6 id="the-link-element-for-stylesheets">The <code>link</code> element for stylesheets</h6>
+
+      <p>Whenever a user agent attempts to <a href="http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain">obtain a resource</a> pointed to by a
+<code>link</code> element that has a <code>rel</code> attribute with the value of <code>stylesheet</code> and a type of <code>text/css</code>:</p>
+
+      <ol>
+        <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
+of the element’s <code>integrity</code> attribute.</li>
+      </ol>
+
+      <p>Additionally, perform the following steps before firing a <code>load</code> event at
+the element:</p>
+
+      <ol>
+        <li>If the response’s integrity state is <code>corrupt</code>:
+          <ol>
+            <li>If the document’s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+              <ol>
+                <li>Abort the <code>load</code> event, and treat the resource as having failed
+to load.</li>
+                <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the origin of
+the <code>link</code> element’s Document, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
+<a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the <code>link</code> element.</li>
+              </ol>
+            </li>
+            <li><a href="http://www.w3.org/TR/CSP2/#report-a-violation">Report a violation</a>.</li>
+          </ol>
+        </li>
+      </ol>
+
+    </section>
+    <!-- /Framework::HTML::link -->
+
+    <section>
+      <h6 id="the-script-element">The <code>script</code> element</h6>
+
+      <p>When executing step 5 of step 14 of HTML5’s
+<a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">“prepare a script” algorithm</a>:</p>
+
+      <ol>
+        <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
+of the element’s <code>integrity</code> attribute.</li>
+      </ol>
+
+      <p>Insert the following steps after step 5 of step 14 of HTML5’s
+<a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">“prepare a script” algorithm</a>:</p>
+
+      <ol start="6">
+        <li>Once the <a href="http://www.w3.org/TR/html5/infrastructure.html#fetch">fetching algorithm</a> has completed:
+          <ol>
+            <li>If the response’s integrity state is <code>corrupt</code>:
+              <ol>
+                <li>If the document’s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+                  <ol>
+                    <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the <code>link</code>
+element’s Document’s origin, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
+<a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the element, and
+abort these steps.</li>
+                  </ol>
+                </li>
+                <li><a href="http://www.w3.org/TR/CSP2/#report-a-violation">Report a violation</a>.</li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+
+    </section>
+    <!-- /Framework::HTML::Elements::script -->
 
   </section>
-  <!-- /Framework::HTML -->
+  <!-- /Framework::HTML::Elements -->
 
-  <section>
-    <h3 id="verification-of-css-loaded-subresources">Verification of CSS-loaded subresources</h3>
+</section>
+<!-- /Framework::HTML -->
 
-    <p class="issue" data-number="13">Tab and Anne are poking at adding <code>fetch()</code> to some spec somewhere
+<section>
+  <h3 id="verification-of-css-loaded-subresources">Verification of CSS-loaded subresources</h3>
+
+  <p class="issue" data-number="13">Tab and Anne are poking at adding <code>fetch()</code> to some spec somewhere
 which would allow CSS files to specify various arguments to the fetch
 algorithm while requesting resources. Detail on the proposal is at
 <a href="http://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html">http://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html</a>.
 Once that is specified, we can proceed defining an <code>integrity</code> argument
 that would allow integrity checks in CSS.</p>
 
-  </section>
-  <!-- /Framework::CSS -->
+</section>
+<!-- /Framework::CSS -->
 
-  <section>
-    <h3 id="verification-of-js-loaded-subresources">Verification of JS-loaded subresources</h3>
+<section>
+  <h3 id="verification-of-js-loaded-subresources">Verification of JS-loaded subresources</h3>
 
-    <p class="issue" data-number="14">These sections are less fleshed out and debated than the HTML sections, where
+  <p class="issue" data-number="14">These sections are less fleshed out and debated than the HTML sections, where
 the WG has concentrated most of its time thus far.</p>
 
-    <section>
-      <h4 id="workers">Workers</h4>
+  <section>
+    <h4 id="xmlhttprequest">XMLHttpRequest</h4>
 
-      <p>To validate the integrity of scripts which are to be run as workers, a new
-constructor is added for <code>Worker</code> and <code>SharedWorker</code> which accepts a second
-argument containing integrity metadata. This information is used when
-<a href="http://dev.w3.org/html5/workers/#run-a-worker">running a worker</a> to perform validation, as outlined in the
-following sections: [[!WEBWORKERS]]</p>
-
-      <section>
-        <h4 id="worker-extension">Worker extension</h4>
-
-        <dl title="[Constructor (DOMString scriptURL, DOMString integrityMetadata)] partial interface Worker : EventTarget" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of the Worker&#8217;s <code>integrity</code> attribute. Defaults to the empty string.</dd>
-        </dl>
-
-        <p>When the <code>Worker(scriptURL, integrityMetadata)</code> constructor is invoked:</p>
-
-        <ol>
-          <li>If <code>integrityMetadata</code> is not a valid &#8220;named information&#8221; (<code>ni</code>) URL,
-throw a <code>SyntaxError</code> exception and abort these steps.</li>
-          <li>Execute the <code>Worker(scriptURL)</code> constructor, and set the newly created
-<code>Worker</code> object&#8217;s <code>integrity</code> attribute to <code>integrityMetadata</code>.</li>
-        </ol>
-      </section>
-      <!-- /Framework::JS::Workers::Worker -->
-      <section>
-        <h4 id="sharedworker-extension">SharedWorker extension</h4>
-
-        <dl title="[Constructor (DOMString scriptURL, DOMString name, DOMString integrityMetadata)] partial interface Worker : EventTarget" class="idl">
-          <dt>attribute DOMString integrity</dt>
-          <dd>The value of the SharedWorker&#8217;s <code>integrity</code> attribute. Defaults to the empty string.</dd>
-        </dl>
-
-        <p>When the <code>SharedWorker(scriptURL, name, integrityMetadata)</code> constructor is
-invoked:</p>
-
-        <ol>
-          <li>If <code>integrityMetadata</code> is not a valid &#8220;named information&#8221; (<code>ni</code>) URL,
-throw a <code>SyntaxError</code> exception and abort these steps.</li>
-          <li>Execute the <code>SharedWorker(scriptURL, name)</code> constructor, and set the
-newly created <code>SharedWorker</code> object&#8217;s <code>integrity</code> attribute to
-<code>integrityMetadata</code>.</li>
-        </ol>
-      </section>
-      <!-- /Framework::JS::Workers::SharedWorker -->
-
-      <section>
-        <h4 id="validation">Validation</h4>
-
-        <p>Add the following step directly after step 4 of the <a href="http://dev.w3.org/html5/workers/#run-a-worker">run a worker</a>
-algorithm:</p>
-
-        <ol start="5">
-          <li>If the script resource fetched in step 4 has an integrity status of
-<code>corrupt</code>, then for each <code>Worker</code> or <code>SharedWorker</code> object associated
-with <var>worker global scope</var>, <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a
-simple event</a> named <code>error</code> at that object. Abort these steps.</li>
-        </ol>
-      </section>
-      <!-- /Framework::JS::Workers::validation -->
-
-    </section>
-    <!-- /Framework::JS::Workers -->
-
-    <section>
-      <h4 id="xmlhttprequest">XMLHttpRequest</h4>
-
-      <p>To validate the integrity of resources loaded via <code>XMLHttpRequest</code>, a new
+    <p>To validate the integrity of resources loaded via <code>XMLHttpRequest</code>, a new
 <code>integrity</code> attribute is added to the <code>XMLHttpRequest</code> object. If set, the
 <a href="#dfn-integrity-metadata">integrity metadata</a> in this attribute is used to validate the resource
 before triggering the <code>load</code> event. [[!XMLHTTPREQUEST]]</p>
 
-      <section>
-        <h5 id="the-integrity-attribute-1">The <code>integrity</code> attribute</h5>
+    <section>
+      <h5 id="the-integrity-attribute-1">The <code>integrity</code> attribute</h5>
 
-        <p>The <code>integrity</code> attribute must return its value. Initially its value MUST
+      <p>The <code>integrity</code> attribute must return its value. Initially its value MUST
 be the empty string.</p>
 
-        <p>Setting the <code>integrity</code> attribute MUST run these steps:</p>
+      <p>Setting the <code>integrity</code> attribute MUST run these steps:</p>
 
-        <ol>
-          <li>If the state is not <code>UNSENT</code> or <code>OPENED</code>, throw an <code>InvalidStateError</code>
+      <ol>
+        <li>If the state is not <code>UNSENT</code> or <code>OPENED</code>, throw an <code>InvalidStateError</code>
 exception and abort these steps.</li>
-          <li>If the value provided is not a valid &#8220;named information&#8221; (<code>ni</code>) URL,
-throw a &#8220;SyntaxError` exception and abort these steps.</li>
-          <li>Set the <code>integrity</code> attribute&#8217;s value to the value provided.</li>
-        </ol>
+        <li>If the value provided is not a valid “named information” (<code>ni</code>) URL,
+throw a “SyntaxError` exception and abort these steps.</li>
+        <li>Set the <code>integrity</code> attribute’s value to the value provided.</li>
+      </ol>
 
-      </section>
-      <!-- /Framework::JS::XHR::integrity -->
+    </section>
+    <!-- /Framework::JS::XHR::integrity -->
 
-      <section>
-        <h5 id="progress-events">Progress events</h5>
+    <section>
+      <h5 id="progress-events">Progress events</h5>
 
-        <p>Validation only takes place when the entire resource body has been
+      <p>Validation only takes place when the entire resource body has been
 downloaded. Data processed before the resource has completely
 loaded (or failed to load) is unvalidated, and potentially corrupt.
-For that reason, if the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a>
+For that reason, if the document’s <a href="#dfn-integrity-policy">integrity policy</a>
 is <code>block</code>, progress events will not fire until the fetch has
 completed, one way or another.</p>
 
-        <p>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is not <code>block</code>, developers who
+      <p>If the document’s <a href="#dfn-integrity-policy">integrity policy</a> is not <code>block</code>, developers who
 care about integrity validation SHOULD still ignore progress events
 fired while the resource is downloading, and instead listen only for
 the <code>load</code>, <code>abort</code>, and <code>error</code> events.</p>
 
-        <p>If the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>, then:</p>
-
-        <ul>
-          <li>Before executing step 3.2 of the &#8220;process response&#8221; algorithm in
-step 13 of XMLHttpRequest&#8217;s <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send"><code>send(data)</code></a> method:
-            <ol>
-              <li>If the object&#8217;s <code>integrity</code> attribute is not the empty string
-the user agent MUST abort the &#8220;process response&#8221; algorithm, and
-MUST NOT fire the <code>readystatechange</code> event.</li>
-            </ol>
-          </li>
-          <li>Before executing step 2.2 of the &#8220;process response body&#8221; algorithm in
-step 13 of XMLHttpRequest&#8217;s <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send"><code>send(data)</code></a> method:
-            <ol>
-              <li>If the object&#8217;s <code>integrity</code> attribute is not the empty string
-the user agent MUST abort the &#8220;process response body&#8221; algorithm,
-and MUST NOT fire the <code>readystatechange</code> event.</li>
-            </ol>
-          </li>
-          <li>Before executing step 4 of the &#8220;process response body&#8221; algorithm in
-step 13 of XMLHttpRequest&#8217;s <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send"><code>send(data)</code></a> method:
-            <ol>
-              <li>If the object&#8217;s <code>integrity</code> attribute is not the empty string
-the user agent MUST abort the &#8220;process response body&#8221; algorithm,
-and MUST NOT fire the <code>progress</code> event.</li>
-            </ol>
-          </li>
-        </ul>
-
-      </section>
-      <!-- /Framework::JS::XHR::integrity -->
-
-      <section>
-        <h5 id="validation-1">Validation</h5>
-
-        <p>Whenever the user agent would <a href="https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#switch-done">switch an <code>XMLHttpRequest</code> object to the
-<code>DONE</code> state</a>, then perform the following steps before
-switching state:</p>
-
-        <ol>
-          <li>If the response&#8217;s integrity state is <code>intact</code> or <code>indeterminate</code>,
-then abort these steps, and continue to
-<a href="https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#switch-done">switch to the <code>DONE</code> state</a>.</li>
-          <li>Otherwise, <a href="http://www.w3.org/TR/CSP11/#dfn-report-a-violation">report a violation</a>, and run the following steps
-if the document&#8217;s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-            <ol>
-              <li>Set the <a href="https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#response-entity-body">response entity body</a> to <code>null</code></li>
-              <li>Run the <a href="http://www.w3.org/TR/XMLHttpRequest/#request-error">request error</a> steps for exception
-<a href="http://dev.w3.org/2006/webapi/DOM4Core/#networkerror"><code>NetworkError</code></a> and event <a href="http://www.w3.org/TR/XMLHttpRequest/#event-xhr-error"><code>error</code></a>.</li>
-              <li>Do not continue to <a href="https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#switch-done">switch to the <code>DONE</code> state</a>.</li>
-            </ol>
-          </li>
-        </ol>
-
-      </section>
-      <!-- Framework::JS::XHR::validation -->
-
-    </section>
-    <!-- /Framework::JS::XHR -->
-
-  </section>
-  <!-- /Framework::JS -->
-</section>
-<!-- /Framework -->
-
-<section>
-  <h3 id="caching-optional">Caching (Optional)</h3>
-
-  <p>The caching mechanism described in this section is OPTIONAL.</p>
-
-  <p>JavaScript libraries are a good example of resources that are often loaded
-and reloaded from different locations as users browse the web:
-<code>http://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js</code> is
-exactly the same file as
-<code>https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js</code>. Both
-files are identifiable via the <code>ni</code> URL
-<code>ni:///sha-256;iaFenEC8axSAnyNu6M0-0epCOTwfbKVceFXNd5s_ki4?ct=application/javascript</code>.</p>
-
-  <p>To reduce the performance impact of reloading the same data, user agents
-MAY use <a href="#dfn-integrity-metadata">integrity metadata</a> as a new index to a local cache, meaning that
-a user who had already loaded a version of the file from <code>ajax.googleapis.com</code>
-wouldn&#8217;t have to touch the network to load the <code>cdnjs.cloudflare.com</code> version.
-The user agent knows that the content is the same, and would be free to treat
-the latter as a cache hit, regardless of the location mismatch.</p>
-
-  <section>
-    <h4 id="risks">Risks</h4>
-
-    <p>This approach is good for performance, but can have security implications. See
-the <a href="#origin-confusion">origin confusion</a> and <a href="#mime-type-confusion">MIME type confusion</a> sections below for some
-details.</p>
-
-    <section>
-      <h5 id="origin-confusion">Origin confusion</h5>
-
-      <p>User agents which set up a caching mechanism that uses only the integrity
-metadata to identify a resource are vulnerable to attacks which bypass
-same-origin restrictions unless they are very careful when choosing whether
-or not to read data straight from the cache.</p>
-
-      <p>For instance:</p>
+      <p>If the document’s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>, then:</p>
 
       <ul>
-        <li>
-          <p><a href="http://www.w3.org/TR/html5/webappapis.html#runtime-script-errors">Runtime script errors</a> are sanitized for resources that are
-<a href="http://www.w3.org/TR/html5/infrastructure.html#cors-cross-origin">CORS-cross-origin</a> to the page into which they are loaded. [[!HTML5]]</p>
+        <li>Before executing step 3.2 of the “process response” algorithm in
+step 13 of XMLHttpRequest’s <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send"><code>send(data)</code></a> method:
+          <ol>
+            <li>If the object’s <code>integrity</code> attribute is not the empty string
+the user agent MUST abort the “process response” algorithm, and
+MUST NOT fire the <code>readystatechange</code> event.</li>
+          </ol>
         </li>
-        <li>
-          <p>XMLHttpRequest may only load data from same-origin resources, or from
-resources delivered with proper CORS headers. [[!XMLHTTPREQUEST]]</p>
+        <li>Before executing step 2.2 of the “process response body” algorithm in
+step 13 of XMLHttpRequest’s <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send"><code>send(data)</code></a> method:
+          <ol>
+            <li>If the object’s <code>integrity</code> attribute is not the empty string
+the user agent MUST abort the “process response body” algorithm,
+and MUST NOT fire the <code>readystatechange</code> event.</li>
+          </ol>
         </li>
-        <li>
-          <p>Content Security Policy performs origin-based security checks. [[!CSP]]</p>
+        <li>Before executing step 4 of the “process response body” algorithm in
+step 13 of XMLHttpRequest’s <a href="http://xhr.spec.whatwg.org/#dom-xmlhttprequest-send"><code>send(data)</code></a> method:
+          <ol>
+            <li>If the object’s <code>integrity</code> attribute is not the empty string
+the user agent MUST abort the “process response body” algorithm,
+and MUST NOT fire the <code>progress</code> event.</li>
+          </ol>
         </li>
       </ul>
 
-      <p class="issue" data-number="15">More?</p>
-
-      <div class="note">
-        <p>The simple cache-poisoning version of this attack can be mitigated by
-requiring strong hash functions for cachable resources. More complex
-variants are more difficult to mitigate. Consider the following:</p>
-
-        <ol>
-          <li>
-            <p>An attacker lures Alice to a page containing the following code:</p>
-
-            <pre class="example highlight"><code>&lt;script src="http://evil.com/evil.js" integrity="ni://sha-256;123...789"&gt;
-</code></pre>
-          </li>
-          <li>
-            <p>Alice&#8217;s user agent loads <code>evil.js</code>, and stores it in her cache.</p>
-          </li>
-          <li>
-            <p>Though <code>bank.com</code> is protected by a CSP which allows only script from
-<code>bank.com</code>, the attacker may still be able to exploit an XSS vulnerability
-in <code>bank.com</code> which allows the injection of:</p>
-
-            <pre class="example highlight"><code>&lt;script src="http://bank.com/awesome.js" integrity="ni://sha-256;123...789"&gt;
-</code></pre>
-
-            <p>Since the script appears to come from <code>bank.com</code>, CSP allows it, even though
-it doesn&#8217;t actually exist on that server.</p>
-          </li>
-        </ol>
-      </div>
-
     </section>
-    <!-- /Caching::Risks::Origin confusion -->
+    <!-- /Framework::JS::XHR::integrity -->
 
     <section>
-      <h5 id="mime-type-confusion">MIME type confusion</h5>
+      <h5 id="validation">Validation</h5>
 
-      <p>User agents which set up a caching mechanism that uses only the integrity
-metadata to identify a resource are vulnerable to attacks which create
-resources that behave differently based on the context in which they are
-loaded. <a href="http://en.wikipedia.org/wiki/Gifar">Gifar</a> is the canonical example of such an attack.</p>
+      <p>Whenever the user agent would <a href="https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#switch-done">switch an <code>XMLHttpRequest</code> object to the
+<code>DONE</code> state</a>, then perform the following steps before
+switching state:</p>
 
-      <p>Authors SHOULD mitigate this risk by specifying the expected content type
-along with the digest, as specified in <a href="http://tools.ietf.org/html/rfc6920#section-3.1">RFC 6920, section 3.1</a>.
-This means that the content type will be verified along with the digest when
-determining whether a <a href="#does-resource-match-metadatalist">resource matches certain integrity
-metadata</a>.</p>
+      <ol>
+        <li>If the response’s integrity state is <code>intact</code> or <code>indeterminate</code>,
+then abort these steps, and continue to
+<a href="https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#switch-done">switch to the <code>DONE</code> state</a>.</li>
+        <li>Otherwise, <a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a violation</a>, and run the following steps
+if the document’s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
+          <ol>
+            <li>Set the <a href="https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#response-entity-body">response entity body</a> to <code>null</code></li>
+            <li>Run the <a href="http://www.w3.org/TR/XMLHttpRequest/#request-error">request error</a> steps for exception
+<a href="http://dev.w3.org/2006/webapi/DOM4Core/#networkerror"><code>NetworkError</code></a> and event <a href="http://www.w3.org/TR/XMLHttpRequest/#event-xhr-error"><code>error</code></a>.</li>
+            <li>Do not continue to <a href="https://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#switch-done">switch to the <code>DONE</code> state</a>.</li>
+          </ol>
+        </li>
+      </ol>
 
     </section>
-    <!-- /Caching::Risks::MIME Type confusion -->
+    <!-- Framework::JS::XHR::validation -->
   </section>
-  <!-- /Caching::Risks -->
-
-  <section>
-    <h4 id="recommendations">Recommendations</h4>
-
-    <p>To mitigate the risk of cross-origin data leakage or type-sniffing
-exploitation, user agents that take this approach to caching MUST NOT
-use <a href="#dfn-integrity-metadata">integrity metadata</a> as a cache identifier unless the following
-are all true:</p>
-
-    <ul>
-      <li>The integrity metadata contains a content type.</li>
-      <li>The resource was delivered in response to an HTTP <code>GET</code> request (and not
-<code>POST</code>, <code>OPTIONS</code>, <code>TRACE</code>, etc.)</li>
-      <li>The resource was delivered with an <code>Access-Control-Allow-Origin</code> HTTP
-header with a value of <code>*</code> [[!CORS]]</li>
-      <li>The integrity metadata uses a hash function with very strong uniqueness
-characteristics: SHA-512 or better.</li>
-      <li>If a Content Security Policy is active in a context, the <code>script</code> or
-<code>link</code> element which triggered the resource&#8217;s fetch has a <a href="http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html">valid nonce</a>.</li>
-    </ul>
-
-    <p class="issue" data-number="16">More ideas? Limiting to resources with wide-open CORS headers and strong
-hash functions seems like a reasonable start&#8230;</p>
-  </section>
-  <!-- /Caching::Recommendations -->
+  <!-- /Framework::JS::XHR -->
 </section>
-<!-- /Caching -->
+<!-- /Framework::JS -->
+<p>&lt;/section&gt;<!-- /Framework --></p>
 
 <section>
   <h2 id="proxies">Proxies</h2>
@@ -1587,8 +1139,8 @@ for which a page author has requested integrity verification. To
 support this latter option, user agents MUST send a
 <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9"><code>Cache-Control</code></a> header with a value of
 <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5"><code>no-transform</code></a> when requesting a resource with
-associated integrity metadata (see item 3 in the &#8220;<a href="#modifications-to-fetch">Modifications to
-Fetch</a>&#8221; section).</p>
+associated integrity metadata (see item 3 in the “<a href="#modifications-to-fetch">Modifications to
+Fetch</a>” section).</p>
 
   <p class="issue" data-number="17">Think about how integrity checks would effect <code>vary</code> headers
 in general.</p>
@@ -1615,8 +1167,8 @@ secure channels.</p>
     <h3 id="hash-collision-attacks">Hash collision attacks</h3>
 
     <p>Digests are only as strong as the hash function used to generate them. User
-agents SHOULD refuse to support known-weak hashing functions like MD5, and
-SHOULD restrict supported hashing functions to those known to be
+agents SHOULD refuse to support known-weak hashing functions like MD5 or SHA-1,
+and SHOULD restrict supported hashing functions to those known to be
 collision-resistant. At the time of writing, SHA-256 is a good baseline.
 Moreover, user agents SHOULD reevaluate their supported hashing functions
 on a regular basis, and deprecate support for those functions shown to be
@@ -1630,24 +1182,24 @@ insecure.</p>
     <p>Attackers can determine whether some cross-origin resource has certain
 content by attempting to load it with a known digest, and watching for
 load failure. If the load fails, the attacker can surmise that the
-resource didn&#8217;t match the hash, and thereby gain some insight into its
+resource didn’t match the hash, and thereby gain some insight into its
 contents. This might reveal, for example, whether or not a user is
 logged into a particular service.</p>
 
     <p>Moreover, attackers can brute-force specific values in an otherwise
-static resource: consider a document that looks like this:</p>
+static resource: consider a JSON response that looks like this:</p>
 
-    <pre class="example highlight"><code>&lt;html&gt;{static content}&lt;h1&gt;Hello, $username!&lt;/h1&gt;{static content}&lt;/html&gt;
+    <pre><code>{'status': 'authenticated', 'username': 'Stephan Falken'}
 </code></pre>
 
-    <p>An attacker can precompute hashes for the page with a variety of
+    <p>An attacker can precompute hashes for the response with a variety of
 common usernames, and specify those hashes while repeatedly attempting
 to load the document. By examining the reported violations, the attacker
-can obtain a user&#8217;s username.</p>
+can obtain a user’s username.</p>
 
     <p>User agents SHOULD mitigate the risk by refusing to fire <code>error</code> events
 on elements which loaded cross-origin resources, but some side-channels
-will likely be difficult to avoid (image&#8217;s <code>naturalHeight</code> and
+will likely be difficult to avoid (image’s <code>naturalHeight</code> and
 <code>naturalWidth</code> for instance).</p>
   </section>
   <!-- /Security::cross-origin -->
@@ -1659,7 +1211,7 @@ will likely be difficult to avoid (image&#8217;s <code>naturalHeight</code> and
   <h2 id="acknowledgements">Acknowledgements</h2>
 
   <p>None of this is new. Much of the content here is inspired heavily by Gervase
-Markham&#8217;s <a href="http://www.gerv.net/security/link-fingerprints/">Link Fingerprints</a> concept, as well as WHATWG&#8217;s <a href="http://wiki.whatwg.org/wiki/Link_Hashes">Link Hashes</a>.</p>
+Markham’s <a href="http://www.gerv.net/security/link-fingerprints/">Link Fingerprints</a> concept, as well as WHATWG’s <a href="http://wiki.whatwg.org/wiki/Link_Hashes">Link Hashes</a>.</p>
 
 </section>
 
