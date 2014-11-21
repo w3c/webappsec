@@ -53,7 +53,7 @@
 </p>
   <h1 class="p-name no-ref" id=title>Requirements for Powerful Features</h1>
   <h2 class="no-num no-toc no-ref heading settled" id=subtitle><span class=content>Editor’s Draft,
-    <span class=dt-updated><span class=value-title title=20141120>20 November 2014</span></span></span></h2>
+    <span class=dt-updated><span class=value-title title=20141121>21 November 2014</span></span></span></h2>
   <div data-fill-with=spec-metadata><dl><dt>This version:<dd><a class=u-url href=https://w3c.github.io/webappsec/specs/powerfulfeatures/>https://w3c.github.io/webappsec/specs/powerfulfeatures/</a><dt>Latest version:<dd><a href=http://www.w3c.org/TR/powerful-features/>http://www.w3c.org/TR/powerful-features/</a><dt>Version History:<dd><a href=https://github.com/w3c/webappsec/commits/master/specs/powerfulfeatures/index.src.html>https://github.com/w3c/webappsec/commits/master/specs/powerfulfeatures/index.src.html</a><dt>Feedback:<dd><span><a href="mailto:public-webappsec@w3.org?subject=%5BPOWER%5D%20feedback">public-webappsec@w3.org</a> with subject line “<kbd>[POWER] <var>… message topic …</var></kbd>” (<a href=http://lists.w3.org/Archives/Public/public-webappsec/ rel=discussion>archives</a>)</span><dt class=editor>Editor:<dd class=editor><div class="p-author h-card vcard"><a class="p-name fn u-email email" href=mailto:mkwst@google.com>Mike West</a> (<span class="p-org org">Google Inc.</span>)</div></dl></div>
   <div data-fill-with=warning></div>
   <p class=copyright data-fill-with=copyright><a href=http://www.w3.org/Consortium/Legal/ipr-notice#Copyright>Copyright</a> © 2014
@@ -74,10 +74,10 @@
 </div>
 
 <h2 class="no-num no-toc no-ref heading settled" id=abstract><span class=content>Abstract</span></h2>
-<div class=p-summary data-fill-with=abstract><p>This specification prescribes guidelines for user agents' implementations of
+<div class=p-summary data-fill-with=abstract><p>This specification provides guidelines for user agent implementors when
 
-certain kinds of APIs which are powerful enough to be restricted to secure
-contexts.</p>
+implementing features whose properties dictate that they only be exposed to
+the web when delivered into a trustworthy environment.</p>
 
 </div>
 
@@ -123,7 +123,7 @@ contexts.</p>
 <h2 class="no-num no-toc no-ref heading settled" id=contents><span class=content>Table of Contents</span></h2>
 <div data-fill-with=table-of-contents role=navigation><ul class=toc role=directory><li><a href=#intro><span class=secno>1</span> <span class=content>Introduction</span></a><li><a href=#terms><span class=secno>2</span> <span class=content>Key Concepts and Terminology</span></a><ul class=toc><li><a href=#terms-defined-here><span class=secno>2.1</span> <span class=content>Terms defined by this specification</span></a><li><a href=#terms-defined-by-reference><span class=secno>2.2</span> <span class=content>Terms defined by reference</span></a></ul><li><a href=#is-feature-powerful><span class=secno>3</span> <span class=content>
     Is <var>[insert feature here]</var> powerful?
-  </span></a><ul class=toc><li><a href=#threat-models><span class=secno>3.1</span> <span class=content>Threat Models</span></a><ul class=toc><li><a href=#passive-network-attacker><span class=secno>3.1.1</span> <span class=content>Passive Network Attacker</span></a><li><a href=#active-network-attacker><span class=secno>3.1.2</span> <span class=content>Active Network Attacker</span></a></ul><li><a href=#examples><span class=secno>3.2</span> <span class=content>Examples</span></a><ul class=toc><li><a href=#webcrypto><span class=secno>3.2.1</span> <span class=content>Web Crypto</span></a><li><a href=#eme><span class=secno>3.2.2</span> <span class=content>Encrypted Media Extensions</span></a><li><a href=#geolocation><span class=secno>3.2.3</span> <span class=content>Geolocation</span></a><li><a href=#serviceworkers><span class=secno>3.2.4</span> <span class=content>Service Workers</span></a></ul></ul><li><a href=#algorithms><span class=secno>4</span> <span class=content>Algorithms</span></a><ul class=toc><li><a href=#document-powerful-features><span class=secno>4.1</span> <span class=content>
+  </span></a><ul class=toc><li><a href=#threat-models><span class=secno>3.1</span> <span class=content>Threat Models</span></a><ul class=toc><li><a href=#passive-network-attacker><span class=secno>3.1.1</span> <span class=content>Passive Network Attacker</span></a><li><a href=#active-network-attacker><span class=secno>3.1.2</span> <span class=content>Active Network Attacker</span></a></ul></ul><li><a href=#algorithms><span class=secno>4</span> <span class=content>Algorithms</span></a><ul class=toc><li><a href=#document-powerful-features><span class=secno>4.1</span> <span class=content>
       May <var>Document</var> use powerful features?
     </span></a><li><a href=#settings-powerful-features><span class=secno>4.2</span> <span class=content>
       May <var>environment settings object</var> use powerful features?
@@ -145,10 +145,18 @@ contexts.</p>
 
 <p><em>This section is not normative.</em></p>
 
-<p><em>
-    This section is also not yet an introduction. Someone should totally fix
-    that. TODO(mkwst).</em></p><em>
-  </em>
+<p>As the web platform is extended to enable more useful and powerful
+  applications, it becomes increasingly important to ensure that the features
+  which enable those applications are enabled only in contexts meet a minimum
+  security bar. Here, we’ll explore some common ways in which features are
+  abused on the web, and outline normative requirements which should be
+  incorporated into documents specifying new features.</p>
+
+<p>The most obvious of the requirements discussed here is that application code
+  with access to sensitive or personal data be delivered over authenticated and
+  confidential channels that guarantee data integrity. Delivering code securely
+  cannot ensure that an application will always meet a user’s security and
+  privacy requirments, but it is a necessary precondition.</p>
 </section>
 
 
@@ -166,7 +174,9 @@ contexts.</p>
   </a>.
     </dd>
 
-    <dt><dfn data-dfn-type=dfn data-export="" id=secure-enough>secure enough<a class=self-link href=#secure-enough></a></dfn></dt>
+    <dt><dfn data-dfn-type=dfn data-export="" data-local-title="sufficiently secure" id=secure-enough>
+      secure enough
+    <a class=self-link href=#secure-enough></a></dfn></dt>
     <dd>
       A <code class=idl><a data-link-type=idl href=http://www.w3.org/TR/html5/dom.html#the-document-object title=Document>Document</a></code> or <a data-link-type=dfn href=#environment-settings-object title="environment settings object">environment settings object</a> is considered
       <strong>secure enough</strong> to use <a data-link-type=dfn href=#powerful-feature title="powerful features">powerful features</a> if and
@@ -240,14 +250,55 @@ contexts.</p>
     Is <var>[insert feature here]</var> powerful?
   </span><a class=self-link href=#is-feature-powerful></a></h2>
 
-<p>Tangentially related to a user agent’s handling of insecure resources in
-  secure contexts, certain web platform features that have distinct impact
-  on a user’s security or privacy wish to restrict themselves for use only
-  in sufficiently secure contexts. Service Workers, for instance, may only
-  be registered when the user agent is satisfied that doing so doesn’t put
-  the user at risk.</p>
+<p>Certain web platform features that have distinct impact on a user’s
+  security or privacy should be available for use only in <a data-link-type=dfn href=#secure-enough title="sufficiently secure">sufficiently
+  secure</a> contexts.</p>
+
+<p>Broadly speaking, we consider a feature powerful enough to restrict when it
+  fits into one or more of the following categories:</p>
+
+  <ol>
+    <li>
+      The feature provides access to sensitive data (personally-identifying
+      information, credentials, payment instruments, and so on).
+      <a data-biblio-type=informative data-link-type=biblio href=#biblio-credential-management title=CREDENTIAL-MANAGEMENT>[CREDENTIAL-MANAGEMENT]</a> is a fine example of such an API.
+    </li>
+    <li>
+      The feature provides access to sensor data on a user’s device (camera,
+      microphone, and GPS being particularly noteworthy, but certainly including
+      less obviously dangerous sensors like the accelerometer).
+      <a data-biblio-type=informative data-link-type=biblio href=#biblio-geolocation-api title=GEOLOCATION-API>[GEOLOCATION-API]</a> and <a data-biblio-type=informative data-link-type=biblio href=#biblio-mediacapture-streams title=MEDIACAPTURE-STREAMS>[MEDIACAPTURE-STREAMS]</a> are historical examples.
+    </li>
+    <li>
+      The feature provides access to other devices a user has access to.
+      <a data-biblio-type=informative data-link-type=biblio href=#biblio-discovery title=DISCOVERY>[DISCOVERY]</a> and <a data-biblio-type=informative data-link-type=biblio href=#biblio-bluetooth title=BLUETOOTH>[BLUETOOTH]</a> are good examples.
+    </li>
+    <li>
+      The feature exposes temporary or persistent identifiers, including
+      identifying hardware features the user can’t easily reset.
+      <a data-biblio-type=informative data-link-type=biblio href=#biblio-encrypted-media title=ENCRYPTED-MEDIA>[ENCRYPTED-MEDIA]</a> for instance.
+    </li>
+    <li>
+      The feature introduces some state for an origin which persists across
+      browsing sessions. <a data-biblio-type=informative data-link-type=biblio href=#biblio-service-workers title=SERVICE-WORKERS>[SERVICE-WORKERS]</a> is a great example.
+    </li>
+  </ol>
+
+<p>This list is non-exhaustive, but should give you a feel for the types of
+  features you should be concerned about.</p>
+
+<p class=note role=note>Note: While restricting the feature itself to <a data-link-type=dfn href=#secure-enough title="sufficiently secure">sufficiently secure</a>
+  contexts is critical, we ought not forget that facilities that carry such
+  information (such as new network access mechanisms, or other generic
+  functions with access to network data) are equally sensitive.</p>
 
   <h3 class="heading settled" data-level=3.1 id=threat-models><span class=secno>3.1. </span><span class=content>Threat Models</span><a class=self-link href=#threat-models></a></h3>
+
+<p>Granting permissions to unauthenticated origins is, in the presence of a
+  network attacker, equivalent to granting the permissions to any origin. The
+  state of the internet is such that we must indeed assume that a network
+  attacker is present. Generally, network attackers fall into 2 classes:
+  passive and active.</p>
 
   <h4 class="heading settled" data-level=3.1.1 id=passive-network-attacker><span class=secno>3.1.1. </span><span class=content>Passive Network Attacker</span><a class=self-link href=#passive-network-attacker></a></h4>
 
@@ -260,23 +311,10 @@ contexts.</p>
   permissions you’ve granted to an insecure origin as you surf around unrelated
   sites on the net.</p>
 
-  <h3 class="heading settled" data-level=3.2 id=examples><span class=secno>3.2. </span><span class=content>Examples</span><a class=self-link href=#examples></a></h3>
-
-  <h4 class="heading settled" data-level=3.2.1 id=webcrypto><span class=secno>3.2.1. </span><span class=content>Web Crypto</span><a class=self-link href=#webcrypto></a></h4>
-
-<p><a data-biblio-type=informative data-link-type=biblio href=#biblio-webcryptoapi title=WEBCRYPTOAPI>[WEBCRYPTOAPI]</a></p>
-
-  <h4 class="heading settled" data-level=3.2.2 id=eme><span class=secno>3.2.2. </span><span class=content>Encrypted Media Extensions</span><a class=self-link href=#eme></a></h4>
-
-<p><a data-biblio-type=informative data-link-type=biblio href=#biblio-encrypted-media title=ENCRYPTED-MEDIA>[ENCRYPTED-MEDIA]</a></p>
-
-  <h4 class="heading settled" data-level=3.2.3 id=geolocation><span class=secno>3.2.3. </span><span class=content>Geolocation</span><a class=self-link href=#geolocation></a></h4>
-
-<p><a data-biblio-type=informative data-link-type=biblio href=#biblio-geolocation-api title=GEOLOCATION-API>[GEOLOCATION-API]</a></p>
-
-  <h4 class="heading settled" data-level=3.2.4 id=serviceworkers><span class=secno>3.2.4. </span><span class=content>Service Workers</span><a class=self-link href=#serviceworkers></a></h4>
-
-<p><a data-biblio-type=informative data-link-type=biblio href=#biblio-service-workers title=SERVICE-WORKERS>[SERVICE-WORKERS]</a></p>
+<p>Let’s be clear: if your ISP is willing to actively manipulate the bits on the
+  wire for financial gain (<a data-biblio-type=informative data-link-type=biblio href=#biblio-verizon title=VERIZON>[VERIZON]</a> and <a data-biblio-type=informative data-link-type=biblio href=#biblio-comcast title=COMCAST>[COMCAST]</a> are recent examples),
+  then there is no reason to doubt that advisaries with immense resources would
+  do the same for different purposes.</p>
 </section>
 
 <section>
@@ -388,10 +426,19 @@ contexts.</p>
       Is <var>origin</var> potentially trusted?
     </span><a class=self-link href=#is-origin-trusted></a></h3>
 
-<p>Certain origins are impossible for a user agent not to place trust in. In
-    particular, <code>file:</code> URLs and the loopback interface both expose
-    aspects of the machine on which the user agent is running. The user agent
-    has no choice but to trust these origins.</p>
+<p>TODO(palmer,mkwst): Decide if we mean "potentially trustworthy", not
+    "potentially trusted". I think "trusted" is a decision for the human
+    user; whereas "potentially trustworthy" is advice the UA can give the
+    user. Therefore we probably mean "trustworthy".</p>
+
+<p>Certain origins are always potentially trustworthy. In particular, UAs
+    MUST treat <code>file:</code> URLs and URLs with hostnames names equivalent
+    to "localhost" as potentially trustworthy. In principle the UA could treat
+    local files and local web servers as untrustworthy. However, <em>given the
+    information that is available to the UA at runtime</em>, the resources
+    appear to have been transported securely. Additionally, treating such
+    resources as potentially trustworthy is convenient for developers building
+    an application before deploying it to the public.</p>
 
 <p>A user agent MAY choose to extend this trust to other, vendor-specific URL
     schemes like <code>app:</code> or <code>chrome-extension:</code>.</p>
@@ -505,4 +552,4 @@ contexts.</p>
 
 
 
-<h2 class="no-num heading settled" id=references><span class=content>References</span><a class=self-link href=#references></a></h2><h3 class="no-num heading settled" id=normative><span class=content>Normative References</span><a class=self-link href=#normative></a></h3><dl><dt id=biblio-fetch title=FETCH><a class=self-link href=#biblio-fetch></a>[FETCH]<dd>Anne van Kesteren. <a href=http://fetch.spec.whatwg.org/>Fetch</a>. Living Standard. URL: <a href=http://fetch.spec.whatwg.org/>http://fetch.spec.whatwg.org/</a><dt id=biblio-mix title=MIX><a class=self-link href=#biblio-mix></a>[MIX]<dd>Mike West. <a href=https://w3c.github.io/webappsec/specs/mixedcontent/>Mixed Content</a>. ED. URL: <a href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a><dt id=biblio-rfc4632 title=RFC4632><a class=self-link href=#biblio-rfc4632></a>[RFC4632]<dd>Vince Fuller; Tony Li. <a href=http://www.ietf.org/rfc/rfc4632.txt>Classless Inter-domain Routing (CIDR): The Internet Address Assignment and Aggregation Plan</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc4632.txt>http://www.ietf.org/rfc/rfc4632.txt</a><dt id=biblio-rfc6454 title=RFC6454><a class=self-link href=#biblio-rfc6454></a>[RFC6454]<dd>Adam Barth. <a href=http://www.ietf.org/rfc/rfc6454.txt>The Web Origin Concept</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6454.txt>http://www.ietf.org/rfc/rfc6454.txt</a><dt id=biblio-html5 title=html5><a class=self-link href=#biblio-html5></a>[html5]<dd>Robin Berjon; et al. <a href=http://www.w3.org/TR/html5/>HTML5</a>. 28 October 2014. REC. URL: <a href=http://www.w3.org/TR/html5/>http://www.w3.org/TR/html5/</a><dt id=biblio-rfc2119 title=rfc2119><a class=self-link href=#biblio-rfc2119></a>[rfc2119]<dd>S. Bradner. <a href=http://www.ietf.org/rfc/rfc2119.txt>Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href=http://www.ietf.org/rfc/rfc2119.txt>http://www.ietf.org/rfc/rfc2119.txt</a></dl><h3 class="no-num heading settled" id=informative><span class=content>Informative References</span><a class=self-link href=#informative></a></h3><dl><dt id=biblio-powerful-new-features title=POWERFUL-NEW-FEATURES><a class=self-link href=#biblio-powerful-new-features></a>[POWERFUL-NEW-FEATURES]<dd>Chrome Security Team. <a href=https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features>Prefer Secure Origins For Powerful New Features</a>. URL: <a href=https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features>https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features</a><dt id=biblio-rfc7258 title=RFC7258><a class=self-link href=#biblio-rfc7258></a>[RFC7258]<dd>Stephen Farrell; Hannes Tschofenig. <a href=http://www.ietf.org/rfc/rfc7258.txt>Pervasive Monitoring Is an Attack</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc7258.txt>http://www.ietf.org/rfc/rfc7258.txt</a><dt id=biblio-uri title=URI><a class=self-link href=#biblio-uri></a>[URI]<dd>T. Berners-Lee; R. Fielding; L. Masinter. <a href=http://www.ietf.org/rfc/rfc3986.txt>Uniform Resource Identifiers (URI): generic syntax</a>. January 2005. URL: <a href=http://www.ietf.org/rfc/rfc3986.txt>http://www.ietf.org/rfc/rfc3986.txt</a><dt id=biblio-webcryptoapi title=WebCryptoAPI><a class=self-link href=#biblio-webcryptoapi></a>[WebCryptoAPI]<dd>Ryan Sleevi; Mark Watson. <a href=http://www.w3.org/TR/WebCryptoAPI/>Web Cryptography API</a>. 25 March 2014. LCWD. URL: <a href=http://www.w3.org/TR/WebCryptoAPI/>http://www.w3.org/TR/WebCryptoAPI/</a><dt id=biblio-encrypted-media title=encrypted-media><a class=self-link href=#biblio-encrypted-media></a>[encrypted-media]<dd>David Dorwin; et al. <a href=http://www.w3.org/TR/encrypted-media/>Encrypted Media Extensions</a>. 28 August 2014. WD. URL: <a href=http://www.w3.org/TR/encrypted-media/>http://www.w3.org/TR/encrypted-media/</a><dt id=biblio-geolocation-api title=geolocation-API><a class=self-link href=#biblio-geolocation-api></a>[geolocation-API]<dd>Andrei Popescu. <a href=http://www.w3.org/TR/geolocation-API/>Geolocation API Specification</a>. 24 October 2013. REC. URL: <a href=http://www.w3.org/TR/geolocation-API/>http://www.w3.org/TR/geolocation-API/</a><dt id=biblio-service-workers title=service-workers><a class=self-link href=#biblio-service-workers></a>[service-workers]<dd>Alex Russell; Jungkee Song. <a href=http://www.w3.org/TR/service-workers/>Service Workers</a>. 8 May 2014. WD. URL: <a href=http://www.w3.org/TR/service-workers/>http://www.w3.org/TR/service-workers/</a></dl><h2 class="no-num heading settled" id=index><span class=content>Index</span><a class=self-link href=#index></a></h2><ul class=indexlist><li>conformant server, <a href=#conformant-server title="section Unnumbered section">Unnumbered section</a><li>conformant user agent, <a href=#conformant-user-agent title="section Unnumbered section">Unnumbered section</a><li>embedding document, <a href=#embedding-document title="section 2.2">2.2</a><li>environment settings object, <a href=#environment-settings-object title="section 2.2">2.2</a><li>globally unique identifier, <a href=#globally-unique-identifier title="section 2.2">2.2</a><li>origin, <a href=#origin title="section 2.2">2.2</a><li>potentially secure, <a href=#potentially-secure-origin title="section 2.2">2.2</a><li>potentially secure origin, <a href=#potentially-secure-origin title="section 2.2">2.2</a><li>powerful feature, <a href=#powerful-feature title="section 2.1">2.1</a><li>request client TLS state, <a href=#request-client-tls-state title="section 2.2">2.2</a><li>response TLS state, <a href=#response-tls-state title="section 2.2">2.2</a><li>secure enough, <a href=#secure-enough title="section 2.1">2.1</a><li>tls state, <a href=#request-client-tls-state title="section 2.2">2.2</a></ul>
+<h2 class="no-num heading settled" id=references><span class=content>References</span><a class=self-link href=#references></a></h2><h3 class="no-num heading settled" id=normative><span class=content>Normative References</span><a class=self-link href=#normative></a></h3><dl><dt id=biblio-fetch title=FETCH><a class=self-link href=#biblio-fetch></a>[FETCH]<dd>Anne van Kesteren. <a href=http://fetch.spec.whatwg.org/>Fetch</a>. Living Standard. URL: <a href=http://fetch.spec.whatwg.org/>http://fetch.spec.whatwg.org/</a><dt id=biblio-mix title=MIX><a class=self-link href=#biblio-mix></a>[MIX]<dd>Mike West. <a href=https://w3c.github.io/webappsec/specs/mixedcontent/>Mixed Content</a>. ED. URL: <a href=https://w3c.github.io/webappsec/specs/mixedcontent/>https://w3c.github.io/webappsec/specs/mixedcontent/</a><dt id=biblio-rfc4632 title=RFC4632><a class=self-link href=#biblio-rfc4632></a>[RFC4632]<dd>Vince Fuller; Tony Li. <a href=http://www.ietf.org/rfc/rfc4632.txt>Classless Inter-domain Routing (CIDR): The Internet Address Assignment and Aggregation Plan</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc4632.txt>http://www.ietf.org/rfc/rfc4632.txt</a><dt id=biblio-rfc6454 title=RFC6454><a class=self-link href=#biblio-rfc6454></a>[RFC6454]<dd>Adam Barth. <a href=http://www.ietf.org/rfc/rfc6454.txt>The Web Origin Concept</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc6454.txt>http://www.ietf.org/rfc/rfc6454.txt</a><dt id=biblio-html5 title=html5><a class=self-link href=#biblio-html5></a>[html5]<dd>Robin Berjon; et al. <a href=http://www.w3.org/TR/html5/>HTML5</a>. 28 October 2014. REC. URL: <a href=http://www.w3.org/TR/html5/>http://www.w3.org/TR/html5/</a><dt id=biblio-rfc2119 title=rfc2119><a class=self-link href=#biblio-rfc2119></a>[rfc2119]<dd>S. Bradner. <a href=http://www.ietf.org/rfc/rfc2119.txt>Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href=http://www.ietf.org/rfc/rfc2119.txt>http://www.ietf.org/rfc/rfc2119.txt</a></dl><h3 class="no-num heading settled" id=informative><span class=content>Informative References</span><a class=self-link href=#informative></a></h3><dl><dt id=biblio-bluetooth title=BLUETOOTH><a class=self-link href=#biblio-bluetooth></a>[BLUETOOTH]<dd>Jeffrey Yasskin; Vincent Scheib. <a href=https://webbluetoothcg.github.io/web-bluetooth/>Web Bluetooth</a>. URL: <a href=https://webbluetoothcg.github.io/web-bluetooth/>https://webbluetoothcg.github.io/web-bluetooth/</a><dt id=biblio-comcast title=COMCAST><a class=self-link href=#biblio-comcast></a>[COMCAST]<dd>David Kravets. <a href=http://arstechnica.com/tech-policy/2014/09/why-comcasts-javascript-ad-injections-threaten-security-net-neutrality/>Comcast Wi-Fi serving self-promotional ads via JavaScript injection</a>. URL: <a href=http://arstechnica.com/tech-policy/2014/09/why-comcasts-javascript-ad-injections-threaten-security-net-neutrality/>http://arstechnica.com/tech-policy/2014/09/why-comcasts-javascript-ad-injections-threaten-security-net-neutrality/</a><dt id=biblio-credential-management title=CREDENTIAL-MANAGEMENT><a class=self-link href=#biblio-credential-management></a>[CREDENTIAL-MANAGEMENT]<dd>Mike West. <a href=https://w3c.github.io/webappsec/specs/credentialmanagement/>Credential Management</a>. ED. URL: <a href=https://w3c.github.io/webappsec/specs/credentialmanagement/>https://w3c.github.io/webappsec/specs/credentialmanagement/</a><dt id=biblio-discovery title=DISCOVERY><a class=self-link href=#biblio-discovery></a>[DISCOVERY]<dd>Rich Tibbett. <a href=http://dvcs.w3.org/hg/dap/raw-file/tip/discovery-api/Overview.html>Network Service Discovery</a>. URL: <a href=http://dvcs.w3.org/hg/dap/raw-file/tip/discovery-api/Overview.html>http://dvcs.w3.org/hg/dap/raw-file/tip/discovery-api/Overview.html</a><dt id=biblio-powerful-new-features title=POWERFUL-NEW-FEATURES><a class=self-link href=#biblio-powerful-new-features></a>[POWERFUL-NEW-FEATURES]<dd>Chrome Security Team. <a href=https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features>Prefer Secure Origins For Powerful New Features</a>. URL: <a href=https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features>https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features</a><dt id=biblio-rfc7258 title=RFC7258><a class=self-link href=#biblio-rfc7258></a>[RFC7258]<dd>Stephen Farrell; Hannes Tschofenig. <a href=http://www.ietf.org/rfc/rfc7258.txt>Pervasive Monitoring Is an Attack</a>. RFC. URL: <a href=http://www.ietf.org/rfc/rfc7258.txt>http://www.ietf.org/rfc/rfc7258.txt</a><dt id=biblio-uri title=URI><a class=self-link href=#biblio-uri></a>[URI]<dd>T. Berners-Lee; R. Fielding; L. Masinter. <a href=http://www.ietf.org/rfc/rfc3986.txt>Uniform Resource Identifiers (URI): generic syntax</a>. January 2005. URL: <a href=http://www.ietf.org/rfc/rfc3986.txt>http://www.ietf.org/rfc/rfc3986.txt</a><dt id=biblio-verizon title=VERIZON><a class=self-link href=#biblio-verizon></a>[VERIZON]<dd>Mark Bergen; Alex Kantrowitz. <a href=http://adage.com/article/digital/verizon-target-mobile-subscribers-ads/293356/>Verizon looks to target its mobile subscribers with ads</a>. URL: <a href=http://adage.com/article/digital/verizon-target-mobile-subscribers-ads/293356/>http://adage.com/article/digital/verizon-target-mobile-subscribers-ads/293356/</a><dt id=biblio-encrypted-media title=encrypted-media><a class=self-link href=#biblio-encrypted-media></a>[encrypted-media]<dd>David Dorwin; et al. <a href=http://www.w3.org/TR/encrypted-media/>Encrypted Media Extensions</a>. 28 August 2014. WD. URL: <a href=http://www.w3.org/TR/encrypted-media/>http://www.w3.org/TR/encrypted-media/</a><dt id=biblio-geolocation-api title=geolocation-API><a class=self-link href=#biblio-geolocation-api></a>[geolocation-API]<dd>Andrei Popescu. <a href=http://www.w3.org/TR/geolocation-API/>Geolocation API Specification</a>. 24 October 2013. REC. URL: <a href=http://www.w3.org/TR/geolocation-API/>http://www.w3.org/TR/geolocation-API/</a><dt id=biblio-mediacapture-streams title=mediacapture-streams><a class=self-link href=#biblio-mediacapture-streams></a>[mediacapture-streams]<dd>Daniel Burnett; et al. <a href=http://www.w3.org/TR/mediacapture-streams/>Media Capture and Streams</a>. 3 September 2013. WD. URL: <a href=http://www.w3.org/TR/mediacapture-streams/>http://www.w3.org/TR/mediacapture-streams/</a><dt id=biblio-service-workers title=service-workers><a class=self-link href=#biblio-service-workers></a>[service-workers]<dd>Alex Russell; Jungkee Song. <a href=http://www.w3.org/TR/service-workers/>Service Workers</a>. 8 May 2014. WD. URL: <a href=http://www.w3.org/TR/service-workers/>http://www.w3.org/TR/service-workers/</a></dl><h2 class="no-num heading settled" id=index><span class=content>Index</span><a class=self-link href=#index></a></h2><ul class=indexlist><li>conformant server, <a href=#conformant-server title="section Unnumbered section">Unnumbered section</a><li>conformant user agent, <a href=#conformant-user-agent title="section Unnumbered section">Unnumbered section</a><li>embedding document, <a href=#embedding-document title="section 2.2">2.2</a><li>environment settings object, <a href=#environment-settings-object title="section 2.2">2.2</a><li>globally unique identifier, <a href=#globally-unique-identifier title="section 2.2">2.2</a><li>origin, <a href=#origin title="section 2.2">2.2</a><li>potentially secure, <a href=#potentially-secure-origin title="section 2.2">2.2</a><li>potentially secure origin, <a href=#potentially-secure-origin title="section 2.2">2.2</a><li>powerful feature, <a href=#powerful-feature title="section 2.1">2.1</a><li>request client TLS state, <a href=#request-client-tls-state title="section 2.2">2.2</a><li>response TLS state, <a href=#response-tls-state title="section 2.2">2.2</a><li>secure enough, <a href=#secure-enough title="section 2.1">2.1</a><li>sufficiently secure, <a href=#secure-enough title="section 2.1">2.1</a><li>tls state, <a href=#request-client-tls-state title="section 2.2">2.2</a></ul>

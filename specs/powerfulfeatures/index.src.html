@@ -9,8 +9,8 @@ Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract:
   This specification provides guidelines for user agent implementors when
-  implementing powerful APIs. Some APIs are powerful enough that it makes
-  sense to require that the calling code be delivered to the UA securely.
+  implementing features whose properties dictate that they only be exposed to
+  the web when delivered into a trustworthy environment.
 Version History: https://github.com/w3c/webappsec/commits/master/specs/powerfulfeatures/index.src.html
 Indent: 2
 </pre>
@@ -115,15 +115,18 @@ Indent: 2
 
   <em>This section is not normative.</em>
 
-  <em>
-    As the web platform is extended to enable more useful and powerful
-    applications, it becomes increasingly important to ensure that the
-    applications meet a minimum security bar. This document is concerned with
-    ensuring that powerful web application code is delivered to user agents
-    by secure (authenticated, and confidential) channels. Although secure code
-    delivery cannot guarantee that an application will always meet a user's
-    security and privacy requirements, it is a necessary precondition.
-  </em>
+  As the web platform is extended to enable more useful and powerful
+  applications, it becomes increasingly important to ensure that the features
+  which enable those applications are enabled only in contexts meet a minimum
+  security bar. Here, we'll explore some common ways in which features are
+  abused on the web, and outline normative requirements which should be
+  incorporated into documents specifying new features.
+
+  The most obvious of the requirements discussed here is that application code
+  with access to sensitive or personal data be delivered over authenticated and
+  confidential channels that guarantee data integrity. Delivering code securely
+  cannot ensure that an application will always meet a user's security and
+  privacy requirments, but it is a necessary precondition.
 </section>
 
 <!--
@@ -147,7 +150,9 @@ Indent: 2
       [[#is-feature-powerful]].
     </dd>
 
-    <dt><dfn export>secure enough</dfn></dt>
+    <dt><dfn export local-title="sufficiently secure">
+      secure enough
+    </dfn></dt>
     <dd>
       A {{Document}} or <a>environment settings object</a> is considered
       <strong>secure enough</strong> to use <a>powerful features</a> if and
@@ -218,9 +223,46 @@ Indent: 2
   </h2>
 
   Certain web platform features that have distinct impact on a user's
-  security or privacy should be available for use only in sufficiently secure
-  contexts. Service Workers, for instance, may only be registered when the
-  user agent is satisfied that doing so doesn't put the user at risk.
+  security or privacy should be available for use only in <a>sufficiently
+  secure</a> contexts.
+
+  Broadly speaking, we consider a feature powerful enough to restrict when it
+  fits into one or more of the following categories:
+
+  <ol>
+    <li>
+      The feature provides access to sensitive data (personally-identifying
+      information, credentials, payment instruments, and so on).
+      [[CREDENTIAL-MANAGEMENT]] is a fine example of such an API.
+    </li>
+    <li>
+      The feature provides access to sensor data on a user's device (camera,
+      microphone, and GPS being particularly noteworthy, but certainly including
+      less obviously dangerous sensors like the accelerometer).
+      [[GEOLOCATION-API]] and [[MEDIACAPTURE-STREAMS]] are historical examples.
+    </li>
+    <li>
+      The feature provides access to other devices a user has access to.
+      [[DISCOVERY]] and [[BLUETOOTH]] are good examples.
+    </li>
+    <li>
+      The feature exposes temporary or persistent identifiers, including
+      identifying hardware features the user can't easily reset.
+      [[ENCRYPTED-MEDIA]] for instance.
+    </li>
+    <li>
+      The feature introduces some state for an origin which persists across
+      browsing sessions. [[SERVICE-WORKERS]] is a great example.
+    </li>
+  </ol>
+
+  This list is non-exhaustive, but should give you a feel for the types of
+  features you should be concerned about.
+
+  Note: While restricting the feature itself to <a>sufficiently secure</a>
+  contexts is critical, we ought not forget that facilities that carry such
+  information (such as new network access mechanisms, or other generic
+  functions with access to network data) are equally sensitive.
 
   <h3 id="threat-models">Threat Models</h3>
 
@@ -241,23 +283,10 @@ Indent: 2
   permissions you've granted to an insecure origin as you surf around unrelated
   sites on the net.
 
-  <h3 id="examples">Examples</h3>
-
-  <h4 id="webcrypto">Web Crypto</h4>
-
-  [[WEBCRYPTOAPI]]
-
-  <h4 id="eme">Encrypted Media Extensions</h4>
-
-  [[ENCRYPTED-MEDIA]]
-
-  <h4 id="geolocation">Geolocation</h4>
-
-  [[GEOLOCATION-API]]
-
-  <h4 id="serviceworkers">Service Workers</h4>
-
-  [[SERVICE-WORKERS]]
+  Let's be clear: if your ISP is willing to actively manipulate the bits on the
+  wire for financial gain ([[VERIZON]] and [[COMCAST]] are recent examples),
+  then there is no reason to doubt that advisaries with immense resources would
+  do the same for different purposes.
 </section>
 
 <section>
