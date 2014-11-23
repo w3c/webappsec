@@ -1,6 +1,6 @@
 <h1>Mixed Content</h1>
 <pre class="metadata">
-Status: ED 
+Status: ED
 ED: https://w3c.github.io/webappsec/specs/mixedcontent/
 Shortname: MIX
 TR: http://www.w3c.org/TR/mixed-content/
@@ -8,7 +8,7 @@ Previous Version: http://www.w3.org/TR/2014/WD-mixed-content-20140722/
 Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
-Abstract: This specification describes how a user agent should handle rendering and execution of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
+Abstract: This specification describes how a user agent should handle fetching of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
 Indent: 2
 </pre>
@@ -268,7 +268,8 @@ Indent: 2
     <dd>
       A resource is said to be <strong>mixed content</strong> if the resource's
       <a>origin</a> is <a>insecure</a>, <strong>and</strong> the context
-      responsible for loading it <a>restricts mixed content</a>.
+      responsible for loading it restricts mixed content. See
+      [[#categorize-settings-object]] for a normative definition of the latter.
 
       <div class="example">
         The image <code>http://example.com/image.png</code> is <strong>mixed
@@ -438,15 +439,11 @@ Indent: 2
 
   In a perfect world, each user agent would be required to block all <a>mixed
   content</a> without exception. Unfortunately, that is impractical on today's
-  Internet. For instance, a survey in 2013 notes that blocking mixed content
-  would break around ~43% of secure websites in one way or another
-  [[DANGEROUS-MIX]]. Draconian blocking policies applied to some types of mixed
-  content are (for the moment) infeasible. A user agent needs to be more nuanced
-  in its restrictions.
+  Internet; a user agent needs to be more nuanced in its restrictions to avoid
+  degrading the experience on a substantial number of websites.
 
-  With that in mind, we here split mixed content into two categories defined in
-  the following two sections: [[#category-optionally-blockable]] and
-  [[#category-blockable]].
+  With that in mind, we here split mixed content into two categories:
+  [[#category-optionally-blockable]] and [[#category-blockable]].
 
   Note: Future versions of this specification will update this categorization
   with the intent of moving towards a world where all <a>mixed</a> content is
@@ -455,20 +452,18 @@ Indent: 2
   <section>
     <h3 id="category-optionally-blockable">Optionally-blockable Content</h3>
 
-    A resource is considered
+    A resource is
     <dfn title="optionally-blockable content" local-title="optionally-blockable">optionally-blockable content</dfn>
     when the risk of allowing its usage as <a>mixed content</a> is outweighed by
     the risk of breaking significant portions of the web. This could be because
     mixed usage of the resource type is sufficiently high, or because the
-    resource is very clearly low-risk in and of itself.
+    resource is low-risk in and of itself. The fact that these resource types
+    are optionally-blockable does not mean that they are <em>safe</em>, simply
+    that they're less catastrophically dangerous than other resource types. For
+    example, images and icons are often the central UI elements in an
+    application's interface. If an attacker reversed the "Delete email" and
+    "Reply" icons, there would be real impact to users.
 
-    The fact that these resource types are optionally-blockable does not mean
-    that they are <em>safe</em>, simply that they're less catastrophically
-    dangerous than other resource types. For example, images and icons are often
-    the central UI elements in an application's interface. If an attacker
-    reversed the "Delete email" and "Reply" icons, there would be real impact to
-    users.
-    
     This category of content includes:
 
     <ul>
@@ -507,11 +502,11 @@ Indent: 2
   <section>
     <h3 id="category-blockable">Blockable Content</h3>
 
-    Any resource that isn't <a>optionally-blockable</a> is considered
+    Any resource that isn't <a>optionally-blockable</a> is
     <dfn title="blockable content" local-title="blockable">blockable
     content</dfn>. Typical examples of this kind of content include scripts,
-    <a>plugin</a> data, data requested via XMLHttpRequest, and so on. In short,
-    every <a>request context</a> that is not <a>optionally-blockable</a> is a
+    <a>plugin</a> data, data requested via XMLHttpRequest, and so on. Every
+    <a>request context</a> that is not <a>optionally-blockable</a> is a
     <dfn>blockable request context</dfn>. This explicitly includes any contexts
     defined after publication of this document.
 
@@ -539,15 +534,11 @@ Indent: 2
   whether particular requests should succeed, or should result in network
   errors.
 
-  When fetching resources, the mixed content checks described in the algorithms
-  below should be inserted at the top of the Fetch algorithm to block network
-  traffic to <a><em>a priori</em> insecure origins</a>, and at the bottom of
-  the algorithm, to block responses from <a>insecure origins</a>.
-
   Fetch calls the algorithm defined in
   [[#should-block-fetch]] during
   <a href="http://fetch.spec.whatwg.org/#fetching">Step 4 of the Fetching
-  algorithm</a> [[!FETCH]].
+  algorithm</a> [[!FETCH]] in order to block network traffic to <a><em>a
+  priori</em> insecure origins</a>.
 
   Note: Hooking into Fetch here ensures that we catch not only the initial
   request, but all redirects as well. That is certainly the intent.
@@ -555,13 +546,19 @@ Indent: 2
   Further, Fetch calls the algorithm defined in
   [[#should-block-response]] during
   <a href="http://fetch.spec.whatwg.org/#fetching">Step 7 of the Fetching
-  algorithm</a> [[!FETCH]].
+  algorithm</a> [[!FETCH]] in order to block responses from <a>insecure
+  origins</a>.
 
   Note: This hook is necessary to detect resources modified or
   synthesized by a ServiceWorker, as well as to determine whether a
   resource is <a>insecure</a> once the TLS-handshake has finished. See
   steps 4.1 and 4.2 of the algorithm defined in [[#should-block-response]] for
   detail.
+
+  The algorithm defined in [[#categorize-settings-object]] is used by both
+  [[#should-block-fetch]] and [[#should-block-response]], as well as
+  [[#websockets-integration]] in order to determine whether an insecure request
+  ought to be blocked.
 
   <section>
     <h3 id="categorize-settings-object">
@@ -570,9 +567,8 @@ Indent: 2
 
     Both documents and workers have <a>environment settings objects</a> which
     may be examined according to the following algorithm in order to determine
-    whether they <dfn export local-title="restricts mixed content">restrict
-    mixed content</dfn>. This algorithm returns <code>Restricts Mixed
-    Content</code> or <code>Does Not Restrict Mixed Content</code>, as
+    whether they restrict mixed content. This algorithm returns <code>Restricts
+    Mixed Content</code> or <code>Does Not Restrict Mixed Content</code>, as
     appropriate.
 
     Given an <a>environment settings object</a> <var>settings</var>:
@@ -674,8 +670,9 @@ Indent: 2
         <strong>URL</strong>.
       </li>
       <li>
-        If <var>request</var>'s <a>client</a> does not <a>restrict mixed
-        content</a>, return <strong>allowed</strong>.
+        If [[#categorize-settings-object]] returns <code>Does Not Restrict
+        Mixed Content</code> when applied to <var>request</var>'s <a>client</a>,
+        return <strong>allowed</strong>.
       </li>
       <li>
         If the user agent has been instructed to allow <a>mixed content</a>
@@ -730,8 +727,9 @@ Indent: 2
 
     <ol>
       <li>
-        If <var>request</var>'s <a>client</a> does not <a>restrict mixed
-        content</a>, return <strong>allowed</strong>.
+        If [[#categorize-settings-object]] returns <code>Does Not Restrict
+        Mixed Content</code> when applied to <var>request</var>'s <a>client</a>,
+        return <strong>allowed</strong>.
       </li>
       <li>
         If the user agent has been instructed to allow <a>mixed content</a>
@@ -961,11 +959,11 @@ Indent: 2
 
       <ol>
         <li>
-          If <var>secure</var> is <strong>false</strong>, but <var>entry
-          script</var>'s
+          If <var>secure</var> is <strong>false</strong>, and the algorithm in
+          [[#categorize-settings-object]] returns <code>Restricts Mixed
+          Content</code> when applied to <var>entry script</var>'s
           <a title="relevant settings object for a script">relevant settings
-          object</a>'s <a>restricts mixed content</a>, then throw a
-          <code>SecurityError</code> exception.
+          object</a>'s, then throw a <code>SecurityError</code> exception.
         </li>
       </ol>
     </li>
@@ -1006,8 +1004,9 @@ Indent: 2
   <section>
     <h3 id="requirements-forms">Form Submission</h3>
 
-    If a {{Document}}'s <a>incumbent settings object</a> <a>restricts mixed
-    content</a>, then a user agent MAY choose to warn users of the presence of
+    If [[#categorize-settings-object]] returns <code>Restricts Mixed
+    Content</code> when applied to a {{Document}}'s <a>incumbent settings
+    object</a>, then a user agent MAY choose to warn users of the presence of
     one or more <a element>form</a> elements with <a element-attr>action</a>
     attributes whose values are <a>insecure URLs</a>.
 
@@ -1015,11 +1014,9 @@ Indent: 2
     with an insecure form action as it does for a page that displays an insecure
     image.
 
-    Further, a user agent MAY <strong>optionally</strong> treat form submissions
-    in the <a>top-level browsing context</a> from a {{Document}} whose
-    <a>incumbent settings object</a> <a>restricts mixed content</a> as a
-    request for <a>blockable content</a> to protect users from accidental data
-    leakage.
+    Further, a user agent MAY treat form submissions from such a {{Document}}
+    as a request for <a>blockable content</a>, even if the submission occurs in
+    the <a>top-level browsing context</a>.
   </section>
 
   <section>
