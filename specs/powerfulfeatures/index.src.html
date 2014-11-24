@@ -115,12 +115,12 @@ Indent: 2
 
   <em>This section is not normative.</em>
 
-  As the web platform is extended to enable more useful and powerful
+  As the Web platform is extended to enable more useful and powerful
   applications, it becomes increasingly important to ensure that the features
   which enable those applications are enabled only in contexts which meet a minimum
-  security bar. Here, we'll explore some common ways in which features are
-  abused on the web, and outline normative requirements which should be
-  incorporated into documents specifying new features.
+  security bar. This document outlines threat models for feature abuse on the Web
+  and outline normative requirements which should be incorporated into documents
+  specifying new features.
 
   The most obvious of the requirements discussed here is that application code
   with access to sensitive or private data be delivered over authenticated and
@@ -160,8 +160,8 @@ Indent: 2
       or [[#settings-sufficiently-secure]], respectively, returns
       <code>Sufficiently Secure</code> when executed upon it.
 
-      The algorithms noted above are the normative reference, but they boil down
-      to the assertion that <a>powerful features</a> are only usable in the
+      The goal of the normative algorithms noted above is that
+      <a>powerful features</a> only be enabled in the
       context of an <a>origin</a> with one or more of the following
       characteristics:
      
@@ -253,7 +253,7 @@ Indent: 2
     <li>
       The feature provides access to sensitive data (personally-identifying
       information, credentials, payment instruments, and so on).
-      [[CREDENTIAL-MANAGEMENT]] is a fine example of such an API.
+      [[CREDENTIAL-MANAGEMENT]] is an example of such an API.
     </li>
     <li>
       The feature provides access to sensor data on a user's device (camera,
@@ -262,8 +262,8 @@ Indent: 2
       [[GEOLOCATION-API]] and [[MEDIACAPTURE-STREAMS]] are historical examples.
     </li>
     <li>
-      The feature provides access to other devices a user has access to.
-      [[DISCOVERY]] and [[BLUETOOTH]] are good examples.
+      The feature provides access to or information about other devices a user 
+      has access to.  [[DISCOVERY]] and [[BLUETOOTH]] are good examples.
     </li>
     <li>
       The feature exposes temporary or persistent identifiers, including
@@ -283,6 +283,11 @@ Indent: 2
   This list is non-exhaustive, but should give you a feel for the types of
   features you should be concerned about.
 
+  Issue: Cookies, LocalStorage, IndexedDB all persist state across browsing
+  sessions. These are core Web use cases, which I don't think we can reasonably
+  insist use only secure origins any time in the forseeable future. We should
+  further clarify item 5.
+
   Note: While restricting the feature itself to <a>sufficiently secure
   contexts</a> is critical, we ought not forget that facilities that carry such
   information (such as new network access mechanisms, or other generic
@@ -298,19 +303,29 @@ Indent: 2
 
   <h4>Passive Network Attacker</h4>
 
-  Oh, pervasive monitoring. How we love thee (not really: see [[RFC7258]]).
+  A "Passive Network Attacker" is a party who is able to observe traffic
+  flows but who lacks the ability or chooses not to modify traffic at
+  the layers which this specification is concerned with.
+
+  Surveillance of networks in this manner "subverts the intent of 
+  communicating parties without the agreement of these parties" and  one
+  "cannot defend against the most nefarious actors while allowing 
+  monitoring by other actors no matter how benevolent some might consider
+  them to be." [[RFC7258]]  Therefore, the algorithms defined in this
+  document require mechansims that provide for the privacy of data at the
+  application layer, not simply integrity.
 
   <h4>Active Network Attacker</h4>
 
-  It would be nice if your local active network attacker (e.g. the coffee shop
-  around the corner whose WiFi you use all the time) wasn't able to abuse the
-  permissions you've granted to an insecure origin as you surf around unrelated
-  sites on the net.
-
-  Let's be clear: if your ISP is willing to actively manipulate the bits on the
-  wire for financial gain ([[VERIZON]] and [[COMCAST]] are recent examples),
-  then there is no reason to doubt that advisaries with immense resources would
-  do the same for different purposes.
+  An "Active Network Attacker" has all the capabilities of a "Passive Network
+  Attacker" and is additionally able to modify, block or replay any data
+  transiting the network.  These capabilties are available to potential
+  adversaries at many levels of capability, from compromised devices offering
+  or simply participating in public wireless networks, to Internet Service Providers 
+  indirectly introducing security and privacy vulnerabilities while manipulating
+  traffic for financial gain ([[VERIZON]] and [[COMCAST]] are recent examples),
+  to parties with direct intent to compromise security or privacy who are able
+  to target individual users, organizations or even entire populations.
 </section>
 
 <section>
@@ -376,6 +391,9 @@ Indent: 2
     authenticated. That is, the document inside
     <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
     would be considered to allow powerful features.
+
+    Issue: Need to consider how contexts created from blob: and data: are treated
+    here, e.g. when used to create a Worker or SharedWorker.
   </section>
 
   <section>
