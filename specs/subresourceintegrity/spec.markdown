@@ -480,8 +480,7 @@ the user agent.
     return `false`.
 10. Let <var>actualValue</var> be the result of [applying
     <var>algorithm</var> to <var>resource</var>][apply-algorithm].
-11. If <var>actualValue</var> is `null`, return `false`.
-12. If <var>actualValue</var> is a case-sensitive match for
+11. If <var>actualValue</var> is a case-sensitive match for
     <var>expectedValue</var>, return `true`. Otherwise, return `false`.
 
 If <var>expectedType</var> is the empty string in #10, it would
