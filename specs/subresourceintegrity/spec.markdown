@@ -444,16 +444,14 @@ the user agent.
 
 1.  Let <var>strongest</var> be the empty string.
 2.  For each <var>item</var> in <var>set</var>:
-    1.  If <var>item</var> is not a valid "named information" (`ni`) URL,
-        skip to the next <var>item</var>.
-    2.  If <var>strongest</var> is the empty string, set <var>strongest</var>
+    1.  If <var>strongest</var> is the empty string, set <var>strongest</var>
         to <var>item</var>, skip to the next
         <var>item</var>.
-    3.  Let <var>currentAlgorithm</var> be the <var>alg</var> component of
+    2.  Let <var>currentAlgorithm</var> be the <var>alg</var> component of
         <var>strongest</var>.
-    4.  Let <var>newAlgorithm</var> be the <var>alg</var> component of
+    3.  Let <var>newAlgorithm</var> be the <var>alg</var> component of
         <var>item</var>.
-    5.  If the result of [`getPrioritizedHashFunction(currentAlgorithm, newAlgorithm)`][getPrioritizedHashFunction]
+    4.  If the result of [`getPrioritizedHashFunction(currentAlgorithm, newAlgorithm)`][getPrioritizedHashFunction]
         is <var>newAlgorithm</var>, set <var>strongest</var> to
         <var>item</var>.
 3.  Return <var>strongest</var>.
