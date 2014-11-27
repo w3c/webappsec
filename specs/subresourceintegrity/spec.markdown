@@ -192,7 +192,8 @@ are encouraged to optimize.
 
 This section defines several terms used throughout the document.
 
-The term <dfn>digest</dfn> refers to the base64url-encoded result of
+The term <dfn>digest</dfn> refers to the base64url-encoded (with
+any trailing U+003D EQUALS SIGN (`=`) characters removed) result of
 executing a cryptographic hash function on an arbitrary block of data.
 
 A <dfn>secure channel</dfn> is any communication mechanism that the user
