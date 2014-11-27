@@ -469,20 +469,19 @@ the user agent.
 4.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
 5.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
-6.  If <var>metadata</var> is the empty string, return `false`.
-7.  Let <var>algorithm</var> be the <var>alg</var> component of
+6.  Let <var>algorithm</var> be the <var>alg</var> component of
     <var>metadata</var>.
-8.  Let <var>expectedValue</var> be the <var>val</var> component of
+7.  Let <var>expectedValue</var> be the <var>val</var> component of
     <var>metadata</var>.
-9.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
+8.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
     query string parameter.
-10. If <var>expectedType</var> is not the empty string, and is not a
+9.  If <var>expectedType</var> is not the empty string, and is not a
     case-insensitive match for <var>resource</var>'s MIME type,
     return `false`.
-11. Let <var>actualValue</var> be the result of [applying
+10. Let <var>actualValue</var> be the result of [applying
     <var>algorithm</var> to <var>resource</var>][apply-algorithm].
-12. If <var>actualValue</var> is `null`, return `false`.
-13. If <var>actualValue</var> is a case-sensitive match for
+11. If <var>actualValue</var> is `null`, return `false`.
+12. If <var>actualValue</var> is a case-sensitive match for
     <var>expectedValue</var>, return `true`. Otherwise, return `false`.
 
 If <var>expectedType</var> is the empty string in #10, it would
