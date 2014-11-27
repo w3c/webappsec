@@ -717,12 +717,13 @@ in general.
 <section>
 ### Insecure channels remain insecure
 
-[Integrity metadata][] delivered over an insecure channel provides no security
-benefit. Attackers can alter the digest in-flight (or remove it entirely (or
-do absolutely anything else to the document)), just as they could alter the
-resource the hash is meant to validate. Authors who desire any sort of
-security whatsoever SHOULD deliver resources containing digests over
-secure channels.
+[Integrity metadata][] delivered over an insecure channel only protects an
+origin against a compromise of the server where an external resources is
+hosted. Network attackers can alter the digest in-flight (or remove it
+entirely (or do absolutely anything else to the document)), just as they
+could alter the resource the hash is meant to validate. Authors who desire
+any sort of security whatsoever SHOULD deliver resources containing
+digests over secure channels.
 </section><!-- /Security::Insecure channels -->
 
 <section>
