@@ -758,7 +758,7 @@ Note that this will cover _only_ downloads triggered explicitly by adding a
 `download` attribute to an `a` element. Such a link might look like the following:
 
     <a href="https://example.com/file.zip"
-       integrity="ni:///sha256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
+       integrity="ni:///sha-256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
        download>Download!</a>
 {:.example.highlight}
 </div>
