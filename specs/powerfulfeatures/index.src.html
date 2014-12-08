@@ -64,6 +64,13 @@ Indent: 2
     "level": 0
   },
   {
+    "linkingText": "modify a specification",
+    "type": "dfn",
+    "url": "http://www.w3.org/2014/Process-20140801/#rec-modify",
+    "shortname": "w3c-process",
+    "level": 0
+  },
+  {
     "linkingText": "nested through",
     "type": "dfn",
     "url": "http://www.w3.org/TR/html5/browsers.html#browsing-context-nested-through",
@@ -75,6 +82,13 @@ Indent: 2
     "type": "dfn",
     "url": "http://www.w3.org/TR/mixed-content/#potentially-secure-origin",
     "shortname": "MIX",
+    "level": 0
+  },
+  {
+    "linkingText": "responsible document",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/webappapis.html#responsible-document",
+    "shortname": "html5",
     "level": 0
   },
   {
@@ -115,7 +129,7 @@ Indent: 2
 ]
 </pre>
 <!--
-    Interfaces
+    IDL
 -->
 <pre class="anchors">
 [
@@ -127,10 +141,24 @@ Indent: 2
     "level": 0
   },
   {
+    "linkingText": "getCurrentPosition()",
+    "type": "method",
+    "url": "http://www.w3.org/TR/geolocation-API/#get-current-position",
+    "shortname": "GEOLOCATION-API",
+    "level": 0
+  },
+  {
     "linkingText": "response",
     "type": "interface",
     "url": "https://fetch.spec.whatwg.org/#response-class",
     "shortname": "FETCH",
+    "level": 0
+  },
+  {
+    "linkingText": "watchPosition()",
+    "type": "method",
+    "url": "http://www.w3.org/TR/geolocation-API/#watch-position",
+    "shortname": "GEOLOCATION-API",
     "level": 0
   }
 ]
@@ -278,15 +306,8 @@ Indent: 2
   </ol>
 
   This list is non-exhaustive, but should give you a feel for the types of
-  features you should be concerned about.
-
-  Issue: We need to distinguish between legacy features like cookies,
-  <code>localStorage</code>, IndexedDB, etc, which all persist state (and
-  potentially identifiers) across browsing sessions. They're certainly not
-  features we can reasonably limit to secure contexts in the forseeable future.
-  This might involve language along the lines of what mnot@ proposed in
-  <a href="https://gist.github.com/mnot/38df717849b775eec3a4/550e9adc5791786ca1c8a0ade72712c466ef6978#adapting-existing-specifications">"Adapting
-  Existing Specifications"</a>.
+  features we should be concerned about when writing or implementing
+  specifications.
 
   Note: While restricting the feature itself to <a>sufficiently secure
   contexts</a> is critical, we ought not forget that facilities that carry such
@@ -326,6 +347,121 @@ Indent: 2
   recent examples), to parties with direct intent to compromise security or
   privacy who are able to target individual users, organizations or even
   entire populations.
+</section>
+
+<section>
+  <h2 id="restrictions">Restricting Features</h2>
+
+  <h3 id="new">New Features</h3>
+
+  When writing a specification for a new features, we recommend that authors
+  and editors guard sensitive APIs with checks against
+  [[#document-sufficiently-secure]] or [[#settings-sufficiently-secure]], as
+  appropriate for the context. For example, something like the following would
+  be a good approach:
+
+  <div class="example">
+    If we can get to a {{Document}}, we should prefer it for the check, as it
+    allows us to verify the whole ancestor chain. If we don't have a
+    {{Document}} (because we're executing code inside a Service Worker or
+    Shared Worker, for instance), then checking the settings object is the best
+    we can do:
+
+    <ol>
+      <li>
+        Let <var>settings</var> be the <a>incumbent settings object</a>.
+      </li>
+      <li>
+        If <var>settings</var> has a <a>responsible document</a>
+        <var>document</var>, then let <var>result</var> to the result of
+        executing [[#document-sufficiently-secure]] on <var>document</var>.
+      </li>
+      <li>
+        Otherwise, <var>settings</var> has no <a>responsible document</a>:
+        Let <var>result</var> to the result of executing
+        [[#settings-sufficiently-secure]] on <var>settings</var>.
+      </li>
+      <li>
+        If <var>result</var> is <code>Insecure</code>, then [<i>insert
+        something appropriate here: perhaps you could reject a Promise,
+        call an error callback, deny a permission request, etc.</i>].
+      </li>
+    </ol>
+  </div>
+
+  <h3 id="legacy">Legacy Features</h3>
+
+  The list above clearly includes some existing functionality that is currently
+  available to the web over insecure channels. We recommend that such legacy
+  functionality begin requiring a <a>sufficiently secure context</a> as quickly
+  as is reasonably possible.
+
+  <ol>
+    <li>
+      If such a feature is not widely implemented, we recommend that the
+      specification be immediately
+      <a title="modify a specification">modified</a> to include a restriction
+      to <a>sufficiently secure contexts</a>.
+    </li>
+    <li>
+      If such a feature is widely implemented, but not yet in wide use, we
+      recommend that it be quickly restricted to <a>sufficiently secure
+      contexts</a> by adding a check as described in [[#new]] to existing
+      implementations, and <a title="modify a specification">modifying the
+      specification</a> accordingly.
+    </li>
+    <li>
+      If such a feature is in wide use, we recommend that the existing
+      functionality be deprecated; the specification should be
+      <a title="modify a specification">modified</a> to note that it does not
+      conform to the restrictions outlined in this document, and a plan should
+      be developed to both offer a conformant version of the feature and to
+      migrate existing users into that new version.
+    </li>
+  </ol>
+
+  <h4 id="legacy-example">Example: Geolocation</h4>
+
+  The [[GEOLOCATION-API]] is a good concrete example of such an feature; it is
+  widely implemented and used on a large number of insecure sites. A reasonable
+  path forward might look like this:
+
+  <ol>
+    <li>
+      <a title="modify a specification">Modify</a> the specification to include
+      checks against [[#settings-sufficiently-secure]] before executing the
+      algorithms for {{getCurrentPosition()}} and {{watchPosition()}}.
+
+      If [[#settings-sufficiently-secure]] returns <code>Insecure</code>, then
+      the algorithms should be aborted, and the <var>errorCallback</var> invoked
+      with a <code>code</code> of <code>PERMISSION_DENIED</code>.
+    </li>
+    <li>
+      User agents should announce clear intentions to disable the API for
+      insecure contexts on a specific date, and warn developers accordingly
+      (via console messages, for example).
+    </li>
+    <li>
+      Leading up to the flag day, user agents should announce a deprecation
+      schedule to ensure both that site authors recognize the need to modify
+      their code before it simply stops working altogether, and to protect
+      users in the meantime. Such a plan might include:
+
+      <ul>
+        <li>
+          Disallowing persistent permission grants to insecure origins
+        </li>
+        <li>
+          Coarsening the accuracy of the API for insecure origins (perhaps
+          consistently returning city-level data rather than high-accuracy
+          data)
+        </li>
+        <li>
+          UI modifications to inform users and site authors of the risk
+        </li>
+      </ul>
+    </li>
+  </ol>
 </section>
 
 <section>
