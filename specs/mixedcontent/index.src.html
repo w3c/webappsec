@@ -49,6 +49,20 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
     "level": 0
   },
   {
+    "linkingText": "creating a new Document object",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#create-a-document-object",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": [ "enforce", "monitor" ],
+    "type": "dfn",
+    "url": "https://w3c.github.io/webappsec/specs/content-security-policy/",
+    "shortname": "CSP",
+    "level": 3
+  },
+  {
     "linkingText": "incumbent settings object",
     "type": "dfn",
     "url": "http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object",
@@ -59,6 +73,13 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
     "linkingText": "navigated",
     "type": "dfn",
     "url": "http://www.w3.org/TR/html5/browsers.html#navigate",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "nested browsing context",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#nested-browsing-context",
     "shortname": "html5",
     "level": 0
   },
@@ -171,6 +192,14 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
     "linkingText": "video",
     "type": "element",
     "url": "http://www.w3.org/TR/html5/embedded-content-0.html#the-video-element",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
+    "linkingText": "sandbox",
+    "type": "element-attr",
+    "for": "iframe",
+    "url": "http://www.w3.org/TR/html5/embedded-content-0.html#attr-iframe-sandbox",
     "shortname": "html5",
     "level": 0
   },
@@ -526,6 +555,103 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
   </section>
 </section>
 
+<!-- Big Text: strict mode -->
+<section>
+  <h2 id="strict-mode">Strict Mixed Content Checking</h2>
+
+  In order to give authors assurance that mixed content will never degrade the
+  security UI presented to their users (as described in [[#requirements-ux]]),
+  authors may opt into stricter mixed content checking which will both block
+  <a>optionally-blockable</a> and <a>blockable</a> mixed content, and suppress
+  user override options discussed in [[#requirements-user-controls]].
+
+  To this end, {{Document}} objects and <a>browsing contexts</a> have a
+  <dfn>strict mixed content checking flag</dfn> which is set to
+  <code>false</code> unless otherwise specified. This flag is checked in both
+  [[#should-block-fetch]] and [[#should-block-response]] to determine whether
+  strict checking is in place. The flag is set as follows: 
+
+  <h3 id="strict-documents">Strict Documents</h3>
+
+  Authors may opt a {{Document}} into strict mixed content checking via a
+  <dfn title="strict-mixed-content-checking-directive">strict-mixed-content-checking</dfn>
+  Content Security Policy directive [[CSP]], defined via the following ABNF
+  grammar.
+
+  <pre>
+    directive-name  = "strict-mixed-content-checking"
+    directive-value = ""
+  </pre>
+
+  When <a>enforcing</a> the <code>strict-mixed-content-checking</code>
+  directive, set the protected resource's <a>strict mixed content checking
+  flag</a> to <code>true</code>.
+
+  This directive has no effect when <a>monitored</a>.
+
+  Note: A similar effect may be achieved on a more granular level by setting
+  individual directives. For example <code>img-src https:</code> would prevent
+  insecure images from loading.
+
+  {{Document}}s may also be put into strict mixed content checking mode by
+  inheriting the setting from an ancestor: When <a>creating a new
+  <code>Document</code> object</a>, set its <a>strict mixed content checking
+  flag</a> to <code>true</code> if its <a>browsing context</a>'s <a>strict mixed
+  content checking flag</a> is <code>true</code>.
+
+  <h3 id="strict-nested-browsing-contexts">Strict Nested Browsing Contexts</h3>
+
+  Authors may wish to ensure that content embedded from untrusted sources cannot
+  degrade their pages' security UI. They may do so by adding a
+  <dfn element-attr for="iframe">strict-mixed-content-checking</dfn> attribute
+  to <a element>iframe</a> elements. Doing so will ensure that the embedded
+  document will be strictly checked.
+  
+  Note: Similar to the <a element-attr for="iframe">sandbox</a> attribute, strict
+  mixed content checking takes effect both on the embedding document
+  <strong>and</strong> any of its descendents.
+  
+  When a <a>nested browsing context</a> <var>context</var> is created, set its
+  <a>strict mixed content checking flag</a> to <code>true</code> if any of
+  the following conditions are met:
+
+  <ol>
+    <li>
+      <var>context</var>'s <a>browsing context container</a> is an
+      <a element>iframe</a> with the
+      <a element-attr for="iframe">strict-mixed-content-checking</a> attribute
+      set to <code>true</code>.
+    </li>
+    <li>
+      <var>context</var>'s <a>embedding document</a>'s <a>strict mixed content
+      checking flag</a> is set to <code>true</code>.
+    </li>
+  </ol>
+
+  When an <a element>iframe</a> element's
+  <a element-attr for="iframe">strict-mixed-content-checking</a> attribute is
+  set while it has a <a>nested browsing context</a> <var>context</var>, set
+  <var>context</var>'s <a>strict mixed content checking flag</a> to
+  <code>true</code>.
+
+  <h3 id="htmliframeelement-modifications">
+    Modifications to <code>HTMLIFrameElement</code>
+  </h3>
+
+  <pre class="idl">
+    partial interface HTMLIFrameElement {
+      readonly attribute boolean strictMixedContentChecking;
+    };
+  </pre>
+  <dl dfn-for="HTMLIFrameElement">
+    <dt><dfn attribute>strictMixedContentChecking</dfn></dt>
+    <dd>This attribute <a>reflects</a> the value of the
+    element's
+    <code><a element-attr for="iframe">strict-mixed-content-checking</a></code>
+    content attribute.</dd>
+  </dl>
+</section>
+
 <!--
    ███    ██        ██████    ███████  ████████  ████ ████████ ██     ██ ██     ██  ██████
   ██ ██   ██       ██    ██  ██     ██ ██     ██  ██     ██    ██     ██ ███   ███ ██    ██
@@ -820,33 +946,6 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
       </ol>
     </li>
   </ul>
-</section>
-
-<!-- Big Text: iframe -->
-<section>
-  <h2 id="iframe">Modifications to <code>&lt;iframe&gt;</code></h2>
-
-  When embedding content via <a element>iframe</a>, an embedding {{Document}}
-  may wish to ensure that mixed content violations don't degrade it's security
-  UI (as outlined in [[#requirements-ux]]). It can do so by adding a
-  <dfn element-attr for="iframe">strict-mixed-content-policy</dfn> attribute to the
-  <a element>iframe</a>; this will have the effect of ensuring that all mixed
-  content is blocked, regardless of <a>context</a>, and will suppress the
-  user override options outlined in [[#requirements-user-controls]].
-
-  ISSUE: This is a strawman. Flesh it out. (mkwst)
-
-  <pre class="idl">
-    partial interface HTMLIFrameElement {
-      attribute boolean strictMixedContentPolicy;
-    };
-  </pre>
-  <dl dfn-for="HTMLIFrameElement">
-    <dt><dfn attribute>strict-mixed-content-policy</dfn></dt>
-    <dd>This attribute <a>reflects</a> the value of the
-    element's <code><a element-attr>strict-mixed-content-policy</a></code>
-    content attribute.</dd>
-  </dl>
 </section>
 
 <!--
