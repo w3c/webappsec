@@ -49,6 +49,13 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
     "level": 0
   },
   {
+    "linkingText": "child browsing context",
+    "type": "dfn",
+    "url": "http://www.w3.org/TR/html5/browsers.html#child-browsing-context",
+    "shortname": "html5",
+    "level": 0
+  },
+  {
     "linkingText": "creating a new Document object",
     "type": "dfn",
     "url": "http://www.w3.org/TR/html5/browsers.html#create-a-document-object",
@@ -561,20 +568,74 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
 
   In order to give authors assurance that mixed content will never degrade the
   security UI presented to their users (as described in [[#requirements-ux]]),
-  authors may opt into stricter mixed content checking which will both block
-  <a>optionally-blockable</a> and <a>blockable</a> mixed content, and suppress
-  user override options discussed in [[#requirements-user-controls]].
+  authors may choose to apply stricter mixed content checking which will both
+  block <a>optionally-blockable</a> and <a>blockable</a> mixed content, and
+  suppress user override options discussed in [[#requirements-user-controls]].
 
   To this end, {{Document}} objects and <a>browsing contexts</a> have a
   <dfn>strict mixed content checking flag</dfn> which is set to
   <code>false</code> unless otherwise specified. This flag is checked in both
   [[#should-block-fetch]] and [[#should-block-response]] to determine whether
-  strict checking is in place. The flag is set as follows: 
+  strict checking is in place.
 
-  <h3 id="strict-documents">Strict Documents</h3>
+  <div class="example">
+    A {{Document}} may opt itself into strict mode by either delivering a
+    <code>Content-Security-Policy</code> HTTP header, like:
+
+    <pre>
+      Content-Security-Policy: <a>strict-mixed-content-checking</a>
+    </pre>
+
+    or by embedding the policy in a <a element>meta</a> element, like:
+
+    <pre>
+      &lt;meta http-equiv="Content-Security-Policy"
+            content="<a>strict-mixed-content-checking</a>"&gt;
+    </pre>
+  </div>
+
+  Note: Strict mixed content checking is inherited by embedded content; if
+  a page opts into strict mode, framed pages will be prevented from loading
+  mixed content, as described in [[#strict-nesting]].
+
+  <h3 id="strict-effects">Effects</h3>
+
+  If a {{Document}}'s <a>strict mixed content checking flag</a> is set to
+  <code>true</code>, the user agent MUST:
+
+  <ol>
+    <li>
+      treat <a>optionally-blockable</a> mixed content as though it were
+      <a>blockable</a>.
+    </li>
+    <li>
+      NOT provide users with a mechanism for forcing <a>blockable</a>
+      mixed content to load.
+
+      Note: This requirement overrides the suggestion in
+      [[#requirements-user-controls]].
+    </li>
+    <li>
+      NOT provide any user-facing indication that mixed content is present.
+
+      Note: This requirement overrides the suggestion in [[#requirements-ux]],
+      which is safe to do since the combination of the first and second
+      requirements above ensure that mixed content will never load in this
+      page's context.
+
+      Note: This requirement does not include developer-facing indicators such
+      as console messages.
+    </li>
+    <li>
+      ensure that these requirements are applied to any {{Document}} in a
+      <a>nested browsing context</a>, as described in [[#strict-nesting]].
+    </li>
+  </ol>
+  
+  <h3 id="strict-opt-in">Opting-in</h3>
 
   Authors may opt a {{Document}} into strict mixed content checking via a
-  <dfn title="strict-mixed-content-checking-directive">strict-mixed-content-checking</dfn>
+  <dfn>strict-mixed-content-checking</dfn>
   Content Security Policy directive [[CSP]], defined via the following ABNF
   grammar.
 
@@ -587,69 +648,34 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
   directive, set the protected resource's <a>strict mixed content checking
   flag</a> to <code>true</code>.
 
-  This directive has no effect when <a>monitored</a>.
+  This directive has no effect when <a>monitored</a>. This directive's only
+  effect is to set a policy flag on the protected resource; it will therefore
+  never be violated, and has no reporting requirements. 
 
   Note: A similar effect may be achieved on a more granular level by setting
   individual directives. For example <code>img-src https:</code> would prevent
   insecure images from loading.
 
-  {{Document}}s may also be put into strict mixed content checking mode by
-  inheriting the setting from an ancestor: When <a>creating a new
-  <code>Document</code> object</a>, set its <a>strict mixed content checking
-  flag</a> to <code>true</code> if its <a>browsing context</a>'s <a>strict mixed
-  content checking flag</a> is <code>true</code>.
+  <h3 id="strict-nesting">Inheriting an opt-in</h3>
 
-  <h3 id="strict-nested-browsing-contexts">Strict Nested Browsing Contexts</h3>
-
-  Authors may wish to ensure that content embedded from untrusted sources cannot
-  degrade their pages' security UI. They may do so by adding a
-  <dfn element-attr for="iframe">strict-mixed-content-checking</dfn> attribute
-  to <a element>iframe</a> elements. Doing so will ensure that the embedded
-  document will be strictly checked.
-  
-  Note: Similar to the <a element-attr for="iframe">sandbox</a> attribute, strict
-  mixed content checking takes effect both on the embedding document
-  <strong>and</strong> any of its descendents.
-  
-  When a <a>nested browsing context</a> <var>context</var> is created, set its
-  <a>strict mixed content checking flag</a> to <code>true</code> if any of
-  the following conditions are met:
+  If a {{Document}}'s <a>strict mixed content checking flag</a> is set, the user
+  agent MUST ensure that all <a>nested browsing contexts</a> inherit the setting
+  in the following ways:
 
   <ol>
     <li>
-      <var>context</var>'s <a>browsing context container</a> is an
-      <a element>iframe</a> with the
-      <a element-attr for="iframe">strict-mixed-content-checking</a> attribute
-      set to <code>true</code>.
-    </li>
-    <li>
+      When a <a>nested browsing context</a> <var>context</var> is created, set
+      its <a>strict mixed content checking flag</a> to <code>true</code> if 
       <var>context</var>'s <a>embedding document</a>'s <a>strict mixed content
       checking flag</a> is set to <code>true</code>.
     </li>
+    <li>
+      When <a>creating a new <code>Document</code> object</a>, set its <a>strict
+      mixed content checking flag</a> to <code>true</code> if its <a>browsing
+      context</a>'s <a>strict mixed content checking flag</a> is
+      <code>true</code>.
+    </li>
   </ol>
-
-  When an <a element>iframe</a> element's
-  <a element-attr for="iframe">strict-mixed-content-checking</a> attribute is
-  set while it has a <a>nested browsing context</a> <var>context</var>, set
-  <var>context</var>'s <a>strict mixed content checking flag</a> to
-  <code>true</code>.
-
-  <h3 id="htmliframeelement-modifications">
-    Modifications to <code>HTMLIFrameElement</code>
-  </h3>
-
-  <pre class="idl">
-    partial interface HTMLIFrameElement {
-      readonly attribute boolean strictMixedContentChecking;
-    };
-  </pre>
-  <dl dfn-for="HTMLIFrameElement">
-    <dt><dfn attribute>strictMixedContentChecking</dfn></dt>
-    <dd>This attribute <a>reflects</a> the value of the
-    element's
-    <code><a element-attr for="iframe">strict-mixed-content-checking</a></code>
-    content attribute.</dd>
-  </dl>
 </section>
 
 <!--
