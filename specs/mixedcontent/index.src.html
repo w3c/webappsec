@@ -564,19 +564,20 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
 
 <!-- Big Text: strict mode -->
 <section>
-  <h2 id="strict-mode">Strict Mixed Content Checking</h2>
+  <h2 id="strict-checking">Strict Mixed Content Checking</h2>
 
   In order to give authors assurance that mixed content will never degrade the
   security UI presented to their users (as described in [[#requirements-ux]]),
-  authors may choose to apply stricter mixed content checking which will both
-  block <a>optionally-blockable</a> and <a>blockable</a> mixed content, and
-  suppress user override options discussed in [[#requirements-user-controls]].
+  authors may choose to enable a stricter variant of mixed content checking
+  which will both block <a>optionally-blockable</a> and <a>blockable</a> mixed
+  content, and suppress the user override options discussed in
+  [[#requirements-user-controls]].
 
   To this end, {{Document}} objects and <a>browsing contexts</a> have a
   <dfn>strict mixed content checking flag</dfn> which is set to
   <code>false</code> unless otherwise specified. This flag is checked in both
   [[#should-block-fetch]] and [[#should-block-response]] to determine whether
-  strict checking is in place.
+  the {{Document}} is in <dfn>strict mode</dfn>.
 
   <div class="example">
     A {{Document}} may opt itself into strict mode by either delivering a
@@ -1070,13 +1071,19 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
       <li>
         Interpret the presence of a <code>Strict-Transport-Security</code>
         header field as forcing all content into the <a>blockable</a> category
-        [[RFC6797]].
+        [[RFC6797]], or as a signal to enable <a>strict mode</a> for mixed
+        content checking.
       </li>
       <li>
         Modify requests for <a>optionally-blockable</a> resources which are
         <a>mixed content</a> in order to reduce the risk to users: cookies
         and other authentication tokens could be stripped from the requests,
         automatic scheme upgrades could be attempted, and so on.
+      </li>
+      <li>
+        Treat <a>optionally-blockable</a> resources inside <a>nested browsing
+        contexts</a> as <a>blockable</a>, to allow sites to embed resources
+        without fear of introducing mixed content.
       </li>
     </ol>
   </section>
