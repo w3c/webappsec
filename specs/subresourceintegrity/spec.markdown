@@ -385,8 +385,8 @@ Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
 contains these headers, it is ineligible for integrity validation:
 
-*   `WWW-Authenticate` hides resources behind a login; such non-public
-    resources are excluded from integrity checks.
+*   `Authorization` or `WWW-Authenticate` hide resources behind a login;
+    such non-public resources are excluded from integrity checks.
 *   `Refresh` can cause IFrame contents to transparently redirect to an
     unintended target, bypassing the integrity check.
 
@@ -400,6 +400,7 @@ The following algorithm details these restrictions:
     <var>resource</var>.
 2.  If <var>resource</var> contains any of the following HTTP headers,
     return `false`:
+    * `Authorization`
     * `WWW-Authenticate`
     * `Refresh`
 3.  If the [mode][fetch-mode] of <var>request</var> is `CORS`,
