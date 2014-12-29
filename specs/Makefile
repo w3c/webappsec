@@ -13,7 +13,7 @@ credentialmanagement/index.html: credentialmanagement/index.src.html
 	bikeshed -q spec ./credentialmanagement/index.src.html index.html
 
 mixedcontent/index.html: mixedcontent/index.src.html
-	bikeshed -f spec ./mixedcontent/index.src.html index.html
+	bikeshed -f spec ./mixedcontent/index.src.html
 
 referrer-policy/index.html: referrer-policy/index.src.html
 	bikeshed -q spec ./referrer-policy/index.src.html index.html
