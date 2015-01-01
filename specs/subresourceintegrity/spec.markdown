@@ -543,7 +543,7 @@ for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
 
 The `integrity` attribute represents [integrity metadata][] for an element.
 The value of the attribute MUST be either the empty string, or at least one
-valid "named information" (`ni`) URI [[!RFC6920]], as described by the
+valid absolute "named information" (`ni`) URI [[!RFC6920]], as described by the
 following ABNF grammar:
 
     integrity-metadata = "" / 1*( *WSP NI-URL ) *WSP ]
