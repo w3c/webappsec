@@ -552,6 +552,10 @@ The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
 
 [niurl]: http://tools.ietf.org/html/rfc6920#section-3
 
+The `authority` component of `ni` URIs is not currently used, but its
+presence does not make the URI invalid.
+{:.note}
+
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
