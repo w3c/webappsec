@@ -381,14 +381,13 @@ brute-forcing values via integrity checks, resources are only eligible
 for such checks if they are same-origin, publicly cachable, or are the
 result of explicit access granted to the loading origin via CORS. [[!CORS]]
 
-<div class="note">
 As noted in [RFC6454, section 4](uri-origin), some user agents use
 globally unique identifiers for each file URI. This means that
 resources accessed over a `file` scheme URL are unlikely to be
 eligible for integrity checks.
+{:.note}
 
 [uri-origin]: http://tools.ietf.org/html/rfc6454#section-4
-</div>
 
 Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
@@ -586,11 +585,11 @@ value each element's `integrity` content attribute is added to the
 `HTMLAnchorElement`, `HTMLLinkElement`, and `HTMLScriptElement`.
 interfaces.
 
-<div class="note">
 A future revision of this specification is likely to include SRI support
 for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
 `link`, `object`, `script`, `source`, -`track`, and `video` elements.
-</div>
+{:.note}
+
 </section>
 
 <section>
