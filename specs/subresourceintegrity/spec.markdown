@@ -961,8 +961,8 @@ Think about how integrity checks would effect `vary` headers
 in general.
 {:.issue data-number="17"}
 
-[cachecontrol]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9
-[notransform]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5
+[cachecontrol]: http://tools.ietf.org/html/rfc7234#section-5.2
+[notransform]: http://tools.ietf.org/html/rfc7234#section-5.2.1.6
 [Modifications to Fetch]: #modifications-to-fetch
 </section><!-- /Implementation -->
 
