@@ -444,7 +444,9 @@ the user agent.
         skip the remaining steps, and proceed to the next token.
     2.  Let <var>algorithm</var> be the <var>alg</var> component of
         <var>token</var>.
-    3.  If <var>algorithm</var> is a hash function recognized by the user
+    3.  Strip any dashes from <var>algorithm</var> and transform all ASCII
+        characters to lowercase ASCII.
+    4.  If <var>algorithm</var> is a hash function recognized by the user
         agent, add <var>token</var> to <var>result</var>.
 4.  Return <var>result</var>.
 
