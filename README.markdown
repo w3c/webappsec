@@ -36,3 +36,8 @@ Web Application Security Working Group
     * Editor's Draft: <https://w3c.github.io/webappsec/specs/subresourceintegrity/>
     * Working Draft: <http://w3.org/TR/SRI>
     * Source: <https://github.com/w3c/webappsec/tree/master/specs/subresourceintegrity>
+
+* Powerful Features
+    * Editor's Draft: <https://w3c.github.io/webappsec/specs/powerfulfeatures/>
+    * Working Draft: <http://www.w3.org/TR/powerful-features/>
+    * Source: <https://github.com/w3c/webappsec/blob/master/specs/powerfulfeatures>
