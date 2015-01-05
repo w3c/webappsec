@@ -813,7 +813,7 @@ Insert the following steps after step 5 of step 14 of HTML5's
 8.  Once the [fetching algorithm][] has completed:
     2.  If the response's integrity state is `corrupt`:
         1.  If the document's [integrity policy][] is `block`:
-            1.  If <var>resource</var> is [same origin][] with the `link`
+            1.  If <var>resource</var> is [same origin][] with the `script`
                 element's Document's origin, then [queue a task][] to
                 [fire a simple event][] named `error` at the element, and
                 abort these steps.
