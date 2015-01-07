@@ -359,8 +359,8 @@ is a consistent ordering.
 <section>
 #### Apply <var>algorithm</var> to <var>resource</var>
 
-1.  Let <var>result</var> be the result of applying <var>algorithm</var> to
-    the [representation data][representationdata] without any content-codings
+1.  Let <var>result</var> be the result of [applying <var>algorithm</var>][apply-algorithm]
+    to the [representation data][representationdata] without any content-codings
     applied, except when the user agent intends to consumes the content with
     content-encodings applied (e.g., saving a gzip’d file to disk). In the
     latter case, let <var>result</var> be the result of applying
