@@ -318,7 +318,8 @@ are encouraged to optimize.</p>
 
     <p>This section defines several terms used throughout the document.</p>
 
-    <p>The term <dfn>digest</dfn> refers to the base64url-encoded result of
+    <p>The term <dfn>digest</dfn> refers to the base64url-encoded (with
+any trailing U+003D EQUALS SIGN (<code>=</code>) characters removed) result of
 executing a cryptographic hash function on an arbitrary block of data.</p>
 
     <p>A <dfn>secure channel</dfn> is any communication mechanism that the user
@@ -373,9 +374,9 @@ used when fetching the resource.</p>
 metadata</dfn>, which consists of the following pieces of information:</p>
 
     <ul>
-      <li>cryptographic hash function</li>
-      <li><a href="#dfn-digest">digest</a></li>
-      <li>the resource’s MIME type</li>
+      <li>cryptographic hash function (“alg”)</li>
+      <li><a href="#dfn-digest">digest</a> (“val”)</li>
+      <li>the resource’s <a href="#dfn-mime-type">MIME type</a> (“type”)</li>
     </ul>
 
     <p>The hash function and digest MUST be provided in order to validate a
@@ -385,7 +386,7 @@ risk of certain attack vectors.</p>
     <p>This metadata is generally encoded as a “named information” (<code>ni</code>) URI, as
 defined in RFC6920. [[!RFC6920]]</p>
 
-    <p>For example, given a resource containing only the string “Hello, world!”,
+    <p>For example, given a resource containing only the string “Hello, world.”,
 an author might choose <a href="#dfn-sha-2">SHA-256</a> as a hash function.
 <code>-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8</code> is the base64url-encoded
 digest that results. This can be encoded as an <code>ni</code> URI as follows:</p>
@@ -403,7 +404,7 @@ digest that results. This can be encoded as an <code>ni</code> URI as follows:</
 example, is quite commonly available. The example in this section is the
 result of the following command line:</p>
 
-      <pre><code>echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 | sed -e 's/+/-/g' -e 's/\//_/g' -e 's/=*$//g'
+      <pre><code>echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 -A | sed -e 's/+/-/g' -e 's/\//_/g' -e 's/=*$//g'
 </code></pre>
 
     </div>
@@ -427,7 +428,7 @@ For example, the “Hello, world.” resource described above may be described
 either of the following <code>ni</code> URLs:</p>
 
       <pre><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
-ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==?ct=text/plain
+ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=text/plain
 </code></pre>
 
       <p>Authors may choose to specify both, for example:</p>
@@ -435,7 +436,7 @@ ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERd
       <pre><code>&lt;a href="hello_world.txt"
    integrity="
       ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
-      ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==?ct=text/plain
+      ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=text/plain
     "
     download&gt;Hello, download!&lt;/a&gt;
 </code></pre>
@@ -480,8 +481,8 @@ is a consistent ordering.</p>
       <h4 id="apply-varalgorithmvar-to-varresourcevar">Apply <var>algorithm</var> to <var>resource</var></h4>
 
       <ol>
-        <li>Let <var>result</var> be the result of applying <var>algorithm</var> to
-the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a> without any content-codings
+        <li>Let <var>result</var> be the result of <a href="#apply-algorithm-to-resource">applying <var>algorithm</var></a>
+to the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a> without any content-codings
 applied, except when the user agent intends to consumes the content with
 content-encodings applied (e.g., saving a gzip’d file to disk). In the
 latter case, let <var>result</var> be the result of applying
@@ -503,13 +504,18 @@ brute-forcing values via integrity checks, resources are only eligible
 for such checks if they are same-origin, publicly cachable, or are the
 result of explicit access granted to the loading origin via CORS. [[!CORS]]</p>
 
+      <p class="note">As noted in <a href="uri-origin">RFC6454, section 4</a>, some user agents use
+globally unique identifiers for each file URI. This means that
+resources accessed over a <code>file</code> scheme URL are unlikely to be
+eligible for integrity checks.</p>
+
       <p>Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
 contains these headers, it is ineligible for integrity validation:</p>
 
       <ul>
-        <li><code>WWW-Authenticate</code> hides resources behind a login; such non-public
-resources are excluded from integrity checks.</li>
+        <li><code>Authorization</code> or <code>WWW-Authenticate</code> hide resources behind a login;
+such non-public resources are excluded from integrity checks.</li>
         <li><code>Refresh</code> can cause IFrame contents to transparently redirect to an
 unintended target, bypassing the integrity check.</li>
       </ul>
@@ -525,6 +531,7 @@ etc. Is there danger there?</p>
         <li>If <var>resource</var> contains any of the following HTTP headers,
 return <code>false</code>:
           <ul>
+            <li><code>Authorization</code></li>
             <li><code>WWW-Authenticate</code></li>
             <li><code>Refresh</code></li>
           </ul>
@@ -561,6 +568,8 @@ spaces</a>:
 skip the remaining steps, and proceed to the next token.</li>
             <li>Let <var>algorithm</var> be the <var>alg</var> component of
 <var>token</var>.</li>
+            <li>Transform all ASCII characters to lowercase ASCII and remove the dash
+from the <code>sha-</code> prefix in <var>algorithm</var> if there is one.</li>
             <li>If <var>algorithm</var> is a hash function recognized by the user
 agent, add <var>token</var> to <var>result</var>.</li>
           </ol>
@@ -577,8 +586,6 @@ agent, add <var>token</var> to <var>result</var>.</li>
         <li>Let <var>strongest</var> be the empty string.</li>
         <li>For each <var>item</var> in <var>set</var>:
           <ol>
-            <li>If <var>item</var> is not a valid “named information” (<code>ni</code>) URL,
-skip to the next <var>item</var>.</li>
             <li>If <var>strongest</var> is the empty string, set <var>strongest</var>
 to <var>item</var>, skip to the next
 <var>item</var>.</li>
@@ -608,7 +615,6 @@ validation</a>, return <code>false</code>.</li>
         <li>If <var>parsedMetadata</var> is <code>no metadata</code>, return <code>true</code>.</li>
         <li>Let <var>metadata</var> be the result of <a href="#get-the-strongest-metadata-from-set.x">getting the strongest
 metadata from <var>parsedMetadata</var></a>.</li>
-        <li>If <var>metadata</var> is the empty string, return <code>false</code>.</li>
         <li>Let <var>algorithm</var> be the <var>alg</var> component of
 <var>metadata</var>.</li>
         <li>Let <var>expectedValue</var> be the <var>val</var> component of
@@ -620,7 +626,6 @@ case-insensitive match for <var>resource</var>’s MIME type,
 return <code>false</code>.</li>
         <li>Let <var>actualValue</var> be the result of <a href="#apply-algorithm-to-resource">applying
 <var>algorithm</var> to <var>resource</var></a>.</li>
-        <li>If <var>actualValue</var> is <code>null</code>, return <code>false</code>.</li>
         <li>If <var>actualValue</var> is a case-sensitive match for
 <var>expectedValue</var>, return <code>true</code>. Otherwise, return <code>false</code>.</li>
       </ol>
@@ -732,11 +737,10 @@ value each element’s <code>integrity</code> content attribute is added to the
 <code>HTMLAnchorElement</code>, <code>HTMLLinkElement</code>, and <code>HTMLScriptElement</code>.
 interfaces.</p>
 
-    <div class="note">
-      <p>A future revision of this specification is likely to include SRI support
+    <p class="note">A future revision of this specification is likely to include SRI support
 for all possible subresources, i.e., <code>a</code>, <code>audio</code>, <code>embed</code>, <code>iframe</code>, <code>img</code>,
 <code>link</code>, <code>object</code>, <code>script</code>, <code>source</code>, -<code>track</code>, and <code>video</code> elements.</p>
-    </div>
+
   </section>
 
   <section>
@@ -918,7 +922,7 @@ providing a user with a way to save the resource for later use:</p>
 <code>download</code> attribute to an <code>a</code> element. Such a link might look like the following:</p>
 
         <pre><code>&lt;a href="https://example.com/file.zip"
-   integrity="ni:///sha256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
+   integrity="ni:///sha-256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
    download&gt;Download!&lt;/a&gt;
 </code></pre>
       </div>
@@ -981,7 +985,7 @@ of the element’s <code>integrity</code> attribute.</li>
               <ol>
                 <li>If the document’s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
                   <ol>
-                    <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the <code>link</code>
+                    <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the <code>script</code>
 element’s Document’s origin, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
 <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the element, and
 abort these steps.</li>
@@ -1137,8 +1141,8 @@ resources is updated along with the resource itself. Another
 would be simply to deliver only the canonical version of resources
 for which a page author has requested integrity verification. To
 support this latter option, user agents MUST send a
-<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9"><code>Cache-Control</code></a> header with a value of
-<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5"><code>no-transform</code></a> when requesting a resource with
+<a href="http://tools.ietf.org/html/rfc7234#section-5.2"><code>Cache-Control</code></a> header with a value of
+<a href="http://tools.ietf.org/html/rfc7234#section-5.2.1.6"><code>no-transform</code></a> when requesting a resource with
 associated integrity metadata (see item 3 in the “<a href="#modifications-to-fetch">Modifications to
 Fetch</a>” section).</p>
 

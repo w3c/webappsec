@@ -257,7 +257,7 @@ metadata</dfn>, which consists of the following pieces of information:
 
 * cryptographic hash function ("alg")
 * [digest][] ("val")
-* the resource's MIME type ("type")
+* the resource's [MIME type][] ("type")
 
 The hash function and digest MUST be provided in order to validate a
 resource's integrity. The MIME type SHOULD be provided, as it mitigates the
@@ -266,7 +266,7 @@ risk of certain attack vectors.
 This metadata is generally encoded as a "named information" (`ni`) URI, as
 defined in RFC6920. [[!RFC6920]]
 
-For example, given a resource containing only the string "Hello, world!",
+For example, given a resource containing only the string "Hello, world.",
 an author might choose [SHA-256][sha2] as a hash function.
 `-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8` is the base64url-encoded
 digest that results. This can be encoded as an `ni` URI as follows:
@@ -284,13 +284,14 @@ Digests may be generated using any number of utilities. [OpenSSL][], for
 example, is quite commonly available. The example in this section is the
 result of the following command line:
 
-    echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 | sed -e 's/+/-/g' -e 's/\//_/g' -e 's/=*$//g'
+    echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 -A | sed -e 's/+/-/g' -e 's/\//_/g' -e 's/=*$//g'
 
 [openssl]: http://www.openssl.org/
 </div>
 
 [sha2]: #dfn-sha-2
 [digest]: #dfn-digest
+[MIME type]: #dfn-mime-type
 [integrity metadata]: #dfn-integrity-metadata
 </section><!-- /Framework::Required metadata -->
 
@@ -358,8 +359,8 @@ is a consistent ordering.
 <section>
 #### Apply <var>algorithm</var> to <var>resource</var>
 
-1.  Let <var>result</var> be the result of applying <var>algorithm</var> to
-    the [representation data][representationdata] without any content-codings
+1.  Let <var>result</var> be the result of [applying <var>algorithm</var>][apply-algorithm]
+    to the [representation data][representationdata] without any content-codings
     applied, except when the user agent intends to consumes the content with
     content-encodings applied (e.g., saving a gzip’d file to disk). In the
     latter case, let <var>result</var> be the result of applying
@@ -381,14 +382,13 @@ brute-forcing values via integrity checks, resources are only eligible
 for such checks if they are same-origin, publicly cachable, or are the
 result of explicit access granted to the loading origin via CORS. [[!CORS]]
 
-<div class="note">
 As noted in [RFC6454, section 4](uri-origin), some user agents use
 globally unique identifiers for each file URI. This means that
 resources accessed over a `file` scheme URL are unlikely to be
 eligible for integrity checks.
+{:.note}
 
 [uri-origin]: http://tools.ietf.org/html/rfc6454#section-4
-</div>
 
 Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
@@ -444,7 +444,9 @@ the user agent.
         skip the remaining steps, and proceed to the next token.
     2.  Let <var>algorithm</var> be the <var>alg</var> component of
         <var>token</var>.
-    3.  If <var>algorithm</var> is a hash function recognized by the user
+    3.  Transform all ASCII characters to lowercase ASCII and remove the dash
+        from the `sha-` prefix in <var>algorithm</var> if there is one.
+    4.  If <var>algorithm</var> is a hash function recognized by the user
         agent, add <var>token</var> to <var>result</var>.
 4.  Return <var>result</var>.
 
@@ -586,11 +588,11 @@ value each element's `integrity` content attribute is added to the
 `HTMLAnchorElement`, `HTMLLinkElement`, and `HTMLScriptElement`.
 interfaces.
 
-<div class="note">
 A future revision of this specification is likely to include SRI support
 for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
 `link`, `object`, `script`, `source`, -`track`, and `video` elements.
-</div>
+{:.note}
+
 </section>
 
 <section>
@@ -813,7 +815,7 @@ Insert the following steps after step 5 of step 14 of HTML5's
 8.  Once the [fetching algorithm][] has completed:
     2.  If the response's integrity state is `corrupt`:
         1.  If the document's [integrity policy][] is `block`:
-            1.  If <var>resource</var> is [same origin][] with the `link`
+            1.  If <var>resource</var> is [same origin][] with the `script`
                 element's Document's origin, then [queue a task][] to
                 [fire a simple event][] named `error` at the element, and
                 abort these steps.
@@ -824,7 +826,6 @@ Insert the following steps after step 5 of step 14 of HTML5's
 [fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#fetch
 [queue a task]: http://www.w3.org/TR/html5/webappapis.html#queue-a-task
 [fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
-[entity body]: #dfn-entity-body
 [bz]: http://lists.w3.org/Archives/Public/public-webappsec/2013Dec/0048.html
 </section><!-- /Framework::HTML::Elements::script -->
 
@@ -961,8 +962,8 @@ Think about how integrity checks would effect `vary` headers
 in general.
 {:.issue data-number="17"}
 
-[cachecontrol]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9
-[notransform]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.5
+[cachecontrol]: http://tools.ietf.org/html/rfc7234#section-5.2
+[notransform]: http://tools.ietf.org/html/rfc7234#section-5.2.1.6
 [Modifications to Fetch]: #modifications-to-fetch
 </section><!-- /Implementation -->
 
