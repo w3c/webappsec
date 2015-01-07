@@ -826,7 +826,6 @@ Insert the following steps after step 5 of step 14 of HTML5's
 [fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#fetch
 [queue a task]: http://www.w3.org/TR/html5/webappapis.html#queue-a-task
 [fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
-[entity body]: #dfn-entity-body
 [bz]: http://lists.w3.org/Archives/Public/public-webappsec/2013Dec/0048.html
 </section><!-- /Framework::HTML::Elements::script -->
 
