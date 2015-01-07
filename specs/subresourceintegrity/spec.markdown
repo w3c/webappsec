@@ -257,7 +257,7 @@ metadata</dfn>, which consists of the following pieces of information:
 
 * cryptographic hash function ("alg")
 * [digest][] ("val")
-* the resource's MIME type ("type")
+* the resource's [MIME type][] ("type")
 
 The hash function and digest MUST be provided in order to validate a
 resource's integrity. The MIME type SHOULD be provided, as it mitigates the
@@ -291,6 +291,7 @@ result of the following command line:
 
 [sha2]: #dfn-sha-2
 [digest]: #dfn-digest
+[MIME type]: #dfn-mime-type
 [integrity metadata]: #dfn-integrity-metadata
 </section><!-- /Framework::Required metadata -->
 
