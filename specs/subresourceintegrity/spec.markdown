@@ -266,7 +266,7 @@ risk of certain attack vectors.
 This metadata is generally encoded as a "named information" (`ni`) URI, as
 defined in RFC6920. [[!RFC6920]]
 
-For example, given a resource containing only the string "Hello, world!",
+For example, given a resource containing only the string "Hello, world.",
 an author might choose [SHA-256][sha2] as a hash function.
 `-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8` is the base64url-encoded
 digest that results. This can be encoded as an `ni` URI as follows:
