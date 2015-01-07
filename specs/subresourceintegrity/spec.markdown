@@ -257,7 +257,7 @@ metadata</dfn>, which consists of the following pieces of information:
 
 * cryptographic hash function ("alg")
 * [digest][] ("val")
-* the resource's MIME type ("type")
+* the resource's [MIME type][] ("type")
 
 The hash function and digest MUST be provided in order to validate a
 resource's integrity. The MIME type SHOULD be provided, as it mitigates the
@@ -291,6 +291,7 @@ result of the following command line:
 
 [sha2]: #dfn-sha-2
 [digest]: #dfn-digest
+[MIME type]: #dfn-mime-type
 [integrity metadata]: #dfn-integrity-metadata
 </section><!-- /Framework::Required metadata -->
 
@@ -358,8 +359,8 @@ is a consistent ordering.
 <section>
 #### Apply <var>algorithm</var> to <var>resource</var>
 
-1.  Let <var>result</var> be the result of applying <var>algorithm</var> to
-    the [representation data][representationdata] without any content-codings
+1.  Let <var>result</var> be the result of [applying <var>algorithm</var>][apply-algorithm]
+    to the [representation data][representationdata] without any content-codings
     applied, except when the user agent intends to consumes the content with
     content-encodings applied (e.g., saving a gzip’d file to disk). In the
     latter case, let <var>result</var> be the result of applying
@@ -825,7 +826,6 @@ Insert the following steps after step 5 of step 14 of HTML5's
 [fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#fetch
 [queue a task]: http://www.w3.org/TR/html5/webappapis.html#queue-a-task
 [fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
-[entity body]: #dfn-entity-body
 [bz]: http://lists.w3.org/Archives/Public/public-webappsec/2013Dec/0048.html
 </section><!-- /Framework::HTML::Elements::script -->
 
