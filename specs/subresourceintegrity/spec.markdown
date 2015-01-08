@@ -298,9 +298,9 @@ result of the following command line:
 <section>
 ### Cryptographic hash functions
 
-Conformant user agents MUST support the [SHA-256][sha2] and [SHA-512][sha2]
-cryptographic hash functions for use as part of a resource's
-[integrity metadata][], and MAY support additional hash functions.
+Conformant user agents MUST support the [SHA-256][sha2], [SHA-384][sha2]
+and [SHA-512][sha2] cryptographic hash functions for use as part of a
+resource's [integrity metadata][], and MAY support additional hash functions.
 
 <section>
 #### Agility
