@@ -14,14 +14,125 @@ Former Editor: Adam Barth, Google Inc., w3c@adambarth.com
 Former Editor: Brandon Sterne, formerly of Mozilla Corporation, brandon@hackmill.com
 Abstract: This document defines a policy language used to declare a set of content restrictions for a web resource, and a mechanism for transmitting the policy from a server to a client where the policy is enforced.
 Group: webappsec
-Link Defaults: HTML5 (element) applet / audio / embed / iframe / img / link / meta / object / script / source / style / track / video
-Link Defaults: HTML5 (dfn) auxiliary browsing contexts / opener browsing context / nested browsing contexts / plugin / fetch / javascript global environment
-Link Defaults: HTML5 (interface) document
-Link Defaults: HTML5 (element-attr) rel / type / href / src
 Link Defaults: dom-core-ls (interface) event
 Indent: 2
 At Risk: [[#csp-request-header]]
 At Risk: [[#directive-child-src]]
+</pre>
+
+<!--
+   ███    ██    ██  ██████  ██     ██  ███████  ████████   ██████ 
+  ██ ██   ███   ██ ██    ██ ██     ██ ██     ██ ██     ██ ██    ██
+ ██   ██  ████  ██ ██       ██     ██ ██     ██ ██     ██ ██      
+██     ██ ██ ██ ██ ██       █████████ ██     ██ ████████   ██████ 
+█████████ ██  ████ ██       ██     ██ ██     ██ ██   ██         ██
+██     ██ ██   ███ ██    ██ ██     ██ ██     ██ ██    ██  ██    ██
+██     ██ ██    ██  ██████  ██     ██  ███████  ██     ██  ██████ 
+-->
+<pre class="anchors">
+type: dfn
+  urlPrefix: http://www.w3.org/TR/html5/
+    urlPrefix: dom.html
+      text: fallback content
+      text: the document's address
+    urlPrefix: embedded-content-0.html
+      text: an iframe srcdoc document
+    urlPrefix: browsers.html
+      text: active document
+      text: parse a sandboxing directive
+      text: forced sandboxing flag set
+      text: ascii serialization of an origin
+      text: auxiliary browsing context
+      text: browsing context
+      text: ancestor browsing context
+      text: browsing context container
+      text: child browsing context
+      text: creating a new Document object
+      text: navigated
+      text: nested browsing context
+      text: nested through; url: browsing-context-nested-through
+      text: opener browsing context
+      text: plugin document
+      text: sandboxed origin browsing context flag
+      text: sandboxing flag set
+      text: top-level browsing context
+    urlPrefix: infrastructure.html
+      text: fragment; url: concept-url-fragment
+      text: fetch
+      text: document base url
+      text: plugin
+      text: reflect
+      text: securityerror
+      text: mime type
+      text: strictly split a string
+      text: skip whitespace
+      text: collect a sequence of characters
+      text: space characters
+      text: javascript global environment
+      text: split a string on spaces
+      text: strip leading and trailing whitespace
+      text: percent encode
+      text: percent decode
+      text: firing; url: concept-event-fire
+    urlPrefix: links.html
+      text: icon; url: rel-icon-0
+    urlPrefix: scripting-1.html
+      text: the script block's source
+    urlPrefix: webappapis.html
+      text: queue a task
+      text: task source
+      text: tasks; url: concept-task
+      text: incumbent settings object
+      text: relevant settings object for a script
+      text: responsible document
+  urlPrefix: http://www.w3.org/TR/cssom/
+    text: insert a css rule
+    text: parse a css declaration block
+    text: parse a css rule
+    text: parse a group of selectors
+type: element
+  urlPrefix: http://www.w3.org/TR/html5/
+    urlPrefix: document-metadata.html
+      text: base; url: the-base-element
+      text: link; url: the-link-element
+      text: meta; url: the-meta-element
+      text: style; url: the-style-element
+    urlPrefix: embedded-content-0.html
+      text: audio; url: the-audio-element
+      text: embed; url: the-embed-element
+      text: iframe; url: the-iframe-element
+      text: img; url: the-img-element
+      text: object; url: the-object-element
+      text: video; url: the-video-element
+      text: source; url: the-source-element
+      text: track; url: the-track-element
+    urlPrefix: scripting-1.html
+      text: script; url: the-script-element
+    urlPrefix: obsolete.html
+      text: applet; url: the-applet-element
+      text: frame
+type: element-attr
+  urlPrefix: http://www.w3.org/TR/html5/
+    urlPrefix: document-metadata.html
+      text: href; for: link; url: attr-link-href
+      text: rel; for: link; url: attr-link-rel
+    urlPrefix: embedded-content-0.html
+      text: type; for: object; url: attr-object-type
+      text: src; for: img; url: attr-img-src
+      text: sandbox; for: iframe; url: attr-iframe-sandbox
+urlPrefix: http://w3.org/TR/dom/
+  type: attribute
+    text: textContent; for: Node; url: dom-node-textcontent
+  type: interface
+    text: document; url: interface-document
+type: interface
+  urlPrefix: https://fetch.spec.whatwg.org/
+    text: request
+  urlPrefix: https://url.spec.whatwg.org/
+    text: url
+  urlPrefix: https://heycam.github.io/webidl/
+    text: DOMString; url: idl-DOMString
+    text: long; url: idl-long
 </pre>
 
 <!--
@@ -180,8 +291,11 @@ At Risk: [[#directive-child-src]]
       A number of new fields were added to violation reports (both those POSTED
       via <a><code>report-uri</code></a>, and those handed to the DOM via
       {{SecurityPolicyViolationEvent}} events. These include
-      {{effectiveDirective}}, {{statusCode}}, {{sourceFile}}, {{lineNumber}},
-      {{columnNumber}}.
+      {{SecurityPolicyViolationEvent/effectiveDirective}},
+      {{SecurityPolicyViolationEvent/statusCode}},
+      {{SecurityPolicyViolationEvent/sourceFile}},
+      {{SecurityPolicyViolationEvent/lineNumber}}, and
+      {{SecurityPolicyViolationEvent/columnNumber}}.
     </li>
   </ol>
 </section>
@@ -1160,9 +1274,9 @@ At Risk: [[#directive-child-src]]
         The <code>nonce</code> attribute
       </h4>
 
-      Nonce sources require a new attribute to be added to both
-      <code><a element>script</a></code> and <code><a element>style</a></code>
-      elements: <code><dfn element-attr>nonce</dfn></code>.
+      Nonce sources require a new <code>nonce</code> attribute to be added to
+      both <code><a element>script</a></code> and
+      <code><a element>style</a></code> elements.
 
       <pre class="idl">
         partial interface HTMLScriptElement {
@@ -1172,7 +1286,8 @@ At Risk: [[#directive-child-src]]
       <dl dfn-for="HTMLScriptElement">
         <dt><dfn attribute>nonce</dfn></dt>
         <dd>This attribute <a spec="HTML5">reflects</a> the value of the
-        element's <code><a element-attr>nonce</a></code> content attribute.</dd>
+        element's <code><dfn element-attr for="script">nonce</a></code>
+        content attribute.</dd>
       </dl>
       <pre class="idl">
         partial interface HTMLStyleElement {
@@ -1182,7 +1297,8 @@ At Risk: [[#directive-child-src]]
       <dl dfn-for="HTMLStyleElement">
         <dt><dfn attribute>nonce</dfn></dt>
         <dd>This attribute <a spec="HTML5">reflects</a> the value of the
-        element's <code><a element-attr>nonce</a></code> content attribute.</dd>
+        element's <code><dfn element-attr for="style">nonce</a></code>
+        content attribute.</dd>
       </dl>
 
     </section>
@@ -1192,7 +1308,7 @@ At Risk: [[#directive-child-src]]
 
       An element has a <dfn>valid nonce</dfn> for a <var>set of source
       expressions</var> if the value of the element's
-      <code><a element-attr>nonce</a></code> attribute after
+      <code><a element-attr for="script">nonce</a></code> attribute after
       <a title="strip leading and trailing whitespace" spec="HTML5">stripping
       leading and trailing whitespace</a> is a case-sensitive match for the
       <code><a>nonce-value</a></code> component of at least one
@@ -1261,7 +1377,7 @@ At Risk: [[#directive-child-src]]
     </section>
   </section>
   <section>
-    <h3 id="media-type-list">Media Type List</h3>
+    <h3 id="media-type-list-syntax">Media Type List Syntax</h3>
 
     The <code><a>plugin-types</a></code> directive uses a value consisting
     of a <dfn>media type list</dfn>.
@@ -1581,7 +1697,7 @@ At Risk: [[#directive-child-src]]
   <h2 id="script-interfaces">Script Interfaces</h2>
 
   <section>
-    <h3>Strawman DOM API</h3>
+    <h3 id="strawman-dom-api">Strawman DOM API</h3>
 
     This is a sketch of what an API might look like. It is neither complete nor
     finalized; take it as an outline for discussion, nothing more. The general
@@ -1606,7 +1722,7 @@ At Risk: [[#directive-child-src]]
           readonly attribute DOMString host;
           readonly attribute DOMString port;
           readonly attribute DOMString path;
-  
+
           readonly attribute boolean hostWildcard;
           readonly attribute boolean portWildcard;
       };
@@ -1742,23 +1858,23 @@ At Risk: [[#directive-child-src]]
       };
     </pre>
     <dl dfn-for="SecurityPolicyViolationEventInit">
-      <dt><dfn attribute>documentURL</dfn></dt>
+      <dt><dfn dict-member>documentURL</dfn></dt>
       <dd>Refer to the <a href="#violation-report-document-uri"><code>document-uri</code></a> property of violation reports for a description of this property.</dd>
-      <dt><dfn attribute>referrer</dfn></dt>
+      <dt><dfn dict-member>referrer</dfn></dt>
       <dd>Refer to the <a href="#violation-report-referrer"><code>referrer</code></a> property of violation reports for a description of this property.</dd>
-      <dt><dfn attribute>blockedURL</dfn></dt>
+      <dt><dfn dict-member>blockedURL</dfn></dt>
       <dd>Refer to the <a href="#violation-report-blocked-uri"><code>blocked-uri</code></a> property of violation reports for a description of this property.</dd>
-      <dt><dfn attribute>violatedDirective</dfn></dt>
+      <dt><dfn dict-member>violatedDirective</dfn></dt>
       <dd>Refer to the <a href="#violation-report-violated-directive"><code>violated-directive</code></a> property of violation reports for a description of this property.</dd>
-      <dt><dfn attribute>effectiveDirective</dfn></dt>
+      <dt><dfn dict-member>effectiveDirective</dfn></dt>
       <dd>Refer to the <a href="#violation-report-effective-directive"><code>effective-directive</code></a> property of violation reports for a description of this property.</dd>
-      <dt><dfn attribute>originalPolicy</dfn></dt>
+      <dt><dfn dict-member>originalPolicy</dfn></dt>
       <dd>Refer to the <a href="#violation-report-original-policy"><code>original-policy</code></a> property of violation reports for a description of this property.</dd>
-      <dt><dfn attribute>sourceFile</dfn></dt>
+      <dt><dfn dict-member>sourceFile</dfn></dt>
       <dd>Refer to the <a href="#violation-report-source-file"><code>source-file</code></a> property of violation reports for a description of this property.</dd>
-      <dt><dfn attribute>lineNumber</dfn></dt>
+      <dt><dfn dict-member>lineNumber</dfn></dt>
       <dd>Refer to the <a href="#violation-report-line-number"><code>line-number</code></a> property of violation reports for a description of this property.</dd>
-      <dt><dfn attribute>columnNumber</dfn></dt>
+      <dt><dfn dict-member>columnNumber</dfn></dt>
       <dd>Refer to the <a href="#violation-report-column-number"><code>column-number</code></a> property of violation reports for a description of this property.</dd>
     </dl>
   </section>
@@ -2195,7 +2311,7 @@ At Risk: [[#directive-child-src]]
 
     The <code><dfn>frame-ancestors</dfn></code> directive indicates whether the
     user agent should allow embedding the resource using a
-    <code><a spec="HTML5">frame</a></code>, <code><a element>iframe</a></code>,
+    <code><a element>frame</a></code>, <code><a element>iframe</a></code>,
     <code><a element>object</a></code>, <code><a element>embed</a></code> or
     <code><a element>applet</a></code> tag, or equivalent
     functionality in non-HTML resources. Resources can use this directive to
@@ -2228,7 +2344,7 @@ At Risk: [[#directive-child-src]]
       which the protected resource is being loaded.</li>
 
       <li>Let <var>ancestorList</var> be the list of all
-      <a spec="HTML5">ancestors</a> of <var>nestedContext</var>.</li>
+      <a title="ancestor browsing context">ancestors</a> of <var>nestedContext</var>.</li>
 
       <li>For each <var>ancestorContext</var> in <var>ancestorList</var>:
         <ol>
@@ -2378,7 +2494,7 @@ At Risk: [[#directive-child-src]]
     <ul>
       <li>Requesting data for display in a <a>nested browsing context</a> in the
       protected resource created by an <code><a element>iframe</a></code> or
-      a <code><a spec="HTML5">frame</a></code> element.</li>
+      a <code><a element>frame</a></code> element.</li>
 
       <li><a spec="HTML5">Navigated</a> such a <a>nested browsing context</a>.</li>
     </ul>
@@ -2431,9 +2547,9 @@ At Risk: [[#directive-child-src]]
       the ''url()'', <<image()>> or <<image-set()>> values on any
       Cascading Style Sheets (CSS)
       property that is capable of loading an image [[!CSS4-IMAGES]], or
-      the <code><a element-attr>href</a></code> attribute of a
+      the <code><a element-attr for="link">href</a></code> attribute of a
       <code><a element>link</a></code> element with an image-related
-      <code><a element-attr>rel</a></code> attribute, such as
+      <code><a element-attr for="link">rel</a></code> attribute, such as
       <code><a spec="HTML5">icon</a></code>.</li>
     </ul>
   </section>
@@ -2621,7 +2737,7 @@ At Risk: [[#directive-child-src]]
         <code><a element>object</a></code> or
         <code><a element>embed</a></code> element that does not explicitly
         declare a <a spec="HTML5">MIME type</a> via a
-        <code><a element-attr>type</a></code> attribute.</li>
+        <code><a element-attr for="object">type</a></code> attribute.</li>
 
         <li><var>resource</var>'s media type does not
         <a title="match a media type list">match</a> the list of <a>allowed
@@ -3355,8 +3471,8 @@ At Risk: [[#directive-child-src]]
       <pre>Content-Security-Policy: <a>script-src</a> 'self' 'nonce-<em>$RANDOM</em>';</pre>
 
       The inline <code><a element>script</a></code> elements would then only
-      execute if they contained a matching <code><a element-attr>nonce</a></code>
-      attribute:
+      execute if they contained a matching
+      <code><a element-attr for="script">nonce</a></code> attribute:
 
       <pre>&lt;script nonce="<em>$RANDOM</em>"&gt;...&lt;/script&gt;</pre>
     </div>
