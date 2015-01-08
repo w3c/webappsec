@@ -263,8 +263,8 @@ The hash function and digest MUST be provided in order to validate a
 resource's integrity. The MIME type SHOULD be provided, as it mitigates the
 risk of certain attack vectors.
 
-This metadata is generally encoded as a "named information" (`ni`) URI, as
-defined in RFC6920. [[!RFC6920]]
+This metadata MUST be encoded as a "named information" (`ni`) URI, as defined
+in RFC6920. [[!RFC6920]]
 
 For example, given a resource containing only the string "Hello, world.",
 an author might choose [SHA-256][sha2] as a hash function.
