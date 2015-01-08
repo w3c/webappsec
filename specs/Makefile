@@ -7,7 +7,7 @@ clean:
 	rm -rf ./referrer-policy/index.html
 
 content-security-policy/index.html: content-security-policy/index.src.html
-	bikeshed -q spec ./content-security-policy/index.src.html index.html
+	bikeshed -f spec ./content-security-policy/index.src.html
 
 credentialmanagement/index.html: credentialmanagement/index.src.html
 	bikeshed -q spec ./credentialmanagement/index.src.html index.html
