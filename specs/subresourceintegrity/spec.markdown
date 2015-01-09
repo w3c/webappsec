@@ -544,8 +544,7 @@ to enable the rest of this specification's work [[!FETCH]]:
                 of <var>request</var>'s integrity metadata's content type.
 
 4.  Add the following step before step #1 of the handling of 401 status
-    codes for both "[basic fetch][]" and "[CORS fetch with preflight][]"
-    algorithms:
+    codes in the [HTTP fetch][] algorithm:
 
     1.  If <var>request</var>'s integrity state is `pending`, set
         <var>response</var>'s integrity state to `corrupt` and return
@@ -570,6 +569,7 @@ to enable the rest of this specification's work [[!FETCH]]:
 [fetch-request]: http://fetch.spec.whatwg.org/#concept-request
 [fetch-response]: http://fetch.spec.whatwg.org/#concept-response
 [basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
+[HTTP fetch]: https://fetch.spec.whatwg.org/#http-fetch
 [CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
 [process request end-of-file]: https://fetch.spec.whatwg.org/#process-request-end-of-file
 </section>
