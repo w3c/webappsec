@@ -520,12 +520,12 @@ correctly, even if the HTTPS version of a resource differs from the HTTP version
 The Fetch specification should contain the following modifications in order
 to enable the rest of this specification's work [[!FETCH]]:
 
-1.  The following text should be added to [section 2.2][fetch-2-2]: "A
+1.  The following text should be added to [section 2.1.4][fetch-requests]: "A
     [request][fetch-request] has an associated [integrity metadata][].
     Unless stated otherwise, a request's integrity metadata is the empty
     string."
 
-2.  The following text should be added to [section 2.3][fetch-2-3]: "A
+2.  The following text should be added to [section 2.1.5][fetch-responses]: "A
     [response][fetch-response] has an associated integrity state, which
     is one of `indeterminate`, `pending`, `corrupt`, and `intact`. Unless
     stated otherwise, it is `indeterminate`.
@@ -544,8 +544,7 @@ to enable the rest of this specification's work [[!FETCH]]:
                 of <var>request</var>'s integrity metadata's content type.
 
 4.  Add the following step before step #1 of the handling of 401 status
-    codes for both "[basic fetch][]" and "[CORS fetch with preflight][]"
-    algorithms:
+    codes in the [HTTP fetch][] algorithm:
 
     1.  If <var>request</var>'s integrity state is `pending`, set
         <var>response</var>'s integrity state to `corrupt` and return
@@ -565,11 +564,12 @@ to enable the rest of this specification's work [[!FETCH]]:
     3.  Set the <var>response</var>'s integrity state to `corrupt`
         and skip directly to firing the event.
 
-[fetch-2-2]: http://fetch.spec.whatwg.org/#requests
-[fetch-2-3]: http://fetch.spec.whatwg.org/#responses
+[fetch-requests]: http://fetch.spec.whatwg.org/#requests
+[fetch-responses]: http://fetch.spec.whatwg.org/#responses
 [fetch-request]: http://fetch.spec.whatwg.org/#concept-request
 [fetch-response]: http://fetch.spec.whatwg.org/#concept-response
 [basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
+[HTTP fetch]: https://fetch.spec.whatwg.org/#http-fetch
 [CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
 [process request end-of-file]: https://fetch.spec.whatwg.org/#process-request-end-of-file
 </section>
