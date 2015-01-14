@@ -74,9 +74,17 @@ type: dfn
     url: concept-response-tls-state
       text: response tls state;
       text: tls state
+  urlPrefix: https://tools.ietf.org/html/rfc6455
+    text: fail the websocket connection; url: section-7.1.7
+type: method
+  text: Fetch; for: GlobalFetch; url: https://fetch.spec.whatwg.org/#dom-global-fetch
+type: attribute
+  text: onerror; for: WebSocket; url: http://www.w3.org/TR/websockets/#handler-websocket-onerror
 type: interface
-  urlPrefix: http://www.w3.org/TR/html5/dom.html
-    text: document
+  text: WebSocket; url: http://www.w3.org/TR/websockets/#the-websocket-interface
+  text: XMLHttpRequest; url: http://www.w3.org/TR/XMLHttpRequest/#interface-xmlhttprequest
+  text: EventSource; url: http://www.w3.org/TR/eventsource/#the-eventsource-interface
+  text: Document; url: http://www.w3.org/TR/html5/dom.html#document
 type: element
   urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: embedded-content-0.html
@@ -409,7 +417,7 @@ type: element-attr
     Any resource that isn't <a>optionally-blockable</a> is
     <dfn title="blockable content" local-title="blockable">blockable
     content</dfn>. Typical examples of this kind of content include scripts,
-    <a>plugin</a> data, data requested via XMLHttpRequest, and so on. Every
+    <a>plugin</a> data, data requested via {{XMLHttpRequest}}, and so on. Every
     <a>request context</a> that is not <a>optionally-blockable</a> is a
     <dfn>blockable request context</dfn>. This explicitly includes any contexts
     defined after publication of this document.
@@ -803,21 +811,15 @@ type: element-attr
 <section>
   <h2 id="websockets-integration">Modifications to WebSockets</h2>
 
-  The <a href="http://www.w3.org/TR/2012/CR-websockets-20120920/#the-websocket-interface"><code>WebSocket()</code>
+  The <a href="http://www.w3.org/TR/websockets/#the-websocket-interface"><code>WebSocket()</code>
   constructor algorithm</a> [[!WEBSOCKETS]] is modified as follows:
 
   <ul>
     <li>
-      Replace Step 2 with the following steps:
+      Remove the current step 2.
+
 
       <ol>
-        <li>
-          If <var>secure</var> is <strong>false</strong>, and the algorithm in
-          [[#categorize-settings-object]] returns <code>Restricts Mixed
-          Content</code> when applied to <var>entry script</var>'s
-          <a title="relevant settings object for a script">relevant settings
-          object</a>'s, then throw a <code>SecurityError</code> exception.
-        </li>
       </ol>
     </li>
   </ul>
@@ -827,19 +829,41 @@ type: element-attr
 
   <ul>
     <li>
-      After step 5, perform the following step:
+      After the current step 1, perform the following step:
+
+      <ol>
+        <li>
+          If <var>secure</var> is <strong>false</strong>, and the algorithm in
+          [[#categorize-settings-object]] returns <code>Restricts Mixed
+          Content</code> when applied to <var>client</var>'s <var>entry
+          script</var>'s
+          <a title="relevant settings object for a script">relevant settings
+          object</a>'s, then the client MUST <a>fail the WebSocket
+          connection</a> and abort the connection [[!RFC6455]].
+        </li>
+      </ol>
+    </li>
+    <li>
+      After the current step 5, perform the following step:
 
       <ol>
         <li>
           If secure is <strong>true</strong>, and the TLS handshake performed
           in step 5 results in TLS-protection which is is <a>deprecated</a>,
-          then the client MUST
-          <a href="http://tools.ietf.org/html/rfc6455#section-7.1.7">Fail the
-          WebSocket Connection</a> and abort the connection [[!RFC6455]].
+          then the client MUST <a>fail the WebSocket connection</a> and abort
+          the connection [[!RFC6455]].
         </li>
       </ol>
     </li>
   </ul>
+
+  Note: These changes together mean that we'll no longer throw a
+  <code>SecurityError</code> exception directly upon constructing a WebSocket
+  object, but will instead rely upon blocking the connection and triggering the
+  <a>fail the WebSocket connection</a> algorithm, which developers can catch by
+  hooking a {{WebSocket}} object's {{WebSocket/onerror}} handler. This is
+  consistent with the behavior of {{XMLHttpRequest}}, {{EventSource}}, and
+  {{Fetch}}.
 </section>
 
 <!--
