@@ -6,6 +6,7 @@ clean:
 	rm -rf ./mixedcontent/index.html
 	rm -rf ./referrer-policy/index.html
 
+CSP3: content-security-policy/index.html
 CSP2: CSP2/index.html
 
 CSP2/index.html: CSP2/index.src.html
