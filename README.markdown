@@ -16,6 +16,7 @@ Web Application Security Working Group
         * Candidate Recommendation: <http://w3.org/TR/CSP>
     * Level 2:
         * Last Call Working Draft: <http://w3.org/TR/CSP2>
+        * Editors' Draft: <https://w3c.github.io/webappsec/specs/CSP2/>
 
 * Credential Management:
     * Editor's draft: <https://w3c.github.io/webappsec/specs/credentialmanagement/>

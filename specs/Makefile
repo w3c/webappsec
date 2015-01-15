@@ -6,6 +6,11 @@ clean:
 	rm -rf ./mixedcontent/index.html
 	rm -rf ./referrer-policy/index.html
 
+CSP2: CSP2/index.html
+
+CSP2/index.html: CSP2/index.src.html
+	bikeshed -f spec ./CSP2/index.src.html
+
 content-security-policy/index.html: content-security-policy/index.src.html
 	bikeshed -f spec ./content-security-policy/index.src.html
 
