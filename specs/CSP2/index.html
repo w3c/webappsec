@@ -110,7 +110,7 @@
       <h1 class="p-name no-ref" id="title">Content Security Policy Level 2</h1>
   
       <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-01-15">15 January 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-01-16">16 January 2015</time></span></h2>
   
       <div data-fill-with="spec-metadata">
         <dl>
@@ -430,6 +430,8 @@
       </ul></div>
 
     <main>
+
+
 
 
 
@@ -783,7 +785,7 @@
           
     
           <dd>
-      Defined by the URL Living Standard. <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-url" title="URL">[URL]</a>
+      Defined by <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-url" title="URL">[URL]</a>.
     </dd>
           
     
@@ -1649,7 +1651,7 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
             <p class="note" role="note">Note: Characters like U+003B SEMICOLON (<code>;</code>) and
       U+002C COMMA (<code>,</code>) cannot appear in source expressions
       directly: if you’d like to include these characters in a source
-      expression, they must be <a data-link-spec="HTML5" data-link-type="dfn" href="http://www.w3.org/TR/html5/#percent-encode" title="percent encode">percent
+      expression, they must be <a data-link-spec="HTML5" data-link-type="dfn" href="http://www.w3.org/TR/url/#percent-encode" title="percent encode">percent
       encoded</a> as <code>%3B</code> and <code>%2C</code> respectively.</p>
             
     
@@ -1663,39 +1665,48 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
             
 
 
-            <p>A URL is said to <dfn data-dfn-type="dfn" data-noexport="" id="match-a-source-expression">match a source expression<a class="self-link" href="#match-a-source-expression"></a></dfn> if the following
-      algorithm returns <em>does match</em>:</p>
+            <p>A URL <var>url</var> is said to <dfn data-dfn-type="dfn" data-noexport="" id="match-a-source-expression">match a source expression<a class="self-link" href="#match-a-source-expression"></a></dfn> if the
+      following algorithm returns <em>does match</em>:</p>
             
 
       
             <ol>
         
-              <li>Normalize the URL according to
-        <a href="http://tools.ietf.org/html/rfc3986#section-6">Section 6 of
-        RFC3986</a>.</li>
+              <li>
+          Let <var>url</var> be the result of processing the URL through the
+          <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-parser">URL parser</a>.
+        </li>
               
 
         
-              <li>If the source expression a consists of a single U+002A ASTERISK
-        character (<code>*</code>), and the URL’s scheme is not of a type
-        designating a <a data-link-type="dfn" href="#globally-unique-identifier">globally unique identifier</a>, (such as
-        <code>blob:</code>, <code>data:</code>, or <code>filesystem:</code>)
-        then return <em>does match</em>.</li>
+              <li>
+          If the source expression a consists of a single U+002A ASTERISK
+          character (<code>*</code>), and <var>url</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a> is not
+          of a type designating a <a data-link-type="dfn" href="#globally-unique-identifier">globally unique identifier</a>, (such as
+          <code>blob:</code>, <code>data:</code>, or <code>filesystem:</code>)
+          then return <em>does match</em>.
+        </li>
               
 
         
-              <li>If the source expression matches the grammar for
-        <code><a data-link-type="dfn" href="#scheme_source">scheme-source</a></code>:
+              <li>
+          If the source expression matches the grammar for
+          <code><a data-link-type="dfn" href="#scheme_source">scheme-source</a></code>:
+
           
                 <ol>
             
-                  <li>If the URL’s scheme is a case-insensitive match for the
-            source expression’s <code><a data-link-type="dfn" href="#scheme_part">scheme-part</a></code>, return
-            <em>does match</em>.</li>
+                  <li>
+              If <var>url</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a> is a case-insensitive match
+              for the source expression’s <code><a data-link-type="dfn" href="#scheme_part">scheme-part</a></code>,
+              return <em>does match</em>.
+            </li>
                   
 
             
-                  <li>Otherwise, return <em>does not match</em>.</li>
+                  <li>
+              Otherwise, return <em>does not match</em>.
+            </li>
                   
           
                 </ol>
@@ -1704,52 +1715,130 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
               </li>
               
         
-              <li>If the source expression matches the grammar for
-        <code><a data-link-type="dfn" href="#host_source">host-source</a></code>:
+              <li>
+          If the source expression matches the grammar for
+          <code><a data-link-type="dfn" href="#host_source">host-source</a></code>:
+
           
                 <ol>
             
-                  <li>If the URL does <strong>not</strong> contain a host, then
-            return <em>does not match</em>.</li>
+                  <li>
+              If <var>url</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-host">host</a> is <code>null</code>,
+              return <em>does not match</em>.
+            </li>
                   
-
             
-                  <li>Let <var>uri-scheme</var>, <var>uri-host</var>, and
-            <var>uri-port</var> be the scheme, host, and port of the URL,
-            respectively. If the URL does not have a port, then let
-            <var>uri-port</var> be the default port for
-            <var>uri-scheme</var>. Let <var>uri-path</var> be
-            the path of the URL after
-            <a data-link-spec="HTML5" data-link-type="dfn" href="http://www.w3.org/TR/html5/#percent-decode" title="percent decode">decoding
-            percent-encoded characters</a>. If the URL does not have a
-            path, then let <var>uri-path</var> be the U+002F SOLIDUS
-            character (<code>/</code>).</li>
+                  <li>
+              Let <var>url-scheme</var>, <var>url-host</var>, and
+              <var>url-port</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a>, <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-host">host</a>, and
+              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-port">port</a> of <var>url</var>’s origin, respectively.
+
+
+                    <p class="note" role="note">Note: If <var>url</var> doesn’t specify a port, then its origin’s
+              port will be the <a data-link-type="dfn" href="http://www.w3.org/TR/url/#default-port">default port</a> for <var>url</var>’s
+              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a>.</p>
+                    
+            
+                  </li>
                   
-
             
-                  <li>If the source expression has a <code><a data-link-type="dfn" href="#scheme_part">scheme-part</a></code>
-            that is not a case insensitive match for <var>uri-scheme</var>,
-            then return <em>does not match</em>.</li>
+                  <li>
+              Let <var>url-path</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-path">path</a> of <var>url</var> after
+              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#percent-decode" title="percent decode">decoding percent-encoded characters</a>.
+              If <var>url</var> does not have a path, then let
+              <var>url-path</var> be the U+002F SOLIDUS character
+              (<code>/</code>).
+            </li>
                   
-
             
-                  <li>If the source expression does <strong>not</strong> have a
-            scheme, return <em>does not match</em> if
+                  <li>
+              If the source expression has a <code><a data-link-type="dfn" href="#scheme_part">scheme-part</a></code>
+              that is not a case insensitive match for <var>url-scheme</var>,
+              then return <em>does not match</em>.
+            </li>
+                  
+            
+                  <li>
+              If the source expression does <strong>not</strong> have a
+              scheme, return <em>does not match</em> if any of the following
+              are true:
+
               
                     <ol>
                 
-                      <li>the scheme of the protected resource’s URL is a case
-                insensitive match for <code>HTTP</code>, and
-                <var>uri-scheme</var> is <strong>not</strong> a case
-                insensitive match for either <code>HTTP</code> or
-                <code>HTTPS</code></li>
+                      <li>
+                  the scheme of the protected resource’s URL is a case
+                  insensitive match for <code>HTTP</code>, and
+                  <var>url-scheme</var> is <strong>not</strong> a case
+                  insensitive match for either <code>HTTP</code> or
+                  <code>HTTPS</code>
+                </li>
                       
                 
-                      <li>the scheme of the protected resource’s URL is
-                <strong>not</strong> a case insensitive match for
-                <code>HTTP</code>, and <var>uri-scheme</var> is
-                <strong>not</strong> a case insensitive match
-                for the scheme of the protected resource’s URL.</li>
+                      <li>
+                  the scheme of the protected resource’s URL is
+                  <strong>not</strong> a case insensitive match for
+                  <code>HTTP</code>, and <var>url-scheme</var> is
+                  <strong>not</strong> a case insensitive match
+                  for the scheme of the protected resource’s URL.
+                </li>
+                      
+              
+                    </ol>
+                    
+            
+                  </li>
+                  
+            
+                  <li>
+              If the first character of the source expression’s
+              <code><a data-link-type="dfn" href="#host_part">host-part</a></code> is an U+002A ASTERISK character
+              (<code>*</code>) and the remaining characters, including the
+              leading U+002E FULL STOP character (<code>.</code>), are not a
+              case insensitive match for the rightmost characters of
+              <var>url-host</var>, then return <em>does not match</em>.
+            </li>
+                  
+
+            
+                  <li>
+              If the first character of the source expression’s
+              <code><a data-link-type="dfn" href="#host_part">host-part</a></code> is <em>not</em> an U+002A ASTERISK
+              character (<code>*</code>) and <var>url-host</var> is not a
+              case insensitive match for the source expression’s
+              <code><a data-link-type="dfn" href="#host_part">host-part</a></code>, then return <em>does not
+              match</em>.
+            </li>
+                  
+
+            
+                  <li>
+              If the source expression does <strong>not</strong> contain
+              a <code>port-part</code> and <var>url-port</var> is not the
+              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#default-port">default port</a> for <var>url-scheme</var>, then return
+              <em>does not match</em>.
+            </li>
+                  
+
+            
+                  <li>
+              If the source expression does contain a <code>port-part</code>,
+              then return <em>does not match</em> if both of the following
+              are true:
+
+              
+                    <ol>
+                
+                      <li>
+                  <code><a data-link-type="dfn" href="#port_part">port-part</a></code> does <strong>not</strong>
+                  contain an U+002A ASTERISK character (<code>*</code>)
+                </li>
+                      
+                
+                      <li>
+                  <code><a data-link-type="dfn" href="#port_part">port-part</a></code> does <strong>not</strong>
+                  represent the same number as <var>url-port</var>
+                </li>
                       
               
                     </ol>
@@ -1759,44 +1848,37 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
                   
 
             
-                  <li>If the first character of the source expression’s
-            <code><a data-link-type="dfn" href="#host_part">host-part</a></code> is an U+002A ASTERISK character
-            (<code>*</code>) and the remaining characters, including the
-            leading U+002E FULL STOP character (<code>.</code>), are not a
-            case insensitive match for the rightmost characters of
-            <var>uri-host</var>, then return <em>does not match</em>.</li>
-                  
+                  <li>
+              If the source expression contains a non-empty
+              <code><a data-link-type="dfn" href="#path_part">path-part</a></code>, and the URL is <em>not</em> the
+              result of a redirect, then:
 
-            
-                  <li>If the first character of the source expression’s
-            <code><a data-link-type="dfn" href="#host_part">host-part</a></code> is <em>not</em> an U+002A ASTERISK
-            character (<code>*</code>) and <var>uri-host</var> is not a
-            case insensitive match for the source expression’s
-            <code><a data-link-type="dfn" href="#host_part">host-part</a></code>, then return <em>does not
-            match</em>.</li>
-                  
-
-            
-                  <li>If the source expression does <strong>not</strong> contain
-            a <code>port-part</code> and <var>uri-port</var> is not the
-            default port for <var>uri-scheme</var>, then return <em>does not
-            match</em>.</li>
-                  
-
-            
-                  <li>If the source expression does contain a
-            <code>port-part</code>, then return <em>does not match</em> if
               
                     <ol>
                 
-                      <li><code><a data-link-type="dfn" href="#port_part">port-part</a></code> does <strong>not</strong>
-                contain an U+002A ASTERISK character (<code>*</code>),
-                and</li>
+                      <li>
+                  Let <var>decoded-path</var> be the result of
+                  <a data-link-type="dfn" href="http://www.w3.org/TR/url/#percent-decode" title="percent decode">decoding <code>path-part</code>’s
+                  percent-encoded characters</a>.
+                </li>
                       
 
                 
-                      <li><code><a data-link-type="dfn" href="#port_part">port-part</a></code> does <strong>not</strong>
-                represent the same number as <var>uri-port</var>.</li>
+                      <li>
+                  If the final character of <var>decoded-path</var> is the
+                  U+002F SOLIDUS character (<code>/</code>), and
+                  <var>decoded-path</var> is not a prefix of
+                  <var>url-path</var>, then return <em>does not match</em>.
+                </li>
+                      
+
+                
+                      <li>
+                  If the final character of <var>decoded-path</var> is not the
+                  U+002F SOLIDUS character (<code>/</code>), and
+                  <var>decoded-path</var> is not an exact match for
+                  <var>url-path</var> then return <em>does not match</em>.
+                </li>
                       
               
                     </ol>
@@ -1806,41 +1888,9 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
                   
 
             
-                  <li>If the source expression contains a non-empty
-            <code><a data-link-type="dfn" href="#path_part">path-part</a></code>, and the URL is <em>not</em> the
-            result of a redirect, then:
-              
-                    <ol>
-                
-                      <li>Let <var>decoded-path</var> be the result of
-                <a data-link-spec="HTML5" data-link-type="dfn" href="http://www.w3.org/TR/html5/#percent-decode" title="percent decode">decoding
-                <code>path-part</code>’s percent-encoded characters</a>.</li>
-                      
-
-                
-                      <li>If the final character of <var>decoded-path</var> is
-                the U+002F SOLIDUS character (<code>/</code>), and
-                <var>decoded-path</var> is not a prefix of
-                <var>uri-path</var>, then return <em>does not
-                match</em>.</li>
-                      
-
-                
-                      <li>If the final character of <var>decoded-path</var> is
-                not the U+002F SOLIDUS character (<code>/</code>),
-                and <var>decoded-path</var> is not an exact match for
-                <var>uri-path</var> then return <em>does not
-                match</em>.</li>
-                      
-              
-                    </ol>
-                    
-            
-                  </li>
-                  
-
-            
-                  <li>Otherwise, return <em>does match</em>.</li>
+                  <li>
+              Otherwise, return <em>does match</em>.
+            </li>
                   
           
                 </ol>
@@ -1850,16 +1900,19 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
               
 
         
-              <li>If the source expression is a case insensitive
-        match for <code>'self'</code> (including the quotation marks),
-        then:
+              <li>
+          If the source expression is a case insensitive match for
+          <code>'self'</code> (including the quotation marks), then:
+
           
                 <ol>
             
-                  <li>Return <em>does match</em> if the URL has the same scheme,
-            host, and port as the protected resource’s URL (using the
-            default port for the appropriate scheme if either or both URLs
-            are missing ports).</li>
+                  <li>
+              Return <em>does match</em> if <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-origin" title="origin of a url">the
+              origin of <var>url</var></a> matches
+              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-origin" title="origin of a url">the origin of the protected resource’s
+              URL</a>.
+            </li>
                   
           
                 </ol>
@@ -1869,7 +1922,9 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
               
 
         
-              <li>Otherwise, return <em>does not match</em>.</li>
+              <li>
+          Otherwise, return <em>does not match</em>.
+        </li>
               
       
             </ol>
@@ -1883,15 +1938,15 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
             
 
 
-            <p>A URL is said to <dfn data-dfn-type="dfn" data-noexport="" id="match-a-source-list">match a source list<a class="self-link" href="#match-a-source-list"></a></dfn> if the following
-      conditions are met:</p>
+            <p>A URL <var>url</var> is said to <dfn data-dfn-type="dfn" data-noexport="" id="match-a-source-list">match a source list<a class="self-link" href="#match-a-source-list"></a></dfn> if the
+      following conditions are met:</p>
             
 
       
             <ol>
         
               <li>
-          The URL <a data-link-type="dfn" href="#match-a-source-expression" title="match a source expression">matches at least one
+          <var>url</var> <a data-link-type="dfn" href="#match-a-source-expression" title="match a source expression">matches at least one
           source expression</a> in the set of source expressions obtained by
           <a data-link-type="dfn" href="#parse-a-source-list" title="parse a source list">parsing the source list</a>.
         </li>
@@ -1904,7 +1959,7 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
                 <ol>
             
                   <li>
-              The URL is one of  <strong>not</strong> the result of a redirect.
+              <var>url</var> is <strong>not</strong> the result of a redirect.
             </li>
                   
             
