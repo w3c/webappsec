@@ -406,7 +406,11 @@
             <li><a href="#security-violation-reports"><span class="secno">9.2</span> <span class="content">Violation Reports</span></a></li>
           </ul>
         </li>
-        <li><a href="#implementation-considerations"><span class="secno">10</span> <span class="content">Implementation Considerations</span></a></li>
+        <li><a href="#implementation-considerations"><span class="secno">10</span> <span class="content">Implementation Considerations</span></a>
+          <ul class="toc">
+            <li><a href="#complications"><span class="secno">10.1</span> <span class="content">Processing Complications</span></a></li>
+          </ul>
+        </li>
         <li><a href="#iana-considerations"><span class="secno">11</span> <span class="content">IANA Considerations</span></a>
           <ul class="toc">
             <li><a href="#iana-content-security-policy"><span class="secno">11.1</span> <span class="content">Content-Security-Policy</span></a></li>
@@ -4070,7 +4074,7 @@ directive-value   = <a data-link-type="dfn" href="#source_list">source-list</a>
       the <code><a data-link-for="link" data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-link-href">href</a></code> attribute of a
       <code><a data-link-type="element" href="http://www.w3.org/TR/html5/#the-link-element">link</a></code> element with an image-related
       <code><a data-link-for="link" data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-link-rel">rel</a></code> attribute, such as
-      <code><a data-link-spec="HTML5" data-link-type="dfn" href="http://www.w3.org/TR/html5/#rel-icon-0">icon</a></code>.</li>
+      <code><a data-link-spec="HTML5" data-link-type="dfn" href="http://www.w3.org/TR/html5/#rel-icon">icon</a></code>.</li>
             
     
           </ul>
@@ -5185,13 +5189,33 @@ directive-value   = <a data-link-type="dfn" href="#source_list">source-list</a>
     
           <ul>
       
-            <li>Requesting external style sheets, such as when processing the
-      <code><a data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-link-href">href</a></code> attribute of a <code><a data-link-type="element" href="http://www.w3.org/TR/html5/#the-link-element">link</a></code> element with a
-      <code><a data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-link-rel">rel</a></code> attribute containing the token
-      <code>stylesheet</code> or when processing the <a class="production css" data-link-type="at-rule" href="http://dev.w3.org/csswg/css-cascade-3/#at-ruledef-import" title="@import">&lt;@import></a>
-      directive in a stylesheet.</li>
+            <li>
+        Requesting an external stylesheet when processing the
+        <a data-link-for="link" data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-link-href">href</a> of a <a data-link-type="element" href="http://www.w3.org/TR/html5/#the-link-element">link</a> element
+        whose <a data-link-for="link" data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-link-rel">rel</a> attribute contains the token
+        <code><a data-link-type="dfn" href="http://www.w3.org/TR/html5/#link-type-stylesheet" title="link type stylesheet">stylesheet</a></code>.
+      </li>
             
       
+            <li>
+        Requesting an external stylesheet when processing the <a class="production css" data-link-type="at-rule" href="http://dev.w3.org/csswg/css-cascade-3/#at-ruledef-import" title="@import">&lt;@import></a>
+        directive.
+      </li>
+            
+      
+            <li>
+        Requesting an external stylesheet when processing a <code>Link</code>
+        HTTP response header field <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-rfc5988" title="RFC5988">[RFC5988]</a>.
+
+
+              <p class="note" role="note">Note: As this stylesheet might be prefetched before a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>
+        actually exists, user agents will need to carefully consider how to
+        instantiate a meaningful <a data-link-type="dfn" href="#security-policy">policy</a> against which to compare this
+        request. See <a data-section="" href="#complications">§10.1 Processing Complications</a> for more detail.</p>
+              
+      
+            </li>
+            
     
           </ul>
           
@@ -5531,6 +5555,67 @@ Content-Security-Policy: <a data-link-type="dfn" href="#default_src">default-src
           
   
         </div>
+
+  
+        <h3 class="heading settled" data-level="10.1" id="complications"><span class="secno">10.1. </span><span class="content">Processing Complications</span><a class="self-link" href="#complications"></a></h3>
+
+
+        <p>Many user agents implement some form of optimistic resource fetching algorithm
+  to speed up page loads. In implementing these features, user agents MUST
+  ensure that these optimizations do not alter the behavior of the page’s
+  security policy.</p>
+
+
+        <p>Here, we’ll note a few potential complications that could cause bugs in
+  implementations:</p>
+
+  
+        <ol>
+    
+          <li>
+      The <a data-link-type="dfn" href="#frame_ancestors">frame-ancestor</a> directive MUST take effect before a document is
+      loaded into a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#nested-browsing-context">nested browsing context</a>, and certainly before script
+      is potentially executed. One way to approach this constraint is to perform
+      the ancestor check defined in <a data-section="" href="#directive-frame-ancestors">§7.7 frame-ancestors</a> while parsing
+      the document’s headers. This might mean that no document object is
+      available at all, which can complicate checks against <code>'self'</code>,
+      and <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a>- or <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-port">port</a>-relative source expressions.
+    </li>
+          
+    
+          <li>
+      Likewise, the <code>Link</code> HTTP response header could generate
+      requests for stylesheet resources before a document is available. User
+      agents MUST ensure that any policy contained in the response headers is
+      parsed and effective <em>before</em> these requests are generated. For
+      example, a response returning the following headers:
+
+      
+            <pre>Content-Security-Policy: style-src 'none'
+Link: &lt;awesome.css>; rel=stylesheet
+</pre>
+            
+
+
+            <p>MUST have the same behavior as a response returning the following headers:</p>
+            
+
+      
+            <pre>Link: &lt;awesome.css>; rel=stylesheet
+Content-Security-Policy: style-src 'none'
+</pre>
+            
+
+
+            <p>namely, both must block requests for the stylesheet. In practice, this
+      implies that user agents should wait until all headers have been processed
+      before beginning to prefetch resources.</p>
+            
+    
+          </li>
+          
+  
+        </ol>
 </section>
 
 
@@ -5826,6 +5911,8 @@ Content-Security-Policy: <a data-link-type="dfn" href="#default_src">default-src
       <dd>Robin Berjon; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a></dd>
       <dt id="biblio-rfc2119" title="rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[rfc2119]</dt>
       <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a></dd>
+      <dt id="biblio-rfc5988" title="rfc5988"><a class="self-link" href="#biblio-rfc5988"></a>[rfc5988]</dt>
+      <dd>M. Nottingham. <a href="http://www.ietf.org/rfc/rfc5988.txt">Web Linking</a>. October 2010. Proposed Standard. URL: <a href="http://www.ietf.org/rfc/rfc5988.txt">http://www.ietf.org/rfc/rfc5988.txt</a></dd>
       <dt id="biblio-websockets" title="websockets"><a class="self-link" href="#biblio-websockets"></a>[websockets]</dt>
       <dd>Ian Hickson. <a href="http://www.w3.org/TR/websockets/">The WebSocket API</a>. 20 September 2012. CR. URL: <a href="http://www.w3.org/TR/websockets/">http://www.w3.org/TR/websockets/</a></dd>
       <dt id="biblio-workers" title="workers"><a class="self-link" href="#biblio-workers"></a>[workers]</dt>

@@ -75,7 +75,8 @@ type: dfn
       text: strip leading and trailing whitespace
       text: firing; url: concept-event-fire
     urlPrefix: links.html
-      text: icon; url: rel-icon-0
+      text: icon; url: rel-icon
+      text: link type stylesheet
     urlPrefix: scripting-1.html
       text: the script block's source
     urlPrefix: webappapis.html
@@ -100,6 +101,8 @@ type: dfn
     text: port; url: concept-url-port
     text: scheme; url: concept-url-scheme
     text: url parser; url: concept-url-parser
+  urlPrefix: http://www.w3.org/TR/CSS21/conform.html
+    text: style sheet
 type: element
   urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: document-metadata.html
@@ -3456,12 +3459,25 @@ type: interface
     and no resource was obtained, <em>and</em> <a>report a violation</a>:
 
     <ul>
-      <li>Requesting external style sheets, such as when processing the
-      <code><a element-attr>href</a></code> attribute of a <code><a element>link</a></code> element with a
-      <code><a element-attr>rel</a></code> attribute containing the token
-      <code>stylesheet</code> or when processing the <<@import>>
-      directive in a stylesheet.</li>
-      <!-- TODO: Autolink "stylesheet" once Bikeshed supports external sections. -->
+      <li>
+        Requesting an external stylesheet when processing the
+        <a element-attr for="link">href</a> of a <a element>link</a> element
+        whose <a element-attr for="link">rel</a> attribute contains the token
+        <code><a title="link type stylesheet">stylesheet</a></code>.
+      </li>
+      <li>
+        Requesting an external stylesheet when processing the <<@import>>
+        directive.
+      </li>
+      <li>
+        Requesting an external stylesheet when processing a <code>Link</code>
+        HTTP response header field [[!RFC5988]].
+
+        Note: As this stylesheet might be prefetched before a {{Document}}
+        actually exists, user agents will need to carefully consider how to
+        instantiate a meaningful <a>policy</a> against which to compare this
+        request. See [[#complications]] for more detail.
+      </li>
     </ul>
 
     Note: The <code>style-src</code> directive does not restrict the
@@ -3724,6 +3740,51 @@ type: interface
 
     would have the same effect, as the comma splits the header during parsing.
   </div>
+
+  <h3 id="complications">Processing Complications</h3>
+
+  Many user agents implement some form of optimistic resource fetching algorithm
+  to speed up page loads. In implementing these features, user agents MUST
+  ensure that these optimizations do not alter the behavior of the page's
+  security policy.
+
+  Here, we'll note a few potential complications that could cause bugs in
+  implementations:
+
+  <ol>
+    <li>
+      The <a>frame-ancestor</a> directive MUST take effect before a document is
+      loaded into a <a>nested browsing context</a>, and certainly before script
+      is potentially executed. One way to approach this constraint is to perform
+      the ancestor check defined in [[#directive-frame-ancestors]] while parsing
+      the document's headers. This might mean that no document object is
+      available at all, which can complicate checks against <code>'self'</code>,
+      and <a>scheme</a>- or <a>port</a>-relative source expressions.
+    </li>
+    <li>
+      Likewise, the <code>Link</code> HTTP response header could generate
+      requests for stylesheet resources before a document is available. User
+      agents MUST ensure that any policy contained in the response headers is
+      parsed and effective <em>before</em> these requests are generated. For
+      example, a response returning the following headers:
+
+      <pre>
+        Content-Security-Policy: style-src 'none'
+        Link: &lt;awesome.css&gt;; rel=stylesheet
+      </pre>
+
+      MUST have the same behavior as a response returning the following headers:
+
+      <pre>
+        Link: &lt;awesome.css&gt;; rel=stylesheet
+        Content-Security-Policy: style-src 'none'
+      </pre>
+
+      namely, both must block requests for the stylesheet. In practice, this
+      implies that user agents should wait until all headers have been processed
+      before beginning to prefetch resources.
+    </li>
+  </ol>
 </section>
 
 <!--
