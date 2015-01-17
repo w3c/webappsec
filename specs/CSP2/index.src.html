@@ -942,7 +942,7 @@ type: interface
       <dfn>scheme-source</dfn>     = <a>scheme-part</a> ":"
       <dfn>host-source</dfn>       = [ <a>scheme-part</a> "://" ] <a>host-part</a> [ <a>port-part</a> ] [ <a>path-part</a> ]
       <dfn>keyword-source</dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'" / "'unsafe-redirect'"
-      <dfn>base64-value</dfn>      = 1*( ALPHA / DIGIT / "+" / "/" )*2( "=" )
+      <dfn>base64-value</dfn>      = 1*( ALPHA / DIGIT / "+" / "/" / "-" / "_" )*2( "=" )
       <dfn>nonce-value</dfn>       = <a>base64-value</a>
       <dfn>hash-value</dfn>        = <a>base64-value</a>
       <dfn>nonce-source</dfn>      = "'nonce-" <a>nonce-value</a> "'"
@@ -1398,20 +1398,27 @@ type: interface
               <ul>
                 <li><a>SHA-256</a> if the <code><a>hash-algo</a></code>
                 component of <var>hash</var> is a case-insensitive match for
-                the string "sha256"</li>
+                the string "sha256" or "sha-256"</li>
 
                 <li><a>SHA-384</a> if the <code><a>hash-algo</a></code>
                 component of <var>hash</var> is a case-insensitive match for
-                the string "sha384"</li>
+                the string "sha384" or "sha-384"</li>
 
                 <li><a>SHA-512</a> if the <code><a>hash-algo</a></code>
                 component of <var>hash</var> is a case-insensitive match for
-                the string "sha512"</li>
+                the string "sha512" or "sha-512"</li>
               </ul>
             </li>
 
             <li>Let <var>expected</var> be the <code><a>hash-value</a></code>
             component of <var>hash</var>.</li>
+
+            <li>Normalize <var>expected</var> to
+            <a href="https://tools.ietf.org/html/rfc4648#section-4">base64
+            encoding</a> by replacing all U+002B PLUS SIGN (<code>+</code>)
+            characters with U+002D HYPHEN-MINUS (<code>-</code>) characters,
+            and all U+002F SOLIDUS (<code>/</code>) characters with U+005F LOW
+            LINE (<code>_</code>) characters.</li>
 
             <li>Let <var>actual</var> be the
             <a href="https://tools.ietf.org/html/rfc4648#section-4">base64
@@ -3185,8 +3192,8 @@ type: interface
       of script.
 
       Usage is straightforward. The server computes the hash of a
-      particular script block's contents, and includes the base64 encoding
-      of that value in the <code>Content-Security-Policy</code> header:
+      particular script block's contents, and includes the base64 or base64url
+      encoding of that value in the <code>Content-Security-Policy</code> header:
 
       <pre>
         Content-Security-Policy: <a>default-src</a> 'self';
