@@ -12,7 +12,7 @@ A list of changes to this document may be found at
 ## Introduction
 
 Sites and applications on the web are rarely composed of resources from
-only a single origin. Authors pull scripts, images, fonts, etc. from a
+only a single origin. For example, authors pull scripts and styles from a
 wide variety of services and content delivery networks, and must trust
 that the delivered representation is, in fact, what they expected to
 load. If an attacker can trick a user into downloading content from
@@ -72,29 +72,23 @@ regardless of the URL from which they are loaded.
     _specific_ script, and not _any_ script that happens to have a
     particular URL.
 
-2.  The verification mechanism should extend to all resource types that
-    a page may fetch in the course of its execution and rendering. Active
-    content (scripts, style, `iframe` contents, etc) are, of course,
-    critical, but inactive content such as images and fonts will also be
-    covered.
-
-3.  The verification mechanism should have reporting functionality which
+2.  The verification mechanism should have reporting functionality which
     would inform the author that an invalid resource was downloaded.
     Further it should be possible for an author to choose to run _only_
     the reporting functionality, allowing potentially corrupt resources
     to run on her site, but flagging violations for manual review.
 
-4.  The metadata provided for verification may enable improvements to
+3.  The metadata provided for verification may enable improvements to
     user agents' caching schemes: common resources such as JavaScript
     libraries can be downloaded once, and only once, even if multiple
     instances with distinct URLs are requested.
 
-5.  (potentially) Allow resources to be downloaded from non-canonical
+4.  (potentially) Allow resources to be downloaded from non-canonical
     sources (for instance, over an insecure channel) for performance,
     but fall back to a canonical source if the non-canonical source
     fails an integrity check. 
 
-Rather sure about #5. We also agreed to remove mixed-content relaxation. Declare this issue resolved? (mkwst,freddyb)
+Rather sure about #4. We also agreed to remove mixed-content relaxation. Declare this issue resolved? (mkwst,freddyb)
 {:.issue data-number="1"}
 </section><!-- /Introduction::Goals -->
 
