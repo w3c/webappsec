@@ -83,13 +83,6 @@ regardless of the URL from which they are loaded.
     libraries can be downloaded once, and only once, even if multiple
     instances with distinct URLs are requested.
 
-4.  (potentially) Allow resources to be downloaded from non-canonical
-    sources (for instance, over an insecure channel) for performance,
-    but fall back to a canonical source if the non-canonical source
-    fails an integrity check. 
-
-Rather sure about #4. We also agreed to remove mixed-content relaxation. Declare this issue resolved? (mkwst,freddyb)
-{:.issue data-number="1"}
 </section><!-- /Introduction::Goals -->
 
 <section>
@@ -144,20 +137,6 @@ Rather sure about #4. We also agreed to remove mixed-content relaxation. Declare
     functionality to be notified of changes to the included resources.
 
 </section><!-- Introduction::UseCases::Integrity -->
-<section>
-#### Fallback
-
-*   An author wishes to ensure that her site is functional for users behind a
-    trusted proxy which unavoidably transcodes data for security, performance,
-    or other reasons. She can do this by adding [integrity metadata][] and a
-    [non-canonical source][noncanonical] to the `script` element:
-
-        <script src="https://my-trusted-server.com/script.js"
-                noncanonical-src="https://my-cdn.net/script.js"
-                integrity="ni:///sha-256;asijfiqu4t12...woeji3W?ct=application/javascript"></script>
-    {:.example.highlight}
-
-</section><!-- /Introduction::Use Cases::Fallback -->
 </section><!-- /Introduction::Use Cases -->
 </section><!-- /Introduction -->
 
@@ -593,41 +572,6 @@ The `integrity` IDL attribute must [reflect][] the `integrity` content attribute
 </section><!-- /Framework::HTML::integrity -->
 
 <section>
-#### The `noncanonical-src` attribute (TODO)
-[noncanonical]: #the-noncanonical-src-attribute-todo
-
-Authors MAY opt-in to a fallback mechanism whereby user agents would initially
-attempt to load resources from a non-canonical source. If that fetch fails an
-integrity check, the user agent would [report a violation][], and retry the
-fetch using a canonical URL.
-
-The non-canonical URL is specified via a `noncanonical-src` attribute. For
-example:
-
-    <script src="https://example.com/script.js"
-            noncanonical-src="https://cdn.example.com/script.js"
-            integrity="ni:///sha-256;jsdfhiuwergn...vaaetgoifq?ct=application/javascript"></script>
-{:.example.highlight}
-
-The `noncanonicalSrc` IDL attribute MUST [reflect][] the `noncanonical-src`
-content attribute.
-
-The noncanonical resource MUST be fetched with its [omit credentials
-mode][] set to `always`.
-
-[omit credentials mode]: http://fetch.spec.whatwg.org/#concept-request-omit-credentials-mode
-
-More detailed discussion of the use-case and behavior here is probably necessary
-going forward. The goal is to have a fallback mechanism which would not be
-integrity checked. Perhaps it would be hosted on the same server as the page
-itself; you wouldn't get the benefits of your globally awesome CDN, but you'd
-trust (at least) the source of the file. This would enable your application to
-function correctly in environments that would be otherwise entirely broken
-(Global MegaCorp with its draconian IT department, for example).
-{:.issue data-number="5"}
-</section><!-- /Framework::HTML::noncanonical-src -->
-
-<section>
 #### Element interface extensions
 
 <section>
@@ -656,7 +600,7 @@ directive, defined by the following ABNF grammar:
 
     directive-name  = "integrity-policy"
     directive-value = 1#failure-mode [ "require-for-all" ]
-    failure-mode    = ( "block" / "report" / "fallback" )
+    failure-mode    = ( "block" / "report" )
 
 A document's <dfn>integrity policy</dfn> is the value of the
 `integrity-policy` directive, if explicitly provided as part of the
@@ -669,16 +613,6 @@ to render or execute resources that fail an integrity check, <em>and</em> MUST
 If the document's integrity policy contains `report`, the user agent MAY render
 or execute resources that fail an integrity check, <em>but</em> MUST
 [report a violation][].
-
-If the document's integrity policy contains `fallback`, the user agent MUST
-refuse to render or execute resources that fail an integrity check, <em>and</em>
-MUST [report a violation][]. The user agent MAY additionally choose to load
-a fallback resource as specified for each relevant element. If the fallback
-resource fails an integrity check, the user agent MUST refuse to render or
-execute the resource, <em>and</em> MUST [report a(nother)
-violation][report a violation]. (See [the `noncanonical-src`
-attribute][noncanonical] for a strawman of how that might look).
-{:.issue data-number="6"}
 
 If the document's integrity policy contains `require-for-all`, the user agent
 MUST treat the lack of [integrity metadata][] for an resource as automatic
