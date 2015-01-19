@@ -151,19 +151,6 @@ Rather sure about #5. We also agreed to remove mixed-content relaxation. Declare
 
 </section><!-- Introduction::UseCases::Integrity -->
 <section>
-#### Downloads
-
-*   A software distribution service wants to ensure that files are correctly
-    downloaded. It can do so by adding [integrity metadata][] to the `a`
-    elements which users click on to trigger a download:
-
-        <a href="https://software-is-nice.com/awesome.exe"
-           integrity="ni:///sha-256;fkfrewFRFEFHJR...wfjfrErw?ct=application/octet-stream"
-           download>...</a>
-    {:.example.highlight}
-           
-</section><!-- Introduction::UseCases::Downloads -->
-<section>
 #### Fallback
 
 *   An author wishes to ensure that her site is functional for users behind a
@@ -310,18 +297,17 @@ resource in order to provide agility in the face of future discoveries.
 For example, the "Hello, world." resource described above may be described
 either of the following `ni` URLs:
 
-    ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
-    ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=text/plain
+    ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=application/javascript
+    ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=application/javascript
 {:.example.highlight}
 
 Authors may choose to specify both, for example:
 
-    <a href="hello_world.txt"
+    <script src="hello_world.js"
        integrity="
-          ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
-          ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=text/plain
-        "
-        download>Hello, download!</a>
+          ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=application/javascript
+          ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=application/javascript
+        "></script>
 
 In this case, the user agent will choose the strongest hash function in the
 list, and use that metadata to validate the resource (as described below in
@@ -585,8 +571,7 @@ the `a`, `link`, and `script` elements.
 
 A corresponding `integrity` IDL attribute which [reflects][reflect] the
 value each element's `integrity` content attribute is added to the
-`HTMLAnchorElement`, `HTMLLinkElement`, and `HTMLScriptElement`.
-interfaces.
+`HTMLLinkElement` and `HTMLScriptElement` interfaces.
 
 A future revision of this specification is likely to include SRI support
 for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
@@ -653,14 +638,6 @@ function correctly in environments that would be otherwise entirely broken
 #### Element interface extensions
 
 <section>
-##### HTMLAnchorElement
-
-attribute DOMString integrity
-: The value of this element's `integrity` attribute
-{:title="partial interface HTMLAnchorElement"}
-{:.idl}
-</section><!-- /Framework::HTML::Interface extensions::HTMLAnchorElement -->
-<section>
 ##### HTMLLinkElement
 
 attribute DOMString integrity
@@ -722,58 +699,6 @@ failure, refuse to fetch the resource, and [report a violation][].
 
 <section>
 ##### Elements
-
-<section>
-###### The `a` element
-
-If an `a` element has both `integrity` and `download` attributes, the user
-agent has all the data it needs in order to verify the integrity of the
-downloaded resource. This is the only type of download we can safely make
-promises about, so it is the only type of download that we support. If
-integrity metadata is added to any `a` element that does not explicitly
-request that the resource it points to be downloaded, user agents MUST
-treat the link as broken.
-
-Before [following a hyperlink][], the user agent MUST run the following steps:
-
-1.  If <var>subject</var> has an `integrity` attribute whose value is not the
-    empty string, then:
-    1.  The user agent MAY report an error to the user in a
-        user-agent-specific manner.
-    2.  Abort the [following a hyperlink][] algorithm.
-
-Replace step 6 of the [downloads a hyperlink][] algorithm with the following:
-
-6. If the `integrity` attribute of that element is not the empty string, and
-   the element _does not_ have a `download` attribute, abort these steps.
-7. Fetch <var>URL</var> with [integrity metadata][] set to the value of the
-   `integrity` attribute of that element, and handle the resulting resource
-   [as a download][].
-{:start="6"}
-
-[following a hyperlink]: http://www.w3.org/TR/html5/links.html#following-hyperlinks
-[downloads a hyperlink]: http://www.w3.org/TR/html5/links.html#downloading-hyperlinks
-
-When handling a resource [as a download][], perform the following step before
-providing a user with a way to save the resource for later use:
-
-1.  If  <var>response</var>'s integrity state is `corrupt`:
-    1.  If the document's [integrity policy][] is `block`:
-        1.  Abort the download.
-    2.  [Report a violation][].
-
-<div class="note">
-Note that this will cover _only_ downloads triggered explicitly by adding a
-`download` attribute to an `a` element. Such a link might look like the following:
-
-    <a href="https://example.com/file.zip"
-       integrity="ni:///sha-256;skjdsfkafinqfb...ihja_gqg?ct=application/octet-stream"
-       download>Download!</a>
-{:.example.highlight}
-</div>
-
-[as a download]: http://www.w3.org/TR/html5/links.html#as-a-download
-</section><!-- /Framework::HTML::Elements::a -->
 
 <section>
 ###### The `link` element for stylesheets
