@@ -539,7 +539,7 @@ A variety of HTML elements result in requests for resources that are to be
 embedded into the document, or executed in its context. To support integrity
 metadata for each of these, and new elements that are added in the future,
 a new `integrity` attribute is added to the list of content attributes for
-the `a`, `link`, and `script` elements.
+the `link` and `script` elements.
 
 A corresponding `integrity` IDL attribute which [reflects][reflect] the
 value each element's `integrity` content attribute is added to the
