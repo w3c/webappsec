@@ -255,7 +255,7 @@ digest that results. This can be encoded as an `ni` URI as follows:
     ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8
 {:.example.highlight}
 
-Or, if the author further wishes to specify the content type (`text/plain`):
+Or, if the author further wishes to specify the Content Type (`text/plain`):
 
     ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
 {:.example.highlight}
@@ -469,7 +469,7 @@ the user agent.
 8.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
     query string parameter.
 9.  If <var>expectedType</var> is not the empty string, and is not a
-    case-insensitive match for <var>resource</var>'s MIME type,
+    case-insensitive match for <var>resource</var>'s [MIME type][],
     return `false`.
 10. Let <var>actualValue</var> be the result of [applying
     <var>algorithm</var> to <var>resource</var>][apply-algorithm].
@@ -518,10 +518,9 @@ to enable the rest of this specification's work [[!FETCH]]:
 
         1.  Set <var>response</var>'s integrity state to `pending`.
         2.  Include a `Cache-Control` header whose value is "no-transform".
-        3.  If <var>request</var>'s integrity metadata contains a content
-            type:
+        3.  If <var>request</var>'s integrity metadata contains a Content Type:
             1.  Set <var>request</var>'s `Accept` header value to the value
-                of <var>request</var>'s integrity metadata's content type.
+                of <var>request</var>'s integrity metadata's Content Type.
 
 4.  Add the following step before step #1 of the handling of 401 status
     codes in the [HTTP fetch][] algorithm:
