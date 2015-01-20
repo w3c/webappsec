@@ -1699,8 +1699,7 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
               <li>
           If the source expression a consists of a single U+002A ASTERISK
           character (<code>*</code>), and <var>url</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a> is not
-          of a type designating a <a data-link-type="dfn" href="#globally-unique-identifier">globally unique identifier</a>, (such as
-          <code>blob:</code>, <code>data:</code>, or <code>filesystem:</code>)
+          one of <code>blob</code>, <code>data</code>, <code>filesystem</code>,
           then return <em>does match</em>.
         </li>
               
@@ -1714,9 +1713,9 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
                 <ol>
             
                   <li>
-              If <var>url</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a> is a case-insensitive match
-              for the source expression’s <code><a data-link-type="dfn" href="#scheme_part">scheme-part</a></code>,
-              return <em>does match</em>.
+              If <var>url</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a> is an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ascii-case-insensitive" title="ASCII case-insensitive match">ASCII case-insensitive
+              match</a> for the source expression’s
+              <code><a data-link-type="dfn" href="#scheme_part">scheme-part</a></code>, return <em>does match</em>.
             </li>
                   
 
@@ -1760,11 +1759,7 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
                   
             
                   <li>
-              Let <var>url-path</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-path">path</a> of <var>url</var> after
-              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#percent-decode" title="percent decode">decoding percent-encoded characters</a>.
-              If <var>url</var> does not have a path, then let
-              <var>url-path</var> be the U+002F SOLIDUS character
-              (<code>/</code>).
+              Let <var>url-path-list</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-path">path</a> of <var>url</var>.
             </li>
                   
             
@@ -1874,27 +1869,71 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
                     <ol>
                 
                       <li>
-                  Let <var>decoded-path</var> be the result of
-                  <a data-link-type="dfn" href="http://www.w3.org/TR/url/#percent-decode" title="percent decode">decoding <code>path-part</code>’s
-                  percent-encoded characters</a>.
+                  Let <var>exact-match</var> be <code>true</code> if the final
+                  character of <var>path-part</var> is not the U+002F SOLIDUS
+                  character (<code>/</code>), and <code>false</code> otherwise.
                 </li>
                       
 
                 
                       <li>
-                  If the final character of <var>decoded-path</var> is the
-                  U+002F SOLIDUS character (<code>/</code>), and
-                  <var>decoded-path</var> is not a prefix of
-                  <var>url-path</var>, then return <em>does not match</em>.
+                  Let <var>source-expression-path-list</var> be the result of
+                  splitting <var>path-part</var> on the U+002F SOLIDUS character
+                  (<code>/</code>).
                 </li>
                       
 
                 
                       <li>
-                  If the final character of <var>decoded-path</var> is not the
-                  U+002F SOLIDUS character (<code>/</code>), and
-                  <var>decoded-path</var> is not an exact match for
-                  <var>url-path</var> then return <em>does not match</em>.
+                  If <var>source-expression-path-list</var>’s length is greater
+                  than <var>url-path-list</var>’s length, return <em>does not
+                  match</em>.
+                </li>
+                      
+
+                
+                      <li>
+                  For each <var>entry</var> in
+                  <var>source-expression-path-list</var>:
+
+                  
+                        <ol>
+                    
+                          <li>
+                      <a data-link-type="dfn" href="http://www.w3.org/TR/url/#percent-decode">Percent decode</a> <var>entry</var>.
+                    </li>
+                          
+                    
+                          <li>
+                      <a data-link-type="dfn" href="http://www.w3.org/TR/url/#percent-decode">Percent decode</a> the first item in
+                      <var>url-path-list</var>.
+                    </li>
+                          
+                    
+                          <li>
+                      If <var>entry</var> is not an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ascii-case-insensitive" title="ASCII case-insensitive match">ASCII case-insensitive
+                      match</a> for the first item in <var>url-path-list</var>,
+                      return <em>does not match</em>.
+                    </li>
+                          
+                    
+                          <li>
+                      Pop the first item in <var>url-path-list</var> off the
+                      list.
+                    </li>
+                          
+                  
+                        </ol>
+                        
+                
+                      </li>
+                      
+
+                
+                      <li>
+                  If <var>exact-match</var> is <code>true</code>, and
+                  <var>url-path-list</var> is not empty, return <em>does not
+                  match</em>.
                 </li>
                       
               
@@ -2275,20 +2314,20 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
                     <ul>
                 
                       <li><a data-link-type="dfn" href="#sha_256">SHA-256</a> if the <code><a data-link-type="dfn" href="#hash_algo">hash-algo</a></code>
-                component of <var>hash</var> is a case-insensitive match for
-                the string "sha256" or "sha-256"</li>
+                component of <var>hash</var> is an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ascii-case-insensitive" title="ASCII case-insensitive match">ASCII case-insensitive
+                match</a> for the string "sha256" or "sha-256"</li>
                       
 
                 
                       <li><a data-link-type="dfn" href="#sha_384">SHA-384</a> if the <code><a data-link-type="dfn" href="#hash_algo">hash-algo</a></code>
-                component of <var>hash</var> is a case-insensitive match for
-                the string "sha384" or "sha-384"</li>
+                component of <var>hash</var> is an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ascii-case-insensitive" title="ASCII case-insensitive match">ASCII case-insensitive
+                match</a> for the string "sha384" or "sha-384"</li>
                       
 
                 
                       <li><a data-link-type="dfn" href="#sha_512">SHA-512</a> if the <code><a data-link-type="dfn" href="#hash_algo">hash-algo</a></code>
-                component of <var>hash</var> is a case-insensitive match for
-                the string "sha512" or "sha-512"</li>
+                component of <var>hash</var> is an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ascii-case-insensitive" title="ASCII case-insensitive match">ASCII case-insensitive
+                match</a> for the string "sha512" or "sha-512"</li>
                       
               
                     </ul>
@@ -2412,9 +2451,10 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
 
 
             <p>A media type <dfn data-dfn-type="dfn" data-noexport="" id="match-a-media-type-list" title="match a media type list">matches a media type
-      list<a class="self-link" href="#match-a-media-type-list"></a></dfn> if, and only if, the media type is a case-insensitive match for
-      at least one token in the set of media types obtained by
-      <a data-link-type="dfn" href="#parse-a-media-type-list" title="parse a media type list">parsing the media type list</a>.</p>
+      list<a class="self-link" href="#match-a-media-type-list"></a></dfn> if, and only if, the media type is an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ascii-case-insensitive" title="ASCII case-insensitive match">ASCII
+      case-insensitive match</a> for at least one token in the set of media
+      types obtained by <a data-link-type="dfn" href="#parse-a-media-type-list" title="parse a media type list">parsing the media
+      type list</a>.</p>
             
     
           </section>
@@ -4152,14 +4192,14 @@ directive-value   = media-type-list
         <code><a data-link-type="element" href="http://www.w3.org/TR/html5/#the-object-element">object</a></code> or
         <code><a data-link-type="element" href="http://www.w3.org/TR/html5/#the-embed-element">embed</a></code> element, and the media type declared
         in the element’s <code><a data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-object-type">type</a></code> attribute is not
-        a case-insensitive match for the <var>resource</var>’s media
+        an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ascii-case-insensitive">ASCII case-insensitive match</a> for the <var>resource</var>’s media
         type.</li>
             
 
         
             <li>The plugin is embedded into the protected resource via an
         <code><a data-link-type="element" href="http://www.w3.org/TR/html5/#the-applet-element">applet</a></code> element, and <var>resource</var>’s
-        media type is not a case-insensitive match for
+        media type is not an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ascii-case-insensitive">ASCII case-insensitive match</a> for
         <code>application/x-java-applet</code>.</li>
             
     
