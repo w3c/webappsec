@@ -9,6 +9,7 @@ clean:
 CSP3: content-security-policy/index.html
 CSP2: CSP2/index.html
 CREDENTIAL: credentialmanagement/index.html
+MIX: mixedcontent/index.html
 
 CSP2/index.html: CSP2/index.src.html biblio.json
 	bikeshed -f spec ./CSP2/index.src.html
