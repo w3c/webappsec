@@ -230,9 +230,9 @@
             <li><a href="#request-credential"><span class="secno">5.1</span> <span class="content">
     Request a <code>Credential</code> with <var>options</var>
   </span></a></li>
-            <li><a href="#request-zeroclick-credential"><span class="secno">5.2</span> <span class="content">
-    Request the zeroclick <code>Credential</code> for <var>origin</var> with
-    <var>options</var>.
+            <li><a href="#request-credential-without-mediation"><span class="secno">5.2</span> <span class="content">
+    Request a <code>Credential</code> for <var>origin</var> with
+    <var>options</var> <em>without</em> user mediation.
   </span></a></li>
             <li><a href="#save-credential"><span class="secno">5.3</span> <span class="content">
     Save <var>credential</var>
@@ -240,15 +240,15 @@
             <li><a href="#set-isFederation"><span class="secno">5.4</span> <span class="content">
     Set <var>credential</var>’s <code>[[isFederation]]</code> slot
   </span></a></li>
-            <li><a href="#dezeroclickize-origin"><span class="secno">5.5</span> <span class="content">
-    Dezeroclickize credentials for <var>origin</var>
+            <li><a href="#require-user-mediation-for-origin"><span class="secno">5.5</span> <span class="content">
+    Require user mediation for <var>origin</var>
   </span></a></li>
           </ul>
         </li>
         <li><a href="#user-mediation"><span class="secno">6</span> <span class="content">User Mediation</span></a>
           <ul class="toc">
             <li><a href="#user-mediated-storage"><span class="secno">6.1</span> <span class="content">Storing and Updating Credentials</span></a></li>
-            <li><a href="#user-mediated-zeroclickization"><span class="secno">6.2</span> <span class="content">Zeroclickization</span></a></li>
+            <li><a href="#user-mediation-requirements"><span class="secno">6.2</span> <span class="content">Requiring User Mediation</span></a></li>
             <li><a href="#user-mediated-selection"><span class="secno">6.3</span> <span class="content">Credential Selection</span></a></li>
           </ul>
         </li>
@@ -715,20 +715,6 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
 
     
           <dt>
-      <dfn data-dfn-type="dfn" data-export="" data-local-title="zeroclick" id="zeroclick-credential">Zeroclick Credential<a class="self-link" href="#zeroclick-credential"></a></dfn>
-    </dt>
-          
-    
-          <dd>
-      A <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> is said to be <strong>zeroclick</strong> for an origin
-      if a user has chosen to allow it to be provided without further
-      interaction when <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> is called. Further discussion in
-      [[#user-mediated-zeroclickization"]].
-    </dd>
-          
-
-    
-          <dt>
       <dfn data-dfn-type="dfn" data-export="" data-local-title="pending" id="pending-credential">Pending Credential<a class="self-link" href="#pending-credential"></a></dfn>
     </dt>
           
@@ -956,10 +942,11 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
         <p>All <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects have internal slots named
   <code><dfn data-dfn-type="dfn" data-noexport="" id="origin">[[origin]]<a class="self-link" href="#origin"></a></dfn></code>, <code><dfn data-dfn-type="dfn" data-noexport="" id="isfederation">[[isFederation]]<a class="self-link" href="#isfederation"></a></dfn></code>,
-  and <code><dfn data-dfn-type="dfn" data-noexport="" id="iszeroclick">[[isZeroClick]]<a class="self-link" href="#iszeroclick"></a></dfn></code>, which store the
+  and <code><dfn data-dfn-type="dfn" data-noexport="" id="requiresusermediation">[[requiresUserMediation]]<a class="self-link" href="#requiresusermediation"></a></dfn></code>, which store the
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> for which the credential was saved, whether or not that origin
-  is an <a data-link-type="dfn" href="#federated-identity-provider">identity provider</a>, and whether the credential is
-  <a data-link-type="dfn" href="#zeroclick-credential">zeroclick</a>. These properties are not directly exposed to the web.</p>
+  is an <a data-link-type="dfn" href="#federated-identity-provider">identity provider</a>, and whether the credential may be exposed to
+  a website without user mediation. These properties are not directly exposed to
+  the web.</p>
 
   
         <h4 class="heading settled" data-level="3.1.2" id="interfaces-credential-types-localcredential"><span class="secno">3.1.2. </span><span class="content"><code>LocalCredential</code></span><a class="self-link" href="#interfaces-credential-types-localcredential"></a></h4>
@@ -1093,11 +1080,11 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     
           <dd>
       Notify the credential manager that the user is signing out. The user
-      agent MUST execute the algorithm defined in <a data-section="" href="#dezeroclickize-origin">§5.5 
-    Dezeroclickize credentials for origin
-  </a>
-      with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the <a data-link-type="dfn" href="#javascript-global-environment">JavaScript global environment</a> in
-      which this method is called.
+      agent MUST execute the algorithm defined in
+      <a data-section="" href="#require-user-mediation-for-origin">§5.5 
+    Require user mediation for origin
+  </a> with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the
+      <a data-link-type="dfn" href="#javascript-global-environment">JavaScript global environment</a> in which this method is called.
     </dd>
           
     
@@ -1131,14 +1118,14 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
   
         <pre class="idl">dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-global-name="" id="dictdef-credentialrequestoptions">CredentialRequestOptions<a class="self-link" href="#dictdef-credentialrequestoptions"></a></dfn> {
-  boolean <a class="idl-code" data-default="false" data-global-name="CredentialRequestOptions<dictionary>/zeroclickonly<dict-member>" data-link-for="CredentialRequestOptions" data-link-type="dict-member" data-type="boolean " href="#dom-credentialrequestoptions-zeroclickonly">zeroClickOnly</a> = false;
+  boolean <a class="idl-code" data-default="false" data-global-name="CredentialRequestOptions<dictionary>/suppressui<dict-member>" data-link-for="CredentialRequestOptions" data-link-type="dict-member" data-type="boolean " href="#dom-credentialrequestoptions-suppressui">suppressUI</a> = false;
   sequence&lt;DOMString> <a class="idl-code" data-global-name="CredentialRequestOptions<dictionary>/federations<dict-member>" data-link-for="CredentialRequestOptions" data-link-type="dict-member" data-type="sequence<DOMString> " href="#dom-credentialrequestoptions-federations">federations</a>;
 };
 </pre>
   
         <dl data-dfn-for="CredentialRequestOptions">
     
-          <dt><dfn class="idl-code" data-dfn-for="CredentialRequestOptions" data-dfn-type="dict-member" data-export="" id="dom-credentialrequestoptions-zeroclickonly">zeroClickOnly<a class="self-link" href="#dom-credentialrequestoptions-zeroclickonly"></a></dfn>, <span data-dict-member-info="" for="CredentialRequestOptions/zeroClickOnly"> of type <a data-link-type="idl-name" href="https://heycam.github.io/webidl/#idl-boolean">boolean</a>, defaulting to <code>false</code></span></dt>
+          <dt><dfn class="idl-code" data-dfn-for="CredentialRequestOptions" data-dfn-type="dict-member" data-export="" id="dom-credentialrequestoptions-suppressui">suppressUI<a class="self-link" href="#dom-credentialrequestoptions-suppressui"></a></dfn>, <span data-dict-member-info="" for="CredentialRequestOptions/suppressUI"> of type <a data-link-type="idl-name" href="https://heycam.github.io/webidl/#idl-boolean">boolean</a>, defaulting to <code>false</code></span></dt>
           
     
           <dd>
@@ -1407,9 +1394,9 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     
           <li>
       Let <var>credential</var> be the result of executing the algorithm
-      defined in <a data-section="" href="#request-zeroclick-credential">§5.2 
-    Request the zeroclick Credential for origin with
-    options.
+      defined in <a data-section="" href="#request-credential-without-mediation">§5.2 
+    Request a Credential for origin with
+    options without user mediation.
   </a>.
     </li>
           
@@ -1423,7 +1410,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     
           <li>
       If <var>options</var> is <code>undefined</code>, or if <code>options</code>'
-      <code class="idl"><a data-link-type="idl" href="#dom-credentialrequestoptions-zeroclickonly">zeroClickOnly</a></code> property is <code>false</code>, then:
+      <code class="idl"><a data-link-type="idl" href="#dom-credentialrequestoptions-suppressui">suppressUI</a></code> property is <code>false</code>, then:
 
       
             <ol>
@@ -1520,24 +1507,25 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
         </ol>
 
   
-        <h3 class="heading settled" data-level="5.2" id="request-zeroclick-credential"><span class="secno">5.2. </span><span class="content">
-    Request the zeroclick <code>Credential</code> for <var>origin</var> with
-    <var>options</var>.
-  </span><a class="self-link" href="#request-zeroclick-credential"></a></h3>
+        <h3 class="heading settled" data-level="5.2" id="request-credential-without-mediation"><span class="secno">5.2. </span><span class="content">
+    Request a <code>Credential</code> for <var>origin</var> with
+    <var>options</var> <em>without</em> user mediation.
+  </span><a class="self-link" href="#request-credential-without-mediation"></a></h3>
 
 
         <p>This algorithm accepts an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> <var>origin</var> and a
   <code class="idl"><a data-link-type="idl" href="#dictdef-credentialrequestoptions">CredentialRequestOptions</a></code> <var>options</var>, and returns either a single
-  <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> object if one exists, or <code>null</code> if not.</p>
+  <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> object if one can be provided without user mediation, or
+  <code>null</code> if not.</p>
 
   
         <ol>
     
           <li>
-      Let <var>credential</var> be the <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> in the <a data-link-type="dfn" href="#credential-store" title="credential store">credential
-      store</a> whose <code><a data-link-type="dfn" href="#origin">[[origin]]</a></code> slot is <var>origin</var>
-      and whose <code><a data-link-type="dfn" href="#iszeroclick">[[isZeroClick]]</a></code> slot is <code>true</code>,
-      or <code>null</code> if no such object exists.
+      Let <var>credentials</var> be the set of <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects in the
+      <a data-link-type="dfn" href="#credential-store">credential store</a> whose <code><a data-link-type="dfn" href="#origin">[[origin]]</a></code> slot is equal
+      to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-6.2">ASCII serialization</a> of <var>origin</var>, and whose
+      <code><a data-link-type="dfn" href="#requiresusermediation">[[requiresUserMediation]]</a></code> slot is <code>false</code>.
 
 
             <p class="note" role="note">Note: This is an exact match, not a <a data-link-type="dfn" href="#registerable-domain">registerable domain</a> match.
@@ -1545,6 +1533,25 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
             
     
           </li>
+          
+    
+          <li>
+      If <var>credentials</var> is empty, or contains more than one
+      <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> object, return <code>null</code>.
+
+
+            <p class="note" role="note">Note: In the future, we may wish to allow multiple <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects
+      to be returned; for the moment, we’re erring on the cautious side to avoid
+      accidentally revealing explicit relationships between user accounts.</p>
+            
+    
+          </li>
+          
+    
+          <li>
+      Otherwise, let <var>credential</var> be the single <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> object
+      in <var>credentials</var>.
+    </li>
           
     
           <li>
@@ -1642,14 +1649,14 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
           
     
           <li>
-      Set <var>credential</var>’s <code><a data-link-type="dfn" href="#iszeroclick">[[isZeroClick]]</a></code> slot
-      to <code>false</code>.
+      Set <var>credential</var>’s <code><a data-link-type="dfn" href="#requiresusermediation">[[requiresUserMediation]]</a></code> slot
+      to <code>true</code>.
     </li>
           
     
           <li>
       Set <var>credential</var>’s <code><a data-link-type="dfn" href="#origin">[[origin]]</a></code> slot
-      to <var>origin</var>.
+      to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-6.2">ASCII serialization</a> of <var>origin</var>.
     </li>
           
     
@@ -1912,9 +1919,9 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
         </ol>
 
   
-        <h3 class="heading settled" data-level="5.5" id="dezeroclickize-origin"><span class="secno">5.5. </span><span class="content">
-    Dezeroclickize credentials for <var>origin</var>
-  </span><a class="self-link" href="#dezeroclickize-origin"></a></h3>
+        <h3 class="heading settled" data-level="5.5" id="require-user-mediation-for-origin"><span class="secno">5.5. </span><span class="content">
+    Require user mediation for <var>origin</var>
+  </span><a class="self-link" href="#require-user-mediation-for-origin"></a></h3>
 
   
         <ol>
@@ -1932,8 +1939,10 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       
             <ol>
         
-              <li>Set <var>credential</var>’s <code><a data-link-type="dfn" href="#iszeroclick">[[isZeroClick]]</a></code>
-        slot to <code>false</code>.
+              <li>
+          Set <var>credential</var>’s
+          <code><a data-link-type="dfn" href="#requiresusermediation">[[requiresUserMediation]]</a></code> slot to
+          <code>false</code>.
       </li>
             </ol>
             
@@ -2006,23 +2015,20 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
         </ol>
 
   
-        <h3 class="heading settled" data-level="6.2" id="user-mediated-zeroclickization"><span class="secno">6.2. </span><span class="content">Zeroclickization</span><a class="self-link" href="#user-mediated-zeroclickization"></a></h3>
+        <h3 class="heading settled" data-level="6.2" id="user-mediation-requirements"><span class="secno">6.2. </span><span class="content">Requiring User Mediation</span><a class="self-link" href="#user-mediation-requirements"></a></h3>
 
 
-        <p>If a credential is considered <a data-link-type="dfn" href="#zeroclick-credential">zeroclick</a> for an origin, it will be
-  provided to pages on that origin without user interaction in response to
-  a call to <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code>. The user will be signed-in to that origin,
-  persistently, which might surprise her.</p>
+        <p>If a <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code>'s <code><a data-link-type="dfn" href="#requiresusermediation">[[requiresUserMediation]]</a></code> slot it
+  <code>false</code>, it will be provided to pages matching its
+  <code><a data-link-type="dfn" href="#origin">[[origin]]</a></code> without user interaction in response to a call to
+  <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code>. The user will be signed-in to that origin persistently, which,
+  on the one hand, is desirable from the perspective of usability and
+  convinience, but which might nevertheless surprise the user.</p>
 
 
-        <p>If the user agent syncs the zeroclick state of a credential between
-  devices, an origin could explicitly tie the devices together in a way which
-  might surprise their owner.</p>
-
-
-        <p>A user with multiple accounts for an origin might be surprised at which
-  credential is considered zeroclick, leading to confusion when switching
-  between accounts, or when logging out entirely.</p>
+        <p>If the user agent syncs the state of a <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> between devices, an
+  origin could explicitly tie the devices together in a way which might surprise
+  their owner.</p>
 
 
         <p>To mitigate the risk of surprise:</p>
@@ -2031,39 +2037,37 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
         <ol>
     
           <li>
-      By default, <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects MUST NOT be considered <a data-link-type="dfn" href="#zeroclick-credential">zeroclick</a>
-      for the origin on which they’re saved.
+      User agents MUST allow users to require user mediation for <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code>
+      objects. This functionality might be implemented as a global toggle that
+      requires user mediation for all origins, or via more granular settings
+      for specific origins (or specific credentials on specific origins). 
     </li>
           
     
           <li>
-      User agents MUST NOT set the <code><a data-link-type="dfn" href="#iszeroclick">[[isZeroClick]]</a></code> slot
-      value to <code>true</code> without explicit user consent. For example, the
+      User agents MUST NOT set the <code><a data-link-type="dfn" href="#requiresusermediation">[[requiresUserMediation]]</a></code>
+      slot’s value to <code>false</code> without user consent. For example, the
       <a data-link-type="dfn" href="#credential-chooser">credential chooser</a> described in <a data-section="" href="#user-mediated-selection">§6.3 Credential Selection</a> could
       have a checkbox which the user could toggle to mark the selected
-      credential as <a data-link-type="dfn" href="#zeroclick-credential">zeroclick</a> for the origin.
+      credential as available without mediation for the origin, or the user
+      agent could have an onboarding process for its credential manager which
+      asked a user for a default setting.
     </li>
           
     
           <li>
       User agents MUST notify users when credentials are provided to an
-      origin. This might take the form of an icon in the address bar, or some
+      origin. This could take the form of an icon in the address bar, or some
       similar location.
     </li>
           
     
           <li>
-      User agents MUST allow users to manually de-zeroclickize credentials.
-      This functionality might be implemented as a settings page, or via
-      interaction with a notification as described above.
-    </li>
-          
-    
-          <li>
       If a user clears her browsing data for an origin (cookies, localStorage,
-      and so on), the user agent MUST de-zeroclickize credentials for that origin
-      by executing the algorithm defined in <a data-section="" href="#dezeroclickize-origin">§5.5 
-    Dezeroclickize credentials for origin
+      and so on), the user agent MUST require user mediation for that origin
+      by executing the algorithm defined in
+      <a data-section="" href="#require-user-mediation-for-origin">§5.5 
+    Require user mediation for origin
   </a>.
     </li>
           
@@ -2074,9 +2078,9 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
         <h3 class="heading settled" data-level="6.3" id="user-mediated-selection"><span class="secno">6.3. </span><span class="content">Credential Selection</span><a class="self-link" href="#user-mediated-selection"></a></h3>
 
 
-        <p>When responding to a call to <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> on an origin without <a data-link-type="dfn" href="#zeroclick-credential" title="zeroclick credentials">zeroclick
-  credentials</a>, user agents MUST ask the user for permission to share
-  credential information. This SHOULD take the form of a
+        <p>When responding to a call to <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> on an origin without credentials
+  that are available without user mediation, user agents MUST ask the user for
+  permission to share credential information. This SHOULD take the form of a
   <dfn data-dfn-type="dfn" data-local-title="chooser" data-noexport="" id="credential-chooser">credential chooser<a class="self-link" href="#credential-chooser"></a></dfn> which presents the user
   with a list of credentials that are available for use on a site, allowing her
   to select one which should be provided to the website, or to reject the
@@ -2164,11 +2168,11 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
           
     
           <li>
-      MUST NOT offer <a data-link-type="dfn" href="#zeroclick-credential">zeroclick</a> credentials to an origin in response
-      to <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> if the credential’s origin is not an exact match for
-      the calling origin. That is, <a data-link-type="dfn" href="#zeroclick-credential">zeroclick</a> credentials for
+      MUST NOT offer credentials to an origin in response to <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code>
+      without user mediation if the credential’s origin is not an exact match
+      for the calling origin. That is, <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects for
       <code>https://example.com</code> would not be returned directly to
-      <code>https://www.example.com</code>, but would be offered to the user
+      <code>https://www.example.com</code>, but could be offered to the user
       via the chooser.
     </li>
           
@@ -2279,8 +2283,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
         <p><em>This section is non-normative.</em></p>
 
 
-        <p class="issue" id="issue-ec4d9bac"><a class="self-link" href="#issue-ec4d9bac"></a>Add some thoughts here about when and how the API should be used,
-  especially with regard to <code class="idl"><a data-link-type="idl" href="#dom-credentialrequestoptions-zeroclickonly">zeroClickOnly</a></code>.</p>
+        <p class="issue" id="issue-0848699b"><a class="self-link" href="#issue-0848699b"></a>Add some thoughts here about when and how the API should be used,
+  especially with regard to <code class="idl"><a data-link-type="idl" href="#dom-credentialrequestoptions-suppressui">suppressUI</a></code>.</p>
 </section>
 
 
@@ -2464,7 +2468,6 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       <li>identity provider manifest, <a href="#identity-provider-manifest" title="section 4.1">4.1</a></li>
       <li>IDP, <a href="#federated-identity-provider" title="section 2.1">2.1</a></li>
       <li>[[isFederation]], <a href="#isfederation" title="section 3.1.1">3.1.1</a></li>
-      <li>[[isZeroClick]], <a href="#iszeroclick" title="section 3.1.1">3.1.1</a></li>
       <li>JavaScript global environment, <a href="#javascript-global-environment" title="section 2.2">2.2</a></li>
       <li>LocalCredential, <a href="#localcredential" title="section 3.1.2">3.1.2</a></li>
       <li>LocalCredential(id, password, name, avatarURL), <a href="#dom-localcredential-localcredentialid-password-name-avatarurl" title="section 3.1.2">3.1.2</a></li>
@@ -2497,11 +2500,10 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       <li>registerable domain, <a href="#registerable-domain" title="section 2.2">2.2</a></li>
       <li>request(), <a href="#dom-credentialscontainer-request" title="section 3.2">3.2</a></li>
       <li>request, <a href="#request" title="section 2.2">2.2</a></li>
+      <li>[[requiresUserMediation]], <a href="#requiresusermediation" title="section 3.1.1">3.1.1</a></li>
       <li>response, <a href="#response" title="section 2.2">2.2</a></li>
       <li>successfulCredential, <a href="#dom-credentialscontainer-notifysignedin-successfulcredential" title="section 3.2">3.2</a></li>
-      <li>zeroclick, <a href="#zeroclick-credential" title="section 2.1">2.1</a></li>
-      <li>Zeroclick Credential, <a href="#zeroclick-credential" title="section 2.1">2.1</a></li>
-      <li>zeroClickOnly, <a href="#dom-credentialrequestoptions-zeroclickonly" title="section 3.3">3.3</a></li></ul>
+      <li>suppressUI, <a href="#dom-credentialrequestoptions-suppressui" title="section 3.3">3.3</a></li></ul>
     <h2 class="no-num heading settled" id="idl-index"><span class="content">IDL Index</span><a class="self-link" href="#idl-index"></a></h2>
     <pre class="idl">[NoInterfaceObject]
 interface <a data-dfn-type="interface" data-export="" data-global-name="" href="#credential">Credential</a> {
@@ -2538,7 +2540,7 @@ interface <a data-dfn-type="interface" data-export="" data-global-name="" href="
 };
 
 dictionary <a data-dfn-type="dictionary" data-export="" data-global-name="" href="#dictdef-credentialrequestoptions">CredentialRequestOptions</a> {
-  boolean <a class="idl-code" data-default="false" data-global-name="CredentialRequestOptions<dictionary>/zeroclickonly<dict-member>" data-link-for="CredentialRequestOptions" data-link-type="dict-member" data-type="boolean " href="#dom-credentialrequestoptions-zeroclickonly">zeroClickOnly</a> = false;
+  boolean <a class="idl-code" data-default="false" data-global-name="CredentialRequestOptions<dictionary>/suppressui<dict-member>" data-link-for="CredentialRequestOptions" data-link-type="dict-member" data-type="boolean " href="#dom-credentialrequestoptions-suppressui">suppressUI</a> = false;
   sequence&lt;DOMString> <a class="idl-code" data-global-name="CredentialRequestOptions<dictionary>/federations<dict-member>" data-link-for="CredentialRequestOptions" data-link-type="dict-member" data-type="sequence<DOMString> " href="#dom-credentialrequestoptions-federations">federations</a>;
 };
 
@@ -2566,5 +2568,5 @@ dictionary <a data-dfn-type="dictionary" data-export="" data-global-name="" href
       <div class="issue">Perhaps we should tie <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> to a user gesture, or otherwise
   rate-limit calls to further mitigate the risk.<a href="#issue-f05422b3"> ↵ </a></div>
       <div class="issue">Add some thoughts here about when and how the API should be used,
-  especially with regard to <code class="idl"><a data-link-type="idl" href="#dom-credentialrequestoptions-zeroclickonly">zeroClickOnly</a></code>.<a href="#issue-ec4d9bac"> ↵ </a></div></div></body>
+  especially with regard to <code class="idl"><a data-link-type="idl" href="#dom-credentialrequestoptions-suppressui">suppressUI</a></code>.<a href="#issue-0848699b"> ↵ </a></div></div></body>
 </html>

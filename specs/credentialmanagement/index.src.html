@@ -383,16 +383,6 @@ type: constructor
     </dd>
 
     <dt>
-      <dfn export local-title="zeroclick">Zeroclick Credential</dfn>
-    </dt>
-    <dd>
-      A {{Credential}} is said to be <strong>zeroclick</strong> for an origin
-      if a user has chosen to allow it to be provided without further
-      interaction when {{request()}} is called. Further discussion in
-      [[#user-mediated-zeroclickization"]].
-    </dd>
-
-    <dt>
       <dfn export local-title="pending">Pending Credential</dfn>
     </dt>
     <dd>
@@ -547,10 +537,11 @@ type: constructor
 
   All {{Credential}} objects have internal slots named
   <code><dfn>[[origin]]</dfn></code>, <code><dfn>[[isFederation]]</dfn></code>,
-  and <code><dfn>[[isZeroClick]]</dfn></code>, which store the
+  and <code><dfn>[[requiresUserMediation]]</dfn></code>, which store the
   <a>origin</a> for which the credential was saved, whether or not that origin
-  is an <a>identity provider</a>, and whether the credential is
-  <a>zeroclick</a>. These properties are not directly exposed to the web.
+  is an <a>identity provider</a>, and whether the credential may be exposed to
+  a website without user mediation. These properties are not directly exposed to
+  the web.
 
   <h4 id="interfaces-credential-types-localcredential"><code>LocalCredential</code></h4>
   <pre class="idl">
@@ -645,9 +636,9 @@ type: constructor
     <dt><dfn method>notifySignedOut()</dfn></dt>
     <dd>
       Notify the credential manager that the user is signing out. The user
-      agent MUST execute the algorithm defined in [[#dezeroclickize-origin]]
-      with the <a>origin</a> of the <a>JavaScript global environment</a> in
-      which this method is called.
+      agent MUST execute the algorithm defined in
+      [[#require-user-mediation-for-origin]] with the <a>origin</a> of the
+      <a>JavaScript global environment</a> in which this method is called.
     </dd>
     <dt><dfn attribute>pending</dfn></dt>
     <dd>
@@ -670,12 +661,12 @@ type: constructor
 
   <pre class="idl">
     dictionary CredentialRequestOptions {
-      boolean zeroClickOnly = false;
+      boolean suppressUI = false;
       sequence&lt;DOMString&gt; federations;
     };
   </pre>
   <dl dfn-for="CredentialRequestOptions">
-    <dt><dfn dict-member>zeroClickOnly</dfn></dt>
+    <dt><dfn dict-member>suppressUI</dfn></dt>
     <dd>
       If <code>true</code>, the user agent will only attempt to provide a
       {{Credential}} without user interaction: if the user has explicitly
@@ -886,7 +877,7 @@ type: constructor
     </li>
     <li>
       Let <var>credential</var> be the result of executing the algorithm
-      defined in [[#request-zeroclick-credential]].
+      defined in [[#request-credential-without-mediation]].
     </li>
     <li>
       If <var>credential</var> is not <code>null</code>, resolve
@@ -895,7 +886,7 @@ type: constructor
     </li>
     <li>
       If <var>options</var> is <code>undefined</code>, or if <code>options</code>'
-      {{zeroClickOnly}} property is <code>false</code>, then:
+      {{suppressUI}} property is <code>false</code>, then:
 
       <ol>
         <li>
@@ -956,24 +947,37 @@ type: constructor
     </li>
   </ol>
 
-  <h3 id="request-zeroclick-credential">
-    Request the zeroclick <code>Credential</code> for <var>origin</var> with
-    <var>options</var>.
+  <h3 id="request-credential-without-mediation">
+    Request a <code>Credential</code> for <var>origin</var> with
+    <var>options</var> <em>without</em> user mediation.
   </h3>
 
   This algorithm accepts an <a>origin</a> <var>origin</var> and a
   {{CredentialRequestOptions}} <var>options</var>, and returns either a single
-  {{Credential}} object if one exists, or <code>null</code> if not.
+  {{Credential}} object if one can be provided without user mediation, or
+  <code>null</code> if not.
 
   <ol>
     <li>
-      Let <var>credential</var> be the {{Credential}} in the <a>credential
-      store</a> whose <code><a>[[origin]]</a></code> slot is <var>origin</var>
-      and whose <code><a>[[isZeroClick]]</a></code> slot is <code>true</code>,
-      or <code>null</code> if no such object exists.
+      Let <var>credentials</var> be the set of {{Credential}} objects in the
+      <a>credential store</a> whose <code><a>[[origin]]</a></code> slot is equal
+      to the <a>ASCII serialization</a> of <var>origin</var>, and whose
+      <code><a>[[requiresUserMediation]]</a></code> slot is <code>false</code>.
 
       Note: This is an exact match, not a <a>registerable domain</a> match.
       See [[#security-cross-origin-leakage]] for details as to why.
+    </li>
+    <li>
+      If <var>credentials</var> is empty, or contains more than one
+      {{Credential}} object, return <code>null</code>.
+
+      Note: In the future, we may wish to allow multiple {{Credential}} objects
+      to be returned; for the moment, we're erring on the cautious side to avoid
+      accidentally revealing explicit relationships between user accounts.
+    </li>
+    <li>
+      Otherwise, let <var>credential</var> be the single {{Credential}} object
+      in <var>credentials</var>.
     </li>
     <li>
       If <var>credential</var> is a <code>FederatedCredential</code>, and
@@ -1039,12 +1043,12 @@ type: constructor
       to <code>false</code>.
     </li>
     <li>
-      Set <var>credential</var>'s <code><a>[[isZeroClick]]</a></code> slot
-      to <code>false</code>.
+      Set <var>credential</var>'s <code><a>[[requiresUserMediation]]</a></code> slot
+      to <code>true</code>.
     </li>
     <li>
       Set <var>credential</var>'s <code><a>[[origin]]</a></code> slot
-      to <var>origin</var>.
+      to the <a>ASCII serialization</a> of <var>origin</var>.
     </li>
     <li>
       If <var>credential</var>'s {{Credential/avatarURL}} is an
@@ -1208,8 +1212,8 @@ type: constructor
     </li>
   </ol>
 
-  <h3 id="dezeroclickize-origin">
-    Dezeroclickize credentials for <var>origin</var>
+  <h3 id="require-user-mediation-for-origin">
+    Require user mediation for <var>origin</var>
   </h3>
 
   <ol>
@@ -1222,8 +1226,10 @@ type: constructor
       For each <var>credential</var> in <var>credentials</var>:
 
       <ol>
-        <li>Set <var>credential</var>'s <code><a>[[isZeroClick]]</a></code>
-        slot to <code>false</code>.
+        <li>
+          Set <var>credential</var>'s
+          <code><a>[[requiresUserMediation]]</a></code> slot to
+          <code>false</code>.
       </ol>
     </li>
   </ol>
@@ -1280,57 +1286,55 @@ type: constructor
     </li>
   </ol>
 
-  <h3 id="user-mediated-zeroclickization">Zeroclickization</h3>
+  <h3 id="user-mediation-requirements">Requiring User Mediation</h3>
 
-  If a credential is considered <a>zeroclick</a> for an origin, it will be
-  provided to pages on that origin without user interaction in response to
-  a call to {{request()}}. The user will be signed-in to that origin,
-  persistently, which might surprise her.
+  If a {{Credential}}'s <code><a>[[requiresUserMediation]]</a></code> slot it
+  <code>false</code>, it will be provided to pages matching its
+  <code><a>[[origin]]</a></code> without user interaction in response to a call to
+  {{request()}}. The user will be signed-in to that origin persistently, which,
+  on the one hand, is desirable from the perspective of usability and
+  convinience, but which might nevertheless surprise the user.
 
-  If the user agent syncs the zeroclick state of a credential between
-  devices, an origin could explicitly tie the devices together in a way which
-  might surprise their owner.
-
-  A user with multiple accounts for an origin might be surprised at which
-  credential is considered zeroclick, leading to confusion when switching
-  between accounts, or when logging out entirely.
+  If the user agent syncs the state of a {{Credential}} between devices, an
+  origin could explicitly tie the devices together in a way which might surprise
+  their owner.
 
   To mitigate the risk of surprise:
 
   <ol>
     <li>
-      By default, {{Credential}} objects MUST NOT be considered <a>zeroclick</a>
-      for the origin on which they're saved.
+      User agents MUST allow users to require user mediation for {{Credential}}
+      objects. This functionality might be implemented as a global toggle that
+      requires user mediation for all origins, or via more granular settings
+      for specific origins (or specific credentials on specific origins). 
     </li>
     <li>
-      User agents MUST NOT set the <code><a>[[isZeroClick]]</a></code> slot
-      value to <code>true</code> without explicit user consent. For example, the
+      User agents MUST NOT set the <code><a>[[requiresUserMediation]]</a></code>
+      slot's value to <code>false</code> without user consent. For example, the
       <a>credential chooser</a> described in [[#user-mediated-selection]] could
       have a checkbox which the user could toggle to mark the selected
-      credential as <a>zeroclick</a> for the origin.
+      credential as available without mediation for the origin, or the user
+      agent could have an onboarding process for its credential manager which
+      asked a user for a default setting.
     </li>
     <li>
       User agents MUST notify users when credentials are provided to an
-      origin. This might take the form of an icon in the address bar, or some
+      origin. This could take the form of an icon in the address bar, or some
       similar location.
     </li>
     <li>
-      User agents MUST allow users to manually de-zeroclickize credentials.
-      This functionality might be implemented as a settings page, or via
-      interaction with a notification as described above.
-    </li>
-    <li>
       If a user clears her browsing data for an origin (cookies, localStorage,
-      and so on), the user agent MUST de-zeroclickize credentials for that origin
-      by executing the algorithm defined in [[#dezeroclickize-origin]].
+      and so on), the user agent MUST require user mediation for that origin
+      by executing the algorithm defined in
+      [[#require-user-mediation-for-origin]].
     </li>
   </ol>
 
   <h3 id="user-mediated-selection">Credential Selection</h3>
 
-  When responding to a call to {{request()}} on an origin without <a>zeroclick
-  credentials</a>, user agents MUST ask the user for permission to share
-  credential information. This SHOULD take the form of a
+  When responding to a call to {{request()}} on an origin without credentials
+  that are available without user mediation, user agents MUST ask the user for
+  permission to share credential information. This SHOULD take the form of a
   <dfn local-title="chooser">credential chooser</dfn> which presents the user
   with a list of credentials that are available for use on a site, allowing her
   to select one which should be provided to the website, or to reject the
@@ -1408,11 +1412,11 @@ type: constructor
       {{request()}} is called from <code>https://www.example.com/</code>
     </li>
     <li>
-      MUST NOT offer <a>zeroclick</a> credentials to an origin in response
-      to {{request()}} if the credential's origin is not an exact match for
-      the calling origin. That is, <a>zeroclick</a> credentials for
+      MUST NOT offer credentials to an origin in response to {{request()}}
+      without user mediation if the credential's origin is not an exact match
+      for the calling origin. That is, {{Credential}} objects for
       <code>https://example.com</code> would not be returned directly to
-      <code>https://www.example.com</code>, but would be offered to the user
+      <code>https://www.example.com</code>, but could be offered to the user
       via the chooser.
     </li>
   </ol>
@@ -1504,7 +1508,7 @@ type: constructor
   <em>This section is non-normative.</em>
 
   ISSUE: Add some thoughts here about when and how the API should be used,
-  especially with regard to {{zeroClickOnly}}.
+  especially with regard to {{suppressUI}}.
 </section>
 
 <!--
