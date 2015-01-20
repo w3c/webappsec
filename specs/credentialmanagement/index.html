@@ -226,7 +226,7 @@
   </span></a></li>
             <li><a href="#request-credential-without-mediation"><span class="secno">4.2</span> <span class="content">
     Request a <code>Credential</code> for <var>origin</var> with
-    <var>options</var> <em>without</em> user mediation.
+    <var>options</var> <em>without</em> user mediation
   </span></a></li>
             <li><a href="#save-credential"><span class="secno">4.3</span> <span class="content">
     Save <var>credential</var>
@@ -1240,7 +1240,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       Let <var>credential</var> be the result of executing the algorithm
       defined in <a data-section="" href="#request-credential-without-mediation">§4.2 
     Request a Credential for origin with
-    options without user mediation.
+    options without user mediation
   </a>.
     </li>
           
@@ -1258,6 +1258,22 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
       
             <ol>
+        
+              <li>
+          If this algorithm would not be <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#allowed-to-show-a-popup">allowed to show a popup</a>, then
+          resolve <var>promise</var> with a <code>SecurityError</code> and
+          terminate this algorithm.
+
+
+                <p class="note" role="note">Note: This requirement only applies if we would show UI to the user.
+          If she’s elected to allow credentials to be provided without user
+          mediation, and we can do so, then we don’t require a user gesture
+          for <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code>. Otherwise, we do, due to the considerations in
+          <a data-section="" href="#privacy-considerations">§7 Privacy Considerations</a>.</p>
+                
+        
+              </li>
+              
         
               <li>
           Ask the user which <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> to share.
@@ -1353,7 +1369,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
   
         <h3 class="heading settled" data-level="4.2" id="request-credential-without-mediation"><span class="secno">4.2. </span><span class="content">
     Request a <code>Credential</code> for <var>origin</var> with
-    <var>options</var> <em>without</em> user mediation.
+    <var>options</var> <em>without</em> user mediation
   </span><a class="self-link" href="#request-credential-without-mediation"></a></h3>
 
 
@@ -1364,6 +1380,17 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
   
         <ol>
+    
+          <li>
+      If the user agent has disabled sharing credentials without user
+      mediation, return <code>null</code>.
+
+
+            <p class="note" role="note">Note: See <a data-section="" href="#user-mediation-requirements">§5.2 Requiring User Mediation</a> for details.</p>
+            
+    
+          </li>
+          
     
           <li>
       Let <var>credentials</var> be the set of <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects in the
@@ -2006,12 +2033,10 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
   saved for particular federated identity providers by repeatedly calling
   <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> with a single item in the
   <code class="idl"><a data-link-for="CredentialRequestOptions" data-link-type="idl" href="#dom-credentialrequestoptions-federations">federations</a></code> array. The risk is mitigated by the
-  fact that the user would, sooner or later, be prompted to provide credentials
-  to the site, which would certainly raise her suspicions as to its behavior.</p>
+  fact that a user-mediated <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> is tied to a user gesture, and the
+  user would, sooner or later, be prompted to provide credentials to the site,
+  which would certainly raise her suspicions as to its behavior.</p>
 
-
-        <p class="issue" id="issue-f05422b3"><a class="self-link" href="#issue-f05422b3"></a>Perhaps we should tie <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> to a user gesture, or otherwise
-  rate-limit calls to further mitigate the risk.</p>
 
   
         <h3 class="heading settled" data-level="7.2" id="privacy-chooser-leakage"><span class="secno">7.2. </span><span class="content">Chooser Leakage</span><a class="self-link" href="#privacy-chooser-leakage"></a></h3>
@@ -2311,8 +2336,6 @@ dictionary <a data-dfn-type="dictionary" data-export="" data-global-name="" href
   </a>, but could
   be trivially pushed out into a separate API if that makes things more clear.<a href="#issue-6dc34f78"> ↵ </a></div>
       <div class="issue">Is this a meaningful restriction for Service Workers? Probably not.<a href="#issue-bc2c9b42"> ↵ </a></div>
-      <div class="issue">Perhaps we should tie <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> to a user gesture, or otherwise
-  rate-limit calls to further mitigate the risk.<a href="#issue-f05422b3"> ↵ </a></div>
       <div class="issue">Add some thoughts here about when and how the API should be used,
   especially with regard to <code class="idl"><a data-link-type="idl" href="#dom-credentialrequestoptions-suppressui">suppressUI</a></code>.<a href="#issue-0848699b"> ↵ </a></div></div></body>
 </html>

@@ -23,6 +23,7 @@ type: dfn
     urlPrefix: forms.html
       text: autocomplete
     urlPrefix: browsers.html
+      text: allowed to show a popup
       text: browsing context
       text: top-level browsing context
       text: nested browsing context
@@ -782,6 +783,17 @@ type: constructor
 
       <ol>
         <li>
+          If this algorithm would not be <a>allowed to show a popup</a>, then
+          resolve <var>promise</var> with a <code>SecurityError</code> and
+          terminate this algorithm.
+
+          Note: This requirement only applies if we would show UI to the user.
+          If she's elected to allow credentials to be provided without user
+          mediation, and we can do so, then we don't require a user gesture
+          for {{request()}}. Otherwise, we do, due to the considerations in
+          [[#privacy-considerations]].
+        </li>
+        <li>
           Ask the user which {{Credential}} to share.
 
           Note: This behavior is vendor-specific. Guidelines for user agent
@@ -841,7 +853,7 @@ type: constructor
 
   <h3 id="request-credential-without-mediation">
     Request a <code>Credential</code> for <var>origin</var> with
-    <var>options</var> <em>without</em> user mediation.
+    <var>options</var> <em>without</em> user mediation
   </h3>
 
   This algorithm accepts an <a>origin</a> <var>origin</var> and a
@@ -850,6 +862,12 @@ type: constructor
   <code>null</code> if not.
 
   <ol>
+    <li>
+      If the user agent has disabled sharing credentials without user
+      mediation, return <code>null</code>.
+
+      Note: See [[#user-mediation-requirements]] for details.
+    </li>
     <li>
       Let <var>credentials</var> be the set of {{Credential}} objects in the
       <a>credential store</a> whose {{[[origin]]}} slot is equal to the <a>ASCII
@@ -1311,11 +1329,10 @@ type: constructor
   saved for particular federated identity providers by repeatedly calling
   {{request()}} with a single item in the
   {{CredentialRequestOptions/federations}} array. The risk is mitigated by the
-  fact that the user would, sooner or later, be prompted to provide credentials
-  to the site, which would certainly raise her suspicions as to its behavior.
+  fact that a user-mediated {{request()}} is tied to a user gesture, and the
+  user would, sooner or later, be prompted to provide credentials to the site,
+  which would certainly raise her suspicions as to its behavior.
 
-  ISSUE: Perhaps we should tie {{request()}} to a user gesture, or otherwise
-  rate-limit calls to further mitigate the risk.
 
   <h3 id="privacy-chooser-leakage">Chooser Leakage</h3>
 
