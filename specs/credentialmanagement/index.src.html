@@ -543,13 +543,11 @@ type: constructor
   </dl>
 
   All {{Credential}} objects have internal slots named
-  <code><dfn attribute for="credential">[[origin]]</dfn></code>,
-  <code><dfn attribute for="credential">[[isFederation]]</dfn></code>, and
-  <code><dfn attribute for="credential">[[requiresUserMediation]]</dfn></code>,
-  which store the <a>origin</a> for which the credential was saved, whether or
-  not that origin is an <a>identity provider</a>, and whether the credential
-  may be exposed to a website without user mediation. These properties are not
-  directly exposed to the web.
+  <code><dfn attribute for="credential">[[origin]]</dfn></code> and
+  <code><dfn attribute for="credential">[[requiresUserMediation]]</dfn></code>
+  which store the <a>origin</a> for which the credential was saved, and whether
+  the credential may be exposed to a website without user mediation. These
+  properties are not directly exposed to the web.
 
   <h4 id="interfaces-credential-types-localcredential"><code>LocalCredential</code></h4>
   <pre class="idl">
@@ -689,121 +687,8 @@ type: constructor
       see [[#identifying-federations]]
     </dd>
   </dl>
-</section>
 
-<!--
-████████ ████████ ████████  ████████ ████████     ███    ████████ ████  ███████  ██    ██  ██████
-██       ██       ██     ██ ██       ██     ██   ██ ██      ██     ██  ██     ██ ███   ██ ██    ██
-██       ██       ██     ██ ██       ██     ██  ██   ██     ██     ██  ██     ██ ████  ██ ██
-██████   ██████   ██     ██ ██████   ████████  ██     ██    ██     ██  ██     ██ ██ ██ ██  ██████
-██       ██       ██     ██ ██       ██   ██   █████████    ██     ██  ██     ██ ██  ████       ██
-██       ██       ██     ██ ██       ██    ██  ██     ██    ██     ██  ██     ██ ██   ███ ██    ██
-██       ████████ ████████  ████████ ██     ██ ██     ██    ██    ████  ███████  ██    ██  ██████
--->
-<section>
-  <h2 id="federations">Federated Identity Providers</h2>
-
-  It would be useful indeed for a user agent to be able to identify which of the
-  credentials it has stored for a user are tied to an <a>identity provider</a>.
-  If such identification is possible, then a user who has stored credentials
-  for (for example) Facebook might be able to reuse those credentials when
-  attempting to sign into sites that support Facebook Login.
-
-  To this end, <a>federated identity providers</a> SHOULD declare themselves
-  as such by placing a <a>manifest</a> on the <a>origin</a> used to sign into
-  the provider.
-
-  <h3 id="idp-manifests">Identity Provider Manifests</h3>
-
-  An <dfn local-title="manifest">identity provider manifest</dfn> identifies an
-  <a>origin</a> as belonging to a <a>federated identity provider</a>, and
-  provides metadata that may be useful for user agents or other entities that
-  wish to help users authenticate themselves via a third-party.
-
-  <a>Federated identity providers</a> SHOULD declare themselves as such by
-  placing a <a>manifest</a> at the following "well-known" location at the
-  <a>origin</a> used to sign into the provider: [[!RFC5785]]
-
-  <pre>
-    /.well-known/identity-provider.manifest
-  </pre>
-
-  ISSUE: Register this URL as defined in
-  <a href="http://tools.ietf.org/html/rfc5785.html#section-5.1">section 5.1 of
-  the RFC</a>, if we decide that this is a sane route to go down.
-
-  The manifest MUST be served with a content type of
-  <code>application/identity-provider-manifest</code>.
-
-  ISSUE: Register the content type somewhere.
-
-  When the credential manager stores a credential, it MAY asynchronously attempt
-  to fetch this URL from the <a>origin</a> tied to the credential. If the
-  attempt is successful, the credential could be flagged as being an identity
-  provider. For detailed processing instructions, see the algorithm defined in
-  [[#save-credential]].
-
-  <div class="example">
-    Users sign into Facebook at <code>https://www.facebook.com/login/</code>, and
-    into Firefox at <code>https://accounts.firefox.com/signup</code>. To identify
-    themselves as <a>identity providers</a>, Facebook would place a manifest at
-    <code>https://www.facebook.com/.well-known/identity-provider.manifest</code>
-    and Firefox at
-    <code>https://accounts.firefox.com/.well-known/identity-provider.manifest</code>.
-  </div>
-
-  <h4 id="identity-provider-manifest-contents">Manifest Contents</h4>
-
-  The manifest is a JSON document that contains metadata concerning a specific
-  identity provider. It supports the following two member properties as defined
-  in [[!MANIFEST]]:
-
-  <ul>
-    <li><code><a href="http://w3c.github.io/manifest/#name-member">name</a></code></li>
-    <li><code><a href="http://w3c.github.io/manifest/#icons-member">icons</a></code></li>
-  </ul>
-
-  User agents MAY use these properties when rendering the <a>credential
-  chooser</a> described in [[#user-mediated-selection]]. For example, the
-  <a>identity provider</a>'s icon may be used to brand {{FederatedCredential}}
-  items in the list in order to make their affiliations more apparent to users.
-
-  <em>The remainder of this section is non-normative.</em>
-
-  Currently, there's not a lot of value in actually putting any content into the
-  manifest. However, there are a number of things that the user agent could do on
-  the user's behalf in The Future™:
-
-  <ul>
-    <li>
-      Provide some trusted UI for the authentication process; this might include
-      a logo, brand-color, or name provided by the IDP.
-    </li>
-    <li>
-      Hook the IDP up to an authenticator extension in the browser, or an app
-      installed locally on Android. Could be done via a public key in the
-      manifest.
-    </li>
-    <li>
-      Hard-code the authentication dance for some well-known, well-used
-      providers. You could imagine built-in support for basic OAuth2, for
-      instance, and hard-coded support for Facebook's, Firefox's, Google's,
-      etc. variant.
-    </li>
-    <li>
-      Indicate endpoints from which additional data about a user can be
-      retrieved (name, avatar, etc).
-
-      ISSUE: Spec this out in more detail. Perhaps make use of OpenID Connect?
-    </li>
-  </ul>
-
-  ISSUE: What can we do to provide trusted UI for Facebook without at the same
-  time enabling evil.com to present _the same_ UI?
-
-  ISSUE: Other stuff?
-
-  <h3 id="identifying-federations">Identifying Federations</h3>
+  <h4 id="identifying-federations">Identifying Federations</h4>
 
   Every site should use the same identifier when referring to a specific
   <a>federated identity provider</a>. For example,
@@ -826,7 +711,6 @@ type: constructor
   silently: <code>https://accounts.google.com/</code> is clearly intended to
   be the same as <code>https://accounts.google.com</code>.
 </section>
-
 
 <!--
    ███    ██        ██████    ███████  ████████  ████ ████████ ██     ██ ██     ██  ██████
@@ -1047,10 +931,6 @@ type: constructor
       </ol>
     </li>
     <li>
-      Set <var>credential</var>'s {{[[isFederation]]}} slot to
-      <code>false</code>.
-    </li>
-    <li>
       Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
       <code>true</code>.
     </li>
@@ -1113,10 +993,6 @@ type: constructor
               Resolve <var>promise</var> and execute the remaining steps
               asynchronously.
             </li>
-            <li>
-              Execute the algorithm defined in [[#set-isFederation]] on
-              <var>credential</var>.
-            </li>
           </ol>
         </li>
       </ol>
@@ -1146,76 +1022,9 @@ type: constructor
               Resolve <var>promise</var> and execute the remaining steps
               asynchronously.
             </li>
-            <li>
-              Execute the algorithm defined in [[#set-isFederation]] on
-              <var>credential</var>.
-
-              Note: We need to perform this step even though this is a
-              {{FederatedCredential}}, as there's nothing preventing a user from
-              using an <a>identity provider</a> to log into another <a>identity
-              provider</a>.
-            </li>
           </ol>
         </li>
-
       </ol>
-    </li>
-  </ol>
-
-  <h3 id="set-isFederation">
-    Set <var>credential</var>'s <code>[[isFederation]]</code> slot
-  </h3>
-
-  <ol>
-    <li>
-      If the value of <var>credential</var>'s {{[[origin]]}} slot is an
-      <a><i lang="la">a priori</i> insecure origin</a>, set
-      <var>credential</var>'s {{[[isFederation]]}} slot to <code>false</code>
-      and terminate this algorithm.
-    </li>
-    <li>
-      Let <var>url</var> be the result of <a title="resolve a url">resolving</a>
-      <code>/.well-known/identity-provider.manifest</code> against the URL of
-      the <var>credential</var>'s {{[[origin]]}} slot.
-    </li>
-    <li>
-      Let <var>request</var> be a <a>Request</a> with the following properties
-      set:
-
-      <ul>
-        <li>
-          <var>request</var>'s <code>client</code> is the <a>JavaScript
-          global environment</a> in which this algorithm is executing.
-        </li>
-        <li>
-          <var>request</var>'s <code>context</code> is <code>ping</code>.
-        </li>
-        <li>
-          <var>request</var>'s <code>origin</code> is the value of
-          <var>credential</var>'s {{[[origin]]}} slot.
-        </li>
-        <li>
-          <var>request</var>'s <code>referrer</code> is <code>none</code>.
-        </li>
-        <li>
-          <var>request</var>'s <code>credentials mode</code> is
-          <code>omit</code>.
-        </li>
-      </ul>
-    </li>
-    <li>
-      Fetch <var>request</var>, and let <var>response</var> be the
-      <a>Response</a>.
-    </li>
-    <li>
-      If <var>response</var>'s status is <code>200</code> and the result of
-      <a>extracting a MIME type</a> from its <code>header list</code> is
-      <code>application/identity-provider-manifest</code>, set
-      <var>credential</var>'s {{[[isFederation]]}} slot to <code>true</code>.
-    </li>
-    <li>
-      Otherwise, set <var>credential</var>'s {{[[isFederation]]}} slot to
-      <code>false</code>.
     </li>
   </ol>
 
@@ -1566,7 +1375,7 @@ type: constructor
 
   The natural way to expose this information is to extend the
   {{FederatedCredential}} interface with properties like authentication tokens,
-  and the <a>manifest</a> format with properties which declare the
+  and to add some form of manifest format with properties that declare the
   authentication type which the provider supports.
 
   Baby steps.
