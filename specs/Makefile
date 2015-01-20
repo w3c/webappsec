@@ -8,23 +8,24 @@ clean:
 
 CSP3: content-security-policy/index.html
 CSP2: CSP2/index.html
+CREDENTIAL: credentialmanagement/index.html
 
-CSP2/index.html: CSP2/index.src.html
+CSP2/index.html: CSP2/index.src.html biblio.json
 	bikeshed -f spec ./CSP2/index.src.html
 
-content-security-policy/index.html: content-security-policy/index.src.html
+content-security-policy/index.html: content-security-policy/index.src.html biblio.json
 	bikeshed -f spec ./content-security-policy/index.src.html
 
-credentialmanagement/index.html: credentialmanagement/index.src.html
-	bikeshed -q spec ./credentialmanagement/index.src.html index.html
+credentialmanagement/index.html: credentialmanagement/index.src.html biblio.json
+	bikeshed -f spec ./credentialmanagement/index.src.html
 
-mixedcontent/index.html: mixedcontent/index.src.html
+mixedcontent/index.html: mixedcontent/index.src.html biblio.json
 	bikeshed -f spec ./mixedcontent/index.src.html
 
-referrer-policy/index.html: referrer-policy/index.src.html
+referrer-policy/index.html: referrer-policy/index.src.html biblio.json
 	bikeshed -q spec ./referrer-policy/index.src.html index.html
 
-powerfulfeatures/index.html: powerfulfeatures/index.src.html
+powerfulfeatures/index.html: powerfulfeatures/index.src.html biblio.json
 	bikeshed -q spec ./powerfulfeatures/index.src.html index.html
 
 publish: all

@@ -7,26 +7,50 @@ Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
 Abstract: This specification describes an imperative API enabling a website to request a user's credentials in order to sign them in, and to help the user agent correctly store user credentials for future use.
-Link Defaults: HTML5 (dfn) plugin / browsing context / active document / parent browsing context / nested browsing contexts / top-level browsing context / plugin document / frame / sandboxing flag set / ancestor
-Link Defaults: HTML5 (interface) document
-Link Defaults: HTML5 (element) audio / iframe / video / source / track / script
-Link Defaults: HTML5 (attribute) navigator
-Version History: https://github.com/mikewest/credentialmanagement/commits/master/spec/index.src.html
 Version History: https://github.com/w3c/webappsec/commits/master/specs/credentialmanagement/index.src.html
 !Use Cases: <a href="https://w3c.github.io/webappsec/usecases/credentialmanagement/">https://w3c.github.io/webappsec/usecases/credentialmanagement/</a>
+Indent: 2
 </pre>
 
 <pre class="anchors">
-[
-  {
-    "linkingText": "FormData",
-    "type": "interface",
-    "url": "https://xhr.spec.whatwg.org/#interface-formdata",
-    "shortname": "XHR",
-    "level": 2,
-    "status": "current"
-  }
-]
+type: dfn
+  urlPrefix: http://www.w3.org/TR/html5/
+    urlPrefix: webappapis.html
+      text: responsible document
+      text: incumbent settings object
+    urlPrefix: infrastructure.html
+      text: resolve a url
+    urlPrefix: forms.html
+      text: autocomplete
+    urlPrefix: browsers.html
+      text: browsing context
+      text: top-level browsing context
+      text: nested browsing context
+      text: active document
+  urlPrefix: https://tools.ietf.org/html/rfc6454
+    text: origin; url: section-3.2
+    text: ASCII serialization of an origin; url: section-6.2
+    text: ASCII serialization; url: section-6.2
+  urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+    text: a priori insecure origin
+    text: a priori insecure url
+  urlPrefix: https://w3c.github.io/webappsec/specs/powerfulfeatures/
+    text: sufficiently secure context
+    text: is Document a sufficiently secure context?; url: document-sufficiently-secure
+  urlPrefix: https://fetch.spec.whatwg.org/
+    text: extracting a MIME type; url: concept-header-extract-mime-type
+type: element-attr 
+  urlPrefix: http://www.w3.org/TR/html5/
+    urlPrefix: forms.html
+      text: autocomplete; for: form; url: attr-form-autocomplete
+type: interface
+  urlPrefix: https://www.w3.org/TR/html5/webappapis.html
+    text: Navigator
+  urlPrefix: https://xhr.spec.whatwg.org/
+    text: FormData; url: interface-formdata
+  urlPrefix: https://heycam.github.io/webidl/
+    text: DOMString; url: idl-DOMString
+    text: boolean; url: idl-boolean
 </pre>
 
 
@@ -148,12 +172,12 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
 
     <div class="example">
       <pre>
-        if (!navigator.<a idl>credentials</a>) {
+        if (!navigator.<a attribute>credentials</a>) {
           // Sadness! Return early.
           return;
         }
 
-        navigator.<a idl>credentials</a>.<a idl>request()</a>.then(
+        navigator.<a attribute>credentials</a>.<a idl>request()</a>.then(
             function(credential) {
               if (!credential) {
                 // The user either doesn't have credentials for this site, or
@@ -171,7 +195,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
 
                 var loginSucceeded = // Process response: if login succeeded, yay! If not, boo!;
                 if (loginSucceeded) {
-                  navigator.<a idl>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(credential);
+                  navigator.<a attribute>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(credential);
                   // Notify the user that signin succeeded! Do amazing, signed-in things!
                 } else {
                   navigator.credentials.<a idl title="notifyFailedSignIn()">notifyFailedSignIn</a>(credential);
@@ -192,13 +216,13 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
 
     <div class="example">
       <pre>
-        if (!navigator.<a idl>credentials</a>) {
+        if (!navigator.<a attribute>credentials</a>) {
           // Sadness! Return early.
           return;
         }
 
-        navigator.<a idl>credentials</a>.<a idl title="request()">request</a>({
-          "<a idl>federations</a>": [ "https://federation.com" ]
+        navigator.<a attribute>credentials</a>.<a idl title="request()">request</a>({
+          "<a idl for="CredentialRequestOptions">federations</a>": [ "https://federation.com" ]
         }).then(
             function(credential) {
               if (!credential) {
@@ -210,7 +234,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
               }
 
               if (credential instanceof <a idl>FederatedCredential</a>) {
-                switch (credential.<a idl>federation</a>) {
+                switch (credential.<a idl for="FederatedCredential">federation</a>) {
                   // Do something specific for each supported federation.
                 }
               } else {
@@ -237,8 +261,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
       credential:
 
       <pre>
-        if (navigator.<a idl>credentials</a>)
-          navigator.<a idl>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(navigator.<a idl>credentials</a>.<a idl>pending</a>);
+        if (navigator.<a attribute>credentials</a>)
+          navigator.<a attribute>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(navigator.<a attribute>credentials</a>.<a idl>pending</a>);
       </pre>
     </div>
 
@@ -248,8 +272,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
       used:
 
       <pre>
-        if (navigator.<a idl>credentials</a>) {
-          navigator.<a idl>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(
+        if (navigator.<a attribute>credentials</a>) {
+          navigator.<a attribute>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(
             new <a idl>LocalCredential</a>("username", "hunter1")
           );
         }
@@ -260,8 +284,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
       If we're using a <a>federated identity provider</a>:
 
       <pre>
-        if (navigator.<a idl>credentials</a>) {
-          navigator.<a idl>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(
+        if (navigator.<a attribute>credentials</a>) {
+          navigator.<a attribute>credentials</a>.<a idl title="notifySignedIn()">notifySignedIn</a>(
             new <a idl>FederatedCredential</a>("username", "https://federation.com")
           );
         }
@@ -383,7 +407,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
     </dd>
 
     <dt>
-      <dfn export local-title="IDP|identity provider|federation">
+      <dfn export local-title="IDP|identity provider">
         Federated Identity Provider
       </dfn>
     </dt>
@@ -397,28 +421,34 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
 
   <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
   <dl>
-    <dt><dfn>origin</dfn></dt>
+    <dt><a>origin</a></dt>
     <dd>
       An origin defines the scope of authority or privilege under which a
       resource operates. It is defined in detail in the Origin specification.
       [[!RFC6454]]
     </dd>
 
-    <dt><dfn local-title="ASCII serialization">ASCII serialization of an origin</dfn></dt>
+    <dt><a>ASCII serialization of an origin</a></dt>
     <dd>
       This algorithm is defined in
-      <a href="http://tools.ietf.org/html/rfc6454#section-6.2">Section 6.2</a>
+      <a href="https://tools.ietf.org/html/rfc6454#section-6.2">Section 6.2</a>
       of the Origin specification. [[!RFC6454]]
     </dd>
 
-    <dt><dfn>insecure origin</dfn></dt>
-    <dt><dfn>insecure URL</dfn></dt>
-    <dt><dfn>unsecured environment</dfn><dt>
+    <dt><a><i lang="la">a priori</i> insecure origin</a></dt>
+    <dt><a><i lang="la">a priori</i> insecure url</a></dt>
     <dd>
-      The terms <strong>insecure URL</strong>, <strong>insecure origin</strong>,
-      and <strong>unsecured environment</strong> are defined in
-      <a href="https://w3c.github.io/webappsec/specs/mixedcontent/#insecure-url">Section
-      2.2 of the Mixed Content specification</a>. [[!MIX]]
+      These terms are defined in 
+      <a href="https://w3c.github.io/webappsec/specs/mixedcontent/#terms">Section
+      2 of the Mixed Content specification</a>. [[!MIX]]
+    </dd>
+
+    <dt><a>sufficiently secure context</a></dt>
+    <dt><a>Is <code>Document</code> a sufficiently secure context?</a></dt>
+    <dd>
+      These terms are defined in 
+      <a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#terms">Section
+      2 of the Requirements for Powerful Features specification</a>. [[!POWER]]
     </dd>
 
     <dt><dfn title="JavaScript global environment|global environment">JavaScript global environment</dfn></dt>
@@ -505,7 +535,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
     <dt><dfn attribute>avatarURL</dfn></dt>
     <dd>
       A URL pointing to an avatar image for the user. This URL MUST NOT be an
-      <a>insecure URL</a>.
+      <a><i lang="la">a priori</i> insecure URL</a>.
 
       ISSUE: How do we make this responsive? Adopt [[MANIFEST]]'s icon syntax?
     </dd>
@@ -583,8 +613,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
 
     interface CredentialsContainer {
       Promise&lt;Credential?&gt; request(optional CredentialRequestOptions options);
-      Promise&lt;any&gt; notifySignedIn(optional Credential credential);
-      Promise&lt;any&gt; notifyFailedSignIn(optional Credential credential);
+      Promise&lt;any&gt; notifySignedIn(optional Credential successfulCredential);
+      Promise&lt;any&gt; notifyFailedSignIn(optional Credential failedCredential);
       Promise&lt;any&gt; notifySignedOut();
 
       readonly attribute PendingCredential? pending;
@@ -642,7 +672,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
     };
   </pre>
   <dl dfn-for="CredentialRequestOptions">
-    <dt><dfn attribute>zeroClickOnly</dfn></dt>
+    <dt><dfn dict-member>zeroClickOnly</dfn></dt>
     <dd>
       If <code>true</code>, the user agent will only attempt to provide a
       {{Credential}} without user interaction: if the user has explicitly
@@ -651,7 +681,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
       <code>undefined</code>. For processing details, see the algorithm defined
       in [[#request-credential]].
     </dd>
-    <dt><dfn attribute>federations</dfn></dt>
+    <dt><dfn dict-member>federations</dfn></dt>
     <dd>
       An array of federation identifiers. For details regarding valid formats
       see [[#identifying-federations]]
@@ -681,7 +711,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
   as such by placing a <a>manifest</a> on the <a>origin</a> used to sign into
   the provider.
 
-  <h3 id="identity-provider-manifest">Identity Provider Manifests</h3>
+  <h3 id="idp-manifests">Identity Provider Manifests</h3>
 
   An <dfn local-title="manifest">identity provider manifest</dfn> identifies an
   <a>origin</a> as belonging to a <a>federated identity provider</a>, and
@@ -733,8 +763,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
 
   User agents MAY use these properties when rendering the <a>credential
   chooser</a> described in [[#user-mediated-selection]]. For example, the
-  <a>federation</a>'s icon may be used to brand {{FederatedCredential}} items
-  in the list in order to make their affiliations more apparent to users.
+  <a>identity provider</a>'s icon may be used to brand {{FederatedCredential}}
+  items in the list in order to make their affiliations more apparent to users.
 
   <em>The remainder of this section is non-normative.</em>
 
@@ -782,11 +812,12 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
   agents to be helpful.
 
   For consistency, federations passed into the APIs defined in this document
-  (e.g. {{CredentialsContainer}}'s {{federations}} array, or
-  {{FederatedCredential}}'s {{federation}} property) MUST be identified by the
-  <a>ASCII serialization</a> of the origin the provider uses for sign in. That
-  is, Facebook would be represented by <code>https://www.facebook.com</code>
-  and Google by <code>https://accounts.google.com</code>.
+  (e.g. {{CredentialRequestOptions}}'s {{CredentialRequestOptions/federations}}
+  array, or {{FederatedCredential}}'s {{FederatedCredential/federation}} property)
+  MUST be identified by the <a>ASCII serialization</a> of the origin the provider
+  uses for sign in. That is, Facebook would be represented by
+  <code>https://www.facebook.com</code> and Google by
+  <code>https://accounts.google.com</code>.
 
   The ASCII serialization of an origin does <em>not</em> include a trailing
   U+002F SOLIDUS ("<code>/</code>"), but user agents SHOULD accept them
@@ -817,9 +848,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
   if no credential was available (either because the user refused to share a
   credential with this page, or because no credentials were available, period).
 
-  If called from an <a>unsecured environment</a>, or from somewhere other than
-  a <a>top-level browsing context</a>, the <code>Promise</code> will be rejected
-  with a <code>SecurityError</code>.
+  If called from an environment which is not a <a>sufficiently secure
+  context</a>, or from somewhere other than a <a>top-level browsing context</a>,
+  the <code>Promise</code> will be rejected with a <code>SecurityError</code>.
 
   <ol>
     <li>
@@ -829,14 +860,23 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
       Return <var>promise</var>, and execute the remaining steps asynchronously.
     </li>
     <li>
-      Let <var>environment</var> be the <a>JavaScript global environment</a> in
-      which which this algorithm is executing.
+      Let <var>settings</var> be the <a>incumbent settings object</a>.
     </li>
     <li>
-      If <var>environment</var> is not a <a>top-level browsing context</a>,
-      or <var>environment</var> is an <a>unsecured environment</a>, then reject
-      <var>promise</var> with a <code>SecurityError</code>
+      If <var>settings</var> does not have a <a>responsible document</a>, then
+      reject <var>promise</var> with a <code>SecurityError</code>
       <strong>and</strong> terminate this algorithm.
+    </li>
+    <li>
+      If <var>settings</var>' <a>responsible document</a> is not the <a>active
+      document</a> in the <a>top-level browsing context</a>
+      If <var>environment</var> is not a <a>top-level browsing context</a>,
+    <li>
+      If the result of executing the <a>Is Document a sufficiently secure
+      context?</a> algorithm on <var>settings</var>' <a>responsible document</a>
+      is <code>Insecure</code> then reject <var>promise</var> with a
+      <code>SecurityError</code> <strong>and</strong> terminate this algorithm.
+    
     </li>
     <li>
       Let <var>origin</var> be the <a>origin</a> of the <var>environment</var>.
@@ -878,7 +918,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
               Let <var>username entry</var> be the result of
               <a href="https://xhr.spec.whatwg.org/#create-an-entry">creating
               an entry</a> named "username" with a value of
-              <var>credential</var>'s {{id}} attribute.
+              <var>credential</var>'s {{Credential/id}} attribute.
             </li>
             <li>
               Let <var>password entry</var> be the result of
@@ -934,9 +974,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
     </li>
     <li>
       If <var>credential</var> is a <code>FederatedCredential</code>, and
-      the value of <var>credential</var>'s {{federation}} attribute does not
-      appear in <var>options</var>' {{federations}} array, return
-      <code>null</code>.
+      the value of <var>credential</var>'s {{FederatedCredential/federation}}
+      attribute does not appear in <var>options</var>'
+      {{CredentialRequestOptions/federations}} array, return <code>null</code>.
     </li>
     <li>
       Return <var>credential</var>.
@@ -970,8 +1010,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
     </li>
     <li>
       If <var>environment</var> is not a <a>top-level browsing context</a>,
-      or <var>environment</var> is an <a>unsecured environment</a>, then reject
-      <var>promise</var> with a <code>SecurityError</code>
+      or <var>environment</var> is a <a>sufficiently secure context</a>, then
+      reject <var>promise</var> with a <code>SecurityError</code>
       <strong>and</strong> terminate this algorithm.
     </li>
     <li>
@@ -1004,9 +1044,9 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
       to <var>origin</var>.
     </li>
     <li>
-      If <var>credential</var>'s {{avatarURL}} is an <a>insecure URL</a>,
-      reject <var>promise</var> with a <code>SecurityError</code> and terminate
-      this algorithm.
+      If <var>credential</var>'s {{Credential/avatarURL}} is an
+      <a><i lang="la">a priori</i> insecure URL</a>, reject <var>promise</var>
+      with a <code>SecurityError</code> and terminate this algorithm.
     </li>
     <li>
       If <var>credential</var> is a {{LocalCredential}}, then:
@@ -1014,8 +1054,8 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
       <ol>
         <li>
           If the user agent's credential manager contains a {{LocalCredential}}
-          <var>storedCredential</var> whose {{name}} attribute is
-          <var>credential</var>'s {{name}} and whose
+          <var>storedCredential</var> whose {{Credential/name}} attribute is
+          <var>credential</var>'s {{Credential/name}} and whose
           <code><a>[[origin]]</a></code> slot is <var>origin</var>, then:
 
           <ol>
@@ -1031,12 +1071,12 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
                   slot.
                 </li>
                 <li>
-                  Set <var>storedCredential</var>'s {{name}} to the value of
-                  <var>credential</var>'s {{name}}.
+                  Set <var>storedCredential</var>'s {{Credential/name}} to the
+                  value of <var>credential</var>'s {{Credential/name}}.
                 </li>
                 <li>
-                  Set <var>storedCredential</var>'s {{avatarURL}} to the value
-                  of <var>credential</var>'s {{avatarURL}}.
+                  Set <var>storedCredential</var>'s {{Credential/avatarURL}} to
+                  the value of <var>credential</var>'s {{Credential/avatarURL}}.
                 </li>
               </ol>
             </li>
@@ -1072,10 +1112,11 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
       <ol>
         <li>
           If the user agent's credential manager contains a
-          {{FederatedCredential}} <var>storedCredential</var> whose {{name}}
-          attribute is <var>credential</var>'s {{name}} and whose {{federation}}
-          attribute is <var>credential</var>'s {{federation}}, then resolve
-          <var>promise</var>.
+          {{FederatedCredential}} <var>storedCredential</var> whose
+          {{Credential/name}} attribute is <var>credential</var>'s
+          {{Credential/name}} and whose {{FederatedCredential/federation}}
+          attribute is <var>credential</var>'s
+          {{FederatedCredential/federation}}, then resolve <var>promise</var>.
         </li>
         <li>
           Otherwise:
@@ -1113,13 +1154,12 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
   <ol>
     <li>
       If the value of <var>credential</var>'s <code><a>[[origin]]</a></code>
-      slot is an <a>insecure origin</a>, set <var>credential</var>'s
-      <code><a>[[isFederation]]</a></code> slot to <code>false</code>
-      and terminate this algorithm.
+      slot is an <a><i lang="la">a priori</i> insecure origin</a>, set
+      <var>credential</var>'s <code><a>[[isFederation]]</a></code> slot to
+      <code>false</code> and terminate this algorithm.
     </li>
     <li>
-      Let <var>url</var> be the result of
-      <a title="resolve a url" spec="HTML5">resolving</a>
+      Let <var>url</var> be the result of <a title="resolve a url">resolving</a>
       <code>/.well-known/identity-provider.manifest</code> against the URL of
       the <var>credential</var>'s <code><a>[[origin]]</a></code> slot.
     </li>
@@ -1154,8 +1194,7 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
     </li>
     <li>
       If <var>response</var>'s status is <code>200</code> and the result of
-      <a href="http://fetch.spec.whatwg.org/#concept-header-extract-mime-type">extracting
-      a MIME type</a> from its <code>header list</code> is
+      <a>extracting a MIME type</a> from its <code>header list</code> is
       <code>application/identity-provider-manifest</code>, set
       <var>credential</var>'s <code><a>[[isFederation]]</a></code> slot
       to <code>true</code>.
@@ -1397,10 +1436,11 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
   <h3 id="security-insecure-origins">Insecure Sites</h3>
 
   User agents MUST NOT expose credential information via the APIs defined here
-  to <a>unsecured environments</a>. User agents MAY implement autofill
-  mechanisms which store user credentials and fill sign-in forms on <a>insecure
-  origins</a>, but those sites cannot be trusted to interact directly with the
-  credential manager in any meaningful way.
+  to environments which are not <a>sufficiently secure contexts</a>. User agents
+  MAY implement autofill mechanisms which store user credentials and fill
+  sign-in forms on <a><i lang="la">a priori</i> insecure origins</a>, but those
+  sites cannot be trusted to interact directly with the credential manager in
+  any meaningful way.
 
   <h3 id="security-autocomplete-off">
     Reintroducing <code>autocomplete="off"</code>
@@ -1426,10 +1466,10 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
 
   This could allow a malicious website to determine if a user has credentials
   saved for particular federated identity providers by repeatedly calling
-  {{request()}} with a single item in the {{federations}} array. The risk is
-  mitigated by the fact that the user would, sooner or later, be prompted to
-  provide credentials to the site, which would certainly raise her suspicions
-  as to its behavior.
+  {{request()}} with a single item in the
+  {{CredentialRequestOptions/federations}} array. The risk is mitigated by the
+  fact that the user would, sooner or later, be prompted to provide credentials
+  to the site, which would certainly raise her suspicions as to its behavior.
 
   ISSUE: Perhaps we should tie {{request()}} to a user gesture, or otherwise
   rate-limit calls to further mitigate the risk.
@@ -1437,11 +1477,11 @@ Version History: https://github.com/w3c/webappsec/commits/master/specs/credentia
   <h3 id="privacy-chooser-leakage">Chooser Leakage</h3>
 
   If a user agent displayes images supplied by a website or federation (for
-  example, if a {{Credential}}'s {{avatarURL}} is displayed), requests for these
-  images MUST NOT be directly tied to instantiating the chooser in order to
-  avoid leaking chooser usage. One option would be to fetch the images in the
-  background when saving or updating a {{Credential}}, and to cache them for the
-  lifetime of the {{Credential}}.
+  example, if a {{Credential}}'s {{Credential/avatarURL}} is displayed),
+  requests for these images MUST NOT be directly tied to instantiating the
+  chooser in order to avoid leaking chooser usage. One option would be to fetch
+  the images in the background when saving or updating a {{Credential}}, and to
+  cache them for the lifetime of the {{Credential}}.
 </section>
 
 <!--
