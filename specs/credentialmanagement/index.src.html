@@ -39,6 +39,10 @@ type: dfn
     text: is Document a sufficiently secure context?; url: document-sufficiently-secure
   urlPrefix: https://fetch.spec.whatwg.org/
     text: extracting a MIME type; url: concept-header-extract-mime-type
+  urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
+    text: form-action; url: directive-form-action
+    text: connect-src; url: directive-connect-src
+    text: frame-src; url: directive-frame-src
 type: element-attr 
   urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: forms.html
@@ -52,9 +56,12 @@ type: interface
   urlPrefix: https://heycam.github.io/webidl/
     text: DOMString; url: idl-DOMString
     text: boolean; url: idl-boolean
+type: method
+  urlPrefix: http://www.w3.org/TR/webmessaging/
+    text: postMessage(); for: window; url: dom-window-postmessage
 type: constructor
   urlPrefix: https://xhr.spec.whatwg.org/
-    text: XMLHttpRequest(); url: dom-xmlhttprequest
+    text: XMLHttpRequest(); for: XMLHttpRequest; url: dom-xmlhttprequest
 </pre>
 
 
@@ -1415,6 +1422,29 @@ type: constructor
       <code>https://example.com</code> would not be returned directly to
       <code>https://www.example.com</code>, but could be offered to the user
       via the chooser.
+    </li>
+  </ol>
+
+  Additionally, authors SHOULD mitigate the risk of leakage by setting a
+  reasonable Content Security Policy [[!CSP]] which restricts the origins to
+  which {{FormData!!interface}} objects can be sent. In particular, authors should
+  ensure that the following directives are set, explicitly or implicitly, in
+  their pages' policies:
+ 
+  <ol>
+    <li>
+      <code><a>connect-src</a></code> restricts the origins to which
+      {{FormData!!interface}} objects may be sent via {{XMLHttpRequest()}} and
+      {{fetch()}.
+    </li>
+    <li>
+      <code><a>form-action</a></code> restricts the origins to which
+      {{FormData!!interface}} objects may be sent via form submissions.
+    </li>
+    <li>
+      <code><a>frame-src</a></code> restricts the nested browsing
+      contexts which may be embedded in a page, making it more difficult to
+      inject a malicious {{postMessage()}} target. [[WEBMESSAGING]]
     </li>
   </ol>
 
