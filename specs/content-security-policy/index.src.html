@@ -1092,11 +1092,7 @@ type: interface
               <a>scheme</a>.
             </li>
             <li>
-              Let <var>url-path</var> be the <a>path</a> of <var>url</var> after
-              <a title="percent decode">decoding percent-encoded characters</a>.
-              If <var>url</var> does not have a path, then let
-              <var>url-path</var> be the U+002F SOLIDUS character
-              (<code>/</code>).
+              Let <var>url-path-list</var> be the <a>path</a> of <var>url</var>.
             </li>
             <li>
               If the source expression has a <code><a>scheme-part</a></code>
@@ -1174,23 +1170,51 @@ type: interface
 
               <ol>
                 <li>
-                  Let <var>decoded-path</var> be the result of
-                  <a title="percent decode">decoding <code>path-part</code>'s
-                  percent-encoded characters</a>.
+                  Let <var>exact-match</var> be <code>true</code> if the final
+                  character of <var>path-part</var> is not the U+002F SOLIDUS
+                  character (<code>/</code>), and <code>false</code> otherwise.
                 </li>
 
                 <li>
-                  If the final character of <var>decoded-path</var> is the
-                  U+002F SOLIDUS character (<code>/</code>), and
-                  <var>decoded-path</var> is not a prefix of
-                  <var>url-path</var>, then return <em>does not match</em>.
+                  Let <var>source-expression-path-list</var> be the result of
+                  splitting <var>path-part</var> on the U+002F SOLIDUS character
+                  (<code>/</code>).
                 </li>
 
                 <li>
-                  If the final character of <var>decoded-path</var> is not the
-                  U+002F SOLIDUS character (<code>/</code>), and
-                  <var>decoded-path</var> is not an exact match for
-                  <var>url-path</var> then return <em>does not match</em>.
+                  If <var>source-expression-path-list</var>'s length is greater
+                  than <var>url-path-list</var>'s length, return <em>does not
+                  match</em>.
+                </li>
+
+                <li>
+                  For each <var>entry</var> in
+                  <var>source-expression-path-list</var>:
+
+                  <ol>
+                    <li>
+                      <a>Percent decode</a> <var>entry</var>.
+                    </li>
+                    <li>
+                      <a>Percent decode</a> the first item in
+                      <var>url-path-list</var>.
+                    </li>
+                    <li>
+                      If <var>entry</var> is not an <a>ASCII case-insensitive
+                      match</a> for the first item in <var>url-path-list</var>,
+                      return <em>does not match</em>.
+                    </li>
+                    <li>
+                      Pop the first item in <var>url-path-list</var> off the
+                      list.
+                    </li>
+                  </ol>
+                </li>
+
+                <li>
+                  If <var>exact-match</var> is <code>true</code>, and
+                  <var>url-path-list</var> is not empty, return <em>does not
+                  match</em>.
                 </li>
               </ol>
             </li>
