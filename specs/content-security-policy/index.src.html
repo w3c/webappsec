@@ -1016,7 +1016,7 @@ type: interface
         <li><a spec="HTML5">Strip leading and trailing whitespace</a> from
         <var>source list</var>.</li>
 
-        <li>If <var>source list</var> is a case insensitive match
+        <li>If <var>source list</var> is an <a>ASCII case-insensitive match</a>
         for the string <code>'none'</code> (including the quotation
         marks), return the empty set.</li>
 
@@ -1042,8 +1042,9 @@ type: interface
     <section>
       <h4 id="match-source-expression">Matching Source Expressions</h4>
 
-      A URL <var>url</var> is said to <dfn>match a source expression</dfn> if the
-      following algorithm returns <em>does match</em>:
+      A URL <var>url</var> is said to <dfn>match a source expression</dfn> for
+      a <var>protected resource</var> if the following algorithm returns
+      <em>does match</em>:
 
       <ol>
         <li>
@@ -1234,8 +1235,8 @@ type: interface
             <li>
               Return <em>does match</em> if <a title="origin of a url">the
               origin of <var>url</var></a> matches
-              <a title="origin of a url">the origin of the protected resource's
-              URL</a>.
+              <a title="origin of a url">the origin of <var>protected
+              resource</var>'s URL</a>.
             </li>
           </ol>
         </li>
@@ -1250,14 +1251,15 @@ type: interface
       is consistent with browser behavior which treats documents served from
       these URLs as existing in distinct origins.
 
-      A URL <var>url</var> is said to <dfn>match a source list</dfn> if the
-      following conditions are met:
+      A URL <var>url</var> is said to <dfn>match a source list</dfn> for
+      <var>protected resource</var> if the following conditions are met:
 
       <ol>
         <li>
-          <var>url</var> <a title="match a source expression">matches at least one
-          source expression</a> in the set of source expressions obtained by
-          <a title="parse a source list">parsing the source list</a>.
+          At least one source expression in the set of source expressions
+          obtained by <a title="parse a source list">parsing the source
+          list</a> <a title="match a source expression">matches <var>url</var>
+          for <var>protected resource</var></a>.
         </li>
         <li>
           At least one of the following is true:
@@ -1265,6 +1267,10 @@ type: interface
           <ol>
             <li>
               <var>url</var> is <strong>not</strong> the result of a redirect.
+
+              Note: This is a bit hand-wavey; in the future, CSP will cleanly
+              integrate with [[FETCH]], which will allow us to clarify the
+              details.
             </li>
             <li>
               The set of source expressions obtained by
@@ -2118,9 +2124,9 @@ type: interface
     <ol start="4">
       <li>If the previous step was not successful, or the result of the
       previous step does not <a title="match a source list">match</a>
-      the <a>allowed base URLs</a>, then the <a spec="HTML5">document base URL</a>
-      is <var>fallback base URL</var>. Otherwise, it is the result of the
-      previous step.</li>
+      the <a>allowed base URLs</a> for the <a>protected resource</a>, then the
+      <a spec="HTML5">document base URL</a> is <var>fallback base URL</var>.
+      Otherwise, it is the result of the previous step.</li>
     </ol>
   </section>
 
@@ -2167,7 +2173,7 @@ type: interface
       [[!WORKERS]], the user agent MUST act as if there was a fatal network
       error and no resource was obtained, <em>and</em> <a>report a violation</a>
       if the URL does not <a title="match a source list">match</a> the
-      <a>allowed child sources</a>.
+      <a>allowed child sources</a> for the <a>protected resource</a>.
     </section>
   </section>
 
@@ -2201,8 +2207,9 @@ type: interface
     Whenever the user agent <a>fetches</a> a URL in the course of one of the
     following activities, if the URL does not
     <a title="match a source list">match</a> the <a>allowed connection
-    targets</a>, the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    targets</a> for the <a>protected resource</a>, the user agent MUST act as
+    if there was a fatal network error and no resource was obtained,
+    <em>and</em> <a>report a violation</a>:
 
     <ul>
       <!-- TODO: Figure out how to autolink here. -->
@@ -2364,9 +2371,10 @@ type: interface
 
     Whenever the user agent <a>fetches</a> a URL in the course of one of the
     following activities, if the URL does not
-    <a title="match a source list">match</a> the <a>allowed font sources</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    <a title="match a source list">match</a> the <a>allowed font sources</a>
+    for the <a>protected resource</a>, the user agent MUST act as if there was
+    a fatal network error and no resource was obtained, <em>and</em> <a>report
+    a violation</a>:
 
     <ul>
       <li>Requesting data for display in a font, such as when processing
@@ -2401,9 +2409,10 @@ type: interface
 
     Whenever the user agent <a>fetches</a> a URL in the course of one of the
     following activities, if the URL does not
-    <a title="match a source list">match</a> the <a>allowed form actions</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    <a title="match a source list">match</a> the <a>allowed form actions</a> for
+    the <a>protected resource</a>, the user agent MUST act as if there was a
+    fatal network error and no resource was obtained, <em>and</em> <a>report a
+    violation</a>:
 
     <ul>
       <li>Processing an HTML <code><a element>form</a></code> element.</li>
@@ -2473,7 +2482,7 @@ type: interface
 
           <li>If <var>document</var>'s URL does not
           <a title="match a source list">match</a> the <a>allowed frame
-          ancestors</a>, the user agent MUST:
+          ancestors</a> for the <a>protected resource</a>, the user agent MUST:
             <ol>
               <li>Abort loading the protected resource.</li>
 
@@ -2618,9 +2627,10 @@ type: interface
 
     Whenever the user agent <a>fetches</a> a URL in the course of one of the
     following activities, if the URL does not
-    <a title="match a source list">match</a> the <a>allowed frame sources</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    <a title="match a source list">match</a> the <a>allowed frame sources</a>
+    for the <a>protected resource</a>, the user agent MUST act as if there was a
+    fatal network error and no resource was obtained, <em>and</em> <a>report a
+    violation</a>:
 
     <ul>
       <li>Requesting data for display in a <a>nested browsing context</a> in the
@@ -2660,9 +2670,10 @@ type: interface
 
     Whenever the user agent <a>fetches</a> a URL in the course of one of the
     following activities, if the URL does not
-    <a title="match a source list">match</a> the <a>allowed image sources</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    <a title="match a source list">match</a> the <a>allowed image sources</a>
+    for the <a>protected resource</a>, the user agent MUST act as if there was a
+    fatal network error and no resource was obtained, <em>and</em> <a>report a
+    violation</a>:
 
     <ul>
       <!-- TODO: autolink srcset -->
@@ -2749,9 +2760,10 @@ type: interface
 
     Whenever the user agent <a>fetches</a> a URL in the course of one of the
     following activities, if the URL does not
-    <a title="match a source list">match</a> the <a>allowed media sources</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    <a title="match a source list">match</a> the <a>allowed media sources</a>
+    for the <a>protected resource</a>, the user agent MUST act as if there was
+    a fatal network error and no resource was obtained, <em>and</em> <a>report
+    a violation</a>:
 
     <ul>
       <li>Requesting data for a video or audio clip, such as when
@@ -2791,9 +2803,10 @@ type: interface
 
     Whenever the user agent <a>fetches</a> a URL in the course of one of the
     following activities, if the URL does not
-    <a title="match a source list">match</a> the <a>allowed object sources</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    <a title="match a source list">match</a> the <a>allowed object sources</a>
+    for the <a>protected resource</a>, the user agent MUST act as if there was a
+    fatal network error and no resource was obtained, <em>and</em> <a>report a
+    violation</a>:
 
     <ul>
       <li>Requesting data for a plugin, such as when processing the
@@ -2826,8 +2839,8 @@ type: interface
     Whenever the user agent would load a <a>plugin</a> without an associated
     URL (e.g., because the <code><a element>object</a></code> element lacked a
     <code>data</code> attribute), if the protected resource's URL does not
-    <a title="match a source list">match</a> the <a>allowed object sources</a>,
-    the user agent MUST NOT load the plugin.
+    <a title="match a source list">match</a> the <a>allowed object sources</a>
+    for the <a>protected resource</a>, the user agent MUST NOT load the plugin.
   </section>
 
 <!--
@@ -3270,11 +3283,12 @@ type: interface
       return zero without creating a timer.</li>
     </ul>
 
-    Whenever the user agent <a>fetches</a> a URL (including when following redirects)
-    in the course of one of the following activities, if the URL does not
-    <a title="match a source list">match</a> the <a>allowed script sources</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    Whenever the user agent <a>fetches</a> a URL (including when following
+    redirects) in the course of one of the following activities, if the URL does
+    not <a title="match a source list">match</a> the <a>allowed script
+    sources</a> for the <a>protected resource</a>, the user agent MUST act as if
+    there was a fatal network error and no resource was obtained, <em>and</em>
+    <a>report a violation</a>:
 
     <ul>
       <li>Requesting a script while processing the
@@ -3500,9 +3514,10 @@ type: interface
 
     Whenever the user agent <a>fetches</a> a URL in the course of one of the
     following activities, if the URL does not
-    <a title="match a source list">match</a> the <a>allowed style sources</a>,
-    the user agent MUST act as if there was a fatal network error
-    and no resource was obtained, <em>and</em> <a>report a violation</a>:
+    <a title="match a source list">match</a> the <a>allowed style sources</a>
+    for the <a>protected resource</a>, the user agent MUST act as if there was
+    a fatal network error and no resource was obtained, <em>and</em> <a>report
+    a violation</a>:
 
     <ul>
       <li>
