@@ -6,10 +6,14 @@ clean:
 	rm -rf ./mixedcontent/index.html
 	rm -rf ./referrer-policy/index.html
 
+CSP-PINNING: csp-pinning/index.html
 CSP3: content-security-policy/index.html
 CSP2: CSP2/index.html
 CREDENTIAL: credentialmanagement/index.html
 MIX: mixedcontent/index.html
+
+csp-pinning/index.html: csp-pinning/index.src.html biblio.json
+	bikeshed -f spec ./csp-pinning/index.src.html
 
 CSP2/index.html: CSP2/index.src.html biblio.json
 	bikeshed -f spec ./CSP2/index.src.html

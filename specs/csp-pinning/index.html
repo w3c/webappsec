@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    
+  
+    <title>Content Security Policy Pinning</title>
+    
+  
+    <style>
+@media print {
+  html { margin: 0 !important; }
+  body { font-family: serif; }
+  th, td { font-family: inherit; }
+  a { color: inherit !important; }
+  .example:before { font-family: serif !important; }
+  a:link, a:visited { text-decoration: none !important; }
+  a:link:after, a:visited:after { /* create a cross-ref "see..." */; }
+}
+@page {
+  margin: 1.5cm 1.1cm;
+}
+h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
+figure, div.figure, div.sidefigure, pre, table.propdef, table.propdef-extra,
+.example { page-break-inside: avoid; }
+dt { page-break-after: avoid; }
+
+body {
+  background: white;
+  /* background-image: floating-margin-image-goes-here; */
+  background-position: top left;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: black;
+  counter-reset: exampleno figure issue;
+  font-family: sans-serif;
+  line-height: 1.5;
+  margin: 0 auto;
+  max-width: 50em;
+  padding: 2em 1em 2em 70px;
+}
+
+/* General structural markup */
+
+h1, h2, h3, h4, h5, h6 { text-align: left; }
+h1, h2, h3 { color: #005A9C; }
+h1 { font: 170% sans-serif; }
+h2 { font: 140% sans-serif; }
+h3 { font: 120% sans-serif; }
+h4 { font: bold 100% sans-serif; }
+h5 { font: italic 100% sans-serif; }
+h6 { font: small-caps 100% sans-serif; }
+h2, h3, h4, h5, h6 { margin-top: 3em; }
+h1 + h2 { margin-top: 0em; }
+h2 + h3, h3 + h4, h4 + h5, h5 + h6 { margin-top: 1.2em; }
+
+.head { margin-bottom: 1em; }
+.head h1 { margin-top: 2em; clear: both; }
+.head table { margin-left: 2em; margin-top: 2em; }
+.head dd { margin-bottom: 0; }
+
+p.copyright { font-size: small; }
+p.copyright small { font-size: small; }
+
+pre { margin: 1em 0 1em 2em; overflow: auto; }
+pre, code, .idl-code {
+  font-size: .9em;
+  font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+dt dfn code { font-size: inherit; }
+
+dfn { font-weight: bolder; }
+dfn var { font-style: normal; }
+
+s, del {text-decoration: line-through; color: red; }
+u, ins {text-decoration: underline; background: #bfa; }
+
+sup {
+  vertical-align: super;
+  font-size: 80%
+}
+
+details { display: block; }
+
+dt { font-weight: bold; }
+dd { margin: 0 0 1em 2em; }
+ul, ol { margin-left: 0; padding-left: 2em; }
+li { margin: 0.25em 2em 0.5em 0; padding-left: 0; }
+[data-md] > :first-child { margin-top: 0; }
+[data-md] > :last-child { margin-bottom: 0; }
+
+td.pre {
+  white-space: pre-wrap;
+}
+
+.css, .property { color: #005a9c; }
+.property { white-space: nowrap; }
+
+
+/* Boilerplate sections */
+
+ul.indexlist { margin-left: 0; columns: 13em; }
+ul.indexlist li { margin-left: 0; list-style: none }
+ul.indexlist li li { margin-left: 1em; }
+ul.indexlist a { font-weight: bold; }
+ul.indexlist ul, ul.indexlist dl { font-size: smaller; }
+ul.indexlist dl { margin-top: 0; }
+ul.indexlist dt { margin: .2em 0 .2em 20px; }
+ul.indexlist dd { margin: .2em 0 .2em 40px; }
+
+.toc {
+  font-weight: bold;
+  line-height: 1.3;
+  list-style: none;
+  margin: 1em 0 0 5em;
+  padding: 0;
+}
+.toc ul { margin: 0; padding: 0; font-weight: normal; }
+.toc ul ul { margin: 0 0 0 2em; font-style: italic; }
+.toc ul ul ul { margin: 0}
+.toc > li { margin: 1.5em 0; padding: 0; }
+.toc li { clear: both; }
+.toc ul.toc li { margin: 0.3em 0 0 0; }
+.toc a { border-bottom-style: none; }
+.toc a:hover, ul.toc a:focus { border-bottom-style: solid; }
+/* Section numbers in a column of their own */
+.toc span.secno {float: left; width: 4em; margin-left: -5em}
+.toc ul ul span.secno { margin-left: -7em; }
+
+table.proptable {
+  font-size: small;
+  border-collapse: collapse;
+  border-spacing: 0;
+  text-align: left;
+  margin: 1em 0;
+}
+table.proptable td, table.proptable th {
+  padding: 0.4em;
+  text-align: center;
+}
+table.proptable tr:hover td { background: #DEF; }
+
+
+/* Links */
+
+a[href] { color: inherit; border-bottom: 1px solid silver; text-decoration: none; }
+a[href]:hover { background: #ffa; }
+a[href]:active { color: #C00; background: transparent; }
+img, a.logo { border-style: none; }
+.heading, .issue, .note, .example, li, dt { position: relative; }
+/* CSS-ish link types */
+[data-link-type="property"]::before,
+[data-link-type="propdesc"]::before,
+[data-link-type="descriptor"]::before,
+[data-link-type="value"]::before,
+[data-link-type="function"]::before,
+[data-link-type="at-rule"]::before,
+[data-link-type="selector"]::before,
+[data-link-type="maybe"]::before {content: "“";}
+[data-link-type="property"]::after,
+[data-link-type="propdesc"]::after,
+[data-link-type="descriptor"]::after,
+[data-link-type="value"]::after,
+[data-link-type="function"]::after,
+[data-link-type="at-rule"]::after,
+[data-link-type="selector"]::after,
+[data-link-type="maybe"]::after {content: "”";}
+[data-link-type].production::before,
+[data-link-type].production::after,
+.prod [data-link-type]::before,
+.prod [data-link-type]::after { content: ""; }
+/* Element-type link styling */
+[data-link-type=element] { font-family: monospace; }
+[data-link-type=element]::before { content: "<" }
+[data-link-type=element]::after { content: ">" }
+/* Self-links */
+a.self-link {
+  position: absolute;
+  top: 0;
+  left: -2.5em;
+  width: 2em;
+  height: 2em;
+  text-align: center;
+  border: none;
+  transition: opacity .2s;
+  opacity: .5;
+}
+a.self-link:hover {
+  opacity: 1;
+}
+.heading > a.self-link {
+  font-size: 83%;
+}
+li > a.self-link {
+  left: -3.5em;
+}
+dfn > a.self-link {
+  top: auto;
+  left: auto;
+  opacity: 0;
+  width: 1.5em;
+  height: 1.5em;
+  background: gray;
+  color: white;
+  font-style: normal;
+  transition: opacity .2s, background-color .2s, color .2s;
+}
+dfn:hover > a.self-link {
+  opacity: 1;
+}
+dfn > a.self-link:hover {
+  color: black;
+}
+a.self-link::before { content: "¶"; }
+.heading > a.self-link::before { content: "§"; }
+dfn > a.self-link::before { content: "#"; }
+
+
+/* Figures */
+
+figure {
+  display: block;
+  text-align: center;
+  margin: 2.5em 0;
+}
+figure.sidefigure {
+  float: right;
+  width: 50%;
+  margin: 0 0 0.5em 0.5em
+}
+figure pre {
+  text-align: left;
+  display: table;
+  margin: 1em auto;
+}
+figure table {
+  margin: auto;
+}
+figure img, figure object {
+  display: block;
+  margin: auto;
+  max-width: 100%
+}
+figcaption {
+  counter-increment: figure;
+  font-size: 90%;
+  font-style: italic;
+  text-align: center;
+}
+figcaption::before {
+  content: "Figure " counter(figure) ". ";
+  font-weight: bold;
+}
+dd figure { margin-left: -2em; }
+
+
+/* Definition tables */
+
+table.definition {
+  border-spacing: 0;
+  padding: 0 1em 0.5em;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1.2em 0;
+}
+table.definition td, table.definition th {
+  padding: 0.5em;
+  vertical-align: baseline;
+  border-bottom: 1px solid #bbd7e9;
+}
+table.definition th:first-child {
+  font-style: italic;
+  font-weight: normal;
+  text-align: left;
+  width: 8.3em;
+  padding-left: 1em;
+}
+table.definition > tbody > tr:last-child > th,
+table.definition > tbody > tr:last-child > td {
+  border-bottom: none;
+}
+table.definition tr:first-child > th,
+table.definition tr:first-child > td {
+  padding-top: 1em;
+}
+/* Footnotes at the bottom of a definition table */
+table.definition td.footnote {
+  font-style: normal;
+  padding-top: .6em;
+  width: auto;
+}
+table.definition td.footnote::before {
+  content: " ";
+  display: block;
+  height: 0.6em;
+  width: 4em;
+  border-top: thin solid;
+}
+
+
+/* IDL fragments */
+
+pre.idl {
+  padding: .5em 1em;
+  margin: 1.2em 0;
+}
+pre.idl :link, pre.idl :visited {
+  color:inherit;
+  background:transparent;
+}
+
+
+/* Data tables */
+/* Comes in plain, long, complex, or define varieties */
+
+.data {
+  margin: 1em auto;
+  border-collapse: collapse;
+  width: 100%;
+  border: hidden;
+}
+.data {
+  text-align: center;
+  width: auto;
+}
+.data caption {
+  width: 100%;
+}
+.data td, .data th {
+  padding: 0.5em;
+  border-width: 1px;
+  border-color: silver;
+  border-top-style: solid;
+}
+.data thead td:empty {
+  padding: 0;
+  border: 0;
+}
+.data thead th[scope="row"] {
+  text-align: right;
+  color: inherit;
+}
+.data thead,
+.data tbody {
+  color: inherit;
+  border-bottom: 2px solid;
+}
+.data colgroup {
+  border-left: 2px solid;
+}
+.data tbody th:first-child,
+.data tbody td[scope="row"]:first-child {
+  text-align: right;
+  color: inherit;
+  border-right: 2px solid;
+  border-top: 1px solid silver;
+  padding-right: 1em;
+}
+.data.define td:last-child {
+  text-align: left;
+}
+.data tbody th[rowspan],
+.data tbody td[rowspan] {
+  border-left: 1px solid silver;
+}
+.data tbody th[rowspan]:first-child,
+.data tbody td[rowspan]:first-child {
+  border-left: 0;
+  border-right: 1px solid silver;
+}
+.data.complex th,
+.data.complex td {
+  border: 1px solid silver;
+}
+.data td.long {
+ vertical-align: baseline;
+ text-align: left;
+}
+.data img {
+  vertical-align: middle;
+}
+
+
+/* Switch/case <dl>s */
+
+dl.switch {
+ padding-left: 2em;
+}
+dl.switch > dt {
+ text-indent: -1.5em;
+}
+dl.switch > dt:before {
+ content: '↪';
+ padding: 0 0.5em 0 0;
+ display: inline-block;
+ width: 1em;
+ text-align: right;
+ line-height: 0.5em;
+}
+
+
+/* Style for At Risk features (intended as editorial aid, not intended for publishing) */
+.atrisk::before {
+ position: absolute;
+ margin-left: -5em;
+ margin-top: -2px;
+ padding: 4px;
+ border: 1px solid;
+ content: 'At risk';
+ font-size: small;
+ background-color: white;
+ color: gray;
+ border-radius: 1em;
+ text-align: center;
+}
+
+
+/* Obsoletion notice */
+details.annoying-warning[open] {
+  background: #fdd;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: .5em;
+  border: thick solid red;
+  border-radius: 1em;
+  position: fixed;
+  left: 1em;
+  right: 1em;
+  bottom: 1em;
+  z-index: 1000;
+}
+details.annoying-warning:not([open]) > summary {
+  background: #fdd;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: .5em;
+}
+
+
+/* Examples */
+
+.example {
+  counter-increment: exampleno;
+}
+.example::before {
+  content: "Example";
+  content: "Example " counter(exampleno);
+  min-width: 7.5em;
+  text-transform: uppercase;
+  display: block;
+}
+.illegal-example::before {
+  content: "Invalid Example";
+  content: "Invalid Example" counter(exampleno);
+}
+.example, .illegal-example, .html, .illegal-html, .xml, .illegal-xml {
+  padding: 0.5em;
+  margin: 1em 0;
+  position: relative;
+  clear: both;
+}
+pre.example, pre.illegal-example, pre.html,
+pre.illegal-html, pre.xml, pre.illegal-xml {
+  padding-top: 1.5em;
+}
+.illegal-example { color: red; }
+.illegal-example p { color: black; }
+.html { color: #600; }
+.illegal-html { color: red; }
+.illegal-html p { color: black; }
+.xml { color: #600; }
+.illegal-xml { color: red; }
+.illegal-xml p { color: black; }
+code.css { font-family: inherit; font-size: 100% }
+code.html { color: #600 } /* inline HTML */
+code.xml { color: #600 }  /* inline XML */
+
+
+/* Issues */
+
+.issue {
+  border-color: #E05252;
+  background: #FBE9E9;
+  counter-increment: issue;
+}
+.issue:before {
+  content: "Issue " counter(issue);
+  padding-right: 1em;
+  text-transform: uppercase;
+  color: #E05252;
+}
+
+
+/* Whys */
+
+details.why > summary {
+  font-style: italic;
+}
+details.why[open] > summary {
+  border-bottom: 1px silver solid;
+}
+
+
+/* All the blocks get similarly styled */
+
+table.definition, pre.idl, .example, .note, details.why, .issue {
+  border: none;
+  border-left: .5em solid black;
+  border-left: .5rem solid black;
+}
+.issue, .note, .example, .why {
+  padding: .5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+table.definition, pre.idl {
+  background: hsl(210, 70%, 95%);
+  border-color: hsl(210, 80%, 75%);
+}
+.example {
+  background: hsl(50, 70%, 95%);
+  border-color: hsl(50, 70%, 60%);
+}
+.example::before {
+  color: hsl(50, 70%, 60%);
+}
+.note, details.why {
+  background: hsl(120, 70%, 95%);
+  border-color: hsl(120, 70%, 60%);
+}
+.note::before {
+  color: hsl(120, 70%, 60%);
+}
+.issue {
+  background: hsl(0, 70%, 95%);
+  border-color: hsl(0, 70%, 60%);
+}
+.issue::before {
+  color: hsl(0, 70%, 60%);
+}
+span.issue, span.note {
+  padding: .1em .5em .15em;
+  border-right-width: .5em;
+  border-right-style: solid;
+}
+  </style>
+    
+
+  </head>
+  
+
+  <body class="h-entry">
+
+    <div class="head">
+  
+      <p data-fill-with="logo"></p>
+  
+      <h1 class="p-name no-ref" id="title">Content Security Policy Pinning</h1>
+  
+      <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">A Collection of Interesting Ideas,
+    <time class="dt-updated" datetime="2015-01-23">23 January 2015</time></span></h2>
+  
+      <div data-fill-with="spec-metadata">
+        <dl>
+          <dt>This version:</dt>
+          <dd><a class="u-url" href="https://w3c.github.io/webappsec/specs/csp-pinning/">https://w3c.github.io/webappsec/specs/csp-pinning/</a></dd>
+          <dt>Issue Tracking:</dt>
+          <dd><a href="#issues-index">Inline In Spec</a></dd>
+          <dt class="editor">Editor:</dt>
+          <dd class="editor">
+            <div class="p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:mkwst@google.com">Mike West</a> (<span class="p-org org">Google Inc.</span>)</div>
+          </dd>
+        </dl>
+      </div>
+  
+      <div data-fill-with="warning"></div>
+  
+      <p class="copyright" data-fill-with="copyright">©2015 Google</p>
+  
+      <hr title="Separator for header">
+</div>
+
+
+    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
+
+    <div class="p-summary" data-fill-with="abstract">
+      <p>This document defines a new HTTP header that allows authors to instruct user
+
+agents to remember ("pin") and enforce a Content Security Policy for an set
+of hosts for a period of time.</p>
+
+</div>
+
+    <div data-fill-with="at-risk"></div>
+
+
+    <h2 class="no-num no-toc no-ref heading settled" id="contents"><span class="content">Table of Contents</span></h2>
+
+    <div data-fill-with="table-of-contents" role="navigation">
+      <ul class="toc" role="directory">
+        <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a></li>
+        <li><a href="#key-concepts"><span class="secno">2</span> <span class="content">Key Concepts and Terminology</span></a>
+          <ul class="toc">
+            <li><a href="#terms-defined-here"><span class="secno">2.1</span> <span class="content">Terms defined by this specification</span></a></li>
+            <li><a href="#terms-defined-by-reference"><span class="secno">2.2</span> <span class="content">Terms defined by reference</span></a></li>
+          </ul>
+        </li>
+        <li><a href="#policy-delivery"><span class="secno">3</span> <span class="content">Pinned Policy Delivery</span></a>
+          <ul class="toc">
+            <li><a href="#content-security-policy-header-field"><span class="secno">3.1</span> <span class="content">
+      <code>Content-Security-Policy-Pin</code> Header Field
+    </span></a></li>
+            <li><a href="#csp-pins-syntax"><span class="secno">3.2</span> <span class="content">Pinned Policy Syntax</span></a>
+              <ul class="toc">
+                <li><a href="#max-age-directive"><span class="secno">3.2.1</span> <span class="content">The <code>max-age</code> directive</span></a></li>
+                <li><a href="#includesubdomains-directive"><span class="secno">3.2.2</span> <span class="content">
+        The <code>includeSubDomains</code> directive
+      </span></a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#policy-processing"><span class="secno">4</span> <span class="content">Pinned Policy Processing</span></a>
+          <ul class="toc">
+            <li><a href="#discover-a-pinned-policy"><span class="secno">4.1</span> <span class="content">
+     Discover a pinned policy for <var>response</var>.
+  </span></a></li>
+            <li><a href="#pin-a-policy"><span class="secno">4.2</span> <span class="content">Pin <var>policy</var> for <var>origin</var>.</span></a></li>
+            <li><a href="#enforce-a-pinned-policy"><span class="secno">4.3</span> <span class="content">
+    Enforce a pinned policy for <var>document</var>
+  </span></a></li>
+          </ul>
+        </li>
+        <li><a href="#security-considerations"><span class="secno">5</span> <span class="content">Security Considerations</span></a>
+          <ul class="toc">
+            <li><a href="#hostile-pinning"><span class="secno">5.1</span> <span class="content">Hostile Pinning</span></a></li>
+          </ul>
+        </li>
+        <li><a href="#privacy-considerations"><span class="secno">6</span> <span class="content">Privacy Considerations</span></a>
+          <ul class="toc">
+            <li><a href="#fingerprinting"><span class="secno">6.1</span> <span class="content">Fingerprinting</span></a></li>
+          </ul>
+        </li>
+        <li><a href="#iana-considerations"><span class="secno">7</span> <span class="content">IANA Considerations</span></a>
+          <ul class="toc">
+            <li><a href="#iana-content-security-policy"><span class="secno">7.1</span> <span class="content">Content-Security-Policy-Pin</span></a></li>
+          </ul>
+        </li>
+        <li><a href="#acknowledgements"><span class="secno">8</span> <span class="content">Acknowledgements</span></a></li>
+        <li><a href="#conformance"><span class="secno"></span> <span class="content">
+Conformance</span></a></li>
+        <li><a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+          <ul class="toc">
+            <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a></li>
+            <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a></li>
+          </ul>
+        </li>
+        <li><a href="#index"><span class="secno"></span> <span class="content">Index</span></a></li>
+        <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a></li>
+      </ul></div>
+
+    <main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <section>
+  
+        <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+
+
+        <p><em>This section is not normative.</em></p>
+
+
+        <p>Content Security Policy <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a> defines a mechanism through which authors
+  can manipulate the security properties of a given resource, providing the
+  ability to mitigate the risk of a broad class of content-injection attacks.
+  CSP, however, can only protect pages for which it is explicitly defined,
+  which means that authors need to ensure that they’re delivering a reasonable
+  policy for <em>every</em> page on their origin in order to have confidence
+  that a particular set of restrictions will be consistently applied.</p>
+
+
+        <p>For example, it’s often the case that generic error-handling pages are
+  constructed differently than "real" application pages. They’re easy to forget,
+  and can offer attackers a foot in the door if they contain injection vectors.</p>
+
+
+        <p>CSP Pinning attempts to address this concern by allowing authors to "pin" a
+  baseline policy to an application’s host. Conceptually, this is quite similar
+  to the approach taken by Strict Transport Security <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-rfc6797" title="RFC6797">[RFC6797]</a> and Public Key
+  Pinning <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-pkp" title="PKP">[PKP]</a>: we define a new header,
+  <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> which instructs a user agent
+  to remember a baseline policy which will be enforced for every document and
+  worker delivered by an application, regardless of whether those resources
+  themselves were delivered with a <code>Content-Security-Policy</code> header.</p>
+</section>
+
+
+
+      <section>
+  
+        <h2 class="heading settled" data-level="2" id="key-concepts"><span class="secno">2. </span><span class="content">Key Concepts and Terminology</span><a class="self-link" href="#key-concepts"></a></h2>
+
+  
+        <h3 class="heading settled" data-level="2.1" id="terms-defined-here"><span class="secno">2.1. </span><span class="content">Terms defined by this specification</span><a class="self-link" href="#terms-defined-here"></a></h3>
+
+  
+        <dl>
+    
+          <dt>
+      <dfn data-dfn-type="dfn" data-export="" data-local-title="pinned policy" id="pinned-content-security-policy">
+        pinned Content Security Policy
+      <a class="self-link" href="#pinned-content-security-policy"></a></dfn>
+    </dt>
+          
+    
+          <dd>
+      A <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> which is enforced upon each resource delivered
+      from an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>. The pinned policy’s properties are defined in
+      <a data-section="" href="#policy-delivery">§3 Pinned Policy Delivery</a>.
+    </dd>
+          
+
+    
+          <dt><dfn data-dfn-type="dfn" data-noexport="" id="pinned-policy-cache">pinned policy cache<a class="self-link" href="#pinned-policy-cache"></a></dfn></dt>
+          
+    
+          <dd>
+      In order to persistently <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> policy for an origin, the user
+      agent caches the following details about each <a data-link-type="dfn" href="#pinned-content-security-policy">pinned policy</a>:
+
+      
+            <ol>
+        
+              <li>
+          The <dfn data-dfn-type="dfn" data-noexport="" id="protected-host">protected host<a class="self-link" href="#protected-host"></a></dfn>: a hostname to which the policy applies
+          (e.g. <code>example.com</code>)
+        </li>
+              
+        
+              <li>
+          <dfn data-dfn-type="dfn" data-noexport="" id="subdomains-included">subdomains included<a class="self-link" href="#subdomains-included"></a></dfn>: <code>true</code> if
+          <code><a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a></code> is asserted, <code>false</code>
+          otherwise.
+        </li>
+              
+        
+              <li>
+          The <dfn data-dfn-type="dfn" data-noexport="" id="policy-expiration-date">policy expiration date<a class="self-link" href="#policy-expiration-date"></a></dfn>: the moment at which a pinned
+          policy is no longer applicable
+        </li>
+              
+        
+              <li>
+          The <dfn data-dfn-type="dfn" data-noexport="" id="policy-directive-set">policy directive set<a class="self-link" href="#policy-directive-set"></a></dfn>: a set of Content Security Policy
+          directives <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a> which the user agent MUST <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> for each
+          <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> and <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/#worker">Worker</a></code> served from <a data-link-type="dfn" href="#protected-host">protected host</a> (and,
+          potentially, its subdomains).
+        </li>
+              
+      
+            </ol>
+            
+    
+          </dd>
+          
+  
+        </dl>
+
+  
+        <h3 class="heading settled" data-level="2.2" id="terms-defined-by-reference"><span class="secno">2.2. </span><span class="content">Terms defined by reference</span><a class="self-link" href="#terms-defined-by-reference"></a></h3>
+
+
+        <dl>
+          <dt data-md="">
+            <p><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a></p>
+            
+
+          </dt>
+          <dd data-md="">
+            <p>Defined in <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-rfc6454" title="RFC6454">[RFC6454]</a></p>
+            
+
+          </dd>
+          <htmlblock data-md=""></htmlblock></dl></section>
+
+
+
+
+      <section>
+  
+        <h2 class="heading settled" data-level="3" id="policy-delivery"><span class="secno">3. </span><span class="content">Pinned Policy Delivery</span><a class="self-link" href="#policy-delivery"></a></h2>
+
+
+        <p>A server MAY instruct a user agent to pin a single <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> by
+  sending a <code>Content-Security-Policy-Pin</code> HTTP response header field
+  along with a resource. <a data-section="" href="#policy-processing">§4 Pinned Policy Processing</a> defines the user agent’s
+  behavior when it receives such a response.</p>
+
+  
+        <section>
+    
+          <h3 class="heading settled" data-level="3.1" id="content-security-policy-header-field"><span class="secno">3.1. </span><span class="content">
+      <code>Content-Security-Policy-Pin</code> Header Field
+    </span><a class="self-link" href="#content-security-policy-header-field"></a></h3>
+          
+
+
+          <p>The <code><dfn data-dfn-type="dfn" data-export="" id="content_security_policy_pin">Content-Security-Policy-Pin<a class="self-link" href="#content_security_policy_pin"></a></dfn></code> header field
+    is the mechanism for delivering a pinned policy. The grammar is as follows:</p>
+          
+
+    
+          <pre>"Content-Security-Policy-Pin:" 1#&lt;<a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#policy-token" title="policy-token">policy-token production from CSP, Section 4.1</a>>
+</pre>
+          
+
+
+          <p>Pinning a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> is a somewhat dangerous operation, and
+    requires some reasonable expectation that the pinning is in fact desired by
+    a particular <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>’s owner. To that end, a server MUST NOT send a
+    <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> header with a
+    <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-2">resource</a> delivered from an <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url" title="a priori insecure URL"><i lang="la">a priori</i> insecure
+    URL</a>. The threat is discussed in more detail in <a data-section="" href="#hostile-pinning">§5.1 Hostile Pinning</a>.</p>
+          
+
+
+          <p>A server MUST NOT send more than one HTTP header field named
+    <code>Content-Security-Policy-Pin</code> with a given <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3" title="resource representation">resource
+    representation</a>.</p>
+          
+
+
+          <p>A server SHOULD send a <code>Content-Security-Policy-Pin</code> with every
+    <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a> in order to ensure that pinning takes place
+    for a given user agent no matter how they access a site. The value of the
+    header SHOULD be the same for every <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a>, as the
+    goal is to enforce a consistent baseline policy for an entire origin.</p>
+          
+  
+        </section>
+
+  
+        <section>
+    
+          <h3 class="heading settled" data-level="3.2" id="csp-pins-syntax"><span class="secno">3.2. </span><span class="content">Pinned Policy Syntax</span><a class="self-link" href="#csp-pins-syntax"></a></h3>
+          
+
+
+          <p>The grammar for a pinned policy is the same as the grammar for the
+    <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#content-security-policy">Content-Security-Policy</a></code> header, defined in 
+    <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#policy-syntax" title="policy syntax">Section 4.1 of the Content Security Policy
+    specification</a>.</p>
+          
+
+
+          <p>The Augmented Backus-Naur Form (ABNF) notation used below is specified in
+    RFC5234. [ABNF]</p>
+          
+
+
+          <p>A pinned policy’s value MUST contain a <code><a data-link-type="dfn" href="#max_age">max-age</a></code>
+    directive, and MAY contain a <code><a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a></code>
+    directive.</p>
+          
+
+    
+          <section>
+      
+            <h4 class="heading settled" data-level="3.2.1" id="max-age-directive"><span class="secno">3.2.1. </span><span class="content">The <code>max-age</code> directive</span><a class="self-link" href="#max-age-directive"></a></h4>
+            
+
+
+            <p>The <code><dfn data-dfn-type="dfn" data-noexport="" id="max_age">max-age<a class="self-link" href="#max_age"></a></dfn></code> directive specifies the number of
+      seconds after the reception of the
+      <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> HTTP response header
+      field during which the UA SHOULD <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> the <a data-link-type="dfn" href="#pinned-content-security-policy">pinned policy</a>.</p>
+            
+
+
+            <p>The directive is defined via the following ABNF grammar:</p>
+            
+
+      
+            <pre>directive-name  = "max-age"
+directive-value = 1*DIGIT
+</pre>
+            
+
+
+            <p>The <code>max-age</code> directive MUST be present within the
+      <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> header field. If it is not
+      present, the header field will be ignored (see <a data-section="" href="#policy-processing">§4 Pinned Policy Processing</a> for
+      user agent requirements).</p>
+            
+    
+          </section>
+          
+
+    
+          <section>
+      
+            <h4 class="heading settled" data-level="3.2.2" id="includesubdomains-directive"><span class="secno">3.2.2. </span><span class="content">
+        The <code>includeSubDomains</code> directive
+      </span><a class="self-link" href="#includesubdomains-directive"></a></h4>
+            
+
+
+            <p>The <code><dfn data-dfn-type="dfn" data-noexport="" id="includesubdomains">includeSubDomains<a class="self-link" href="#includesubdomains"></a></dfn></code> directive which signals to
+      the user agent that the <a data-link-type="dfn" href="#pinned-content-security-policy">pinned policy</a> defined in the
+      <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> header field applies not
+      only to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> which served the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a>,
+      but also to any <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> whose <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-host">host</a> component is a subdomain
+      of the <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-host">host</a> component of the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a>’s
+      <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> (see <a data-section="" href="#policy-processing">§4 Pinned Policy Processing</a> for user agent requirements).</p>
+            
+    
+          </section>
+          
+  
+        </section>
+
+</section>
+
+
+
+      <section>
+  
+        <h2 class="heading settled" data-level="4" id="policy-processing"><span class="secno">4. </span><span class="content">Pinned Policy Processing</span><a class="self-link" href="#policy-processing"></a></h2>
+
+  
+        <h3 class="heading settled" data-level="4.1" id="discover-a-pinned-policy"><span class="secno">4.1. </span><span class="content">
+     Discover a pinned policy for <var>response</var>.
+  </span><a class="self-link" href="#discover-a-pinned-policy"></a></h3>
+
+
+        <p>Upon receiving a Response <var>response</var> containing at least one
+  <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> header field, the user agent
+  MUST peform the following steps:</p>
+
+
+        <p class="issue" id="issue-5552adf7"><a class="self-link" href="#issue-5552adf7"></a>This should probably be hooked from Fetch, probably after step #4 of
+  the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#fetch">fetching</a> algorithm. Hi, Anne!</p>
+
+  
+        <ol>
+    
+          <li>
+      Let <var>origin</var> be the <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-origin" title="origin of a url">origin</a> of
+      <var>response</var>’s URL.
+    </li>
+          
+
+    
+          <li>
+      Let <var>value</var> be the result of <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse" title="parse header">parsing</a>
+      <code>Content-Security-Policy-Pin</code> in <var>response</var>’s
+      <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a>.
+    </li>
+          
+
+    
+          <li>
+      If <var>value</var> is <code>null</code>, abort these steps.
+    </li>
+          
+
+    
+          <li>
+      If <var>origin</var>’s <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-host">host</a> is an IPv4 or IPv6 address, output a
+      developer-friendly warning, and abort these steps.
+    </li>
+          
+
+    
+          <li>
+      Let <var>directives</var> be the result of executing the <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#parse-the-policy" title="parse the policy">parse the
+      policy</a> algorithm on <var>value</var>.
+    </li>
+          
+
+    
+          <li>
+      If <var>directives</var> does <strong>not</strong> contain a
+      <code><a data-link-type="dfn" href="#max_age">max-age</a></code> directive, then output a developer-friendly
+      warning, and abort these steps.
+    </li>
+          
+
+    
+          <li>
+      Execute <a data-section="" href="#pin-a-policy">§4.2 Pin policy for origin.</a>, passing in <var>directives</var> and the
+    </li>
+          
+  
+        </ol>
+
+  
+        <h3 class="heading settled" data-level="4.2" id="pin-a-policy"><span class="secno">4.2. </span><span class="content">Pin <var>policy</var> for <var>origin</var>.</span><a class="self-link" href="#pin-a-policy"></a></h3>
+
+
+        <p>Given an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">Origin</a> <var>origin</var>, and a parsed set of directives
+  <var>policy</var>, this algorithm defines the user agent behavior which
+  results in a <a data-link-type="dfn" href="#pinned-content-security-policy">pinned policy</a> for <var>origin</var>.</p>
+
+  
+        <ol>
+    
+          <li>
+      Let <var>host</var> be the host component of <var>origin</var>.
+    </li>
+          
+    
+          <li>
+      Let <var>subdomains</var> be <code>true</code> if an
+      <code><a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a></code> is present in <var>policy</var>,
+      and <code>false</code> otherwise.
+    </li>
+          
+    
+          <li>
+      Let <var>expiration</var> be the current time, plus the number of seconds
+      specified in <var>policy</var>’s <code><a data-link-type="dfn" href="#max_age">max-age</a></code> directive.
+    </li>
+          
+    
+          <li>
+      Remove any <code><a data-link-type="dfn" href="#max_age">max-age</a></code> and
+      <code><a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a></code> directives from <var>policy</var>.
+    </li>
+          
+    
+          <li>
+      If <var>host</var> matches any <a data-link-type="dfn" href="#protected-host">protected host</a> in the user agent’s
+      <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a> according to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-8.2" title="Known HSTS Host domain name matching">Known HSTS Host domain name
+      matching</a> algorithm specified in <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-rfc6797" title="RFC6797">[RFC6797]</a>, then abort these steps.
+    </li>
+          
+    
+          <li>
+      Insert a new <a data-link-type="dfn" href="#pinned-content-security-policy">pinned policy</a> into the user agent’s <a data-link-type="dfn" href="#pinned-policy-cache" title="pinned policy cache">pinned policy
+      cache</a> with <a data-link-type="dfn" href="#protected-host">protected host</a> set to <var>host</var>, <a data-link-type="dfn" href="#subdomains-included" title="subdomains included">subdomains
+      included</a> set to <var>subdomains</var>, <a data-link-type="dfn" href="#policy-expiration-date">policy expiration date</a>
+      set to <var>expiration</var>, and <a data-link-type="dfn" href="#policy-directive-set">policy directive set</a> set to
+      <var>policy</var>.
+    </li>
+          
+  
+        </ol>
+
+  
+        <h3 class="heading settled" data-level="4.3" id="enforce-a-pinned-policy"><span class="secno">4.3. </span><span class="content">
+    Enforce a pinned policy for <var>document</var>
+  </span><a class="self-link" href="#enforce-a-pinned-policy"></a></h3>
+
+
+        <p>TBD.</p>
+
+
+        <p class="issue" id="issue-c8c60f68"><a class="self-link" href="#issue-c8c60f68"></a>This isn’t at all clear in <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a>, to be honest. We’re applying it to
+  an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings object</a> here, which seems like a resonable
+  approach, but misses <code>frame-ancestors</code> and <code>referrer</code>.
+  We probably need another algorithm applying to a Response and a corresponding
+  hook in Fetch. Hi, Anne!</p>
+</section>
+
+
+      <section>
+  
+        <h2 class="heading settled" data-level="5" id="security-considerations"><span class="secno">5. </span><span class="content">Security Considerations</span><a class="self-link" href="#security-considerations"></a></h2>
+
+  
+        <h3 class="heading settled" data-level="5.1" id="hostile-pinning"><span class="secno">5.1. </span><span class="content">Hostile Pinning</span><a class="self-link" href="#hostile-pinning"></a></h3>
+
+
+        <p>TBD; copy/paste from PKP and HSTS.</p>
+
+</section>
+
+      <section>
+  
+        <h2 class="heading settled" data-level="6" id="privacy-considerations"><span class="secno">6. </span><span class="content">Privacy Considerations</span><a class="self-link" href="#privacy-considerations"></a></h2>
+
+  
+        <h3 class="heading settled" data-level="6.1" id="fingerprinting"><span class="secno">6.1. </span><span class="content">Fingerprinting</span><a class="self-link" href="#fingerprinting"></a></h3>
+
+
+        <p>Same as HSTS, PKP.</p>
+
+</section>
+
+
+      <section>
+  
+        <h2 class="heading settled" data-level="7" id="iana-considerations"><span class="secno">7. </span><span class="content">IANA Considerations</span><a class="self-link" href="#iana-considerations"></a></h2>
+
+
+        <p>The permanent message header field registry should be updated
+  with the following registrations: <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-rfc3864" title="RFC3864">[RFC3864]</a></p>
+
+  
+        <section>
+    
+          <h3 class="heading settled" data-level="7.1" id="iana-content-security-policy"><span class="secno">7.1. </span><span class="content">Content-Security-Policy-Pin</span><a class="self-link" href="#iana-content-security-policy"></a></h3>
+          
+
+    
+          <dl>
+      
+            <dt>Header field name</dt>
+            
+      
+            <dd>Content-Security-Policy-Pin</dd>
+            
+
+      
+            <dt>Applicable protocol</dt>
+            
+      
+            <dd>http</dd>
+            
+
+      
+            <dt>Status</dt>
+            
+      
+            <dd>standard</dd>
+            
+
+      
+            <dt>Author/Change controller</dt>
+            
+      
+            <dd>W3C</dd>
+            
+
+      
+            <dt>Specification document</dt>
+            
+      
+            <dd>This specification (See <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code>
+      Header Field)</dd>
+            
+    
+          </dl>
+          
+  
+        </section>
+</section>
+
+
+      <section>
+  
+        <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+
+
+        <p>Yan Zhu kicked my butt to get this document out the door. I stole concepts
+  wholesale from both HSTS and PKP.</p>
+</section>
+
+</main>
+
+    <h2 class="no-ref no-num heading settled" id="conformance"><span class="content">
+Conformance</span><a class="self-link" href="#conformance"></a></h2>
+
+    
+    <p>
+        Conformance requirements are expressed with a combination of descriptive assertions and RFC 2119 terminology.
+        The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL”
+        in the normative parts of this document
+        are to be interpreted as described in RFC 2119.
+        However, for readability,
+        these words do not appear in all uppercase letters in this specification.
+
+    </p>
+    <p>
+        All of the text of this specification is normative
+        except sections explicitly marked as non-normative, examples, and notes. <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-rfc2119" title="RFC2119">[RFC2119]</a>
+
+    </p>
+    <p>
+        Examples in this specification are introduced with the words “for example”
+        or are set apart from the normative text with <code>class="example"</code>, like this:
+
+    </p>
+    <div class="example">
+        This is an example of an informative example.
+    </div>
+
+    
+    <p>
+        Informative notes begin with the word “Note”
+        and are set apart from the normative text with <code>class="note"</code>, like this:
+
+    </p>
+    <p class="note" role="note">
+        Note, this is an informative note.
+
+
+
+</p>
+    <h2 class="no-num heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+    <h3 class="no-num heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
+    <dl>
+      <dt id="biblio-csp" title="CSP"><a class="self-link" href="#biblio-csp"></a>[CSP]</dt>
+      <dd>Mike West; Dan Veditz. <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">Content Security Policy</a>. WD. URL: <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">https://w3c.github.io/webappsec/specs/content-security-policy/</a></dd>
+      <dt id="biblio-rfc3864" title="RFC3864"><a class="self-link" href="#biblio-rfc3864"></a>[RFC3864]</dt>
+      <dd>Graham Klyne; Mark Nottingham; Jeffrey C. Mogul. <a href="http://www.ietf.org/rfc/rfc3864.txt">Registration Procedures for Message Header Fields</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc3864.txt">http://www.ietf.org/rfc/rfc3864.txt</a></dd>
+      <dt id="biblio-rfc6454" title="RFC6454"><a class="self-link" href="#biblio-rfc6454"></a>[RFC6454]</dt>
+      <dd>Adam Barth. <a href="http://www.ietf.org/rfc/rfc6454.txt">The Web Origin Concept</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6454.txt">http://www.ietf.org/rfc/rfc6454.txt</a></dd>
+      <dt id="biblio-rfc6797" title="RFC6797"><a class="self-link" href="#biblio-rfc6797"></a>[RFC6797]</dt>
+      <dd>Jeff Hodges; Collin Jackson; Adam Barth. <a href="http://www.ietf.org/rfc/rfc6797.txt">HTTP Strict Transport Security (HSTS)</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6797.txt">http://www.ietf.org/rfc/rfc6797.txt</a></dd>
+      <dt id="biblio-rfc2119" title="rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[rfc2119]</dt>
+      <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a></dd>
+    </dl>
+    <h3 class="no-num heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
+    <dl>
+      <dt id="biblio-pkp" title="PKP"><a class="self-link" href="#biblio-pkp"></a>[PKP]</dt>
+      <dd>Chris Evans; Chris Palmer; Ryan Sleevi. <a href="https://tools.ietf.org/html/draft-ietf-websec-key-pinning">Public Key Pinning Extension for HTTP</a>. Draft. URL: <a href="https://tools.ietf.org/html/draft-ietf-websec-key-pinning">https://tools.ietf.org/html/draft-ietf-websec-key-pinning</a></dd>
+    </dl>
+    <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
+    <ul class="indexlist">
+      <li>Content-Security-Policy-Pin, <a href="#content_security_policy_pin" title="section 3.1">3.1</a></li>
+      <li>includeSubDomains, <a href="#includesubdomains" title="section 3.2.2">3.2.2</a></li>
+      <li>max-age, <a href="#max_age" title="section 3.2.1">3.2.1</a></li>
+      <li>pinned Content Security Policy, <a href="#pinned-content-security-policy" title="section 2.1">2.1</a></li>
+      <li>pinned policy, <a href="#pinned-content-security-policy" title="section 2.1">2.1</a></li>
+      <li>pinned policy cache, <a href="#pinned-policy-cache" title="section 2.1">2.1</a></li>
+      <li>policy directive set, <a href="#policy-directive-set" title="section 2.1">2.1</a></li>
+      <li>policy expiration date, <a href="#policy-expiration-date" title="section 2.1">2.1</a></li>
+      <li>protected host, <a href="#protected-host" title="section 2.1">2.1</a></li>
+      <li>subdomains included, <a href="#subdomains-included" title="section 2.1">2.1</a></li>
+    </ul>
+    <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
+    <div style="counter-reset:issue">
+      <div class="issue">This should probably be hooked from Fetch, probably after step #4 of
+  the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#fetch">fetching</a> algorithm. Hi, Anne!<a href="#issue-5552adf7"> ↵ </a></div>
+      <div class="issue">This isn’t at all clear in <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a>, to be honest. We’re applying it to
+  an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings object</a> here, which seems like a resonable
+  approach, but misses <code>frame-ancestors</code> and <code>referrer</code>.
+  We probably need another algorithm applying to a Response and a corresponding
+  hook in Fetch. Hi, Anne!<a href="#issue-c8c60f68"> ↵ </a></div>
+    </div></body>
+</html>
