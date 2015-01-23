@@ -601,7 +601,11 @@ of hosts for a period of time.</p>
 
     <div data-fill-with="table-of-contents" role="navigation">
       <ul class="toc" role="directory">
-        <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a></li>
+        <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
+          <ul class="toc">
+            <li><a href="#use-cases"><span class="secno">1.1</span> <span class="content">Use Cases</span></a></li>
+          </ul>
+        </li>
         <li><a href="#key-concepts"><span class="secno">2</span> <span class="content">Key Concepts and Terminology</span></a>
           <ul class="toc">
             <li><a href="#terms-defined-here"><span class="secno">2.1</span> <span class="content">Terms defined by this specification</span></a></li>
@@ -630,7 +634,7 @@ of hosts for a period of time.</p>
   </span></a></li>
             <li><a href="#pin-a-policy"><span class="secno">4.2</span> <span class="content">Pin <var>policy</var> for <var>origin</var>.</span></a></li>
             <li><a href="#enforce-a-pinned-policy"><span class="secno">4.3</span> <span class="content">
-    Enforce a pinned policy for <var>document</var>
+    Enforcing a pinned policy for <var>protected resource</var>
   </span></a></li>
           </ul>
         </li>
@@ -709,6 +713,59 @@ Conformance</span></a></li>
   to remember a baseline policy which will be enforced for every document and
   worker delivered by an application, regardless of whether those resources
   themselves were delivered with a <code>Content-Security-Policy</code> header.</p>
+
+  
+        <h3 class="heading settled" data-level="1.1" id="use-cases"><span class="secno">1.1. </span><span class="content">Use Cases</span><a class="self-link" href="#use-cases"></a></h3>
+
+
+        <p><code>example.com</code> has a number of applications running on the same
+  origin; each has a specific set of resources it needs to load, so a single
+  Content Security Policy would become unweildy for the whole set of resources.
+  Moreover, the admins aren’t exactly sure they have a clear understanding of
+  all the applications running on subdomains; the marketing department went a
+  bit wild with branded partnerships a year or two back.</p>
+
+
+        <p>Still, they know that they don’t want plugins on <code>example.com</code> at
+  all, they don’t want insecurely delivered content, and they don’t want to
+  load any resources over an insecure connection. They decide to pin a minimal
+  policy that can be enforced everywhere, and to layer more granular policies
+  on top for specific sites:</p>
+
+  
+        <div class="example">
+    <code>https://example.com/application1/</code> delivers the following HTTP
+    response headers:
+
+    
+          <pre>Content-Security-Policy-Pin: <a data-link-type="dfn" href="#max_age">max-age</a>: 10886400; <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>; default-src https:; object-src 'none'; report-uri /csp-endpoint/pinned
+Content-Security-Policy: script-src https://application1.cdn.com;
+                         style-src https://application1.cdn.com;
+                         connect-src 'self';
+                         form-action 'self'
+</pre>
+          
+
+
+          <p>While <code>https://example.com/application2/</code> delivers the following
+    HTTP response headers:</p>
+          
+
+    
+          <pre>Content-Security-Policy-Pin: <a data-link-type="dfn" href="#max_age">max-age</a>: 10886400; <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>; default-src https:; object-src 'none'; report-uri /csp-endpoint/pinned
+Content-Security-Policy: script-src https://application2.cdn.com;
+                         style-src https://application2.cdn.com;
+</pre>
+          
+
+
+          <p>Meanwhile, they’ve forgotten about the coincidentally well-named
+    <code>https://forgotten-partnership.example.com/</code>. It doesn’t send
+    any CSP headers at all, and yet, it is still protected by the pinned policy
+    for any users who have visited either Application 1 or Application 2. Yay!</p>
+          
+  
+        </div>
 </section>
 
 
@@ -838,6 +895,11 @@ Conformance</span></a></li>
     <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> header with a
     <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-2">resource</a> delivered from an <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url" title="a priori insecure URL"><i lang="la">a priori</i> insecure
     URL</a>. The threat is discussed in more detail in <a data-section="" href="#hostile-pinning">§5.1 Hostile Pinning</a>.</p>
+          
+
+
+          <p class="note" role="note">Note: This means that pinning is only practically available over HTTPS.
+    This is intentional, as pinning is a "powerful feature" <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-power" title="POWER">[POWER]</a>.</p>
           
 
 
@@ -1066,18 +1128,83 @@ directive-value = 1*DIGIT
 
   
         <h3 class="heading settled" data-level="4.3" id="enforce-a-pinned-policy"><span class="secno">4.3. </span><span class="content">
-    Enforce a pinned policy for <var>document</var>
+    Enforcing a pinned policy for <var>protected resource</var>
   </span><a class="self-link" href="#enforce-a-pinned-policy"></a></h3>
 
 
-        <p>TBD.</p>
+        <p>The user agent MUST <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> a <a data-link-type="dfn" href="#pinned-content-security-policy">pinned policy</a> when creating new
+  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> and <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/#worker">Worker</a></code> objects as follows:</p>
 
 
-        <p class="issue" id="issue-c8c60f68"><a class="self-link" href="#issue-c8c60f68"></a>This isn’t at all clear in <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a>, to be honest. We’re applying it to
-  an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings object</a> here, which seems like a resonable
+        <p>When <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#creating-a-new-document-object">creating a new <code>Document</code> object</a> <var>document</var>,
+  the user agent MUST first run the following steps:</p>
+
+  
+        <ol>
+    
+          <li>
+      Let <var>host</var> be the <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-host">host</a> component of <var>document</var>’s
+      URL.
+    </li>
+          
+
+    
+          <li>
+      If <var>host</var> matches any <a data-link-type="dfn" href="#protected-host">protected host</a> in the user agent’s
+      <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a> according to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-8.2" title="Known HSTS Host domain name matching">Known HSTS Host domain name
+      matching</a> algorithm specified in <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-rfc6797" title="RFC6797">[RFC6797]</a>, then let <var>pinned
+      policy</var> be the <a data-link-type="dfn" href="#policy-directive-set">policy directive set</a> associated with that
+      <a data-link-type="dfn" href="#protected-host">protected host</a>.
+    </li>
+          
+
+    
+          <li>
+      If <var>pinned policy</var> is not empty, <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> <var>pinned
+      policy</var> on <var>document</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#incumbent-settings-object">incumbent settings object</a>.
+    </li>
+          
+  
+        </ol>
+
+
+        <p>When executing the <a data-link-type="dfn" href="http://www.w3.org/TR/workers/#run-a-worker">run a <code>Worker</code></a> algorithm on <var>worker
+  URL</var> and <var>worker global scope</var>, the user agent MUST first:</p>
+
+  
+        <ol>
+    
+          <li>
+      Let <var>host</var> be the <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-host">host</a> component of <var>worker URL</var>.
+    </li>
+          
+
+    
+          <li>
+      If <var>host</var> matches any <a data-link-type="dfn" href="#protected-host">protected host</a> in the user agent’s
+      <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a> according to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-8.2" title="Known HSTS Host domain name matching">Known HSTS Host domain name
+      matching</a> algorithm specified in <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-rfc6797" title="RFC6797">[RFC6797]</a>, then let <var>pinned
+      policy</var> be the <a data-link-type="dfn" href="#policy-directive-set">policy directive set</a> associated with that
+      <a data-link-type="dfn" href="#protected-host">protected host</a>.
+    </li>
+          
+
+    
+          <li>
+      If <var>pinned policy</var> is not empty, <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> <var>pinned
+      policy</var> on the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#relevant-settings-object-for-a-global-object">relevant settings object</a> for <var>worker global
+      scope</var>.
+    </li>
+          
+  
+        </ol>
+
+
+        <p class="issue" id="issue-3d724b7b"><a class="self-link" href="#issue-3d724b7b"></a>Enforcement isn’t at all clear in <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a>, to be honest. We’re applying
+  it to an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings object</a> here, which seems like a resonable
   approach, but misses <code>frame-ancestors</code> and <code>referrer</code>.
   We probably need another algorithm applying to a Response and a corresponding
-  hook in Fetch. Hi, Anne!</p>
+  hook in Fetch. Hi, Anne! Can’t wait for CSP3 + Fetch, eh?</p>
 </section>
 
 
@@ -1233,6 +1360,8 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
     <dl>
       <dt id="biblio-pkp" title="PKP"><a class="self-link" href="#biblio-pkp"></a>[PKP]</dt>
       <dd>Chris Evans; Chris Palmer; Ryan Sleevi. <a href="https://tools.ietf.org/html/draft-ietf-websec-key-pinning">Public Key Pinning Extension for HTTP</a>. Draft. URL: <a href="https://tools.ietf.org/html/draft-ietf-websec-key-pinning">https://tools.ietf.org/html/draft-ietf-websec-key-pinning</a></dd>
+      <dt id="biblio-power" title="POWER"><a class="self-link" href="#biblio-power"></a>[POWER]</dt>
+      <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/">Requirements for Powerful Features</a>. ED. URL: <a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/">https://w3c.github.io/webappsec/specs/powerfulfeatures/</a></dd>
     </dl>
     <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
     <ul class="indexlist">
@@ -1251,10 +1380,10 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
     <div style="counter-reset:issue">
       <div class="issue">This should probably be hooked from Fetch, probably after step #4 of
   the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#fetch">fetching</a> algorithm. Hi, Anne!<a href="#issue-5552adf7"> ↵ </a></div>
-      <div class="issue">This isn’t at all clear in <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a>, to be honest. We’re applying it to
-  an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings object</a> here, which seems like a resonable
+      <div class="issue">Enforcement isn’t at all clear in <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a>, to be honest. We’re applying
+  it to an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings object</a> here, which seems like a resonable
   approach, but misses <code>frame-ancestors</code> and <code>referrer</code>.
   We probably need another algorithm applying to a Response and a corresponding
-  hook in Fetch. Hi, Anne!<a href="#issue-c8c60f68"> ↵ </a></div>
+  hook in Fetch. Hi, Anne! Can’t wait for CSP3 + Fetch, eh?<a href="#issue-3d724b7b"> ↵ </a></div>
     </div></body>
 </html>

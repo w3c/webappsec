@@ -76,7 +76,6 @@ type: dfn
       text: queue a task
       text: task source
       text: tasks; url: concept-task
-      text: incumbent settings object
       text: relevant settings object for a script
       text: responsible document
   urlPrefix: http://www.w3.org/TR/cssom/
@@ -169,6 +168,11 @@ type: dfn
     urlPrefix: webappapis.html
       text: environment settings object; url: settings-object
       text: incumbent settings object
+      text: relevant settings object; url: relevant-settings-object-for-a-global-object
+    urlPrefix: browsers.html
+      text: create a Document object
+  urlPrefix: http://www.w3.org/TR/workers/
+    text: run a worker
 </pre>
 
 <pre class="biblio">
@@ -226,6 +230,48 @@ type: dfn
   to remember a baseline policy which will be enforced for every document and
   worker delivered by an application, regardless of whether those resources
   themselves were delivered with a <code>Content-Security-Policy</code> header.
+
+  <h3 id="use-cases">Use Cases</h3>
+
+  <code>example.com</code> has a number of applications running on the same
+  origin; each has a specific set of resources it needs to load, so a single
+  Content Security Policy would become unweildy for the whole set of resources.
+  Moreover, the admins aren't exactly sure they have a clear understanding of
+  all the applications running on subdomains; the marketing department went a
+  bit wild with branded partnerships a year or two back.
+
+  Still, they know that they don't want plugins on <code>example.com</code> at
+  all, they don't want insecurely delivered content, and they don't want to
+  load any resources over an insecure connection. They decide to pin a minimal
+  policy that can be enforced everywhere, and to layer more granular policies
+  on top for specific sites:
+
+  <div class="example">
+    <code>https://example.com/application1/</code> delivers the following HTTP
+    response headers:
+
+    <pre>
+      Content-Security-Policy-Pin: <a>max-age</a>: 10886400; <a>includeSubDomains</a>; default-src https:; object-src 'none'; report-uri /csp-endpoint/pinned
+      Content-Security-Policy: script-src https://application1.cdn.com;
+                               style-src https://application1.cdn.com;
+                               connect-src 'self';
+                               form-action 'self'
+    </pre>
+
+    While <code>https://example.com/application2/</code> delivers the following
+    HTTP response headers:
+
+    <pre>
+      Content-Security-Policy-Pin: <a>max-age</a>: 10886400; <a>includeSubDomains</a>; default-src https:; object-src 'none'; report-uri /csp-endpoint/pinned
+      Content-Security-Policy: script-src https://application2.cdn.com;
+                               style-src https://application2.cdn.com;
+    </pre>
+
+    Meanwhile, they've forgotten about the coincidentally well-named
+    <code>https://forgotten-partnership.example.com/</code>. It doesn't send
+    any CSP headers at all, and yet, it is still protected by the pinned policy
+    for any users who have visited either Application 1 or Application 2. Yay!
+  </div>
 </section>
 
 <!--
@@ -324,6 +370,9 @@ type: dfn
     <code><a>Content-Security-Policy-Pin</a></code> header with a
     <a>resource</a> delivered from an <a><i lang="la">a priori</i> insecure
     URL</a>. The threat is discussed in more detail in [[#hostile-pinning]].
+
+    Note: This means that pinning is only practically available over HTTPS.
+    This is intentional, as pinning is a "powerful feature" [[POWER]].
 
     A server MUST NOT send more than one HTTP header field named
     <code>Content-Security-Policy-Pin</code> with a given <a>resource
@@ -479,16 +528,63 @@ type: dfn
   </ol>
 
   <h3 id="enforce-a-pinned-policy">
-    Enforce a pinned policy for <var>document</var>
+    Enforcing a pinned policy for <var>protected resource</var>
   </h3>
 
-  TBD.
+  The user agent MUST <a>enforce</a> a <a>pinned policy</a> when creating new
+  {{Document}} and {{Worker}} objects as follows:
 
-  ISSUE: This isn't at all clear in [[CSP]], to be honest. We're applying it to
-  an <a>environment settings object</a> here, which seems like a resonable
+  When <a>creating a new <code>Document</code> object</a> <var>document</var>,
+  the user agent MUST first run the following steps:
+
+  <ol>
+    <li>
+      Let <var>host</var> be the <a>host</a> component of <var>document</var>'s
+      URL.
+    </li>
+
+    <li>
+      If <var>host</var> matches any <a>protected host</a> in the user agent's
+      <a>pinned policy cache</a> according to the <a>Known HSTS Host domain name
+      matching</a> algorithm specified in [[!RFC6797]], then let <var>pinned
+      policy</var> be the <a>policy directive set</a> associated with that
+      <a>protected host</a>.
+    </li>
+
+    <li>
+      If <var>pinned policy</var> is not empty, <a>enforce</a> <var>pinned
+      policy</var> on <var>document</var>'s <a>incumbent settings object</a>.
+    </li>
+  </ol>
+
+  When executing the <a>run a <code>Worker</code></a> algorithm on <var>worker
+  URL</var> and <var>worker global scope</var>, the user agent MUST first: 
+
+  <ol>
+    <li>
+      Let <var>host</var> be the <a>host</a> component of <var>worker URL</var>.
+    </li>
+
+    <li>
+      If <var>host</var> matches any <a>protected host</a> in the user agent's
+      <a>pinned policy cache</a> according to the <a>Known HSTS Host domain name
+      matching</a> algorithm specified in [[!RFC6797]], then let <var>pinned
+      policy</var> be the <a>policy directive set</a> associated with that
+      <a>protected host</a>.
+    </li>
+
+    <li>
+      If <var>pinned policy</var> is not empty, <a>enforce</a> <var>pinned
+      policy</var> on the <a>relevant settings object</a> for <var>worker global
+      scope</var>.
+    </li>
+  </ol>
+
+  ISSUE: Enforcement isn't at all clear in [[CSP]], to be honest. We're applying
+  it to an <a>environment settings object</a> here, which seems like a resonable
   approach, but misses <code>frame-ancestors</code> and <code>referrer</code>.
   We probably need another algorithm applying to a Response and a corresponding
-  hook in Fetch. Hi, Anne!
+  hook in Fetch. Hi, Anne! Can't wait for CSP3 + Fetch, eh?
 </section>
 
 <section>
