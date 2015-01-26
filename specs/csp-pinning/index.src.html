@@ -514,8 +514,24 @@ type: interface
 <section>
   <h2 id="policy-processing">Pinned Policy Processing</h2>
 
+  The user agent discovers and processes pinned policies during <a>fetching</a>.
+  Upon receiving a response, the user agent will:
+ 
+  1. Sift through the HTTP headers according to the [[#discover-pinned-policy]]
+     algorithm to determine if the <a>pinned policy cache</a> for the response's
+     host needs to be updated.
+  2. Update the <a>pinned policy cache</a>, according to the [[#pin-policy]]
+     algorithm.
+  3. Update the response's headers to ensure that any relevant <a>pinned
+     policies</a> are applied, according to the [[#apply-pinned-policy]]
+     algorithm.
+
+  Periodically, the user agent will run through the <a>pinned policies</a> it
+  has stored in the <a>pinned policy cache</a>, and remove those which have
+  expired, according to the [[#expire-pinned-policies]] algorithm.
+
   <h3 id="discover-pinned-policy">
-     Discover pinned policies for <var>response</var>.
+     Discover pinned policies for <var>response</var>
   </h3>
 
   Upon receiving a {{Response}} <var>response</var> containing at least one
@@ -559,7 +575,7 @@ type: interface
   </ol>
 
   <h3 id="pin-policy">
-    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>.
+    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>
   </h3>
 
   Given an <a>Origin</a> <var>origin</var>, a parsed set of directives
@@ -673,7 +689,7 @@ type: interface
   </ol>
 
   <h3 id="apply-pinned-policy">
-    Pin a policy to <var>response</var>.
+    Pin a policy to <var>response</var>
   </h3>
 
   Upon receiving a {{Response}} <var>response</var>, ensure that it contains
@@ -759,6 +775,33 @@ type: interface
       </ol>
     </li>
   </ol>
+
+  <h3 id="expire-pinned-policies">
+    Remove expired pinned policies from the cache
+  </h3>
+
+  Periodically, the user agent MUST remove expired policies from the <a>pinned
+  policy cache</a>. Removal will have no web-visible effect, as expired policies
+  will not modify {{Response}}s during <a>fetching</a>, but expired policies can
+  have privacy impact if they aren't removed completely (as they offer evidence
+  that a particular user visited a particular host at some point in the past).
+
+  Expired entries can be removed via the following steps:
+
+  <ol>
+    <li>
+      For each <var>policy</var> in the list of <a>pinned policies</a> contained
+      in the <a>pinned policy cache</a>:
+
+      <ol>
+        <li>
+          If <var>policy</var>'s <a>policy expiration date</a> is prior to the
+          current time, remove <var>policy</var> from the <a>pinned policy
+          cache</a>.
+        </li>
+      </ol>
+    </li>
+  </ol>
 </section>
 
 <section>
@@ -775,6 +818,9 @@ type: interface
   <h3 id="fingerprinting">Fingerprinting</h3>
 
   ISSUE: Same as HSTS, PKP.
+
+  User agents MUST clear the <a>pinned policy cache</a> when the user clears
+  her browsing data (cookies, site data, history, etc).
 
 </section>
 <section>

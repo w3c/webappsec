@@ -633,13 +633,16 @@ of hosts for a period of time.</p>
         <li><a href="#policy-processing"><span class="secno">4</span> <span class="content">Pinned Policy Processing</span></a>
           <ul class="toc">
             <li><a href="#discover-pinned-policy"><span class="secno">4.1</span> <span class="content">
-     Discover pinned policies for <var>response</var>.
+     Discover pinned policies for <var>response</var>
   </span></a></li>
             <li><a href="#pin-policy"><span class="secno">4.2</span> <span class="content">
-    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>.
+    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>
   </span></a></li>
             <li><a href="#apply-pinned-policy"><span class="secno">4.3</span> <span class="content">
-    Pin a policy to <var>response</var>.
+    Pin a policy to <var>response</var>
+  </span></a></li>
+            <li><a href="#expire-pinned-policies"><span class="secno">4.4</span> <span class="content">
+    Remove expired pinned policies from the cache
   </span></a></li>
           </ul>
         </li>
@@ -930,7 +933,7 @@ Content-Security-Policy: script-src https://application2.cdn.com;
     <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> for any resource which is not delivered with a
     <code>Content-Security-Policy</code> header (as described in the
     <a data-section="" href="#apply-pinned-policy">§4.3 
-    Pin a policy to response.
+    Pin a policy to response
   </a> algorithm.</p>
           
 
@@ -987,7 +990,7 @@ Content-Security-Policy: script-src https://application2.cdn.com;
     agent MUST <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitor</a> for any resource which is not delivered with a
     <code>Content-Security-Policy-Report-Only</code> header (as described in the
     <a data-section="" href="#apply-pinned-policy">§4.3 
-    Pin a policy to response.
+    Pin a policy to response
   </a> algorithm).</p>
           
 
@@ -1113,9 +1116,48 @@ directive-value = 1*DIGIT
   
         <h2 class="heading settled" data-level="4" id="policy-processing"><span class="secno">4. </span><span class="content">Pinned Policy Processing</span><a class="self-link" href="#policy-processing"></a></h2>
 
+
+        <p>The user agent discovers and processes pinned policies during <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#fetch">fetching</a>.
+  Upon receiving a response, the user agent will:</p>
+
+
+        <ol>
+          <li data-md="">
+            <p>Sift through the HTTP headers according to the <a data-section="" href="#discover-pinned-policy">§4.1 
+     Discover pinned policies for response
+  </a>
+ algorithm to determine if the <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a> for the response’s
+ host needs to be updated.</p>
+            
+
+          </li>
+          <li data-md="">
+            <p>Update the <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a>, according to the <a data-section="" href="#pin-policy">§4.2 
+    Pin policy for origin in mode
+  </a>
+ algorithm.</p>
+            
+
+          </li>
+          <li data-md="">
+            <p>Update the response’s headers to ensure that any relevant <a data-link-type="dfn" href="#pinned-security-policy" title="pinned policies">pinned
+ policies</a> are applied, according to the <a data-section="" href="#apply-pinned-policy">§4.3 
+    Pin a policy to response
+  </a>
+ algorithm.</p>
+            
+
+          </li></ol>
+
+        <p>Periodically, the user agent will run through the <a data-link-type="dfn" href="#pinned-security-policy">pinned policies</a> it
+  has stored in the <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a>, and remove those which have
+  expired, according to the <a data-section="" href="#expire-pinned-policies">§4.4 
+    Remove expired pinned policies from the cache
+  </a> algorithm.</p>
+
   
         <h3 class="heading settled" data-level="4.1" id="discover-pinned-policy"><span class="secno">4.1. </span><span class="content">
-     Discover pinned policies for <var>response</var>.
+     Discover pinned policies for <var>response</var>
   </span><a class="self-link" href="#discover-pinned-policy"></a></h3>
 
 
@@ -1148,7 +1190,7 @@ directive-value = 1*DIGIT
           <li>
       If <var>value</var> is not <code>null</code>, then execute the
       <a data-section="" href="#pin-policy">§4.2 
-    Pin policy for origin in mode.
+    Pin policy for origin in mode
   </a> algorithm, passing in <var>value</var>, the
       <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-origin" title="origin of a url">origin</a> of <var>response</var>’s URL,
       and <code>enforce</code>.
@@ -1167,7 +1209,7 @@ directive-value = 1*DIGIT
           <li>
       If <var>value</var> is not <code>null</code>, then execute the
       <a data-section="" href="#pin-policy">§4.2 
-    Pin policy for origin in mode.
+    Pin policy for origin in mode
   </a> algorithm, passing in <var>value</var>, the
       <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-origin" title="origin of a url">origin</a> of <var>response</var>’s URL,
       and <code>monitor</code>.
@@ -1178,7 +1220,7 @@ directive-value = 1*DIGIT
 
   
         <h3 class="heading settled" data-level="4.2" id="pin-policy"><span class="secno">4.2. </span><span class="content">
-    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>.
+    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>
   </span><a class="self-link" href="#pin-policy"></a></h3>
 
 
@@ -1354,7 +1396,7 @@ directive-value = 1*DIGIT
 
   
         <h3 class="heading settled" data-level="4.3" id="apply-pinned-policy"><span class="secno">4.3. </span><span class="content">
-    Pin a policy to <var>response</var>.
+    Pin a policy to <var>response</var>
   </span><a class="self-link" href="#apply-pinned-policy"></a></h3>
 
 
@@ -1487,6 +1529,46 @@ directive-value = 1*DIGIT
           
   
         </ol>
+
+  
+        <h3 class="heading settled" data-level="4.4" id="expire-pinned-policies"><span class="secno">4.4. </span><span class="content">
+    Remove expired pinned policies from the cache
+  </span><a class="self-link" href="#expire-pinned-policies"></a></h3>
+
+
+        <p>Periodically, the user agent MUST remove expired policies from the <a data-link-type="dfn" href="#pinned-policy-cache" title="pinned policy cache">pinned
+  policy cache</a>. Removal will have no web-visible effect, as expired policies
+  will not modify <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#response">Response</a></code>s during <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#fetch">fetching</a>, but expired policies can
+  have privacy impact if they aren’t removed completely (as they offer evidence
+  that a particular user visited a particular host at some point in the past).</p>
+
+
+        <p>Expired entries can be removed via the following steps:</p>
+
+  
+        <ol>
+    
+          <li>
+      For each <var>policy</var> in the list of <a data-link-type="dfn" href="#pinned-security-policy">pinned policies</a> contained
+      in the <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a>:
+
+      
+            <ol>
+        
+              <li>
+          If <var>policy</var>’s <a data-link-type="dfn" href="#policy-expiration-date">policy expiration date</a> is prior to the
+          current time, remove <var>policy</var> from the <a data-link-type="dfn" href="#pinned-policy-cache" title="pinned policy cache">pinned policy
+          cache</a>.
+        </li>
+              
+      
+            </ol>
+            
+    
+          </li>
+          
+  
+        </ol>
 </section>
 
 
@@ -1511,6 +1593,10 @@ directive-value = 1*DIGIT
 
 
         <p class="issue" id="issue-2e1d373a"><a class="self-link" href="#issue-2e1d373a"></a>Same as HSTS, PKP.</p>
+
+
+        <p>User agents MUST clear the <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a> when the user clears
+  her browsing data (cookies, site data, history, etc).</p>
 
 </section>
 
