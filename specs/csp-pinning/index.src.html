@@ -127,11 +127,7 @@ type: element-attr
 urlPrefix: http://www.w3.org/TR/dom/
   type: attribute
     text: textContent; for: Node; url: dom-node-textcontent
-  type: interface
-    text: document; url: interface-document
 type: interface
-  urlPrefix: https://fetch.spec.whatwg.org/
-    text: request
   urlPrefix: https://heycam.github.io/webidl/
     text: DOMString; url: idl-DOMString
     text: long; url: idl-long
@@ -149,6 +145,7 @@ type: dfn
     text: parse the policy
     text: policy syntax
     text: content-security-policy
+    text: Delivery via meta element; url: delivery-html-meta-element
     url: enforce
       text: enforce
       text: enforced
@@ -176,8 +173,13 @@ type: dfn
       text: relevant settings object; url: relevant-settings-object-for-a-global-object
     urlPrefix: browsers.html
       text: create a Document object
+type: interface
+  urlPrefix: https://fetch.spec.whatwg.org/
+    text: response
+  urlPrefix: http://www.w3.org/TR/dom/
+    text: document; url: interface-document
   urlPrefix: http://www.w3.org/TR/workers/
-    text: run a worker
+    text: worker
 </pre>
 
 <pre class="biblio">
@@ -375,8 +377,12 @@ type: dfn
 
   Once a policy is pinned, it will be either <a>enforced</a> or <a>monitored</a>
   as specified for any resource that doesn't <a>enforce</a> or <a>monitor</a>
-  its own policy. See [[#pins-as-defaults]] and [[#pins-override-meta]] for
-  authoring details.
+  its own policy.
+
+  Note: Pinned policies are <em>only</em> delivered via HTTP header fields; no
+  <a element>meta</a> element delivery mechanism is defined. Moreover, pinned
+  policies override policies delivered via <a element>meta</a> elements. See
+  [[#pins-override-meta]] for authoring guidelines.
 
   <section>
     <h3 id="content-security-policy-pin-header-field">
@@ -512,7 +518,7 @@ type: dfn
      Discover pinned policies for <var>response</var>.
   </h3>
 
-  Upon receiving a Response <var>response</var> containing at least one
+  Upon receiving a {{Response}} <var>response</var> containing at least one
   <code><a>Content-Security-Policy-Pin</a></code> header field, the user agent
   MUST peform the following steps:
 
@@ -670,7 +676,7 @@ type: dfn
     Pin a policy to <var>response</var>.
   </h3>
 
-  Upon receiving a Response <var>response</var>, ensure that it contains
+  Upon receiving a {{Response}} <var>response</var>, ensure that it contains
   appropriate <code>Content-Security-Policy</code> headers by performing the
   following steps:
 
@@ -783,9 +789,11 @@ type: dfn
   <h3 id="pins-override-meta">Pins override <code>&lt;meta&gt;</code></h3>
 
   Pinned policies are applied before <a element>meta</a> elements can be
-  discovered.
-
-  ISSUE: Explain the impact.
+  discovered. This means that a resource delivered without a header that
+  specified a <a>security policy</a> will be subject to the policy pinned
+  for its host, even if it then delivers a policy via the mechanisms described
+  in the <a title="delivery via meta element">HTML <code>&lt;meta&gt;</code>
+  element</a> section of [[CSP]].
 </section>
 <!--
 ████    ███    ██    ██    ███

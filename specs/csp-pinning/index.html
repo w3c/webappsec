@@ -850,7 +850,7 @@ Content-Security-Policy: script-src https://application2.cdn.com;
               <li>
           The <dfn data-dfn-type="dfn" data-noexport="" id="policy-directive-set">policy directive set<a class="self-link" href="#policy-directive-set"></a></dfn>: a set of Content Security Policy
           directives <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a> which the user agent MUST <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> for each
-          <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> and <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/#worker">Worker</a></code> served from <a data-link-type="dfn" href="#protected-host">protected host</a> (and,
+          <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> and <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code> served from <a data-link-type="dfn" href="#protected-host">protected host</a> (and,
           potentially, its subdomains).
         </li>
               
@@ -908,8 +908,13 @@ Content-Security-Policy: script-src https://application2.cdn.com;
 
         <p>Once a policy is pinned, it will be either <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforced</a> or <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitored</a>
   as specified for any resource that doesn’t <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> or <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitor</a>
-  its own policy. See <a data-section="" href="#pins-as-defaults">§7.1 Pins as a default</a> and <a data-section="" href="#pins-override-meta">§7.2 Pins override &lt;meta></a> for
-  authoring details.</p>
+  its own policy.</p>
+
+
+        <p class="note" role="note">Note: Pinned policies are <em>only</em> delivered via HTTP header fields; no
+  <a data-link-type="element" href="http://www.w3.org/TR/html5/#the-meta-element">meta</a> element delivery mechanism is defined. Moreover, pinned
+  policies override policies delivered via <a data-link-type="element" href="http://www.w3.org/TR/html5/#the-meta-element">meta</a> elements. See
+  <a data-section="" href="#pins-override-meta">§7.2 Pins override &lt;meta></a> for authoring guidelines.</p>
 
   
         <section>
@@ -1114,7 +1119,7 @@ directive-value = 1*DIGIT
   </span><a class="self-link" href="#discover-pinned-policy"></a></h3>
 
 
-        <p>Upon receiving a Response <var>response</var> containing at least one
+        <p>Upon receiving a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#response">Response</a></code> <var>response</var> containing at least one
   <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> header field, the user agent
   MUST peform the following steps:</p>
 
@@ -1353,7 +1358,7 @@ directive-value = 1*DIGIT
   </span><a class="self-link" href="#apply-pinned-policy"></a></h3>
 
 
-        <p>Upon receiving a Response <var>response</var>, ensure that it contains
+        <p>Upon receiving a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#response">Response</a></code> <var>response</var>, ensure that it contains
   appropriate <code>Content-Security-Policy</code> headers by performing the
   following steps:</p>
 
@@ -1526,10 +1531,11 @@ directive-value = 1*DIGIT
 
 
         <p>Pinned policies are applied before <a data-link-type="element" href="http://www.w3.org/TR/html5/#the-meta-element">meta</a> elements can be
-  discovered.</p>
-
-
-        <p class="issue" id="issue-76e72535"><a class="self-link" href="#issue-76e72535"></a>Explain the impact.</p>
+  discovered. This means that a resource delivered without a header that
+  specified a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> will be subject to the policy pinned
+  for its host, even if it then delivers a policy via the mechanisms described
+  in the <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#delivery-html-meta-element" title="delivery via meta element">HTML <code>&lt;meta></code>
+  element</a> section of <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-csp" title="CSP">[CSP]</a>.</p>
 </section>
 
 
@@ -1746,6 +1752,5 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
       <div class="issue">Explain something about the theory; pins act as a baseline for
   resources that don’t otherwise have a policy. Explain layering, granularity,
   etc.<a href="#issue-c9a0c3af"> ↵ </a></div>
-      <div class="issue">Explain the impact.<a href="#issue-76e72535"> ↵ </a></div>
     </div></body>
 </html>
