@@ -614,13 +614,16 @@ of hosts for a period of time.</p>
         </li>
         <li><a href="#policy-delivery"><span class="secno">3</span> <span class="content">Pinned Policy Delivery</span></a>
           <ul class="toc">
-            <li><a href="#content-security-policy-header-field"><span class="secno">3.1</span> <span class="content">
+            <li><a href="#content-security-policy-pin-header-field"><span class="secno">3.1</span> <span class="content">
       <code>Content-Security-Policy-Pin</code> Header Field
     </span></a></li>
-            <li><a href="#csp-pins-syntax"><span class="secno">3.2</span> <span class="content">Pinned Policy Syntax</span></a>
+            <li><a href="#content-security-policy-report-only-pin-header-field"><span class="secno">3.2</span> <span class="content">
+      <code>Content-Security-Policy-Report-Only-Pin</code> Header Field
+    </span></a></li>
+            <li><a href="#csp-pins-syntax"><span class="secno">3.3</span> <span class="content">Pinned Policy Syntax</span></a>
               <ul class="toc">
-                <li><a href="#max-age-directive"><span class="secno">3.2.1</span> <span class="content">The <code>max-age</code> directive</span></a></li>
-                <li><a href="#includesubdomains-directive"><span class="secno">3.2.2</span> <span class="content">
+                <li><a href="#max-age-directive"><span class="secno">3.3.1</span> <span class="content">The <code>max-age</code> directive</span></a></li>
+                <li><a href="#includesubdomains-directive"><span class="secno">3.3.2</span> <span class="content">
         The <code>includeSubDomains</code> directive
       </span></a></li>
               </ul>
@@ -629,11 +632,13 @@ of hosts for a period of time.</p>
         </li>
         <li><a href="#policy-processing"><span class="secno">4</span> <span class="content">Pinned Policy Processing</span></a>
           <ul class="toc">
-            <li><a href="#discover-a-pinned-policy"><span class="secno">4.1</span> <span class="content">
-     Discover a pinned policy for <var>response</var>.
+            <li><a href="#discover-pinned-policy"><span class="secno">4.1</span> <span class="content">
+     Discover pinned policies for <var>response</var>.
   </span></a></li>
-            <li><a href="#pin-a-policy"><span class="secno">4.2</span> <span class="content">Pin <var>policy</var> for <var>origin</var>.</span></a></li>
-            <li><a href="#enforce-a-pinned-policy"><span class="secno">4.3</span> <span class="content">
+            <li><a href="#pin-policy"><span class="secno">4.2</span> <span class="content">
+    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>.
+  </span></a></li>
+            <li><a href="#apply-pinned-policy"><span class="secno">4.3</span> <span class="content">
     Pin a policy to <var>response</var>.
   </span></a></li>
           </ul>
@@ -650,12 +655,18 @@ of hosts for a period of time.</p>
         </li>
         <li><a href="#authoring-considerations"><span class="secno">7</span> <span class="content">Authoring Considerations</span></a>
           <ul class="toc">
-            <li><a href="#baseline"><span class="secno">7.1</span> <span class="content">Pins as a baseline</span></a></li>
+            <li><a href="#pins-as-defaults"><span class="secno">7.1</span> <span class="content">Pins as a default</span></a></li>
+            <li><a href="#pins-override-meta"><span class="secno">7.2</span> <span class="content">Pins override <code>&lt;meta></code></span></a></li>
           </ul>
         </li>
         <li><a href="#iana-considerations"><span class="secno">8</span> <span class="content">IANA Considerations</span></a>
           <ul class="toc">
-            <li><a href="#iana-content-security-policy"><span class="secno">8.1</span> <span class="content">Content-Security-Policy-Pin</span></a></li>
+            <li><a href="#iana-content-security-policy-pin"><span class="secno">8.1</span> <span class="content">
+      Content-Security-Policy-Pin
+    </span></a></li>
+            <li><a href="#iana-content-security-policy-report-only-pin"><span class="secno">8.2</span> <span class="content">
+      Content-Security-Policy-Report-Only-Pin
+    </span></a></li>
           </ul>
         </li>
         <li><a href="#acknowledgements"><span class="secno">9</span> <span class="content">Acknowledgements</span></a></li>
@@ -742,7 +753,11 @@ Conformance</span></a></li>
     response headers:
 
     
-          <pre>Content-Security-Policy-Pin: <a data-link-type="dfn" href="#max_age">max-age</a>: 10886400; <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>; default-src https:; object-src 'none'; report-uri /csp-endpoint/pinned
+          <pre>Content-Security-Policy-Pin: <a data-link-type="dfn" href="#max_age">max-age</a>: 10886400;
+                             <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>;
+                             default-src 'none';
+                             form-action 'none';
+                             report-uri /csp-endpoint/pinned
 Content-Security-Policy: script-src https://application1.cdn.com;
                          style-src https://application1.cdn.com;
                          connect-src 'self';
@@ -756,7 +771,11 @@ Content-Security-Policy: script-src https://application1.cdn.com;
           
 
     
-          <pre>Content-Security-Policy-Pin: <a data-link-type="dfn" href="#max_age">max-age</a>: 10886400; <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>; default-src https:; object-src 'none'; report-uri /csp-endpoint/pinned
+          <pre>Content-Security-Policy-Pin: <a data-link-type="dfn" href="#max_age">max-age</a>: 10886400;
+                             <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>;
+                             default-src https:;
+                             object-src 'none';
+                             report-uri /csp-endpoint/pinned
 Content-Security-Policy: script-src https://application2.cdn.com;
                          style-src https://application2.cdn.com;
 </pre>
@@ -835,6 +854,13 @@ Content-Security-Policy: script-src https://application2.cdn.com;
           potentially, its subdomains).
         </li>
               
+        
+              <li>
+          <dfn data-dfn-type="dfn" data-noexport="" id="mode">mode<a class="self-link" href="#mode"></a></dfn>: <code>monitor</code> if the <a data-link-type="dfn" href="#policy-directive-set" title="policy directive set">policy directive
+          set</a> is to be <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitored</a>, <code>enforce</code> if the
+          <a data-link-type="dfn" href="#policy-directive-set">policy directive set</a> is to be <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforced</a>.
+        </li>
+              
       
             </ol>
             
@@ -846,6 +872,10 @@ Content-Security-Policy: script-src https://application2.cdn.com;
 
   
         <h3 class="heading settled" data-level="2.2" id="terms-defined-by-reference"><span class="secno">2.2. </span><span class="content">Terms defined by reference</span><a class="self-link" href="#terms-defined-by-reference"></a></h3>
+
+
+        <p>The Augmented Backus-Naur Form (ABNF) notation used in <a data-section="" href="#policy-delivery">§3 Pinned Policy Delivery</a>
+  is specified in RFC5234. [ABNF]</p>
 
 
         <dl>
@@ -870,21 +900,37 @@ Content-Security-Policy: script-src https://application2.cdn.com;
 
 
         <p>A server MAY instruct a user agent to pin a single <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> by
-  sending a <code>Content-Security-Policy-Pin</code> HTTP response header field
-  along with a resource. <a data-section="" href="#policy-processing">§4 Pinned Policy Processing</a> defines the user agent’s
-  behavior when it receives such a response.</p>
+  sending either a <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> or
+  <code><a data-link-type="dfn" href="#content_security_policy_report_only_pin">Content-Security-Policy-Report-Only-Pin</a></code> HTTP response
+  header field along with a resource. <a data-section="" href="#policy-processing">§4 Pinned Policy Processing</a> defines the user
+  agent’s behavior when it receives such a response.</p>
+
+
+        <p>Once a policy is pinned, it will be either <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforced</a> or <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitored</a>
+  as specified for any resource that doesn’t <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> or <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitor</a>
+  its own policy. See <a data-section="" href="#pins-as-defaults">§7.1 Pins as a default</a> and <a data-section="" href="#pins-override-meta">§7.2 Pins override &lt;meta></a> for
+  authoring details.</p>
 
   
         <section>
     
-          <h3 class="heading settled" data-level="3.1" id="content-security-policy-header-field"><span class="secno">3.1. </span><span class="content">
+          <h3 class="heading settled" data-level="3.1" id="content-security-policy-pin-header-field"><span class="secno">3.1. </span><span class="content">
       <code>Content-Security-Policy-Pin</code> Header Field
-    </span><a class="self-link" href="#content-security-policy-header-field"></a></h3>
+    </span><a class="self-link" href="#content-security-policy-pin-header-field"></a></h3>
           
 
 
           <p>The <code><dfn data-dfn-type="dfn" data-export="" id="content_security_policy_pin">Content-Security-Policy-Pin<a class="self-link" href="#content_security_policy_pin"></a></dfn></code> header field
-    is the mechanism for delivering a pinned policy. The grammar is as follows:</p>
+    is the mechanism for delivering a pinned policy which the user agent MUST
+    <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> for any resource which is not delivered with a
+    <code>Content-Security-Policy</code> header (as described in the
+    <a data-section="" href="#apply-pinned-policy">§4.3 
+    Pin a policy to response.
+  </a> algorithm.</p>
+          
+
+
+          <p>The ABNF grammar is as follows:</p>
           
 
     
@@ -917,12 +963,7 @@ Content-Security-Policy: script-src https://application2.cdn.com;
     <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a> in order to ensure that pinning takes place
     for a given user agent no matter how they access a site. The value of the
     header SHOULD be the same for every <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a>, as the
-    goal is to enforce a consistent baseline policy for an entire origin.</p>
-          
-
-
-          <p class="issue" id="issue-f9178fd1"><a class="self-link" href="#issue-f9178fd1"></a>Should we define <code>Content-Security-Policy-Report-Only-Pin</code>
-    (or <code>Content-Security-Policy-Pin-Report-Only</code>, I guess)?</p>
+    goal is to enforce a consistent baseline policy for an entire set of hosts.</p>
           
   
         </section>
@@ -930,7 +971,64 @@ Content-Security-Policy: script-src https://application2.cdn.com;
   
         <section>
     
-          <h3 class="heading settled" data-level="3.2" id="csp-pins-syntax"><span class="secno">3.2. </span><span class="content">Pinned Policy Syntax</span><a class="self-link" href="#csp-pins-syntax"></a></h3>
+          <h3 class="heading settled" data-level="3.2" id="content-security-policy-report-only-pin-header-field"><span class="secno">3.2. </span><span class="content">
+      <code>Content-Security-Policy-Report-Only-Pin</code> Header Field
+    </span><a class="self-link" href="#content-security-policy-report-only-pin-header-field"></a></h3>
+          
+
+
+          <p>The <code><dfn data-dfn-type="dfn" data-export="" id="content_security_policy_report_only_pin">Content-Security-Policy-Report-Only-Pin<a class="self-link" href="#content_security_policy_report_only_pin"></a></dfn></code>
+    header field is the mechanism for delivering a pinned policy which the user
+    agent MUST <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitor</a> for any resource which is not delivered with a
+    <code>Content-Security-Policy-Report-Only</code> header (as described in the
+    <a data-section="" href="#apply-pinned-policy">§4.3 
+    Pin a policy to response.
+  </a> algorithm).</p>
+          
+
+
+          <p>The ABNF grammar is as follows:</p>
+          
+
+    
+          <pre>"Content-Security-Policy-Report-Only-Pin:" 1#&lt;<a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#policy-token" title="policy-token">policy-token production from CSP, Section 4.1</a>>
+</pre>
+          
+
+
+          <p>As with <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code>, a server MUST NOT
+    send a <code><a data-link-type="dfn" href="#content_security_policy_report_only_pin">Content-Security-Policy-Report-Only-Pin</a></code> header
+    with a <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-2">resource</a> delivered from an <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url" title="a priori insecure URL"><i lang="la">a priori</i>
+    insecure URL</a>. The threat is discussed in more detail in
+    <a data-section="" href="#hostile-pinning">§5.1 Hostile Pinning</a>.</p>
+          
+
+
+          <p class="note" role="note">Note: This means that pinning is only practically available over HTTPS.
+    This is intentional, as pinning is a "powerful feature" <a data-biblio-type="informative" data-link-type="biblio" href="#biblio-power" title="POWER">[POWER]</a>.</p>
+          
+
+
+          <p>A server MUST NOT send more than one HTTP header field named
+    <code>Content-Security-Policy-Report-Only-Pin</code> with a given
+    <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a>.</p>
+          
+
+
+          <p>A server SHOULD send a <code>Content-Security-Policy-Report-Only-Pin</code>
+    with every <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a> in order to ensure that pinning
+    takes place for a given user agent no matter how they access a site. The
+    value of the header SHOULD be the same for every <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3" title="resource representation">resource
+    representation</a>, as the goal is to monitor a consistent baseline policy
+    for an entire set of hosts.</p>
+          
+  
+        </section>
+
+  
+        <section>
+    
+          <h3 class="heading settled" data-level="3.3" id="csp-pins-syntax"><span class="secno">3.3. </span><span class="content">Pinned Policy Syntax</span><a class="self-link" href="#csp-pins-syntax"></a></h3>
           
 
 
@@ -938,11 +1036,6 @@ Content-Security-Policy: script-src https://application2.cdn.com;
     <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#content-security-policy">Content-Security-Policy</a></code> header, defined in 
     <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#policy-syntax" title="policy syntax">Section 4.1 of the Content Security Policy
     specification</a>.</p>
-          
-
-
-          <p>The Augmented Backus-Naur Form (ABNF) notation used below is specified in
-    RFC5234. [ABNF]</p>
           
 
 
@@ -954,7 +1047,7 @@ Content-Security-Policy: script-src https://application2.cdn.com;
     
           <section>
       
-            <h4 class="heading settled" data-level="3.2.1" id="max-age-directive"><span class="secno">3.2.1. </span><span class="content">The <code>max-age</code> directive</span><a class="self-link" href="#max-age-directive"></a></h4>
+            <h4 class="heading settled" data-level="3.3.1" id="max-age-directive"><span class="secno">3.3.1. </span><span class="content">The <code>max-age</code> directive</span><a class="self-link" href="#max-age-directive"></a></h4>
             
 
 
@@ -987,7 +1080,7 @@ directive-value = 1*DIGIT
     
           <section>
       
-            <h4 class="heading settled" data-level="3.2.2" id="includesubdomains-directive"><span class="secno">3.2.2. </span><span class="content">
+            <h4 class="heading settled" data-level="3.3.2" id="includesubdomains-directive"><span class="secno">3.3.2. </span><span class="content">
         The <code>includeSubDomains</code> directive
       </span><a class="self-link" href="#includesubdomains-directive"></a></h4>
             
@@ -1016,9 +1109,9 @@ directive-value = 1*DIGIT
         <h2 class="heading settled" data-level="4" id="policy-processing"><span class="secno">4. </span><span class="content">Pinned Policy Processing</span><a class="self-link" href="#policy-processing"></a></h2>
 
   
-        <h3 class="heading settled" data-level="4.1" id="discover-a-pinned-policy"><span class="secno">4.1. </span><span class="content">
-     Discover a pinned policy for <var>response</var>.
-  </span><a class="self-link" href="#discover-a-pinned-policy"></a></h3>
+        <h3 class="heading settled" data-level="4.1" id="discover-pinned-policy"><span class="secno">4.1. </span><span class="content">
+     Discover pinned policies for <var>response</var>.
+  </span><a class="self-link" href="#discover-pinned-policy"></a></h3>
 
 
         <p>Upon receiving a Response <var>response</var> containing at least one
@@ -1048,46 +1141,45 @@ directive-value = 1*DIGIT
 
     
           <li>
-      If <var>value</var> is <code>null</code>, abort these steps.
+      If <var>value</var> is not <code>null</code>, then execute the
+      <a data-section="" href="#pin-policy">§4.2 
+    Pin policy for origin in mode.
+  </a> algorithm, passing in <var>value</var>, the
+      <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-origin" title="origin of a url">origin</a> of <var>response</var>’s URL,
+      and <code>enforce</code>.
     </li>
           
 
     
           <li>
-      If <var>origin</var>’s <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-host">host</a> is an IPv4 or IPv6 address, output a
-      developer-friendly warning, and abort these steps.
+      Let <var>value</var> be the result of <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse" title="parse header">parsing</a>
+      <code>Content-Security-Policy-Report-Only-Pin</code> in
+      <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a>.
     </li>
           
 
     
           <li>
-      Let <var>directives</var> be the result of executing the <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#parse-the-policy" title="parse the policy">parse the
-      policy</a> algorithm on <var>value</var>.
-    </li>
-          
-
-    
-          <li>
-      If <var>directives</var> does <strong>not</strong> contain a
-      <code><a data-link-type="dfn" href="#max_age">max-age</a></code> directive, then output a developer-friendly
-      warning, and abort these steps.
-    </li>
-          
-
-    
-          <li>
-      Execute <a data-section="" href="#pin-a-policy">§4.2 Pin policy for origin.</a>, passing in <var>directives</var> and the
+      If <var>value</var> is not <code>null</code>, then execute the
+      <a data-section="" href="#pin-policy">§4.2 
+    Pin policy for origin in mode.
+  </a> algorithm, passing in <var>value</var>, the
+      <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-origin" title="origin of a url">origin</a> of <var>response</var>’s URL,
+      and <code>monitor</code>.
     </li>
           
   
         </ol>
 
   
-        <h3 class="heading settled" data-level="4.2" id="pin-a-policy"><span class="secno">4.2. </span><span class="content">Pin <var>policy</var> for <var>origin</var>.</span><a class="self-link" href="#pin-a-policy"></a></h3>
+        <h3 class="heading settled" data-level="4.2" id="pin-policy"><span class="secno">4.2. </span><span class="content">
+    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>.
+  </span><a class="self-link" href="#pin-policy"></a></h3>
 
 
-        <p>Given an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">Origin</a> <var>origin</var>, and a parsed set of directives
-  <var>policy</var>, this algorithm defines the user agent behavior which
+        <p>Given an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">Origin</a> <var>origin</var>, a parsed set of directives
+  <var>policy</var>, and a <var>mode</var> (either <code>enforce</code> or
+  <code>monitor</code>), this algorithm defines the user agent behavior which
   results in a <a data-link-type="dfn" href="#pinned-security-policy">pinned policy</a> for <var>origin</var>.</p>
 
   
@@ -1097,6 +1189,29 @@ directive-value = 1*DIGIT
       Let <var>host</var> be the host component of <var>origin</var>.
     </li>
           
+
+    
+          <li>
+      If <var>host</var> is an IPv4 or IPv6 address, output a developer-friendly
+      warning, and abort these steps.
+    </li>
+          
+
+    
+          <li>
+      Let <var>policy</var> be the result of executing the <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#parse-the-policy" title="parse the policy">parse the
+      policy</a> algorithm on <var>directives</var>.
+    </li>
+          
+
+    
+          <li>
+      If <var>policy</var> does <strong>not</strong> contain a
+      <code><a data-link-type="dfn" href="#max_age">max-age</a></code> directive, then output a developer-friendly
+      warning, and abort these steps.
+    </li>
+          
+
     
           <li>
       Let <var>subdomains</var> be <code>true</code> if an
@@ -1127,6 +1242,10 @@ directive-value = 1*DIGIT
       <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a> according to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-8.2" title="Known HSTS Host domain name matching">Known HSTS Host domain name
       matching</a> algorithm specified in <a data-biblio-type="normative" data-link-type="biblio" href="#biblio-rfc6797" title="RFC6797">[RFC6797]</a>, then update the
       <a data-link-type="dfn" href="#pinned-security-policy">pinned policy</a> <var>pinned</var> as follows:
+
+
+            <p class="issue" id="issue-df39d4b4"><a class="self-link" href="#issue-df39d4b4"></a>Add a more explicit "Get a policy for host and mode." algorithm.</p>
+            
 
       
             <ol>
@@ -1176,7 +1295,7 @@ directive-value = 1*DIGIT
           
     
           <li>
-      Otherwise, <var>host</var> is not a <a data-link-type="dfn" href="#protected-host">protected host</a>. If'
+      Otherwise, <var>host</var> is not a <a data-link-type="dfn" href="#protected-host">protected host</a>. If
       <var>TTL</var> is not <code>0</code>, then:
 
       
@@ -1211,6 +1330,11 @@ directive-value = 1*DIGIT
               
         
               <li>
+          Set <var>pinned</var>’s <a data-link-type="dfn" href="#mode">mode</a> to <var>mode</var>. 
+        </li>
+              
+        
+              <li>
           Add <var>pinned</var> to the <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a>.
         </li>
               
@@ -1224,9 +1348,9 @@ directive-value = 1*DIGIT
         </ol>
 
   
-        <h3 class="heading settled" data-level="4.3" id="enforce-a-pinned-policy"><span class="secno">4.3. </span><span class="content">
+        <h3 class="heading settled" data-level="4.3" id="apply-pinned-policy"><span class="secno">4.3. </span><span class="content">
     Pin a policy to <var>response</var>.
-  </span><a class="self-link" href="#enforce-a-pinned-policy"></a></h3>
+  </span><a class="self-link" href="#apply-pinned-policy"></a></h3>
 
 
         <p>Upon receiving a Response <var>response</var>, ensure that it contains
@@ -1244,20 +1368,6 @@ directive-value = 1*DIGIT
 
   
         <ol>
-    
-          <li>
-      Let <var>value</var> be the result of <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse" title="parse header">parsing</a>
-      <code>Content-Security-Policy</code> in <var>response</var>’s
-      <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a>.
-    </li>
-          
-
-    
-          <li>
-      If <var>value</var> is not <code>null</code>, then abort these steps.
-    </li>
-          
-
     
           <li>
       Let <var>host</var> be the <a data-link-type="dfn" href="https://url.spec.whatwg.org/#concept-url-host">host</a> component of <var>response</var>’s
@@ -1279,12 +1389,90 @@ directive-value = 1*DIGIT
           associated with that <a data-link-type="dfn" href="#protected-host">protected host</a>.
         </li>
               
+
         
               <li>
-          Append a header named <code>Content-Security-Policy</code> with a
-          value of <var>pinned policy</var> to <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list" title="header list">header
-          list</a>.
-        </li>
+          If <var>pinned policy</var>’s <a data-link-type="dfn" href="#mode">mode</a> attribute is
+          <code>monitor</code>:
+
+          
+                <ol>
+            
+                  <li>
+              Let <var>value</var> be the result of
+              <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse" title="parse header">parsing</a>
+              <code>Content-Security-Policy-Report-Only</code> in
+              <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a>.
+            </li>
+                  
+
+            
+                  <li>
+              If <var>value</var> is <code>null</code>:
+
+              
+                    <ol>
+                
+                      <li>
+                  Append a header named
+                  <code>Content-Security-Policy-Report-Only</code> with a value
+                  of <var>pinned policy</var> to <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list" title="header list">header
+                  list</a>.
+                </li>
+                      
+              
+                    </ol>
+                    
+            
+                  </li>
+                  
+          
+                </ol>
+                
+        
+              </li>
+              
+
+        
+              <li>
+          Otherwise, <var>pinned policy</var>’s <a data-link-type="dfn" href="#mode">mode</a> attribute is
+          <code>enforce</code>, so:
+
+          
+                <ol>
+            
+                  <li>
+              Let <var>value</var> be the result of
+              <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse" title="parse header">parsing</a>
+              <code>Content-Security-Policy</code> in <var>response</var>’s
+              <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a>.
+            </li>
+                  
+
+            
+                  <li>
+              If <var>value</var> is <code>null</code>:
+
+              
+                    <ol>
+                
+                      <li>
+                  Append a header named <code>Content-Security-Policy</code> with a
+                  value of <var>pinned policy</var> to <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list" title="header list">header
+                  list</a>.
+                </li>
+                      
+              
+                    </ol>
+                    
+            
+                  </li>
+                  
+          
+                </ol>
+                
+        
+              </li>
               
       
             </ol>
@@ -1326,12 +1514,22 @@ directive-value = 1*DIGIT
         <h2 class="heading settled" data-level="7" id="authoring-considerations"><span class="secno">7. </span><span class="content">Authoring Considerations</span><a class="self-link" href="#authoring-considerations"></a></h2>
 
   
-        <h3 class="heading settled" data-level="7.1" id="baseline"><span class="secno">7.1. </span><span class="content">Pins as a baseline</span><a class="self-link" href="#baseline"></a></h3>
+        <h3 class="heading settled" data-level="7.1" id="pins-as-defaults"><span class="secno">7.1. </span><span class="content">Pins as a default</span><a class="self-link" href="#pins-as-defaults"></a></h3>
 
 
         <p class="issue" id="issue-c9a0c3af"><a class="self-link" href="#issue-c9a0c3af"></a>Explain something about the theory; pins act as a baseline for
   resources that don’t otherwise have a policy. Explain layering, granularity,
   etc.</p>
+
+  
+        <h3 class="heading settled" data-level="7.2" id="pins-override-meta"><span class="secno">7.2. </span><span class="content">Pins override <code>&lt;meta></code></span><a class="self-link" href="#pins-override-meta"></a></h3>
+
+
+        <p>Pinned policies are applied before <a data-link-type="element" href="http://www.w3.org/TR/html5/#the-meta-element">meta</a> elements can be
+  discovered.</p>
+
+
+        <p class="issue" id="issue-76e72535"><a class="self-link" href="#issue-76e72535"></a>Explain the impact.</p>
 </section>
 
 
@@ -1346,7 +1544,9 @@ directive-value = 1*DIGIT
   
         <section>
     
-          <h3 class="heading settled" data-level="8.1" id="iana-content-security-policy"><span class="secno">8.1. </span><span class="content">Content-Security-Policy-Pin</span><a class="self-link" href="#iana-content-security-policy"></a></h3>
+          <h3 class="heading settled" data-level="8.1" id="iana-content-security-policy-pin"><span class="secno">8.1. </span><span class="content">
+      Content-Security-Policy-Pin
+    </span><a class="self-link" href="#iana-content-security-policy-pin"></a></h3>
           
 
     
@@ -1384,6 +1584,57 @@ directive-value = 1*DIGIT
             
       
             <dd>This specification (See <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code>
+      Header Field)</dd>
+            
+    
+          </dl>
+          
+  
+        </section>
+
+  
+        <section>
+    
+          <h3 class="heading settled" data-level="8.2" id="iana-content-security-policy-report-only-pin"><span class="secno">8.2. </span><span class="content">
+      Content-Security-Policy-Report-Only-Pin
+    </span><a class="self-link" href="#iana-content-security-policy-report-only-pin"></a></h3>
+          
+
+    
+          <dl>
+      
+            <dt>Header field name</dt>
+            
+      
+            <dd>Content-Security-Policy-Report-Only-Pin</dd>
+            
+
+      
+            <dt>Applicable protocol</dt>
+            
+      
+            <dd>http</dd>
+            
+
+      
+            <dt>Status</dt>
+            
+      
+            <dd>standard</dd>
+            
+
+      
+            <dt>Author/Change controller</dt>
+            
+      
+            <dd>W3C</dd>
+            
+
+      
+            <dt>Specification document</dt>
+            
+      
+            <dd>This specification (See <code><a data-link-type="dfn" href="#content_security_policy_report_only_pin">Content-Security-Policy-Report-Only-Pin</a></code>
       Header Field)</dd>
             
     
@@ -1468,8 +1719,10 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
     <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
     <ul class="indexlist">
       <li>Content-Security-Policy-Pin, <a href="#content_security_policy_pin" title="section 3.1">3.1</a></li>
-      <li>includeSubDomains, <a href="#includesubdomains" title="section 3.2.2">3.2.2</a></li>
-      <li>max-age, <a href="#max_age" title="section 3.2.1">3.2.1</a></li>
+      <li>Content-Security-Policy-Report-Only-Pin, <a href="#content_security_policy_report_only_pin" title="section 3.2">3.2</a></li>
+      <li>includeSubDomains, <a href="#includesubdomains" title="section 3.3.2">3.3.2</a></li>
+      <li>max-age, <a href="#max_age" title="section 3.3.1">3.3.1</a></li>
+      <li>mode, <a href="#mode" title="section 2.1">2.1</a></li>
       <li>pinned policy, <a href="#pinned-security-policy" title="section 2.1">2.1</a></li>
       <li>pinned policy cache, <a href="#pinned-policy-cache" title="section 2.1">2.1</a></li>
       <li>pinned security policy, <a href="#pinned-security-policy" title="section 2.1">2.1</a></li>
@@ -1480,10 +1733,9 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
     </ul>
     <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
     <div style="counter-reset:issue">
-      <div class="issue">Should we define <code>Content-Security-Policy-Report-Only-Pin</code>
-    (or <code>Content-Security-Policy-Pin-Report-Only</code>, I guess)?<a href="#issue-f9178fd1"> ↵ </a></div>
       <div class="issue">This should probably be hooked from Fetch, probably after step #4 of
   the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#fetch">fetching</a> algorithm. Hi, Anne!<a href="#issue-5552adf7"> ↵ </a></div>
+      <div class="issue">Add a more explicit "Get a policy for host and mode." algorithm.<a href="#issue-df39d4b4"> ↵ </a></div>
       <div class="issue">This should probably be hooked from Fetch, probably after step #4 of
   the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#fetch">fetching</a> algorithm. Hi, Anne!<a href="#issue-5552adf7"> ↵ </a></div>
       <div class="issue">Does this inject the policy early enough for
@@ -1494,5 +1746,6 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
       <div class="issue">Explain something about the theory; pins act as a baseline for
   resources that don’t otherwise have a policy. Explain layering, granularity,
   etc.<a href="#issue-c9a0c3af"> ↵ </a></div>
+      <div class="issue">Explain the impact.<a href="#issue-76e72535"> ↵ </a></div>
     </div></body>
 </html>

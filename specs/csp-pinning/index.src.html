@@ -149,7 +149,12 @@ type: dfn
     text: parse the policy
     text: policy syntax
     text: content-security-policy
-    text: enforce
+    url: enforce
+      text: enforce
+      text: enforced
+    url: monitor
+      text: monitor
+      text: monitored
   urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
     text: a priori insecure url
   urlPrefix: https://tools.ietf.org/html/rfc7231
@@ -332,11 +337,19 @@ type: dfn
           {{Document}} and {{Worker}} served from <a>protected host</a> (and,
           potentially, its subdomains).
         </li>
+        <li>
+          <dfn>mode</dfn>: <code>monitor</code> if the <a>policy directive
+          set</a> is to be <a>monitored</a>, <code>enforce</code> if the
+          <a>policy directive set</a> is to be <a>enforced</a>.
+        </li>
       </ol>
     </dd>
   </dl>
 
   <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
+  
+  The Augmented Backus-Naur Form (ABNF) notation used in [[#policy-delivery]]
+  is specified in RFC5234. [ABNF]
 
   : <a>origin</a>
   :: Defined in [[!RFC6454]]
@@ -355,17 +368,28 @@ type: dfn
   <h2 id="policy-delivery">Pinned Policy Delivery</h2>
 
   A server MAY instruct a user agent to pin a single <a>security policy</a> by
-  sending a <code>Content-Security-Policy-Pin</code> HTTP response header field
-  along with a resource. [[#policy-processing]] defines the user agent's
-  behavior when it receives such a response.
+  sending either a <code><a>Content-Security-Policy-Pin</a></code> or
+  <code><a>Content-Security-Policy-Report-Only-Pin</a></code> HTTP response
+  header field along with a resource. [[#policy-processing]] defines the user
+  agent's behavior when it receives such a response.
+
+  Once a policy is pinned, it will be either <a>enforced</a> or <a>monitored</a>
+  as specified for any resource that doesn't <a>enforce</a> or <a>monitor</a>
+  its own policy. See [[#pins-as-defaults]] and [[#pins-override-meta]] for
+  authoring details.
 
   <section>
-    <h3 id="content-security-policy-header-field">
+    <h3 id="content-security-policy-pin-header-field">
       <code>Content-Security-Policy-Pin</code> Header Field
     </h3>
 
     The <code><dfn export>Content-Security-Policy-Pin</dfn></code> header field
-    is the mechanism for delivering a pinned policy. The grammar is as follows:
+    is the mechanism for delivering a pinned policy which the user agent MUST
+    <a>enforce</a> for any resource which is not delivered with a
+    <code>Content-Security-Policy</code> header (as described in the
+    [[#apply-pinned-policy]] algorithm.
+    
+    The ABNF grammar is as follows:
 
     <pre>
       "Content-Security-Policy-Pin:" 1#&lt;<a title="policy-token">policy-token production from CSP, Section 4.1</a>&gt;
@@ -389,10 +413,45 @@ type: dfn
     <a>resource representation</a> in order to ensure that pinning takes place
     for a given user agent no matter how they access a site. The value of the
     header SHOULD be the same for every <a>resource representation</a>, as the
-    goal is to enforce a consistent baseline policy for an entire origin.
+    goal is to enforce a consistent baseline policy for an entire set of hosts.
+  </section>
 
-    ISSUE: Should we define <code>Content-Security-Policy-Report-Only-Pin</code>
-    (or <code>Content-Security-Policy-Pin-Report-Only</code>, I guess)?
+  <section>
+    <h3 id="content-security-policy-report-only-pin-header-field">
+      <code>Content-Security-Policy-Report-Only-Pin</code> Header Field
+    </h3>
+
+    The <code><dfn export>Content-Security-Policy-Report-Only-Pin</dfn></code>
+    header field is the mechanism for delivering a pinned policy which the user
+    agent MUST <a>monitor</a> for any resource which is not delivered with a
+    <code>Content-Security-Policy-Report-Only</code> header (as described in the
+    [[#apply-pinned-policy]] algorithm).
+    
+    The ABNF grammar is as follows:
+
+    <pre>
+      "Content-Security-Policy-Report-Only-Pin:" 1#&lt;<a title="policy-token">policy-token production from CSP, Section 4.1</a>&gt;
+    </pre>
+
+    As with <code><a>Content-Security-Policy-Pin</a></code>, a server MUST NOT
+    send a <code><a>Content-Security-Policy-Report-Only-Pin</a></code> header
+    with a <a>resource</a> delivered from an <a><i lang="la">a priori</i>
+    insecure URL</a>. The threat is discussed in more detail in
+    [[#hostile-pinning]].
+
+    Note: This means that pinning is only practically available over HTTPS.
+    This is intentional, as pinning is a "powerful feature" [[POWER]].
+
+    A server MUST NOT send more than one HTTP header field named
+    <code>Content-Security-Policy-Report-Only-Pin</code> with a given
+    <a>resource representation</a>.
+
+    A server SHOULD send a <code>Content-Security-Policy-Report-Only-Pin</code>
+    with every <a>resource representation</a> in order to ensure that pinning
+    takes place for a given user agent no matter how they access a site. The
+    value of the header SHOULD be the same for every <a>resource
+    representation</a>, as the goal is to monitor a consistent baseline policy
+    for an entire set of hosts.
   </section>
 
   <section>
@@ -402,9 +461,6 @@ type: dfn
     <code><a>Content-Security-Policy</a></code> header, defined in 
     <a title="policy syntax">Section 4.1 of the Content Security Policy
     specification</a>.
-
-    The Augmented Backus-Naur Form (ABNF) notation used below is specified in
-    RFC5234. [ABNF]
 
     A pinned policy's value MUST contain a <code><a>max-age</a></code>
     directive, and MAY contain a <code><a>includeSubDomains</a></code>
@@ -452,8 +508,8 @@ type: dfn
 <section>
   <h2 id="policy-processing">Pinned Policy Processing</h2>
 
-  <h3 id="discover-a-pinned-policy">
-     Discover a pinned policy for <var>response</var>.
+  <h3 id="discover-pinned-policy">
+     Discover pinned policies for <var>response</var>.
   </h3>
 
   Upon receiving a Response <var>response</var> containing at least one
@@ -476,40 +532,56 @@ type: dfn
     </li>
 
     <li>
-      If <var>value</var> is <code>null</code>, abort these steps.
+      If <var>value</var> is not <code>null</code>, then execute the
+      [[#pin-policy]] algorithm, passing in <var>value</var>, the
+      <a title="origin of a url">origin</a> of <var>response</var>'s URL,
+      and <code>enforce</code>.
     </li>
 
     <li>
-      If <var>origin</var>'s <a>host</a> is an IPv4 or IPv6 address, output a
-      developer-friendly warning, and abort these steps.
+      Let <var>value</var> be the result of <a title="parse header">parsing</a>
+      <code>Content-Security-Policy-Report-Only-Pin</code> in
+      <var>response</var>'s <a>header list</a>.
     </li>
 
     <li>
-      Let <var>directives</var> be the result of executing the <a>parse the
-      policy</a> algorithm on <var>value</var>.
-    </li>
-
-    <li>
-      If <var>directives</var> does <strong>not</strong> contain a
-      <code><a>max-age</a></code> directive, then output a developer-friendly
-      warning, and abort these steps.
-    </li>
-
-    <li>
-      Execute [[#pin-a-policy]], passing in <var>directives</var> and the
+      If <var>value</var> is not <code>null</code>, then execute the
+      [[#pin-policy]] algorithm, passing in <var>value</var>, the
+      <a title="origin of a url">origin</a> of <var>response</var>'s URL,
+      and <code>monitor</code>.
     </li>
   </ol>
 
-  <h3 id="pin-a-policy">Pin <var>policy</var> for <var>origin</var>.</h3>
+  <h3 id="pin-policy">
+    Pin <var>policy</var> for <var>origin</var> in <var>mode</var>.
+  </h3>
 
-  Given an <a>Origin</a> <var>origin</var>, and a parsed set of directives
-  <var>policy</var>, this algorithm defines the user agent behavior which
+  Given an <a>Origin</a> <var>origin</var>, a parsed set of directives
+  <var>policy</var>, and a <var>mode</var> (either <code>enforce</code> or
+  <code>monitor</code>), this algorithm defines the user agent behavior which
   results in a <a>pinned policy</a> for <var>origin</var>.
 
   <ol>
     <li>
       Let <var>host</var> be the host component of <var>origin</var>.
     </li>
+
+    <li>
+      If <var>host</var> is an IPv4 or IPv6 address, output a developer-friendly
+      warning, and abort these steps.
+    </li>
+
+    <li>
+      Let <var>policy</var> be the result of executing the <a>parse the
+      policy</a> algorithm on <var>directives</var>.
+    </li>
+
+    <li>
+      If <var>policy</var> does <strong>not</strong> contain a
+      <code><a>max-age</a></code> directive, then output a developer-friendly
+      warning, and abort these steps.
+    </li>
+
     <li>
       Let <var>subdomains</var> be <code>true</code> if an
       <code><a>includeSubDomains</a></code> is present in <var>policy</var>,
@@ -531,6 +603,8 @@ type: dfn
       <a>pinned policy cache</a> according to the <a>Known HSTS Host domain name
       matching</a> algorithm specified in [[!RFC6797]], then update the
       <a>pinned policy</a> <var>pinned</var> as follows:
+
+      ISSUE: Add a more explicit "Get a policy for host and mode." algorithm.
    
       <ol>
         <li>
@@ -560,7 +634,7 @@ type: dfn
       </ol>
     </li>
     <li>
-      Otherwise, <var>host</var> is not a <a>protected host</a>. If'
+      Otherwise, <var>host</var> is not a <a>protected host</a>. If
       <var>TTL</var> is not <code>0</code>, then:
      
       <ol>
@@ -583,13 +657,16 @@ type: dfn
           <var>policy</var>.
         </li>
         <li>
+          Set <var>pinned</var>'s <a>mode</a> to <var>mode</var>. 
+        </li>
+        <li>
           Add <var>pinned</var> to the <a>pinned policy cache</a>.
         </li>
       </ol>
     </li>
   </ol>
 
-  <h3 id="enforce-a-pinned-policy">
+  <h3 id="apply-pinned-policy">
     Pin a policy to <var>response</var>.
   </h3>
 
@@ -606,16 +683,6 @@ type: dfn
 
   <ol>
     <li>
-      Let <var>value</var> be the result of <a title="parse header">parsing</a>
-      <code>Content-Security-Policy</code> in <var>response</var>'s
-      <a>header list</a>.
-    </li>
-
-    <li>
-      If <var>value</var> is not <code>null</code>, then abort these steps.
-    </li>
-
-    <li>
       Let <var>host</var> be the <a>host</a> component of <var>response</var>'s
       URL's <a title="origin of a url">origin</a>.
     </li>
@@ -630,10 +697,58 @@ type: dfn
           Let <var>pinned policy</var> be the <a>policy directive set</a>
           associated with that <a>protected host</a>.
         </li>
+        
         <li>
-          Append a header named <code>Content-Security-Policy</code> with a
-          value of <var>pinned policy</var> to <var>response</var>'s <a>header
-          list</a>.
+          If <var>pinned policy</var>'s <a>mode</a> attribute is
+          <code>monitor</code>:
+
+          <ol>
+            <li>
+              Let <var>value</var> be the result of
+              <a title="parse header">parsing</a>
+              <code>Content-Security-Policy-Report-Only</code> in
+              <var>response</var>'s <a>header list</a>.
+            </li>
+
+            <li>
+              If <var>value</var> is <code>null</code>:
+
+              <ol>
+                <li>
+                  Append a header named
+                  <code>Content-Security-Policy-Report-Only</code> with a value
+                  of <var>pinned policy</var> to <var>response</var>'s <a>header
+                  list</a>.
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+
+        <li>
+          Otherwise, <var>pinned policy</var>'s <a>mode</a> attribute is
+          <code>enforce</code>, so:
+
+          <ol>
+            <li>
+              Let <var>value</var> be the result of
+              <a title="parse header">parsing</a>
+              <code>Content-Security-Policy</code> in <var>response</var>'s
+              <a>header list</a>.
+            </li>
+
+            <li>
+              If <var>value</var> is <code>null</code>:
+
+              <ol>
+                <li>
+                  Append a header named <code>Content-Security-Policy</code> with a
+                  value of <var>pinned policy</var> to <var>response</var>'s <a>header
+                  list</a>.
+                </li>
+              </ol>
+            </li>
+          </ol>
         </li>
       </ol>
     </li>
@@ -659,11 +774,18 @@ type: dfn
 <section>
   <h2 id="authoring-considerations">Authoring Considerations</h2>
 
-  <h3 id="baseline">Pins as a baseline</h3>
+  <h3 id="pins-as-defaults">Pins as a default</h3>
 
   ISSUE: Explain something about the theory; pins act as a baseline for
   resources that don't otherwise have a policy. Explain layering, granularity,
   etc.
+
+  <h3 id="pins-override-meta">Pins override <code>&lt;meta&gt;</code></h3>
+
+  Pinned policies are applied before <a element>meta</a> elements can be
+  discovered.
+
+  ISSUE: Explain the impact.
 </section>
 <!--
 ████    ███    ██    ██    ███
@@ -681,7 +803,9 @@ type: dfn
   with the following registrations: [[!RFC3864]]
 
   <section>
-    <h3 id="iana-content-security-policy">Content-Security-Policy-Pin</h3>
+    <h3 id="iana-content-security-policy-pin">
+      Content-Security-Policy-Pin
+    </h3>
 
     <dl>
       <dt>Header field name</dt>
@@ -698,6 +822,30 @@ type: dfn
 
       <dt>Specification document</dt>
       <dd>This specification (See <code><a>Content-Security-Policy-Pin</a></code>
+      Header Field)</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h3 id="iana-content-security-policy-report-only-pin">
+      Content-Security-Policy-Report-Only-Pin
+    </h3>
+
+    <dl>
+      <dt>Header field name</dt>
+      <dd>Content-Security-Policy-Report-Only-Pin</dd>
+
+      <dt>Applicable protocol</dt>
+      <dd>http</dd>
+
+      <dt>Status</dt>
+      <dd>standard</dd>
+
+      <dt>Author/Change controller</dt>
+      <dd>W3C</dd>
+
+      <dt>Specification document</dt>
+      <dd>This specification (See <code><a>Content-Security-Policy-Report-Only-Pin</a></code>
       Header Field)</dd>
     </dl>
   </section>
