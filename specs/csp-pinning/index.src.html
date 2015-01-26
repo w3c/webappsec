@@ -166,6 +166,8 @@ type: dfn
     text: header list; url: concept-response-header-list
   urlPrefix: https://tools.ietf.org/html/rfc6797
     text: known HSTS host domain name matching; url: section-8.2
+    text: superdomain match; url: section-8.2
+    text: congruent match; url: section-8.2
   urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: webappapis.html
       text: environment settings object; url: settings-object
@@ -526,20 +528,24 @@ type: interface
      policies</a> are applied, according to the [[#apply-pinned-policy]]
      algorithm.
 
+  ISSUE: We probably need a hook in [[Fetch]]. Hi, Anne! Let's chat! In
+  particular, we need to ensure that we detect and pin a policy early enough
+  for <code>frame-ancestors</code> and <code>referrer</code> to handle blocking
+  and redirects.
+
   Periodically, the user agent will run through the <a>pinned policies</a> it
   has stored in the <a>pinned policy cache</a>, and remove those which have
   expired, according to the [[#expire-pinned-policies]] algorithm.
 
-  <h3 id="discover-pinned-policy">
+  <h3 id="fetching-algorithms">Fetching Algorithms</h3>
+
+  <h4 id="discover-pinned-policy">
      Discover pinned policies for <var>response</var>
-  </h3>
+  </h4>
 
   Upon receiving a {{Response}} <var>response</var> containing at least one
   <code><a>Content-Security-Policy-Pin</a></code> header field, the user agent
   MUST peform the following steps:
-
-  ISSUE: This should probably be hooked from Fetch, probably after step #4 of
-  the <a>fetching</a> algorithm. Hi, Anne!
 
   <ol>
     <li>
@@ -574,9 +580,9 @@ type: interface
     </li>
   </ol>
 
-  <h3 id="pin-policy">
+  <h4 id="pin-policy">
     Pin <var>policy</var> for <var>origin</var> in <var>mode</var>
-  </h3>
+  </h4>
 
   Given an <a>Origin</a> <var>origin</var>, a parsed set of directives
   <var>policy</var>, and a <var>mode</var> (either <code>enforce</code> or
@@ -621,12 +627,12 @@ type: interface
       <code><a>includeSubDomains</a></code> directives from <var>policy</var>.
     </li>
     <li>
-      If <var>host</var> matches any <a>protected host</a> in the user agent's
-      <a>pinned policy cache</a> according to the <a>Known HSTS Host domain name
-      matching</a> algorithm specified in [[!RFC6797]], then update the
-      <a>pinned policy</a> <var>pinned</var> as follows:
-
-      ISSUE: Add a more explicit "Get a policy for host and mode." algorithm.
+      Let <var>pinned</var> be the result of executing
+      [[#pinned-policy-for-host]] for <var>mode</var> and <var>host</var>.
+    </li>
+    <li>
+      If <var>pinned</var> is not <code>null</code>, then update the <a>pinned
+      policy</a> <var>pinned</var> as follows:
    
       <ol>
         <li>
@@ -688,20 +694,13 @@ type: interface
     </li>
   </ol>
 
-  <h3 id="apply-pinned-policy">
+  <h4 id="apply-pinned-policy">
     Pin a policy to <var>response</var>
-  </h3>
+  </h4>
 
   Upon receiving a {{Response}} <var>response</var>, ensure that it contains
   appropriate <code>Content-Security-Policy</code> headers by performing the
   following steps:
-
-  ISSUE: This should probably be hooked from Fetch, probably after step #4 of
-  the <a>fetching</a> algorithm. Hi, Anne!
-
-  ISSUE: Does this inject the policy early enough for
-  <code>frame-ancestors</code>? Probably. Is it early enough for
-  <code>referrer</code> to handle redirects? Possibly?
 
   <ol>
     <li>
@@ -710,65 +709,60 @@ type: interface
     </li>
 
     <li>
-      If <var>host</var> matches any <a>protected host</a> in the user agent's
-      <a>pinned policy cache</a> according to the <a>Known HSTS Host domain name
-      matching</a> algorithm specified in [[!RFC6797]]:
-   
+      Let <var>pinned</var> be the result of executing
+      [[#pinned-policy-for-host]] for <code>enforce</code> and <var>host</var>.
+    </li>
+
+    <li>
+      If <var>pinned</var> is not <code>null</code>:
+
       <ol>
         <li>
-          Let <var>pinned policy</var> be the <a>policy directive set</a>
-          associated with that <a>protected host</a>.
+          Let <var>value</var> be the result of
+          <a title="parse header">parsing</a>
+          <code>Content-Security-Policy</code> in <var>response</var>'s
+          <a>header list</a>.
         </li>
-        
+
         <li>
-          If <var>pinned policy</var>'s <a>mode</a> attribute is
-          <code>monitor</code>:
+          If <var>value</var> is <code>null</code>:
 
           <ol>
             <li>
-              Let <var>value</var> be the result of
-              <a title="parse header">parsing</a>
-              <code>Content-Security-Policy-Report-Only</code> in
+              Append a header named <code>Content-Security-Policy</code> with a
+              value of <var>pinned</var>'s <a>policy directive set</a> to
               <var>response</var>'s <a>header list</a>.
-            </li>
-
-            <li>
-              If <var>value</var> is <code>null</code>:
-
-              <ol>
-                <li>
-                  Append a header named
-                  <code>Content-Security-Policy-Report-Only</code> with a value
-                  of <var>pinned policy</var> to <var>response</var>'s <a>header
-                  list</a>.
-                </li>
-              </ol>
             </li>
           </ol>
         </li>
+      </ol>
+    </li>
+
+    <li>
+      Let <var>pinned</var> be the result of executing
+      [[#pinned-policy-for-host]] for <code>monitor</code> and <var>host</var>.
+    </li>
+
+    <li>
+      If <var>pinned</var> is not <code>null</code>:
+
+      <ol>
+        <li>
+          Let <var>value</var> be the result of
+          <a title="parse header">parsing</a>
+          <code>Content-Security-Policy-Report-Only</code> in
+          <var>response</var>'s <a>header list</a>.
+        </li>
 
         <li>
-          Otherwise, <var>pinned policy</var>'s <a>mode</a> attribute is
-          <code>enforce</code>, so:
+          If <var>value</var> is <code>null</code>:
 
           <ol>
             <li>
-              Let <var>value</var> be the result of
-              <a title="parse header">parsing</a>
-              <code>Content-Security-Policy</code> in <var>response</var>'s
-              <a>header list</a>.
-            </li>
-
-            <li>
-              If <var>value</var> is <code>null</code>:
-
-              <ol>
-                <li>
-                  Append a header named <code>Content-Security-Policy</code> with a
-                  value of <var>pinned policy</var> to <var>response</var>'s <a>header
-                  list</a>.
-                </li>
-              </ol>
+              Append a header named
+              <code>Content-Security-Policy-Report-Only</code> with a value of
+              <var>pinned</var>'s <a>policy directive set</a> to
+              <var>response</var>'s <a>header list</a>.
             </li>
           </ol>
         </li>
@@ -776,9 +770,56 @@ type: interface
     </li>
   </ol>
 
-  <h3 id="expire-pinned-policies">
-    Remove expired pinned policies from the cache
+  <h3 id="cache-algorithms">
+    Pinned Policy Cache Algorithms
   </h3>
+
+  <h4 id="pinned-policy-for-host">
+    Get the <var>mode</var> pinned policy for <var>host</var>
+  </h4>
+
+  Given a <var>host</var>, and a <a>mode</a> <var>mode</var>, this algorithm
+  walks through the <a>pinned policy cache</a>, and returns the first matching
+  policy. If no policies match, this algorithm returns <code>null</code>.
+
+  Note: There ought to be at most policy that matches, given the constraints
+  in [[#pin-policy]].
+
+  <ol>
+    <li>
+      For each <var>policy</var> in the <a>pinned policy cache</a>:
+
+      <ol>
+        <li>
+          If <var>policy</var>'s <a>mode</a> is not <var>mode</var>, skip to the
+          next policy in the <a>pinned policy cache</a>.
+        </li>
+        <li>
+          Let <var>match type</var> be the result of applying the <a>Known HSTS
+          Host domain name matching</a> algorithm specified in [[!RFC6797]] to
+          <var>host</var> and <var>policy</var>'s <a>protected host</a>.
+        </li>
+        <li>
+          If <var>match type</var> is <code><a>Superdomain Match</a></code>, and
+          <var>policy</var>'s <a>subdomains included</a> is <code>true</code>,
+          then return <var>policy</var>.
+        </li>
+        <li>
+          If <var>match type</var> is <code><a>Congruent Match</a></code>, then
+          return <var>policy</var>.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Return <code>null</code>.
+    </li>
+  </ol>
+
+
+
+  <h4 id="expire-pinned-policies">
+    Remove expired pinned policies from the cache
+  </h4>
 
   Periodically, the user agent MUST remove expired policies from the <a>pinned
   policy cache</a>. Removal will have no web-visible effect, as expired policies
