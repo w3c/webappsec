@@ -135,6 +135,9 @@ type: element-attr
       text: type; for: object; url: attr-object-type
       text: src; for: img; url: attr-img-src
       text: sandbox; for: iframe; url: attr-iframe-sandbox
+    urlPrefix: browsers.html
+      text: allow-scripts; for: iframe; url: attr-iframe-sandbox-allow-scripts
+      text: allow-same-origin; for: iframe; url: attr-iframe-sandbox-allow-same-origin
 urlPrefix: http://www.w3.org/TR/dom/
   type: attribute
     text: textContent; for: Node; url: dom-node-textcontent
@@ -3002,6 +3005,15 @@ type: interface
     within a <a href="#delivery-html-meta-element"><code>meta</code>
     element</a>.
   </section>
+<!--
+ ██████     ███    ██    ██ ████████  ████████   ███████  ██     ██
+██    ██   ██ ██   ███   ██ ██     ██ ██     ██ ██     ██  ██   ██ 
+██        ██   ██  ████  ██ ██     ██ ██     ██ ██     ██   ██ ██  
+ ██████  ██     ██ ██ ██ ██ ██     ██ ████████  ██     ██    ███   
+      ██ █████████ ██  ████ ██     ██ ██     ██ ██     ██   ██ ██  
+██    ██ ██     ██ ██   ███ ██     ██ ██     ██ ██     ██  ██   ██ 
+ ██████  ██     ██ ██    ██ ████████  ████████   ███████  ██     ██
+-->
   <section>
     <h3 id="directive-sandbox"><code>sandbox</code></h3>
 
@@ -3027,6 +3039,37 @@ type: interface
     <a href="#delivery-html-meta-element"><code>meta</code> element</a>.
     Moreover, this directive has no effect when <a>monitored</a>, and has no
     reporting requirements.
+
+    <h4 id="sandboxing-and-workers">Sandboxing and Workers</h4>
+
+    When delivered via an HTTP header, a Content Security Policy may indicate
+    that sandboxing flags ought to be applied to a JavaScript execution
+    environment that is not a {{Document}}. Of particular interest is the
+    script content intended for use as a Worker, Shared Worker, or Service
+    Worker. Many of the sandboxing flags do not apply to such environments, but
+    <a element-attr for="iframe">allow-scripts</a> and
+    <a element-attr for="iframe">allow-same-origin</a> have special
+    requirements.
+
+    When a resource is loaded while executing the <a>runs a
+    <code>Worker</code></a> algorithm, the user agent MUST act as if there was
+    a fatal network error and no resource could be obtained if either of the
+    following conditions holds:
+
+    <ol>
+      <li>
+        The <code><a>sandbox</a></code> directive delivered with the resource
+        does <em>not</em> contain the
+        <a element-attr for="iframe">allow-scripts</a> flag.
+      </li>
+      <li>
+        The <code><a>sandbox</a></code> directive delivered with the resource
+        does <em>not</em> contain the
+        <a element-attr for="iframe">allow-same-origin</a> flag, <em>and</em>
+        the creation of the new execution context requires it to be same-origin
+        with its creating context.
+      </li>
+    </ol>
 
     <section class="informative">
       <h4 id="sandbox-usage">Usage</h4>

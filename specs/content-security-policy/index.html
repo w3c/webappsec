@@ -369,7 +369,8 @@
             <li><a href="#directive-report-uri"><span class="secno">7.16</span> <span class="content"><code>report-uri</code></span></a></li>
             <li><a href="#directive-sandbox"><span class="secno">7.17</span> <span class="content"><code>sandbox</code></span></a>
               <ul class="toc">
-                <li><a href="#sandbox-usage"><span class="secno">7.17.1</span> <span class="content">Usage</span></a></li>
+                <li><a href="#sandboxing-and-workers"><span class="secno">7.17.1</span> <span class="content">Sandboxing and Workers</span></a></li>
+                <li><a href="#sandbox-usage"><span class="secno">7.17.2</span> <span class="content">Usage</span></a></li>
               </ul>
             </li>
             <li><a href="#directive-script-src"><span class="secno">7.18</span> <span class="content"><code>script-src</code></span></a>
@@ -4748,6 +4749,7 @@ directive-value   = <a data-link-type="dfn" href="#uri_reference">uri-reference<
           
   
         </section>
+
   
         <section>
     
@@ -4785,9 +4787,53 @@ directive-value   = "" / sandbox-token *( 1*WSP <a data-link-type="dfn" href="#s
           
 
     
+          <h4 class="heading settled" data-level="7.17.1" id="sandboxing-and-workers"><span class="secno">7.17.1. </span><span class="content">Sandboxing and Workers</span><a class="self-link" href="#sandboxing-and-workers"></a></h4>
+          
+
+
+          <p>When delivered via an HTTP header, a Content Security Policy may indicate
+    that sandboxing flags ought to be applied to a JavaScript execution
+    environment that is not a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>. Of particular interest is the
+    script content intended for use as a Worker, Shared Worker, or Service
+    Worker. Many of the sandboxing flags do not apply to such environments, but
+    <a data-link-for="iframe" data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-iframe-sandbox-allow-scripts">allow-scripts</a> and
+    <a data-link-for="iframe" data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-iframe-sandbox-allow-same-origin">allow-same-origin</a> have special
+    requirements.</p>
+          
+
+
+          <p>When a resource is loaded while executing the <a data-link-type="dfn" href="#runs-a-worker" title="runs a Worker">runs a
+    <code>Worker</code></a> algorithm, the user agent MUST act as if there was
+    a fatal network error and no resource could be obtained if either of the
+    following conditions holds:</p>
+          
+
+    
+          <ol>
+      
+            <li>
+        The <code><a data-link-type="dfn" href="#sandbox">sandbox</a></code> directive delivered with the resource
+        does <em>not</em> contain the
+        <a data-link-for="iframe" data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-iframe-sandbox-allow-scripts">allow-scripts</a> flag.
+      </li>
+            
+      
+            <li>
+        The <code><a data-link-type="dfn" href="#sandbox">sandbox</a></code> directive delivered with the resource
+        does <em>not</em> contain the
+        <a data-link-for="iframe" data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-iframe-sandbox-allow-same-origin">allow-same-origin</a> flag, <em>and</em>
+        the creation of the new execution context requires it to be same-origin
+        with its creating context.
+      </li>
+            
+    
+          </ol>
+          
+
+    
           <section class="informative">
       
-            <h4 class="heading settled" data-level="7.17.1" id="sandbox-usage"><span class="secno">7.17.1. </span><span class="content">Usage</span><a class="self-link" href="#sandbox-usage"></a></h4>
+            <h4 class="heading settled" data-level="7.17.2" id="sandbox-usage"><span class="secno">7.17.2. </span><span class="content">Usage</span><a class="self-link" href="#sandbox-usage"></a></h4>
             
 
 
@@ -4830,11 +4876,11 @@ directive-value   = "" / sandbox-token *( 1*WSP <a data-link-type="dfn" href="#s
       to run script, while ensuring that it isn’t treated as same-origin
       with the rest of your site. This can be accomplished by sending the
       <code>sandbox</code> directive with the
-      <code><a data-link-type="element-attr" href="https://html.spec.whatwg.org/#attr-iframe-sandbox-allow-scripts">allow-scripts</a></code> flag:</p>
+      <code><a data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-iframe-sandbox-allow-scripts">allow-scripts</a></code> flag:</p>
             
 
 
-            <pre>Content-Security-Policy: <a data-link-type="dfn" href="#sandbox">sandbox</a> <a data-link-type="element-attr" href="https://html.spec.whatwg.org/#attr-iframe-sandbox-allow-scripts">allow-scripts</a></pre>
+            <pre>Content-Security-Policy: <a data-link-type="dfn" href="#sandbox">sandbox</a> <a data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-iframe-sandbox-allow-scripts">allow-scripts</a></pre>
             
 
 
@@ -4855,10 +4901,10 @@ directive-value   = "" / sandbox-token *( 1*WSP <a data-link-type="dfn" href="#s
               <li><code><a data-link-type="element-attr" href="https://html.spec.whatwg.org/#attr-iframe-sandbox-allow-popups">allow-popups</a></code></li>
               
         
-              <li><code><a data-link-type="element-attr" href="https://html.spec.whatwg.org/#attr-iframe-sandbox-allow-same-origin">allow-same-origin</a></code></li>
+              <li><code><a data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-iframe-sandbox-allow-same-origin">allow-same-origin</a></code></li>
               
         
-              <li><code><a data-link-type="element-attr" href="https://html.spec.whatwg.org/#attr-iframe-sandbox-allow-scripts">allow-scripts</a></code>, and</li>
+              <li><code><a data-link-type="element-attr" href="http://www.w3.org/TR/html5/#attr-iframe-sandbox-allow-scripts">allow-scripts</a></code>, and</li>
               
         
               <li><code><a data-link-type="element-attr" href="https://html.spec.whatwg.org/#attr-iframe-sandbox-allow-top-navigation">allow-top-navigation</a></code></li>
