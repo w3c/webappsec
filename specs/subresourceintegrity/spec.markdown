@@ -35,7 +35,7 @@ the representation of the resource the author expects to load. For instance,
 an author may wish to load jQuery from a shared server rather than hosting it
 on their own origin. Specifying that the _expected_ SHA-256 hash of
 `https://code.jquery.com/jquery-1.10.2.min.js`
-is `C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg` means
+is `C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=` means
 that the user agent can verify that the data it loads from that URL matches
 that expected hash before executing the JavaScript it contains. This
 integrity verification significantly reduces the risk that an attacker can
@@ -45,7 +45,9 @@ This example can be communicated to a user agent by adding the hash to a
 `script` element, like so:
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"
-            integrity="ni:///sha-256;C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg?ct=application/javascript">
+            integrity="type:application/javascript
+                       sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=">
+
 {:.example.highlight}
 
 Scripts, of course, are not the only resource type which would benefit
@@ -99,7 +101,8 @@ regardless of the URL from which they are loaded.
     [integrity metadata][] to the `script` element included on her page:
 
         <script src="https://site53.cdn.net/include.js"
-                integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"></script>
+                integrity="type:application/javascript
+                           sha256-SDfwewFAE...wefjijfE"></script>
     {:.example.highlight}
 
 *   An author wants to include JavaScript provided by a third-party
@@ -109,7 +112,8 @@ regardless of the URL from which they are loaded.
     adding it to the `script` element she includes on her page:
 
         <script src="https://analytics-r-us.com/v1.0/include.js"
-                integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"></script>
+                integrity="type:application/javascript
+                           sha256-SDfwewFAE...wefjijfE"></script>
     {:.example.highlight}
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
@@ -138,8 +142,7 @@ are encouraged to optimize.
 
 This section defines several terms used throughout the document.
 
-The term <dfn>digest</dfn> refers to the base64url-encoded (with
-any trailing U+003D EQUALS SIGN (`=`) characters removed) result of
+The term <dfn>digest</dfn> refers to the base64-encoded result of
 executing a cryptographic hash function on an arbitrary block of data.
 
 A <dfn>secure channel</dfn> is any communication mechanism that the user
@@ -167,13 +170,10 @@ are defined by [RFC7231, section 3][representationdata]. [[!RFC7231]]
 
 [representationdata]: http://tools.ietf.org/html/rfc7231#section-3
 
-A <dfn>base64url encoding</dfn> is defined in
-[RFC 4648, section 5][base64url]. In a nutshell, it replaces the characters
-U+002B PLUS SIGN (`+`) and U+002F SOLIDUS (`/`) characters in normal base64
-encoding with the U+002D HYPHEN-MINUS (`-`) and U+005F LOW LINE (`_`)
-characters, respectively. [[!RFC4648]]
+A <dfn>base64 encoding</dfn> is defined in [RFC 4648, section 4][base64].
+[[!RFC4648]]
 
-[base64url]: http://tools.ietf.org/html/rfc4648#section-5
+[base64]: http://tools.ietf.org/html/rfc4648#section-4
 
 The Augmented Backus-Naur Form (ABNF) notation used in this document is
 specified in RFC 5234. [[!ABNF]]
@@ -209,20 +209,20 @@ The hash function and digest MUST be provided in order to validate a
 resource's integrity. The MIME type SHOULD be provided, as it mitigates the
 risk of certain attack vectors.
 
-This metadata MUST be encoded as a "named information" (`ni`) URI, as defined
-in RFC6920. [[!RFC6920]]
+This metadata MUST be encoded in the same format as the `hash-source`
+in [section 4.2 of the Content Security Policy Level 2 specification][csp2-section42].
 
 For example, given a resource containing only the string "Hello, world.",
 an author might choose [SHA-256][sha2] as a hash function.
-`-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8` is the base64url-encoded
-digest that results. This can be encoded as an `ni` URI as follows:
+`+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=` is the base64-encoded
+digest that results. This can be encoded as follows:
 
-    ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8
+    sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
 {:.example.highlight}
 
 Or, if the author further wishes to specify the Content Type (`text/plain`):
 
-    ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+    type:text/plain sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
 {:.example.highlight}
 
 <div class="note">
@@ -230,8 +230,9 @@ Digests may be generated using any number of utilities. [OpenSSL][], for
 example, is quite commonly available. The example in this section is the
 result of the following command line:
 
-    echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 -A | sed -e 's/+/-/g' -e 's/\//_/g' -e 's/=*$//g'
+    echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 -A
 
+[csp2-section42]: http://www.w3.org/TR/CSP11/#source-list-syntax
 [openssl]: http://www.openssl.org/
 </div>
 
@@ -256,16 +257,16 @@ resource in order to provide agility in the face of future discoveries.
 For example, the "Hello, world." resource described above may be described
 either of the following `ni` URLs:
 
-    ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=application/javascript
-    ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=application/javascript
+    sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+    sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
 {:.example.highlight}
 
 Authors may choose to specify both, for example:
 
     <script src="hello_world.js"
-       integrity="
-          ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=application/javascript
-          ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=application/javascript
+       integrity="type:application/javascript
+          sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+          sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
         "></script>
 
 In this case, the user agent will choose the strongest hash function in the
@@ -310,11 +311,9 @@ is a consistent ordering.
     content-encodings applied (e.g., saving a gzip’d file to disk). In the
     latter case, let <var>result</var> be the result of applying
     <var>algorithm</var> to the [representation data][representationdata].
-2.  Let <var>encodedResult</var> be result of base64url-encoding
+2.  Let <var>encodedResult</var> be result of base64-encoding
     <var>result</var>.
-3.  Strip any trailing U+003D EQUALS SIGN (`=`) characters from
-    <var>encodedResult</var>.
-4.  Return <var>encodedResult</var>.
+3.  Return <var>encodedResult</var>.
 
 [apply-algorithm]: #apply-algorithm-to-resource
 </section><!-- Algorithms::apply -->
@@ -385,13 +384,11 @@ the user agent.
 2.  Let <var>result</var> be the empty set.
 3.  For each <var>token</var> returned by [splitting <var>metadata</var> on
     spaces][split-on-spaces]:
-    1.  If <var>token</var> is not a valid "named information" (`ni`) URI,
-        skip the remaining steps, and proceed to the next token.
+    1.  If <var>token</var> is not a valid metadata, skip the remaining
+        steps, and proceed to the next token.
     2.  Let <var>algorithm</var> be the <var>alg</var> component of
         <var>token</var>.
-    3.  Transform all ASCII characters to lowercase ASCII and remove the dash
-        from the `sha-` prefix in <var>algorithm</var> if there is one.
-    4.  If <var>algorithm</var> is a hash function recognized by the user
+    3.  If <var>algorithm</var> is a hash function recognized by the user
         agent, add <var>token</var> to <var>result</var>.
 4.  Return <var>result</var>.
 
@@ -430,9 +427,9 @@ the user agent.
 6.  Let <var>algorithm</var> be the <var>alg</var> component of
     <var>metadata</var>.
 7.  Let <var>expectedValue</var> be the <var>val</var> component of
-    <var>metadata</var> with any trailing U+003D EQUALS SIGN (`=`) removed.
-8.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
-    query string parameter.
+    <var>metadata</var>.
+8.  Let <var>expectedType</var> be the <var>type</var> component of
+    <var>metadata</var>.
 9.  If <var>expectedType</var> is not the empty string, and is not a
     case-insensitive match for <var>resource</var>'s [MIME type][],
     return `false`.
@@ -543,14 +540,18 @@ for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
 
 The `integrity` attribute represents [integrity metadata][] for an element.
 The value of the attribute MUST be either the empty string, or at least one
-valid "named information" (`ni`) URI [[!RFC6920]], as described by the
-following ABNF grammar:
+valid metadata as described by the following ABNF grammar:
 
-    integrity-metadata = "" / 1*( *WSP NI-URL ) *WSP ]
+    integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) *WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
+    option-expression  =  option-name ":" [ option-value ]
+    option-name        = ALPHA / DIGIT / "-"
+    option-value       = ALPHA / DIGIT / "-" / "+" / "." / "/"
+    hash-algo          = <hash-algo production from [Content Security Policy Level 2, section 4.2]>
+    base64-value       = <base64-value production from [Content Security Policy Level 2, section 4.2]>
+    hash-expression    = hash-algo "-" base64-value
 
-The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
-
-[niurl]: http://tools.ietf.org/html/rfc6920#section-3
+At the moment, the only option-name that is defined is `type` and its
+value must be a valid [MIME type][].
 
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
