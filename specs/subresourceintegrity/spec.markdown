@@ -430,7 +430,7 @@ the user agent.
 6.  Let <var>algorithm</var> be the <var>alg</var> component of
     <var>metadata</var>.
 7.  Let <var>expectedValue</var> be the <var>val</var> component of
-    <var>metadata</var>.
+    <var>metadata</var> with any trailing U+003D EQUALS SIGN (`=`) removed.
 8.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
     query string parameter.
 9.  If <var>expectedType</var> is not the empty string, and is not a
