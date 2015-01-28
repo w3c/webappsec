@@ -112,20 +112,6 @@ regardless of the URL from which they are loaded.
                 integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"></script>
     {:.example.highlight}
 
-<!-- Removed for minimum-viable-sri: no iframes
-
-*   An advertising network wishes to ensure that advertisements delivered via
-    third-party servers matches the code which they reviewed in order to reduce
-    the risk of accidental or malicious substitution of unreviewed content. By
-    adding [integrity metadata][] to the `iframe` element wrapping the
-    advertisement, they can ensure that the third-party server delivers only
-    the agreed-upon content.
-    
-        <iframe src="https://awesome-ads.com/advertisement1.html"
-                integrity="ni:///sha-256;kasfdsaffs...eoirW-e?ct=text/html"></iframe>
-    {:.example.highlight}
--->
-
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
     HTML (for example, Chrome's New Tab Page) aren't manipulated before display.
     [Integrity metadata][] mitigates the risk that altered JavaScript will run
