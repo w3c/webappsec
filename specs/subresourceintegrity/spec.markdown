@@ -546,7 +546,7 @@ The value of the attribute MUST be either the empty string, or at least one
 valid "named information" (`ni`) URI [[!RFC6920]], as described by the
 following ABNF grammar:
 
-    integrity-metatata = "" / 1*( *WSP NI-URL ) *WSP ]
+    integrity-metadata = "" / 1*( *WSP NI-URL ) *WSP ]
 
 The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
 
