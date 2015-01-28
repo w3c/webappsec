@@ -377,9 +377,9 @@ checking because it won't have loaded successfully.
 <section>
 #### Parse <var>metadata</var>.
 
-This algorithm accepts a string, and returns either `no metadata`, or a set of
-valid "named information" (`ni`) URLs whose hash functions are understood by
-the user agent.
+This algorithm accepts a string, and returns either `no metadata`, or a
+(potentially empty) set of valid "named information" (`ni`) URLs whose hash
+functions are understood by the user agent.
 
 1.  If <var>metadata</var> is the empty string, return `no metadata`.
 2.  Let <var>result</var> be the empty set.
@@ -425,23 +425,24 @@ the user agent.
 3.  Let <var>parsedMetadata</var> be the result of
     [parsing <var>metadataList</var>][parse].
 4.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
-5.  Let <var>metadata</var> be the result of [getting the strongest
+5.  If <var>parsedMetadata</var> is the empty set, return `false`.
+6.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
-6.  Let <var>algorithm</var> be the <var>alg</var> component of
+7.  Let <var>algorithm</var> be the <var>alg</var> component of
     <var>metadata</var>.
-7.  Let <var>expectedValue</var> be the <var>val</var> component of
+8.  Let <var>expectedValue</var> be the <var>val</var> component of
     <var>metadata</var>.
-8.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
+9.  Let <var>expectedType</var> be the value of <var>metadata</var>'s `ct`
     query string parameter.
-9.  If <var>expectedType</var> is not the empty string, and is not a
+10. If <var>expectedType</var> is not the empty string, and is not a
     case-insensitive match for <var>resource</var>'s [MIME type][],
     return `false`.
-10. Let <var>actualValue</var> be the result of [applying
+11. Let <var>actualValue</var> be the result of [applying
     <var>algorithm</var> to <var>resource</var>][apply-algorithm].
-11. If <var>actualValue</var> is a case-sensitive match for
+12. If <var>actualValue</var> is a case-sensitive match for
     <var>expectedValue</var>, return `true`. Otherwise, return `false`.
 
-If <var>expectedType</var> is the empty string in #10, it would
+If <var>expectedType</var> is the empty string in #9, it would
 be reasonable for the user agent to warn the page's author about the
 dangers of MIME type confusion attacks via its developer console.
 {:.note}
