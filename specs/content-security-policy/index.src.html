@@ -178,6 +178,8 @@ type: interface
       text: HTMLStyleElement
     urlPrefix: scripting-1.html
       text: HTMLScriptElement
+    urlPrefix: browser.html
+      text: Window
   urlPrefix: http://www.w3.org/TR/dom/
     text: Node; url: interface-node
     text: Event
@@ -335,6 +337,14 @@ type: method
           <a><code>reflected-xss</code></a> controls the user agent's built-in
           heuristics to actively protect against XSS. It is meant to supplant
           the <code>X-XSS-Protection</code> HTTP request header.
+        </li>
+        <li>
+          <a><code>message-src</code></a> restricts the
+          origins from which the <a>protected resource</a> can receive messages.
+        </li>
+        <li>
+          <a><code>message-sink</code></a> restricts the
+          origins to which the <a>protected resource</a> can send messages.
         </li>
       </ol>
     </li>
@@ -1756,6 +1766,50 @@ type: method
     algorithms specify. For example, a user agent might offer users the
     option of disabling reporting entirely.
   </section>
+  <section>
+    <h3 id="posting-messages">Posting messages</h3>
+
+    The <a><code>message-sink</code></a> and
+    <a><code>message-src</code></a> directives restrict from whom
+    and to whom a <a>protected resource</a> can post messages,
+    respectively.
+
+    To enforce these directives, step 9 of the <em>posting messages</em>
+    algorithm defined in
+    <a href="http://www.w3.org/TR/webmessaging/#posting-messages">Section 4.3</a>
+    of the HTML5 Web Messaging specification [[!WebMessaging]] MUST be changed to:
+
+    <ol start="9">
+      <li>
+      If the origin of the {{Document}} of the
+      <code><a interface spec="HTML5">Window</a></code> object on which the
+      method was invoked does not <a title="match a source list">match</a>
+      the <a>allowed message sinks</a>, then abort these steps silently.
+
+      Otherwise, if the origin of the responsible document specified by the entry
+      settings object does not <a title="match a source list">match</a>
+      the <a>allowed message sources</a> of the {{Document}} of the
+      <code><a interface spec="HTML5">Window</a></code> object on which the
+      method was invoked, then abort these steps silently.
+
+      Otherwise, if the <var>targetOrigin</var> argument is a single
+      literal U+002F SOLIDUS character (<code>/</code>), and the {{Document}}
+      of the <code><a interface spec="HTML5">Window</a></code>
+      on which the method was invoked does not have the same origin as
+      the responsible document specified by the entry settings object,
+      then abort these steps silently.
+
+      Otherwise, if the <var>targetOrigin</var> argument is an absolute URL, and
+      the {{Document}} of the
+      <code><a interface spec="HTML5">Window</a></code> object on which
+      the method was invoked does not have the same origin as
+      <var>targetOrigin</var>, then abort these steps silently.
+
+      Otherwise, the <var>targetOrigin</var> argument is a single literal U+002A
+      ASTERISK character (<code>*</code>), and no origin check is made.
+      </li>
+    </ol>
+  </section>
 </section>
 <!--
 ████████  ████████   ███████   ██████  ████████  ██████   ██████  ████ ██    ██  ██████         ██     ██  ███████  ████████  ████████ ██
@@ -2362,6 +2416,7 @@ type: method
       <li><code><a>img-src</a></code></li>
       <li><code><a>manifest-src</a></code></li>
       <li><code><a>media-src</a></code></li>
+      <li><code><a>message-src</a></code></li>
       <li><code><a>object-src</a></code></li>
       <li><code><a>script-src</a></code></li>
       <li><code><a>style-src</a></code></li>
@@ -2832,6 +2887,84 @@ type: method
       <code><a element>source</a></code>, or <code><a element>track</a></code>
       elements.</li>
     </ul>
+  </section>
+
+<!--
+██     ██ ████████  ██████   ██████     ███     ██████   ████████          ██████  ████ ██    ██ ██    ██
+███   ███ ██       ██    ██ ██    ██   ██ ██   ██    ██  ██               ██    ██  ██  ███   ██ ██   ██ 
+████ ████ ██       ██       ██        ██   ██  ██        ██               ██        ██  ████  ██ ██  ██  
+██ ███ ██ ██████    ██████   ██████  ██     ██ ██   ████ ██████   ███████  ██████   ██  ██ ██ ██ █████   
+██     ██ ██             ██       ██ █████████ ██    ██  ██                     ██  ██  ██  ████ ██  ██  
+██     ██ ██       ██    ██ ██    ██ ██     ██ ██    ██  ██               ██    ██  ██  ██   ███ ██   ██ 
+██     ██ ████████  ██████   ██████  ██     ██  ██████   ████████          ██████  ████ ██    ██ ██    ██
+-->
+  <section>
+    <h3 id="directive-message-sink"><code>message-sink</code></h3>
+
+    The <code><dfn>message-sink</dfn></code> directive restricts the
+    origins to which the protected resource can send messages.
+    The syntax for the name and value of the directive are described by
+    the following ABNF grammar:
+
+    <pre>
+      directive-name    = "message-sink"
+      directive-value   = <a>source-list</a>
+    </pre>
+
+    The term <dfn>allowed message sinks</dfn> refers to the result of
+    <a title="parse a source list">parsing the <code>message-sink</code>
+    directive's value as a source list</a> if the policy contains an
+    explicit <code>message-sink</code>.
+
+    The process for enforcing this directive is defined in this
+    document's <a section href="#posting-messages"></a> section.
+
+    Note: <code>message-sink</code> does not fall back to the <a>default
+    sources</a> when the directive is not defined. That is, a policy that
+    defines <code><a>default-src</a> 'none'</code> but not
+    <code>message-sink</code> will still allow posting messages to any
+    target.
+
+    Note: Authors SHOULD still follow the security practices
+    outlined in
+    <a href="http://www.w3.org/TR/webmessaging/#user-agents">Section 4.2.2</a>
+    HTML5 Web Messaging specification. [[!WebMessaging]]
+  </section>
+
+<!--
+██     ██ ████████  ██████   ██████     ███     ██████   ████████          ██████  ████████   ██████ 
+███   ███ ██       ██    ██ ██    ██   ██ ██   ██    ██  ██               ██    ██ ██     ██ ██    ██
+████ ████ ██       ██       ██        ██   ██  ██        ██               ██       ██     ██ ██      
+██ ███ ██ ██████    ██████   ██████  ██     ██ ██   ████ ██████   ███████  ██████  ████████  ██      
+██     ██ ██             ██       ██ █████████ ██    ██  ██                     ██ ██   ██   ██      
+██     ██ ██       ██    ██ ██    ██ ██     ██ ██    ██  ██               ██    ██ ██    ██  ██    ██
+██     ██ ████████  ██████   ██████  ██     ██  ██████   ████████          ██████  ██     ██  ██████ 
+-->
+  <section>
+    <h3 id="directive-message-src"><code>message-src</code></h3>
+
+    The <code><dfn>message-src</dfn></code> directive restricts the
+    origins from which the protected resource can receive messages.
+    The syntax for the name and value of the directive are described by
+    the following ABNF grammar:
+
+    <pre>
+      directive-name    = "message-src"
+      directive-value   = <a>source-list</a>
+    </pre>
+
+    The term <dfn>allowed message sources</dfn> refers to the result of
+    <a title="parse a source list">parsing the <code>message-src</code>
+    directive's value as a source list</a> if the policy contains an
+    explicit <code>message-src</code>, or otherwise to the <a>default sources</a>.
+
+    The process for enforcing this directive is defined in this
+    document's <a section href="#posting-messages"></a> section.
+
+    Note: Authors SHOULD still follow the security practices
+    outlined in
+    <a href="http://www.w3.org/TR/webmessaging/#user-agents">Section 4.2.2</a>
+    HTML5 Web Messaging specification. [[!WebMessaging]]
   </section>
 
 <!--
