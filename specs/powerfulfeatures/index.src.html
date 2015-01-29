@@ -67,8 +67,9 @@ Indent: 2
     </dfn></dt>
     <dd>
       A {{Document}} is considered <strong>sufficiently secure</strong> if
-      the algorithm defined in [[#document-sufficiently-secure]] returns
-      <code>Sufficiently Secure</code> when executed upon it.
+      the algorithm defined in [[#settings-sufficiently-secure]] returns
+      <code>Sufficiently Secure</code> when executed upon its <a>incumbent
+      settings object</a>.
 
       Likewise, a <a>settings object</a> is considered <strong>sufficiently
       secure</strong> if the algorithm defined in
@@ -113,7 +114,7 @@ urlPrefix: https://fetch.spec.whatwg.org/
 <!-- GEOLOCATION API -->
   : {{getCurrentPosition()}}
   : {{watchPosition()}
-  :: Defined in [[!GEOLOCATION-API]]
+  :: Defined in [[GEOLOCATION-API]]
 
 <pre class="anchors">
 urlPrefix: http://www.w3.org/TR/geolocation-API/
@@ -123,7 +124,10 @@ urlPrefix: http://www.w3.org/TR/geolocation-API/
 </pre>
 
 <!-- HTML5 -->
+  : <a>active document</a>
   : <a>an IFrame srcdoc <code>Document</code></a>
+  : <a>ancestor browsing contexts</a>
+  : <a>API base URL</a>
   : <a>browsing context</a>
   : <a>browsing context container</a>
   : <a>incumbent settings object</a>
@@ -142,6 +146,8 @@ urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: embedded-content-0.html
       text: an iframe srcdoc document
     urlPrefix: browsers.html
+      text: active document
+      text: ancestor browsing contexts
       text: browsing context
       text: browsing context container
       text: creating a new Document object
@@ -150,9 +156,10 @@ urlPrefix: http://www.w3.org/TR/html5/
       text: sandboxing flag set
       text: top-level browsing context
     urlPrefix: webappapis.html
+      text: API base URL
+      text: incumbent settings object
       text: responsible document
       text: settings object
-      text: incumbent settings object
   type: attribute
     urlPrefix: webstorage.html
       text: sessionStorage; for: WindowSessionStorage; url: the-sessionstorage-attribute
@@ -168,10 +175,20 @@ urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
     text: potentially secure origin
 </pre>
 
+<!-- SERVICE WORKERS -->
+  : {{ServiceWorker}}
+  :: Defined in [[SERVICEWORKERS]]
+
+<pre class="anchors">
+urlPrefix: http://www.w3.org/TR/service-workers/
+  type: interface
+    text: ServiceWorker; url: service-worker-obj
+</pre>
+
 <!-- W3C-PROCESS -->
 
   : <a>modify a specification</a>
-  :: Defined in [[!W3C-PROCESS]]
+  :: Defined in [[W3C-PROCESS]]
 
 <pre class="anchors">
 urlPrefix: http://www.w3.org/2014/Process-20140801/
@@ -179,13 +196,38 @@ urlPrefix: http://www.w3.org/2014/Process-20140801/
     text: modify a specification; url: rec-modify
 </pre>
 
+<!-- URL -->
+  : {{URL}}
+  : <a>origin of a URL</a>
+  :: Defined in [[!URL]]
+  
+<pre class="anchors">
+urlPrefix: https://url.spec.whatwg.org/
+  type: dfn
+    text: origin of a url; url: concept-url-origin
+  type: interface
+    text: URL
+</pre>
+
+<!-- WORKERS -->
+  : {{Worker}} interface
+  :: Defined in [[WORKERS]]
+
+<pre class="anchors">
+urlPrefix: http://www.w3.org/TR/workers/
+  type: interface
+    text: Worker
+</pre>
+
 <!-- ORIGIN -->
+  : <a>globally unique identifier</a>
   : <a>origin</a>
   :: Defined in [[!RFC6454]]
 
 <pre class="anchors">
 urlPrefix: https://tools.ietf.org/html/rfc6454
   type: dfn
+    text: globally unique identifier; url: section-2.3
     text: origin; url: section-3.2 
 </pre>
 </section>
@@ -286,30 +328,15 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
 
   When writing a specification for a new features, we recommend that authors
   and editors guard sensitive APIs with checks against
-  [[#document-sufficiently-secure]] or [[#settings-sufficiently-secure]], as
-  appropriate for the context. For example, something like the following would
-  be a good approach:
+  [[#settings-sufficiently-secure]]. For example, something like the following
+  would be a good approach:
 
   <div class="example">
-    If we can get to a {{Document}}, we should prefer it for the check, as it
-    allows us to verify the whole ancestor chain. If we don't have a
-    {{Document}} (because we're executing code inside a Service Worker or
-    Shared Worker, for instance), then checking the settings object is the best
-    we can do:
-
     <ol>
       <li>
-        Let <var>settings</var> be the <a>incumbent settings object</a>.
-      </li>
-      <li>
-        If <var>settings</var> has a <a>responsible document</a>
-        <var>document</var>, then let <var>result</var> to the result of
-        executing [[#document-sufficiently-secure]] on <var>document</var>.
-      </li>
-      <li>
-        Otherwise, <var>settings</var> has no <a>responsible document</a>:
-        Let <var>result</var> to the result of executing
-        [[#settings-sufficiently-secure]] on <var>settings</var>.
+        Let <var>state</var> be the result of executing
+        [[#settings-sufficiently-secure]] on the <a>incumbent settings
+        object</a>.
       </li>
       <li>
         If <var>result</var> is <code>Insecure</code>, then [<i>insert
@@ -319,7 +346,7 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
     </ol>
 
     Note: If you choose to copy/paste the above text for your spec, do remember
-    to put an action appropriate for your use case into step #4 in place of the
+    to put an action appropriate for your use case into step #2 in place of the
     placeholder text.
   </div>
 
@@ -402,71 +429,6 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
   <h2 id="algorithms">Algorithms</h2>
 
   <section>
-    <h3 id="document-sufficiently-secure">
-      Is <var>Document</var> a sufficiently secure context?
-    </h3>
-
-    Given a {{Document}} <var>document</var>, this algorithm returns
-    <code>Sufficiently Secure</code> if the {{Document}} represents a
-    <a>sufficiently secure context</a> or <code>Insecure</code> otherwise.
-
-    <ol>
-      <li>
-        While <var>document</var> corresponds to <a>an iframe srcdoc
-        Document</a>, let <var>document</var> be that Document's <a>browsing
-        context</a>'s <a>browsing context container</a>'s {{Document}}.
-      </li>
-      <li>
-        Let <var>origin</var> be the <a>origin</a> of <var>document</var>.
-      </li>
-      <li>
-        If <var>document</var>'s active <a>sandboxing flag set</a> has its
-        <a>sandboxed origin browsing context flag</a> set:
-
-        <ol>
-          <li>
-            Set <var>origin</var> to the <a>origin</a> of
-            <var>document</var>'s address.
-          </li>
-        </ol>
-      </li>
-      <li>
-        Let <var>result</var> be the result of executing the
-        [[#settings-sufficiently-secure]] algorithm on <var>document</var>'s
-        <a>incumbent settings object</a>.
-      </li>
-      <li>
-        If <var>result</var> is <code>Insecure</code>, return
-        <code>Insecure</code>.
-      </li>
-      <li>
-        Otherwise:
-
-        <ol>
-          <li>
-            If <var>document</var> has an <a>embedding document</a>, return the
-            result of executing [[#document-sufficiently-secure]] on
-            <var>document</var>'s <a>embedding document</a> with the
-            <var>ancestors flag</var> set to <code>true</code>.
-          </li>
-          <li>
-            Otherwise, return <var>result</var>.
-          </li>
-        </ol>
-      </li>
-    </ol>
-
-    Note: Sandboxed documents will have a unique origin. This algorithm uses the
-    location of a sandboxed document to determine whether it should be considered
-    authenticated. That is, the document inside
-    <code>&lt;iframe src="https://example.com/" sandbox="allow-script"&gt;</code>
-    would be considered to allow powerful features.
-
-    Issue: Need to consider how contexts created from blob: and data: are treated
-    here, e.g. when used to create a Worker or SharedWorker.
-  </section>
-
-  <section>
     <h3 id="settings-sufficiently-secure">
       Is <var>settings object</var> a sufficiently secure context?
     </h3>
@@ -477,25 +439,87 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
 
     <ol>
       <li>
-        If <var>settings</var>' <a>TLS state</a> is
-        <code>authenticated</code>, return <code>Sufficiently Secure</code>.
-      </li>
-      <li>
-        Otherwise:
-
+        If <var>settings</var>' <a>TLS state</a> is <strong>not</strong>
+        <code>authenticated</code>:
+        
         <ol>
           <li>
             Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
           </li>
           <li>
+            If <var>origin</var> is a <a>globally unique identifier</a>, set
+            <var>origin</var> to the <a title="origin of a url">origin</a>
+            of <var>settings</var>'s <a>API base URL</a>.
+
+            Note: This is future-proofing against a world where sandboxing
+            {{Worker}} is a thing. 
+
+            ISSUE: "<a>API base URL</a>" isn't correct. We should use whatever
+            gets produced as a result of
+            <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=27146">bug
+            27146</a>.
+          </li>
+          <li>
             If the result of executing the [[#is-origin-trustworthy]] algorithm
-            on <var>origin</var> is <code>Potentially Trustworthy</code>, return
-            <code>Sufficiently Secure</code>.
+            on <var>origin</var> is <strong>not</strong> <code>Potentially
+            Trustworthy</code>, return <code>Insecure</code>.
+          </li>
+        </ol>
+
+        ISSUE: <a>TLS State</a> is poorly defined. For example, we should ensure
+        that sandboxed documents retain the <a>TLS State</a>
+        associated with their transport mechanism. See
+        <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=27190">bug
+        27190</a>.
+      </li>
+      <li>
+        If <var>settings</var> has a <a>responsible document</a>
+        <var>document</var>, then:
+
+        Note: If <var>settings</var> maps to a {{Document}} (either directly,
+        or as the <a>responsible document</a> of a {{Worker}}), we'll walk all
+        the way up the document's ancestor chain to verify that the whole chain
+        is sufficiently secure.
+
+        <ol>
+          <li>
+            Let <var>documents to check</var> be an empty list of {{Document}}s.
+            containing <var>document</var> and the <a>active document</a>
+            in each of <var>document</var>'s <a>ancestor browsing contexts</a>.
+          </li>
+          <li>
+            For each <var>ancestor</var> in <var>documents to check</var>:
+            
+            <ol>
+              <li>
+                If <var>ancestor</var> corresponds to <a>an IFrame
+                <code>srcdoc</code> <code>Document</code></a>, skip to the next
+                <var>ancestor</var>.
+              </li>
+              <li>
+                If <var>ancestor</var>'s <a>incumbent settings object</a>'s
+                <a>TLS State</a> is <code>Authenticated</code>, skip to the next
+                <var>ancestor</var>.
+              </li>
+              <li>
+                Let <var>origin</var> be <var>document</var>'s <a>origin</a> if
+                <var>document</var>'s active <a>sandboxing flag set</a> does not
+                have its <a>sandboxed origin browsing context flag</a> set, and
+                the <a title="origin of a url">origin of <var>document</var>'s
+                <code>URL</code></a> otherwise.
+              </li>
+              <li>
+                If the result of executing the [[#is-origin-trustworthy]]
+                algorithm on <var>origin</var> is <strong>not</strong>
+                <code>Potentially Trustworthy</code>, return
+                <code>Insecure</code>.
+              </li>
+            </ol>
           </li>
         </ol>
       </li>
       <li>
-        Return <code>Insecure</code>.
+        Return <code>Sufficiently Secure</code>
       </li>
     </ol>
   </section>
