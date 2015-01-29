@@ -139,9 +139,12 @@ type: element-attr
       text: rel; for: link; url: attr-link-rel
       text: http-equiv; for: meta; url: attr-meta-http-equiv
       text: content; for: meta; url: attr-meta-content
+      text: icon; for: link; url: rel-icon
     urlPrefix: embedded-content-0.html
       text: type; for: object; url: attr-object-type
       text: src; for: img; url: attr-img-src
+      text: src; for: video; url: attr-media-src
+      text: src; for: embed; url: attr-embed-src
       text: sandbox; for: iframe; url: attr-iframe-sandbox
       text: srcdoc; for: iframe; url: attr-iframe-srcdoc
       text: poster; for: video; url: attr-video-poster
@@ -155,9 +158,12 @@ type: element-attr
       text: allow-same-origin; for: iframe; url: attr-iframe-sandbox-allow-same-origin
     urlPrefix: forms.html
       text: image; for: input; url: attr-input-type-image-keyword
+      text: src; for: input; url: attr-input-src
     urlPrefix: obsolete.html
       text: code; for: applet; url: attr-applet-code
       text: archive; for: applet; url: attr-applet-archive
+    urlPrefix: scripting-1.html
+      text: src; for: script; url: attr-script-src
 urlPrefix: http://www.w3.org/TR/dom/
   type: attribute
     text: textContent; for: Node; url: dom-node-textcontent
@@ -471,13 +477,9 @@ type: method
 
   <h3 id="html-concepts">Relevant Concepts from HTML</h3>
 
-  The <code><a element>applet</a></code>, <code><a element>audio</a></code>,
-  <code><a element>embed</a></code>, <code><a element>iframe</a></code>,
-  <code><a element>img</a></code>, <code><a element>link</a></code>,
-  <code><a element>object</a></code>, <code><a element>script</a></code>,
-  <code><a element>source</a></code>, <code><a element>track</a></code>, and
-  <code><a element>video</a></code> elements are defined in the HTML5
-  specification. [[!HTML5]]
+  The <{applet}>, <{audio}>, <{embed}>, <{iframe}>, <{img}>, <{link}>,
+  <{object}>, <{script}>, <{source}>, <{track}>, and <{video}> are defined in
+  [[!HTML5]].
 
   The terms <a>auxiliary browsing contexts</a>,
   <a>opener browsing context</a>, and <a>nested browsing contexts</a> are
@@ -537,7 +539,7 @@ type: method
   The server delivers a <a>policy</a> to the user agent via an HTTP response
   header (defined in [[#content-security-policy-header-field]] and
   [[#content-security-policy-report-only-header-field]]) or an HTML
-  <a element>meta</a> element (defined in [[#delivery-html-meta-element]]).
+  <{meta}> element (defined in [[#delivery-html-meta-element]]).
   
   Servers are informed that requests are coming from a <a>protected resource</a>
   via an HTTP request header (defined in [[#csp-request-header]]).
@@ -619,27 +621,25 @@ type: method
     contained in each such header field.
 
     Note: The <code><a>Content-Security-Policy-Report-Only</a></code>
-    header is <em>not</em> supported inside a <code><a element>meta</a></code>
-    element.
+    header is <em>not</em> supported inside a <{meta}> element.
   </section>
 
   <section>
     <h3 id="delivery-html-meta-element">
-      HTML <code><a element>meta</a></code> Element
+      HTML <{meta}> Element
     </h3>
 
-    The server MAY supply policy via one or more HTML
-    <code><a element>meta</a></code> elements with
-    <code><a element-attr>http-equiv</a></code> attributes that are a case
-    insensitive match for the string "<code>Content-Security-Policy</code>".
-    For example:
+    The server MAY supply policy via one or more HTML <{meta}> elements
+    with <{meta/http-equiv}> attributes that are an <a>ASCII case-insensitive
+    match</a> for the string "<code>Content-Security-Policy</code>". For
+    example:
 
     <pre class="example">
       &lt;meta http-equiv="Content-Security-Policy" content="<a>script-src</a> 'self'"&gt;
     </pre>
 
-    Add the following entry to the <a>pragma directives</a> for the
-    <a element>meta</a> element:
+    Add the following entry to the <a>pragma directives</a> for the <{meta}>
+    element:
 
     <dl>
       <dt>
@@ -648,17 +648,14 @@ type: method
       </dt>
       <dd>
         <ol>
-          <li>If the Document's <code><a element>head</a></code> element is
-          not an ancestor of the <code><a element>meta</a></code> element, abort
+          <li>If the Document's <{head}> element is not an ancestor of the
+          <{meta}> element, abort these steps.</li>
+
+          <li>If the <{meta}> element lacks a <{meta/content}> attribute, abort
           these steps.</li>
 
-          <li>If the <code><a element>meta</a></code> element lacks a
-          <code><a element-attr>content</a></code> attribute, abort these
-          steps.</li>
-
-          <li>Let <var>policy</var> be the value of the
-          <code><a element-attr>content</a></code> attribute of the
-          <code><a element>meta</a></code> element.</li>
+          <li>Let <var>policy</var> be the value of the <{meta/content}>
+          attribute of the <{meta}> element.</li>
 
           <li>Let <var>directive-set</var> be the result of
           <a title="parse the policy">parsing <var>policy</var></a>.</li>
@@ -671,7 +668,7 @@ type: method
           
             Note: User agents are encouraged to issue a warning to developers
             if one or more of these directives are included in a policy
-            delivered via <a element>meta</a>.
+            delivered via <{meta}>.
           </li>
 
           <li>Enforce each of the <a>directives</a> in <var>directive-set</var>,
@@ -680,26 +677,23 @@ type: method
       </dd>
     </dl>
 
-    Authors are <em>strongly encouraged</em> to place <a element>meta</a>
-    elements as early in the document as possible, because policies in
-    <a element>meta</a> elements are not applied to content which preceeds
-    them. In particular, note that resources fetched or prefetched using the
-    <code>Link</code> HTTP response header field, and resources fetched or
-    prefetched using <a element>link</a> and <a element>script</a> elements
-    which preceed a <a element>meta</a>-delivered policy will not be blocked.
+    Authors are <em>strongly encouraged</em> to place <{meta}> elements as early
+    in the document as possible, because policies in <{meta}> elements are not
+    applied to content which preceeds them. In particular, note that resources
+    fetched or prefetched using the <code>Link</code> HTTP response header
+    field, and resources fetched or prefetched using <{link}> and <{script}>
+    elements which preceed a <{meta}>-delivered policy will not be blocked.
 
-    Note: A <a>policy</a> specified via a <a element>meta</a> element will be
-    enforced along with any other policies active for the protected resource,
-    regardless of where they're specified. The general impact of enforcing
-    multiple policies is described in [[#enforcing-multiple-policies]].
+    Note: A <a>policy</a> specified via a <{meta}> element will be enforced
+    along with any other policies active for the protected resource, regardless
+    of where they're specified. The general impact of enforcing multiple
+    policies is described in [[#enforcing-multiple-policies]].
 
-    Note: Modifications to the <code><a element-attr>content</a></code>
-    attribute of a <code><a element>meta</a></code> element after the
-    element has been parsed will be ignored.
+    Note: Modifications to the <{meta/content}> attribute of a <{meta}> element
+    after the element has been parsed will be ignored.
 
     Note: The <code><a>Content-Security-Policy-Report-Only</a></code>
-    header is <em>not</em> supported inside a <code><a element>meta</a></code>
-    element.
+    header is <em>not</em> supported inside a <{meta}> element.
   </section>
 
   <section>
@@ -848,15 +842,14 @@ type: method
           <th rowspan="3">Embedded Contexts</th>
 
           <td>
-            Any resource included via <a element>iframe</a>,
-            <a element>object</a>, or <a element>embed</a>
+            Any resource included via <{iframe}>, <{object}>, or <{embed}>
           </td>
           <td>
             The policy of the embedding resource controls <em>what</em> may be
             embedded. The embedded resource, however, is controlled by the
             policy delivered with the resource, or the policy of the embedding
             resource if the embedded resource is a <a>globally unique
-            identifier</a> (or a <a element-attr>srcdoc</a> frame).
+            identifier</a> (or a <{iframe/srcdoc}> frame).
           </td>
         </tr>
         <tr>
@@ -879,7 +872,7 @@ type: method
         <tr class="section">
           <th rowspan="7">Subresources</th>
 
-          <td>SVG, inlined via <a element>svg</a></td>
+          <td>SVG, inlined via <{svg}></td>
           <td>Policy of the including context</td>
         </tr>
         <tr>
@@ -891,15 +884,15 @@ type: method
           <td>Policy of the context that performed the fetch</td>
         </tr>
         <tr>
-          <td>Image via <a element>img</a> element</td>
+          <td>Image via <{img}> element</td>
           <td>Policy of the including context</td>
         </tr>
         <tr>
-          <td>JavaScript via a <a element>script</a> element</td>
+          <td>JavaScript via a <{script}> element</td>
           <td>Policy of the including context</td>
         </tr>
         <tr>
-          <td>SVG, via <a element>img</a></td>
+          <td>SVG, via <{img}></td>
           <td>No policy; should be just as safe as JPG</td>
         </tr>
         <tr>
@@ -1441,8 +1434,7 @@ type: method
       </h4>
 
       Nonce sources require a new <code>nonce</code> attribute to be added to
-      both <code><a element>script</a></code> and
-      <code><a element>style</a></code> elements.
+      both <{script}> and <{style}> elements.
 
       <pre class="idl">
         partial interface HTMLScriptElement {
@@ -1473,10 +1465,9 @@ type: method
       <h4 id="source-list-valid-nonces">Valid Nonces</h4>
 
       An element has a <dfn>valid nonce</dfn> for a <var>set of source
-      expressions</var> if the value of the element's
-      <code><a element-attr for="script">nonce</a></code> attribute after
-      <a title="strip leading and trailing whitespace" spec="HTML5">stripping
-      leading and trailing whitespace</a> is a case-sensitive match for the
+      expressions</var> if the value of the element's <{script/nonce}> attribute
+      after <a title="strip leading and trailing whitespace">stripping leading
+      and trailing whitespace</a> is a case-sensitive match for the
       <code><a>nonce-value</a></code> component of at least one
       <code><a>nonce-source</a></code> expression in <var>set of source
       expressions</var>.
@@ -1486,11 +1477,9 @@ type: method
       <h4 id="source-list-valid-hashes">Valid Hashes</h4>
 
       An <dfn>element's content</dfn> is <a spec="HTML5">the script block's
-      source</a> for <code><a element>script</a></code> elements, or the
-      value of the element's
-      <code><a attribute for="Node">textContent</a></code>
-      IDL attribute for non-<code><a element>script</a></code> elements such as
-      <code><a element>style</a></code>.
+      source</a> for <{script}> elements, or the value of the element's
+      {{Node/textContent}} IDL attribute for non-<{script}> elements such as
+      <{style}>.
 
       The <dfn>digest of <var>element</var>'s content</dfn> for is the result
       of applying an <var>algorithm</var> to the <a>element's content</a>.
@@ -1848,14 +1837,13 @@ type: method
     <code>srcdoc</code> document</a> in a browsing context nested in the
     protected resource, if the user agent is <a>enforcing</a> any <a>policies</a>
     for the protected resource, the user agent MUST <a>enforce</a> those
-    <a>policies</a> on the <code><a element>iframe</a></code>
-    <code>srcdoc</code> document as well.
+    <a>policies</a> on the <{iframe}> <code>srcdoc</code> document as well.
 
     Whenever a user agent creates <a spec="HTML5">an <code>iframe</code>
     <code>srcdoc</code> document</a> in a browsing context nested in the
     protected resource, if the user agent is monitoring any policies for the
     protected resource, the user agent MUST <a>monitor</a> those policies on
-    the <code><a element>iframe</a></code> <code>srcdoc</code> document as well.
+    the <{iframe}> <code>srcdoc</code> document as well.
   </section>
 </section>
 <!--
@@ -2347,8 +2335,8 @@ type: method
     <h3 id="directive-form-action"><code>form-action</code></h3>
 
     The <code><dfn>form-action</dfn></code> restricts which URLs can be used as
-    the action of HTML <code><a element>form</a></code> elements. The syntax for the name and
-    value of the directive are described by the following ABNF grammar:
+    the action of HTML <{form}> elements. The syntax for the name and value of
+    the directive are described by the following ABNF grammar:
 
     <pre>
       directive-name    = "form-action"
@@ -2360,7 +2348,7 @@ type: method
     directive's value as a source list</a>.
 
     Whenever the user agent <a>fetches</a> a URL in the course of processing
-    an HTML <code><a element>form</a></code> element, if the URL does not
+    an HTML <{form}> element, if the URL does not
     <a title="match a source list">match</a> the <a>allowed form actions</a> for
     the <a>protected resource</a>, the user agent MUST act as if there was a
     fatal network error and no resource was obtained, <em>and</em> <a>report a
@@ -2386,10 +2374,8 @@ type: method
     <h3 id="directive-frame-ancestors"><code>frame-ancestors</code></h3>
 
     The <code><dfn>frame-ancestors</dfn></code> directive indicates whether the
-    user agent should allow embedding the resource using a
-    <code><a element>frame</a></code>, <code><a element>iframe</a></code>,
-    <code><a element>object</a></code>, <code><a element>embed</a></code> or
-    <code><a element>applet</a></code> tag, or equivalent
+    user agent should allow embedding the resource using a <{frame}>,
+    <{iframe}>, <{object}>, <{embed}> or <{applet}> element, or equivalent
     functionality in non-HTML resources. Resources can use this directive to
     avoid many UI Redressing [[UIREDRESS]] attacks by avoiding being embedded
     into potentially hostile contexts.
@@ -2465,11 +2451,11 @@ type: method
 
     Steps 3.2.2 and 3.2.3 ensure that the blocked frame appears to be a
     normal cross-origin document's load. If these steps are ignored,
-    leakage of a document's policy state is possible. 
+    leakage of a document's policy state is possible.
 
     The <code>frame-ancestors</code> directive MUST be ignored
     when <a>monitoring</a> a policy, and when a contained in a
-    policy defined via a <code><a element>meta</a></code> element.
+    policy defined via a <{meta}> element.
 
     Note: <code><a>frame-ancestors</a></code> does not fall back to the
     <a>default sources</a> when the directive is not defined. That is, a policy
@@ -2581,8 +2567,7 @@ type: method
 
     <ul>
       <li>Requesting data for display in a <a>nested browsing context</a> in the
-      protected resource created by an <code><a element>iframe</a></code> or
-      a <code><a element>frame</a></code> element.</li>
+      protected resource created by an <{iframe}> or a <{frame}> element.
 
       <li><a spec="HTML5">Navigated</a> such a <a>nested browsing context</a>.</li>
     </ul>
@@ -2625,21 +2610,13 @@ type: method
     <ul>
       <!-- TODO: autolink srcset -->
       <li>Requesting data for an image, such as when processing the
-      <code><a element-attr>src</a></code> or
-      <code>srcset</code> attributes of an
-      <code><a element>img</a></code> element, the
-      <code><a element-attr>src</a></code> attribute of an
-      <code><a element>input</a></code> element with a type of
-      <code><a element-attr>image</a></code>,
-      the <code><a element-attr>poster</a></code> attribute of a
-      <code><a element>video</a></code> element,
+      <{img/src}> or <code>srcset</code> attributes of an <{img}> element, the
+      <{input/src}> attribute of an <{input}> element with a type of
+      <{input/image}>, the <{video/poster}> attribute of a <{video}> element,
       the ''url()'', <<image()>> or <<image-set()>> values on any
-      Cascading Style Sheets (CSS)
-      property that is capable of loading an image [[!CSS4-IMAGES]], or
-      the <code><a element-attr for="link">href</a></code> attribute of a
-      <code><a element>link</a></code> element with an image-related
-      <code><a element-attr for="link">rel</a></code> attribute, such as
-      <code><a spec="HTML5">icon</a></code>.</li>
+      Cascading Style Sheets (CSS) property that is capable of loading an image
+      [[!CSS4-IMAGES]], or the <{link/href}> attribute of a <{link}> element
+      with an image-related <{link/rel}> attribute, such as <{link/icon}>.</li>
     </ul>
   </section>
 
@@ -2679,11 +2656,9 @@ type: method
     a violation</a>:
 
     <ul>
-      <li>Requesting data for a video or audio clip, such as when
-      processing the <code><a element-attr>src</a></code> attribute of a
-      <code><a element>video</a></code>, <code><a element>audio</a></code>,
-      <code><a element>source</a></code>, or <code><a element>track</a></code>
-      elements.</li>
+      <li>Requesting data for a video or audio clip, such as when processing the
+      <{video/src}> attribute of a <{video}>, <{audio}>, <{source}>, or
+      <{track}> element.</li>
     </ul>
   </section>
 
@@ -2723,35 +2698,28 @@ type: method
 
     <ul>
       <li>Requesting data for a plugin, such as when processing the
-      <code><a element-attr>data</a></code> attribute of an
-      <code><a element>object</a></code> element, the
-      <code><a element-attr>src</a></code> attribute of an
-      <code><a element>embed</a></code> elements, or the
-      <code><a element-attr>code</a></code> or
-      <code><a element-attr>archive</a></code> attributes of an
-      <code><a element>applet</a></code> element.</li>
+      <{object/data}> attribute of an <{object}> element, the <{embed/src}>
+      attribute of an <{embed}> element, or the <{applet/code}> or
+      <{applet/archive}> attributes of an <{applet}> element.</li>
 
       <li>Requesting data for display in a <a>nested browsing context</a>
-      in the protected resource created by an <code><a element>object</a></code>
-      or an <code><a element>embed</a></code> element.</li>
+      in the protected resource created by an <{object}> or an <{embed}>
+      element.</li>
 
       <li>Navigating such a <a>nested browsing context</a>.</li>
     </ul>
 
     It is not required that the consumer of the element's data be a
     <a>plugin</a> in order for the <code>object-src</code> directive to be
-    enforced. Data for any <code><a element>object</a></code>,
-    <code><a element>embed</a></code>, or <code><a element>applet</a></code>
-    element MUST match the <a>allowed object sources</a> in order to be fetched.
-    This is true even when the element data is semantically equivalent to
-    content which would otherwise be restricted by one of the other
-    <a section href="#directives">directives</a>, such as an
-    <code><a element>object</a></code> element with a <code>text/html</code>
-    MIME type.
+    enforced. Data for any <{object}>, <{embed}>, or <{applet}> element MUST
+    match the <a>allowed object sources</a> in order to be fetched. This is true
+    even when the element data is semantically equivalent to content which would
+    otherwise be restricted by one of the other [[#directives]], such as an
+    <{object}> element with a <code>text/html</code> MIME type.
 
     Whenever the user agent would load a <a>plugin</a> without an associated
-    URL (e.g., because the <code><a element>object</a></code> element lacked a
-    <code>data</code> attribute), if the protected resource's URL does not
+    URL (e.g., because the <{object}> element lacked a <{object/data}>
+    attribute), if the protected resource's URL does not
     <a title="match a source list">match</a> the <a>allowed object sources</a>
     for the <a>protected resource</a>, the user agent MUST NOT load the plugin.
   </section>
@@ -2791,25 +2759,23 @@ type: method
 
     <ul>
         <li>The plugin is embedded into the protected resource via an
-        <code><a element>object</a></code> or
-        <code><a element>embed</a></code> element that does not explicitly
-        declare a <a spec="HTML5">MIME type</a> via a
-        <code><a element-attr for="object">type</a></code> attribute.</li>
+        <{object}> or <{embed}> element that does not explicitly
+        declare a <a spec="HTML5">MIME type</a> via a <{object/type}>
+        attribute.</li>
 
         <li><var>resource</var>'s media type does not
         <a title="match a media type list">match</a> the list of <a>allowed
         plugin media types</a>.</li>
 
         <li>The plugin is embedded into the protected resource via an
-        <code><a element>object</a></code> or
-        <code><a element>embed</a></code> element, and the media type declared
-        in the element's <code><a element-attr>type</a></code> attribute is not
-        an <a>ASCII case-insensitive match</a> for the <var>resource</var>'s media
+        <{object}> or <{embed}> element, and the media type declared
+        in the element's <{object/type}> attribute is not an <a>ASCII
+        case-insensitive match</a> for the <var>resource</var>'s media
         type.</li>
 
         <li>The plugin is embedded into the protected resource via an
-        <code><a element>applet</a></code> element, and <var>resource</var>'s
-        media type is not an <a>ASCII case-insensitive match</a> for
+        <{applet}> element, and <var>resource</var>'s media type is not an
+        <a>ASCII case-insensitive match</a> for
         <code>application/x-java-applet</code>.</li>
     </ul>
 
@@ -3244,10 +3210,9 @@ type: method
     <a>report a violation</a>:
 
     <ul>
-      <li>Requesting a script while processing the
-      <code><a element-attr>src</a></code> attribute
-      of a <code><a element>script</a></code> element that lacks a
-      <a>valid nonce</a> for the <a>allowed script sources</a>.</li>
+      <li>Requesting a script while processing the <{script/src}> attribute of
+      a <{script}> element that lacks a <a>valid nonce</a> for the <a>allowed
+      script sources</a>.</li>
 
       <li>Requesting a script while invoking the <code>importScripts</code>
       method on a WorkerGlobalScope object. [[!WORKERS]]</li>
@@ -3299,9 +3264,8 @@ type: method
                                  <a>script-src</a> 'self' https://example.com 'nonce-Nc3n83cnSAd3wc3Sasdfn939hc3'
       </pre>
 
-      Script elements can then execute either because their
-      <code><a element-attr>src</a></code> URLs are whitelisted or because
-      they have a <a>valid nonce</a>:
+      Script elements can then execute either because their <{script/src}> URLs
+      are whitelisted or because they have a <a>valid nonce</a>:
 
       <pre>
         &lt;script&gt;
