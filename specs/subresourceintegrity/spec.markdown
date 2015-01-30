@@ -772,6 +772,9 @@ will likely be difficult to avoid (image's `naturalHeight` and
 None of this is new. Much of the content here is inspired heavily by Gervase
 Markham's [Link Fingerprints][] concept, as well as WHATWG's [Link Hashes][].
 
+A special thanks to Mike West of Google, Inc. for his invaluable contributions
+to the initial version of this spec.
+
 [Link Fingerprints]: http://www.gerv.net/security/link-fingerprints/
 [Link Hashes]: http://wiki.whatwg.org/wiki/Link_Hashes
 </section>
