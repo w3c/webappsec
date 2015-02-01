@@ -1815,8 +1815,45 @@ directive-value = 1*DIGIT
     <h3 class="heading settled" data-level="5.1" id="hostile-pinning"><span class="secno">5.1. </span><span class="content">Hostile Pinning</span><a class="self-link" href="#hostile-pinning"></a></h3>
 
 
-    <p class="issue" id="issue-5af7ab06"><a class="self-link" href="#issue-5af7ab06"></a>copy/paste from PKP and HSTS.</p>
+    <p>An active network attacker who is able to inject headers into a site’s
+  responses may attempt to maliciously pin a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> for a host
+  and its subdomains. Pinning <code>default-src 'none'</code> on a page that
+  wasn’t built to work under such restrictions could deny service for an
+  entire application.</p>
 
+
+    <p>Unlike public key pinning <a data-link-type="biblio" href="#biblio-pkp">[PKP]</a>, however, pinning a security policy cannot
+  completely deny access to a site. This means that maliciously (or
+  accidentally) pinned policies can be easily overridden in two ways:</p>
+
+  
+    <ol>
+    
+     <li>
+      Authors SHOULD send a valid <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> down with each HTTP
+      response, and use the pin only as a backup (see <a href="#pins-as-defaults">§7.1 Pins as a default</a>).
+
+
+      <p class="note" role="note">Note: A future version of this specification may add a directive which
+      prevents overriding the pinned policy (<code>no-override</code>?). This
+      would allow authors to choose a stricter deployment model, but would
+      remove this override possibility.</p>
+      
+    
+     
+    
+     <li>
+      Authors may also rescind a pinned policy by sending a new
+      <code><a data-link-type="dfn" href="#content_security_policy_pin">Content-Security-Policy-Pin</a></code> header with a
+      <code><a data-link-type="dfn" href="#max_age">max-age</a></code> of <code>0</code>.
+    
+     
+  
+    </ol>
+
+
+    <p>Moreover, the risk of malicious injection is mitigated by the fact that we
+  only accept pins over secure and authenticated connections.</p>
 </section>
 
    <section>
@@ -2103,7 +2140,6 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   particular, we need to ensure that we detect and pin a policy early enough
   for <code>frame-ancestors</code> and <code>referrer</code> to handle blocking
   and redirects.<a href="#issue-396704e8"> ↵ </a></div>
-   <div class="issue">copy/paste from PKP and HSTS.<a href="#issue-5af7ab06"> ↵ </a></div>
    <div class="issue">Explain something about the theory; pins act as a baseline for
   resources that don’t otherwise have a policy. Explain layering, granularity,
   etc.<a href="#issue-c9a0c3af"> ↵ </a></div>

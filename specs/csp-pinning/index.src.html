@@ -826,8 +826,35 @@ urlPrefix: https://tools.ietf.org/html/rfc7231
 
   <h3 id="hostile-pinning">Hostile Pinning</h3>
 
-  ISSUE: copy/paste from PKP and HSTS.
+  An active network attacker who is able to inject headers into a site's
+  responses may attempt to maliciously pin a <a>security policy</a> for a host
+  and its subdomains. Pinning <code>default-src 'none'</code> on a page that
+  wasn't built to work under such restrictions could deny service for an
+  entire application.
 
+  Unlike public key pinning [[PKP]], however, pinning a security policy cannot
+  completely deny access to a site. This means that maliciously (or
+  accidentally) pinned policies can be easily overridden in two ways:
+
+  <ol>
+    <li>
+      Authors SHOULD send a valid <a>security policy</a> down with each HTTP
+      response, and use the pin only as a backup (see [[#pins-as-defaults]]).
+
+      Note: A future version of this specification may add a directive which
+      prevents overriding the pinned policy (<code>no-override</code>?). This
+      would allow authors to choose a stricter deployment model, but would
+      remove this override possibility.
+    </li>
+    <li>
+      Authors may also rescind a pinned policy by sending a new
+      <code><a>Content-Security-Policy-Pin</a></code> header with a
+      <code><a>max-age</a></code> of <code>0</code>.
+    </li>
+  </ol>
+
+  Moreover, the risk of malicious injection is mitigated by the fact that we
+  only accept pins over secure and authenticated connections.
 </section>
 <section>
   <h2 id="privacy-considerations">Privacy Considerations</h2>
