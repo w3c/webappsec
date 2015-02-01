@@ -71,17 +71,22 @@ Indent: 2
       <code>Sufficiently Secure</code> when executed upon its <a>incumbent
       settings object</a>.
 
-      Likewise, a <a>settings object</a> is considered <strong>sufficiently
+      A {{Worker}}, {{SharedWorker}}, or {{ServiceWorker}} is considered
+      <strong>sufficiently secure</strong> if the algorithm defined in
+      [[#settings-sufficiently-secure]] returns <code>Sufficiently Secure</code>
+      when executed upon its <a>incumbent settings object</a>.
+
+      More generally, any <a>settings object</a> is <strong>sufficiently
       secure</strong> if the algorithm defined in
-      [[#settings-sufficiently-secure]] returns <code>Sufficiently
-      Secure</code> when executed upon it.
+      [[#settings-sufficiently-secure]] returns <code>Sufficiently Secure</code>
+      when executed upon it.
     </dd>
 
     <dt><dfn>embedding document</dfn></dt>
     <dd>
       Given a {{Document}} <var>A</var>, the <strong>embedding
       document</strong> of <var>A</var> is the {{Document}}
-      <a title="nested through">through which</a> <var>A</var>'s <a>browsing
+      <a lt="nested through">through which</a> <var>A</var>'s <a>browsing
       context</a> is nested.
     </dd>
   </dl>
@@ -113,7 +118,7 @@ urlPrefix: https://fetch.spec.whatwg.org/
 
 <!-- GEOLOCATION API -->
   : {{getCurrentPosition()}}
-  : {{watchPosition()}
+  : {{watchPosition()}}
   :: Defined in [[GEOLOCATION-API]]
 
 <pre class="anchors">
@@ -124,9 +129,10 @@ urlPrefix: http://www.w3.org/TR/geolocation-API/
 </pre>
 
 <!-- HTML5 -->
+
   : <a>active document</a>
   : <a>an IFrame srcdoc <code>Document</code></a>
-  : <a>ancestor browsing contexts</a>
+  : <a>ancestor browsing context</a>
   : <a>API base URL</a>
   : <a>browsing context</a>
   : <a>browsing context container</a>
@@ -147,7 +153,7 @@ urlPrefix: http://www.w3.org/TR/html5/
       text: an iframe srcdoc document
     urlPrefix: browsers.html
       text: active document
-      text: ancestor browsing contexts
+      text: ancestor browsing context
       text: browsing context
       text: browsing context container
       text: creating a new Document object
@@ -176,7 +182,7 @@ urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
 </pre>
 
 <!-- SERVICE WORKERS -->
-  : {{ServiceWorker}}
+  : {{ServiceWorker}} interface
   :: Defined in [[SERVICEWORKERS]]
 
 <pre class="anchors">
@@ -197,10 +203,10 @@ urlPrefix: http://www.w3.org/2014/Process-20140801/
 </pre>
 
 <!-- URL -->
-  : {{URL}}
+  : {{URL}} interface
   : <a>origin of a URL</a>
   :: Defined in [[!URL]]
-  
+
 <pre class="anchors">
 urlPrefix: https://url.spec.whatwg.org/
   type: dfn
@@ -211,12 +217,14 @@ urlPrefix: https://url.spec.whatwg.org/
 
 <!-- WORKERS -->
   : {{Worker}} interface
+  : {{SharedWorker}} interface
   :: Defined in [[WORKERS]]
 
 <pre class="anchors">
 urlPrefix: http://www.w3.org/TR/workers/
   type: interface
     text: Worker
+    text: SharedWorker
 </pre>
 
 <!-- ORIGIN -->
@@ -334,20 +342,16 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
   <div class="example">
     <ol>
       <li>
-        Let <var>state</var> be the result of executing
-        [[#settings-sufficiently-secure]] on the <a>incumbent settings
-        object</a>.
-      </li>
-      <li>
-        If <var>result</var> is <code>Insecure</code>, then [<i>insert
-        something appropriate here: perhaps you could reject a Promise,
+        If the <a>incumbent settings object</a> is not a <a>sufficiently
+        secure context</a>, then [<i>insert something appropriate here:
+        perhaps you could reject a Promise with a <code>SecurityError</code>,
         call an error callback, deny a permission request, etc.</i>].
       </li>
     </ol>
 
     Note: If you choose to copy/paste the above text for your spec, do remember
-    to put an action appropriate for your use case into step #2 in place of the
-    placeholder text.
+    to put an action appropriate for your use case in place of the placeholder
+    text.
   </div>
 
   <h3 id="legacy">Legacy Features</h3>
@@ -361,20 +365,20 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
     <li>
       If such a feature is not widely implemented, we recommend that the
       specification be immediately
-      <a title="modify a specification">modified</a> to include a restriction
+      <a lt="modify a specification">modified</a> to include a restriction
       to <a>sufficiently secure contexts</a>.
     </li>
     <li>
       If such a feature is widely implemented, but not yet in wide use, we
       recommend that it be quickly restricted to <a>sufficiently secure
       contexts</a> by adding a check as described in [[#new]] to existing
-      implementations, and <a title="modify a specification">modifying the
+      implementations, and <a lt="modify a specification">modifying the
       specification</a> accordingly.
     </li>
     <li>
       If such a feature is in wide use, we recommend that the existing
       functionality be deprecated; the specification should be
-      <a title="modify a specification">modified</a> to note that it does not
+      <a lt="modify a specification">modified</a> to note that it does not
       conform to the restrictions outlined in this document, and a plan should
       be developed to both offer a conformant version of the feature and to
       migrate existing users into that new version.
@@ -389,7 +393,7 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
 
   <ol>
     <li>
-      <a title="modify a specification">Modify</a> the specification to include
+      <a lt="modify a specification">Modify</a> the specification to include
       checks against [[#settings-sufficiently-secure]] before executing the
       algorithms for {{getCurrentPosition()}} and {{watchPosition()}}.
 
@@ -433,7 +437,7 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
       Is <var>settings object</var> a sufficiently secure context?
     </h3>
 
-    Given an <a>settings object</a> <var>settings</var>, this algorithm returns
+    Given a <a>settings object</a> <var>settings</var>, this algorithm returns
     <code>Sufficiently Secure</code> if the object represents a <a>sufficiently
     secure context</a>, and <code>Insecure</code> otherwise.
 
@@ -441,18 +445,18 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
       <li>
         If <var>settings</var>' <a>TLS state</a> is <strong>not</strong>
         <code>authenticated</code>:
-        
+
         <ol>
           <li>
             Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
           </li>
           <li>
             If <var>origin</var> is a <a>globally unique identifier</a>, set
-            <var>origin</var> to the <a title="origin of a url">origin</a>
+            <var>origin</var> to the <a lt="origin of a url">origin</a>
             of <var>settings</var>'s <a>API base URL</a>.
 
             Note: This is future-proofing against a world where sandboxing
-            {{Worker}} is a thing. 
+            {{Worker}} is a thing.
 
             ISSUE: "<a>API base URL</a>" isn't correct. We should use whatever
             gets produced as a result of
@@ -483,13 +487,13 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
 
         <ol>
           <li>
-            Let <var>documents to check</var> be an empty list of {{Document}}s.
+            Let <var>documents to check</var> be a list of {{Document}}s
             containing <var>document</var> and the <a>active document</a>
             in each of <var>document</var>'s <a>ancestor browsing contexts</a>.
           </li>
           <li>
             For each <var>ancestor</var> in <var>documents to check</var>:
-            
+
             <ol>
               <li>
                 If <var>ancestor</var> corresponds to <a>an IFrame
@@ -502,10 +506,10 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
                 <var>ancestor</var>.
               </li>
               <li>
-                Let <var>origin</var> be <var>document</var>'s <a>origin</a> if
+                Let <var>origin</var> be <var>ancestor</var>'s <a>origin</a> if
                 <var>document</var>'s active <a>sandboxing flag set</a> does not
                 have its <a>sandboxed origin browsing context flag</a> set, and
-                the <a title="origin of a url">origin of <var>document</var>'s
+                the <a lt="origin of a url">origin of <var>document</var>'s
                 <code>URL</code></a> otherwise.
               </li>
               <li>
