@@ -37,8 +37,9 @@ Indent: 2
   that a particular set of restrictions will be consistently applied.
 
   For example, it's often the case that generic error-handling pages are
-  constructed differently than "real" application pages. They're easy to forget,
-  and can offer attackers a foot in the door if they contain injection vectors.
+  constructed differently than "real" application pages. They're easy to forget
+  when auditing the security headers set for an origin, and can offer attackers
+  a foot in the door if they contain injection vectors.
 
   CSP Pinning attempts to address this concern by allowing authors to "pin" a
   baseline policy to an application's host. Conceptually, this is quite similar
@@ -72,6 +73,8 @@ Indent: 2
                                    <a>includeSubDomains</a>;
                                    default-src 'none';
                                    form-action 'none';
+                                   frame-ancestors 'none';
+                                   referrer no-referrer;
                                    report-uri /csp-endpoint/pinned
       Content-Security-Policy: script-src https://application1.cdn.com;
                                style-src https://application1.cdn.com;
@@ -86,7 +89,9 @@ Indent: 2
       Content-Security-Policy-Pin: <a>max-age</a>: 10886400;
                                    <a>includeSubDomains</a>;
                                    default-src https:;
-                                   object-src 'none';
+                                   form-action 'none';
+                                   frame-ancestors 'none';
+                                   referrer no-referrer;
                                    report-uri /csp-endpoint/pinned
       Content-Security-Policy: script-src https://application2.cdn.com;
                                style-src https://application2.cdn.com;
@@ -160,7 +165,7 @@ Indent: 2
   </dl>
 
   <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
-  
+
   The Augmented Backus-Naur Form (ABNF) notation used in [[#policy-delivery]]
   is specified in RFC5234. [[!ABNF]]
 
@@ -171,6 +176,7 @@ Indent: 2
   : <a lt="parse the policy">parse a security policy</a>
   : <a>security policy</a>
   : <code><a>policy-token</a></code>
+  : <a>send violation reports</a>
   :: Defined in [[!CSP]]
 
   <pre class="anchors">
@@ -182,6 +188,7 @@ urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
     text: policy syntax
     text: content-security-policy
     text: Delivery via meta element; url: delivery-html-meta-element
+    text: send violation reports
     url: enforce
       text: enforce
       text: enforced
@@ -482,7 +489,7 @@ urlPrefix: https://tools.ietf.org/html/rfc7231
 
   The user agent discovers and processes pinned policies during <a>fetching</a>.
   Upon receiving a response, the user agent will:
- 
+
   1. Sift through the HTTP headers according to the [[#discover-pinned-policy]]
      algorithm to determine if the <a>pinned policy cache</a> for the response's
      host needs to be updated.
@@ -827,11 +834,27 @@ urlPrefix: https://tools.ietf.org/html/rfc7231
 
   <h3 id="fingerprinting">Fingerprinting</h3>
 
-  ISSUE: Same as HSTS, PKP.
+  Similar to HSTS and HPKP, a <a>pinned security policy</a> could be used as a
+  "supercookie", setting a distinct policy for each user which can be used as
+  an identifier in combination with (or instead of) HTTP cookies.
 
-  User agents MUST clear the <a>pinned policy cache</a> when the user clears
-  her browsing data (cookies, site data, history, etc).
+  For example, the <code>report-uri</code> directive could contain a unique
+  identifier (<code>report-uri https://example.com/endpoint?id=123</code>) which
+  could identify a user based on correlating violation reports with user
+  activity.
 
+  To mitigate this risk, user agents MUST:
+
+  <ol>
+    <li>
+      Clear the <a>pinned policy cache</a> when the user clears her browsing
+      data (cookies, site data, history, etc).
+    </li>
+    <li>
+      Refuse to process <code>Set-Cookie</code> response headers during the
+      <a>send violation reports</a> algorithm.
+    </li>
+  </ol>
 </section>
 <section>
   <h2 id="authoring-considerations">Authoring Considerations</h2>

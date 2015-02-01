@@ -712,8 +712,9 @@ Conformance</span></a>
 
 
     <p>For example, it’s often the case that generic error-handling pages are
-  constructed differently than "real" application pages. They’re easy to forget,
-  and can offer attackers a foot in the door if they contain injection vectors.</p>
+  constructed differently than "real" application pages. They’re easy to forget
+  when auditing the security headers set for an origin, and can offer attackers
+  a foot in the door if they contain injection vectors.</p>
 
 
     <p>CSP Pinning attempts to address this concern by allowing authors to "pin" a
@@ -752,6 +753,8 @@ Conformance</span></a>
                              <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>;
                              default-src 'none';
                              form-action 'none';
+                             frame-ancestors 'none';
+                             referrer no-referrer;
                              report-uri /csp-endpoint/pinned
 Content-Security-Policy: script-src https://application1.cdn.com;
                          style-src https://application1.cdn.com;
@@ -769,7 +772,9 @@ Content-Security-Policy: script-src https://application1.cdn.com;
      <pre>Content-Security-Policy-Pin: <a data-link-type="dfn" href="#max_age">max-age</a>: 10886400;
                              <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>;
                              default-src https:;
-                             object-src 'none';
+                             form-action 'none';
+                             frame-ancestors 'none';
+                             referrer no-referrer;
                              report-uri /csp-endpoint/pinned
 Content-Security-Policy: script-src https://application2.cdn.com;
                          style-src https://application2.cdn.com;
@@ -896,6 +901,10 @@ Content-Security-Policy: script-src https://application2.cdn.com;
 
      <dt data-md="">
       <p><code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#policy-token">policy-token</a></code></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#send-violation-reports">send violation reports</a></p>
       
 
      <dd data-md="">
@@ -1818,12 +1827,35 @@ directive-value = 1*DIGIT
     <h3 class="heading settled" data-level="6.1" id="fingerprinting"><span class="secno">6.1. </span><span class="content">Fingerprinting</span><a class="self-link" href="#fingerprinting"></a></h3>
 
 
-    <p class="issue" id="issue-2e1d373a"><a class="self-link" href="#issue-2e1d373a"></a>Same as HSTS, PKP.</p>
+    <p>Similar to HSTS and HPKP, a <a data-link-type="dfn" href="#pinned-security-policy">pinned security policy</a> could be used as a
+  "supercookie", setting a distinct policy for each user which can be used as
+  an identifier in combination with (or instead of) HTTP cookies.</p>
 
 
-    <p>User agents MUST clear the <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a> when the user clears
-  her browsing data (cookies, site data, history, etc).</p>
+    <p>For example, the <code>report-uri</code> directive could contain a unique
+  identifier (<code>report-uri https://example.com/endpoint?id=123</code>) which
+  could identify a user based on correlating violation reports with user
+  activity.</p>
 
+
+    <p>To mitigate this risk, user agents MUST:</p>
+
+  
+    <ol>
+    
+     <li>
+      Clear the <a data-link-type="dfn" href="#pinned-policy-cache">pinned policy cache</a> when the user clears her browsing
+      data (cookies, site data, history, etc).
+    
+     
+    
+     <li>
+      Refuse to process <code>Set-Cookie</code> response headers during the
+      <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#send-violation-reports">send violation reports</a> algorithm.
+    
+     
+  
+    </ol>
 </section>
 
    <section>
@@ -2072,7 +2104,6 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   for <code>frame-ancestors</code> and <code>referrer</code> to handle blocking
   and redirects.<a href="#issue-396704e8"> ↵ </a></div>
    <div class="issue">copy/paste from PKP and HSTS.<a href="#issue-5af7ab06"> ↵ </a></div>
-   <div class="issue">Same as HSTS, PKP.<a href="#issue-2e1d373a"> ↵ </a></div>
    <div class="issue">Explain something about the theory; pins act as a baseline for
   resources that don’t otherwise have a policy. Explain layering, granularity,
   etc.<a href="#issue-c9a0c3af"> ↵ </a></div>
