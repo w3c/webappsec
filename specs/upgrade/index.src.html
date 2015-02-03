@@ -1,0 +1,333 @@
+<h1>Upgrade Insecure Resource Requests</h1>
+<pre class="metadata">
+Status: DREAM
+ED: https://w3c.github.io/webappsec/specs/upgrade-insecure-resource-requests/
+Shortname: upgrade
+Level: 1
+Editor: Mike West, Google Inc., mkwst@google.com
+Abstract: 
+  This document defines a mechanism which allows authors to instruct a user
+  agent to upgrade <i lang="la">a priori</i> insecure resource requests to
+  secure transport before Fetching.
+Indent: 2
+</pre>
+
+<pre boilerplate="copyright">&copy;2015 Google, Inc.</pre>
+
+<!--
+████ ██    ██ ████████ ████████   ███████ 
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████ 
+-->
+<section>
+  <h2 id="intro">Introduction</h2>
+
+  <em>This section is not normative.</em>
+
+  Insert introduction here.
+
+</section>
+
+<!--
+████████  ████████ ████████ ████ ██    ██ ████ ████████ ████  ███████  ██    ██  ██████ 
+██     ██ ██       ██        ██  ███   ██  ██     ██     ██  ██     ██ ███   ██ ██    ██
+██     ██ ██       ██        ██  ████  ██  ██     ██     ██  ██     ██ ████  ██ ██      
+██     ██ ██████   ██████    ██  ██ ██ ██  ██     ██     ██  ██     ██ ██ ██ ██  ██████ 
+██     ██ ██       ██        ██  ██  ████  ██     ██     ██  ██     ██ ██  ████       ██
+██     ██ ██       ██        ██  ██   ███  ██     ██     ██  ██     ██ ██   ███ ██    ██
+████████  ████████ ██       ████ ██    ██ ████    ██    ████  ███████  ██    ██  ██████ 
+-->
+<section>
+  <h2 id="key-concepts">Key Concepts and Terminology</h2>
+
+  <h3 id="terms-defined-here">Terms defined by this specification</h3>
+
+  Insert definitions here.
+
+  <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
+
+  The Augmented Backus-Naur Form (ABNF) notation used in [[#delivery]] is
+  specified in RFC5234. [[!ABNF]]
+
+  <!-- CSP -->
+  : <code><a>content-security-policy</a></code>
+  : <a lt="enforce">enforce a security policy</a>
+  : <a lt="monitor">monitor a security policy</a>
+  : <a>security policy</a>
+  : <a>send violation reports</a>
+  : <a>protected resource</a>
+  :: Defined in [[!CSP]]
+
+  <pre class="anchors">
+urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
+  type: dfn
+    text: content-security-policy; url: content_security_policy
+    text: protected resource
+    text: security policy
+    text: send violation reports
+    url: enforce
+      text: enforce
+      text: enforced
+    url: monitor
+      text: monitor
+      text: monitored
+  </pre>
+
+  <!-- DOM -->
+  : {{Document}} interface
+  :: Defined in [[!DOM]]
+
+  <pre class="anchors">
+urlPrefix: http://www.w3.org/TR/dom/
+  type: interface
+    text: Document; url: interface-document
+  </pre>
+
+  <!-- FETCH -->
+  : {{Request}} interface
+  : {{Request}}'s {{Request/url}}, {{Request/client}}, {{Request/context}}, and {{Request/context-frame-type}} attributes.
+  : <a>fetching</a>
+  :: Defined in [[!FETCH]]
+
+  <pre class="anchors">
+urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+  type: interface
+    text: Request
+  type: attribute
+    text: url; for: Request; url: concept-request-url
+    text: client; for: Request; url: concept-request-client
+    text: context; for: Request; url: concept-request-context
+    text: context-frame-type; for: Request; url: concept-request-context-frame-type
+  </pre>
+
+  <!-- HTML5 -->
+  : <a>ancestor browsing context</a>
+  : <a>browsing context</a>
+  : The <a>creating a new <code>Document</code> object</a> algorithm
+  : <a>environment settings object</a>
+  : <a>incumbent settings object</a>
+  : An <a>environment settings object</a>'s <a>responsible document</a> and <a>responsible browsing context</a> properties
+  :: Defined in [[!HTML5]]
+
+  <pre class="anchors">
+type: dfn
+  urlPrefix: http://www.w3.org/TR/html5/
+    urlPrefix: browsers.html
+      text: ancestor browsing context
+      text: browsing context
+      text: creating a new Document object
+      text: nested browsing context
+    urlPrefix: webappapis.html
+      text: environment settings object; url: settings-object
+      text: incumbent settings object
+      text: responsible document
+      text: responsible browsing context
+  </pre>
+
+  <!-- MIXED CONTENT -->
+  : <a><i lang="la">a priori</i> insecure origin</a>
+  : <a><i lang="la">a priori</i> insecure url</a>
+  : <a>potentially secure origin</a>
+  : <a>embedding document</a>
+  :: Defined in [[!MIX]]
+
+  <pre class="anchors">
+urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+  type: dfn
+    text: a priori insecure url
+    text: embedding document
+    url: a-priori-insecure-url
+      text: a priori insecure origin
+      text: a priori insecure
+    url: potentially-secure-origin
+      text: potentially secure origin
+      text: potentially secure
+  </pre>
+
+  <!-- URL -->
+  : {{URL}}'s {{URL/scheme}} property.
+  :: Defined in [[!URL]]
+  
+  <pre class="anchors">
+urlPrefix: https://url.spec.whatwg.org/
+  type: interface
+    text: URL; url: concept-url
+  type: attribute
+    text: scheme; for: URL; url: concept-url-scheme
+  </pre>
+
+  <!-- WORKERS -->
+  : {{Worker}} interface
+  :: Defined in [[!WORKERS]]
+
+  <pre class="anchors">
+urlPrefix: http://www.w3.org/TR/workers/
+  type: interface
+    text: Worker
+  </pre>
+
+  <!-- BIBLIOGRAPHY -->
+  <pre class="biblio">
+{
+  "CSP": {
+    "authors": [ "Mike West", "Dan Veditz" ],
+    "title": "Content Security Policy",
+    "href": "https://w3c.github.io/webappsec/specs/content-security-policy/",
+    "status": "WD",
+    "publisher": "W3C"
+  }
+}
+  </pre>
+
+</section>
+
+<!-- Big Text: Delivery -->
+<section>
+  <h2 id="upgrade">Upgrading Insecure Resource Requests</h2>
+
+  In order to allow authors to mitigate the negative side-effects of migration
+  away from <a><i lang="la">a priori</i> insecure origins</a>, authors may
+  instruct the user agent to transparently upgrade resource requests to
+  <a>potentially secure</a> variants of the original request's URL.
+
+  To support this instruction, <a>environment settings objects</a> and
+  <a>browsing contexts</a> have an <dfn>upgrade insecure resource requests
+  flag</dfn> which is set to <code>false</code> unless otherwise specified.
+  This flag is checked in [[#upgrade-request]] in order to determine whether or
+  not resource requests should be upgraded during <a>Fetching</a>.
+
+  <h3 id="delivery">Upgrade Policy Delivery</h3>
+
+  A server MAY instruct a user agent to upgrade insecure resource requests for
+  a particular <a>protected resource</a> by sending a
+  <code>Content-Security-Policy</code> header [[!CSP]] that contains a
+  <dfn>upgrade-insecure-requests</dfn> directive, defined via the following ABNF
+  grammar:
+
+  <pre>
+    directive-name  = "upgrade-insecure-requests"
+    directive-value = ""
+  </pre>
+
+  When <a>enforcing</a> the <code>block-all-mixed-content</code> directive,
+  set the <a>protected resource</a>'s <a>incumbent settings object</a>'s
+  <a>upgrade insecure resource requests flag</a> to <code>true</code>.
+
+  This directive has no effect when <a>monitored</a>. This directive's only
+  effect is to set a policy flag on the protected resource; it will therefore
+  never be violated, and has no reporting requirements. 
+
+  <h3 id="nesting">Policy Inheritance</h3>
+
+  If a {{Document}}'s <a>incumbent settings object</a>'s <a>upgrade insecure
+  resource requests flag</a> is set to <code>true</code>, the user agent MUST
+  ensure that all <a>nested browsing contexts</a> inherit the setting in the
+  following ways:
+
+  <ol>
+    <li>
+      When a <a>nested browsing context</a> <var>context</var> is created, set
+      its <a>upgrade insecure resource requests flag</a> to <code>true</code> if
+      <var>context</var>'s <a>embedding document</a>'s <a>upgrade insecure
+      resource requests flag</a> is set to <code>true</code>.
+    </li>
+    <li>
+      When <a>creating a new <code>Document</code> object</a>, set its
+      <a>incumbent settings object</a>'s <a>upgrade insecure resource requests
+      flag</a> to <code>true</code> if its <a>browsing context</a>'s <a>upgrade
+      insecure resource requests flag</a> is <code>true</code>.
+    </li>
+  </ol>
+
+  <h3 id="algorithms">Processing Algorithms</h3>
+
+  <h4 id="upgrade-request">
+    Upgrade <var>request</var> to a potentially secure URL, if appropriate
+  </h4>
+
+  Given a {{Request}} <var>request</var>, this algorithm will rewrite its
+  {{Request/url}} if the {{Request/client}} from which the request originates
+  has opted-in to upgrades.
+
+  ISSUE: This should be called from Fetch, probably after the existing step #3.
+  Hi, Anne!
+
+  <ol>
+    <li>
+      If <var>request</var>'s {{Request/context-frame-type}} is
+      <code>top-level</code> or <code>auxiliary</code>, and its
+      {{Request/context}} is <strong>not</strong> <code>form</code>,
+      return without modifying <var>request</var>.
+    </li>
+    <li>
+      If <var>request</var>'s {{Request/url}} is <a>potentially secure</a>,
+      return without modifying <var>request</var>.
+    </li>
+    <li>
+      If [[#should-upgrade-for-client]] returns <code>Do Not Upgrade</code>
+      when executed upon <var>request</var>'s {{Request/client}}, return without
+      modifying <var>request</var>.
+    </li>
+    <li>
+      If <var>request</var>'s {{Request/url}}'s {{URL/scheme}} is
+      <code>http</code>, set <var>request</var>'s {{Request/url}}'s
+      {{URL/scheme}} to <code>https</code>, and return.
+    </li>
+    <li>
+      If <var>request</var>'s {{Request/url}}'s {{URL/scheme}} is
+      <code>ws</code>, set <var>request</var>'s {{Request/url}}'s
+      {{URL/scheme}} to <code>wss</code>, and return.
+    </li>
+  </ol>
+
+  ISSUE: Do something with CSP reporting here.
+
+  <h4 id="should-upgrade-for-client">
+    Should insecure {{Request}}s be upgraded for <var>client</var>?
+  </h4>
+
+  Given an {{Request}}'s {{Request/client}} <var>client</var> (an <a>environment
+  settings object</a>), this algorithm returns <code>Upgrade</code> if
+  <a><i lang="la">a priori</i> insecure</a> requests associated with that client
+  should be upgraded, and <code>Do Not Upgrade</code> otherwise. In short, this
+  will check the client to see if the <a>upgrade insecure resource requests
+  flag</a> is set on it or its <a>browsing context</a>.
+
+  <ol>
+    <li>
+      If <var>client</var> has a <a>responsible document</a> whose
+      <a>upgrade insecure resource requests flag</a> is set to
+      <code>true</code>, then return <code>Upgrade</code>.
+
+      Note: This catches {{Document}}s or {{Worker}}s whose flag is set directly
+      by the <code><a>upgrade-insecure-requests</a></code> directive, or which
+      have inherited the flag from an <a>embedding document</a>.
+    </li>
+    <li>
+      If <var>client</var> has a <a>responsible browsing context</a> whose
+      <a>upgrade insecure resource requests flag</a> is set to
+      <code>true</code>, then return <code>Upgrade</code>.
+
+      Note: This catches requests triggered from detached {{Request/client}}s.
+      Not sure this is necessary, really, given the inheritence structure
+      defined in [[#nesting]].
+    </li>
+    <li>
+      Return <code>Do Not Upgrade</code>. 
+    </li>
+  </ol>
+</section>
+
+<section>
+  <h2 id="acknowledgements">Acknowledgements</h2>
+
+  Anne van Kesteren helped insure that the initial draft of this document was
+  sane. Peter Eckersley and Daniel Kahn Gillmor clarified the problem space, and
+  helped point out the impact.
+</section>

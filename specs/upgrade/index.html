@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  
+  
+  <title>Upgrade Insecure Resource Requests</title>
+  
+  
+  <style>
+@media print {
+  html { margin: 0 !important; }
+  body { font-family: serif; }
+  th, td { font-family: inherit; }
+  a { color: inherit !important; }
+  .example:before { font-family: serif !important; }
+  a:link, a:visited { text-decoration: none !important; }
+  a:link:after, a:visited:after { /* create a cross-ref "see..." */; }
+}
+@page {
+  margin: 1.5cm 1.1cm;
+}
+h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
+figure, div.figure, div.sidefigure, pre, table.propdef, table.propdef-extra,
+.example { page-break-inside: avoid; }
+dt { page-break-after: avoid; }
+
+body {
+  background: white;
+  /* background-image: floating-margin-image-goes-here; */
+  background-position: top left;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: black;
+  counter-reset: exampleno figure issue;
+  font-family: sans-serif;
+  line-height: 1.5;
+  margin: 0 auto;
+  max-width: 50em;
+  padding: 2em 1em 2em 70px;
+}
+
+/* General structural markup */
+
+h1, h2, h3, h4, h5, h6 { text-align: left; }
+h1, h2, h3 { color: #005A9C; }
+h1 { font: 170% sans-serif; }
+h2 { font: 140% sans-serif; }
+h3 { font: 120% sans-serif; }
+h4 { font: bold 100% sans-serif; }
+h5 { font: italic 100% sans-serif; }
+h6 { font: small-caps 100% sans-serif; }
+h2, h3, h4, h5, h6 { margin-top: 3em; }
+h1 + h2 { margin-top: 0em; }
+h2 + h3, h3 + h4, h4 + h5, h5 + h6 { margin-top: 1.2em; }
+
+.head { margin-bottom: 1em; }
+.head h1 { margin-top: 2em; clear: both; }
+.head table { margin-left: 2em; margin-top: 2em; }
+.head dd { margin-bottom: 0; }
+
+p.copyright { font-size: small; }
+p.copyright small { font-size: small; }
+
+pre { margin: 1em 0 1em 2em; overflow: auto; }
+pre, code, .idl-code {
+  font-size: .9em;
+  font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+dt dfn code { font-size: inherit; }
+
+dfn { font-weight: bolder; }
+dfn var { font-style: normal; }
+
+s, del {text-decoration: line-through; color: red; }
+u, ins {text-decoration: underline; background: #bfa; }
+
+sup {
+  vertical-align: super;
+  font-size: 80%
+}
+
+details { display: block; }
+
+dt { font-weight: bold; }
+dd { margin: 0 0 1em 2em; }
+ul, ol { margin-left: 0; padding-left: 2em; }
+li { margin: 0.25em 2em 0.5em 0; padding-left: 0; }
+[data-md] > :first-child { margin-top: 0; }
+[data-md] > :last-child { margin-bottom: 0; }
+
+td.pre {
+  white-space: pre-wrap;
+}
+
+.css, .property { color: #005a9c; }
+.property { white-space: nowrap; }
+
+
+/* Boilerplate sections */
+
+ul.indexlist { margin-left: 0; columns: 13em; }
+ul.indexlist li { margin-left: 0; list-style: none }
+ul.indexlist li li { margin-left: 1em; }
+ul.indexlist a { font-weight: bold; }
+ul.indexlist ul, ul.indexlist dl { font-size: smaller; }
+ul.indexlist dl { margin-top: 0; }
+ul.indexlist dt { margin: .2em 0 .2em 20px; }
+ul.indexlist dd { margin: .2em 0 .2em 40px; }
+
+.toc {
+  font-weight: bold;
+  line-height: 1.3;
+  list-style: none;
+  margin: 1em 0 0 5em;
+  padding: 0;
+}
+.toc ul { margin: 0; padding: 0; font-weight: normal; }
+.toc ul ul { margin: 0 0 0 2em; font-style: italic; }
+.toc ul ul ul { margin: 0}
+.toc > li { margin: 1.5em 0; padding: 0; }
+.toc li { clear: both; }
+.toc ul.toc li { margin: 0.3em 0 0 0; }
+.toc a { border-bottom-style: none; }
+.toc a:hover, ul.toc a:focus { border-bottom-style: solid; }
+/* Section numbers in a column of their own */
+.toc span.secno {float: left; width: 4em; margin-left: -5em}
+.toc ul ul span.secno { margin-left: -7em; }
+
+table.proptable {
+  font-size: small;
+  border-collapse: collapse;
+  border-spacing: 0;
+  text-align: left;
+  margin: 1em 0;
+}
+table.proptable td, table.proptable th {
+  padding: 0.4em;
+  text-align: center;
+}
+table.proptable tr:hover td { background: #DEF; }
+
+
+/* Links */
+
+a[href] { color: inherit; border-bottom: 1px solid silver; text-decoration: none; }
+a[href]:hover { background: #ffa; }
+a[href]:active { color: #C00; background: transparent; }
+img, a.logo { border-style: none; }
+.heading, .issue, .note, .example, li, dt { position: relative; }
+/* CSS-ish link types */
+[data-link-type="property"]::before,
+[data-link-type="propdesc"]::before,
+[data-link-type="descriptor"]::before,
+[data-link-type="value"]::before,
+[data-link-type="function"]::before,
+[data-link-type="at-rule"]::before,
+[data-link-type="selector"]::before,
+[data-link-type="maybe"]::before {content: "“";}
+[data-link-type="property"]::after,
+[data-link-type="propdesc"]::after,
+[data-link-type="descriptor"]::after,
+[data-link-type="value"]::after,
+[data-link-type="function"]::after,
+[data-link-type="at-rule"]::after,
+[data-link-type="selector"]::after,
+[data-link-type="maybe"]::after {content: "”";}
+[data-link-type].production::before,
+[data-link-type].production::after,
+.prod [data-link-type]::before,
+.prod [data-link-type]::after { content: ""; }
+/* Element-type link styling */
+[data-link-type=element] { font-family: monospace; }
+[data-link-type=element]::before { content: "<" }
+[data-link-type=element]::after { content: ">" }
+/* Self-links */
+a.self-link {
+  position: absolute;
+  top: 0;
+  left: -2.5em;
+  width: 2em;
+  height: 2em;
+  text-align: center;
+  border: none;
+  transition: opacity .2s;
+  opacity: .5;
+}
+a.self-link:hover {
+  opacity: 1;
+}
+.heading > a.self-link {
+  font-size: 83%;
+}
+li > a.self-link {
+  left: -3.5em;
+}
+dfn > a.self-link {
+  top: auto;
+  left: auto;
+  opacity: 0;
+  width: 1.5em;
+  height: 1.5em;
+  background: gray;
+  color: white;
+  font-style: normal;
+  transition: opacity .2s, background-color .2s, color .2s;
+}
+dfn:hover > a.self-link {
+  opacity: 1;
+}
+dfn > a.self-link:hover {
+  color: black;
+}
+a.self-link::before { content: "¶"; }
+.heading > a.self-link::before { content: "§"; }
+dfn > a.self-link::before { content: "#"; }
+
+
+/* Figures */
+
+figure {
+  display: block;
+  text-align: center;
+  margin: 2.5em 0;
+}
+figure.sidefigure {
+  float: right;
+  width: 50%;
+  margin: 0 0 0.5em 0.5em
+}
+figure pre {
+  text-align: left;
+  display: table;
+  margin: 1em auto;
+}
+figure table {
+  margin: auto;
+}
+figure img, figure object {
+  display: block;
+  margin: auto;
+  max-width: 100%
+}
+figcaption {
+  counter-increment: figure;
+  font-size: 90%;
+  font-style: italic;
+  text-align: center;
+}
+figcaption::before {
+  content: "Figure " counter(figure) ". ";
+  font-weight: bold;
+}
+dd figure { margin-left: -2em; }
+
+
+/* Definition tables */
+
+table.definition {
+  border-spacing: 0;
+  padding: 0 1em 0.5em;
+  width: 100%;
+  table-layout: fixed;
+  margin: 1.2em 0;
+}
+table.definition td, table.definition th {
+  padding: 0.5em;
+  vertical-align: baseline;
+  border-bottom: 1px solid #bbd7e9;
+}
+table.definition th:first-child {
+  font-style: italic;
+  font-weight: normal;
+  text-align: left;
+  width: 8.3em;
+  padding-left: 1em;
+}
+table.definition > tbody > tr:last-child > th,
+table.definition > tbody > tr:last-child > td {
+  border-bottom: none;
+}
+table.definition tr:first-child > th,
+table.definition tr:first-child > td {
+  padding-top: 1em;
+}
+/* Footnotes at the bottom of a definition table */
+table.definition td.footnote {
+  font-style: normal;
+  padding-top: .6em;
+  width: auto;
+}
+table.definition td.footnote::before {
+  content: " ";
+  display: block;
+  height: 0.6em;
+  width: 4em;
+  border-top: thin solid;
+}
+
+
+/* IDL fragments */
+
+pre.idl {
+  padding: .5em 1em;
+  margin: 1.2em 0;
+}
+pre.idl :link, pre.idl :visited {
+  color:inherit;
+  background:transparent;
+}
+
+
+/* Data tables */
+/* Comes in plain, long, complex, or define varieties */
+
+.data {
+  margin: 1em auto;
+  border-collapse: collapse;
+  width: 100%;
+  border: hidden;
+}
+.data {
+  text-align: center;
+  width: auto;
+}
+.data caption {
+  width: 100%;
+}
+.data td, .data th {
+  padding: 0.5em;
+  border-width: 1px;
+  border-color: silver;
+  border-top-style: solid;
+}
+.data thead td:empty {
+  padding: 0;
+  border: 0;
+}
+.data thead th[scope="row"] {
+  text-align: right;
+  color: inherit;
+}
+.data thead,
+.data tbody {
+  color: inherit;
+  border-bottom: 2px solid;
+}
+.data colgroup {
+  border-left: 2px solid;
+}
+.data tbody th:first-child,
+.data tbody td[scope="row"]:first-child {
+  text-align: right;
+  color: inherit;
+  border-right: 2px solid;
+  border-top: 1px solid silver;
+  padding-right: 1em;
+}
+.data.define td:last-child {
+  text-align: left;
+}
+.data tbody th[rowspan],
+.data tbody td[rowspan] {
+  border-left: 1px solid silver;
+}
+.data tbody th[rowspan]:first-child,
+.data tbody td[rowspan]:first-child {
+  border-left: 0;
+  border-right: 1px solid silver;
+}
+.data.complex th,
+.data.complex td {
+  border: 1px solid silver;
+}
+.data td.long {
+ vertical-align: baseline;
+ text-align: left;
+}
+.data img {
+  vertical-align: middle;
+}
+
+
+/* Switch/case <dl>s */
+
+dl.switch {
+ padding-left: 2em;
+}
+dl.switch > dt {
+ text-indent: -1.5em;
+}
+dl.switch > dt:before {
+ content: '↪';
+ padding: 0 0.5em 0 0;
+ display: inline-block;
+ width: 1em;
+ text-align: right;
+ line-height: 0.5em;
+}
+
+
+/* Style for At Risk features (intended as editorial aid, not intended for publishing) */
+.atrisk::before {
+ position: absolute;
+ margin-left: -5em;
+ margin-top: -2px;
+ padding: 4px;
+ border: 1px solid;
+ content: 'At risk';
+ font-size: small;
+ background-color: white;
+ color: gray;
+ border-radius: 1em;
+ text-align: center;
+}
+
+
+/* Obsoletion notice */
+details.annoying-warning[open] {
+  background: #fdd;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: .5em;
+  border: thick solid red;
+  border-radius: 1em;
+  position: fixed;
+  left: 1em;
+  right: 1em;
+  bottom: 1em;
+  z-index: 1000;
+}
+details.annoying-warning:not([open]) > summary {
+  background: #fdd;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: .5em;
+}
+
+
+/* Examples */
+
+.example {
+  counter-increment: exampleno;
+}
+.example::before {
+  content: "Example";
+  content: "Example " counter(exampleno);
+  min-width: 7.5em;
+  text-transform: uppercase;
+  display: block;
+}
+.illegal-example::before {
+  content: "Invalid Example";
+  content: "Invalid Example" counter(exampleno);
+}
+.example, .illegal-example, .html, .illegal-html, .xml, .illegal-xml {
+  padding: 0.5em;
+  margin: 1em 0;
+  position: relative;
+  clear: both;
+}
+pre.example, pre.illegal-example, pre.html,
+pre.illegal-html, pre.xml, pre.illegal-xml {
+  padding-top: 1.5em;
+}
+.illegal-example { color: red; }
+.illegal-example p { color: black; }
+.html { color: #600; }
+.illegal-html { color: red; }
+.illegal-html p { color: black; }
+.xml { color: #600; }
+.illegal-xml { color: red; }
+.illegal-xml p { color: black; }
+code.css { font-family: inherit; font-size: 100% }
+code.html { color: #600 } /* inline HTML */
+code.xml { color: #600 }  /* inline XML */
+
+
+/* Issues */
+
+.issue {
+  border-color: #E05252;
+  background: #FBE9E9;
+  counter-increment: issue;
+}
+.issue:before {
+  content: "Issue " counter(issue);
+  padding-right: 1em;
+  text-transform: uppercase;
+  color: #E05252;
+}
+
+
+/* Whys */
+
+details.why > summary {
+  font-style: italic;
+}
+details.why[open] > summary {
+  border-bottom: 1px silver solid;
+}
+
+
+/* All the blocks get similarly styled */
+
+table.definition, pre.idl, .example, .note, details.why, .issue {
+  border: none;
+  border-left: .5em solid black;
+  border-left: .5rem solid black;
+}
+.issue, .note, .example, .why {
+  padding: .5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+table.definition, pre.idl {
+  background: hsl(210, 70%, 95%);
+  border-color: hsl(210, 80%, 75%);
+}
+.example {
+  background: hsl(50, 70%, 95%);
+  border-color: hsl(50, 70%, 60%);
+}
+.example::before {
+  color: hsl(50, 70%, 60%);
+}
+.note, details.why {
+  background: hsl(120, 70%, 95%);
+  border-color: hsl(120, 70%, 60%);
+}
+.note::before {
+  color: hsl(120, 70%, 60%);
+}
+.issue {
+  background: hsl(0, 70%, 95%);
+  border-color: hsl(0, 70%, 60%);
+}
+.issue::before {
+  color: hsl(0, 70%, 60%);
+}
+span.issue, span.note {
+  padding: .1em .5em .15em;
+  border-right-width: .5em;
+  border-right-style: solid;
+}
+  </style>
+  
+
+  <meta content="1.0.0" name="bikeshed-semver">
+ </head>
+ 
+
+ <body class="h-entry">
+
+  <div class="head">
+  
+   <p data-fill-with="logo"></p>
+  
+   <h1 class="p-name no-ref" id="title">Upgrade Insecure Resource Requests</h1>
+  
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">A Collection of Interesting Ideas,
+    <time class="dt-updated" datetime="2015-02-03">3 February 2015</time></span></h2>
+  
+   <div data-fill-with="spec-metadata">
+    <dl>
+     <dt>This version:
+     <dd><a class="u-url" href="https://w3c.github.io/webappsec/specs/upgrade-insecure-resource-requests/">https://w3c.github.io/webappsec/specs/upgrade-insecure-resource-requests/</a>
+     <dt>Issue Tracking:
+     <dd><a href="#issues-index">Inline In Spec</a>
+     <dt class="editor">Editor:
+     <dd class="editor">
+      <div class="p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:mkwst@google.com">Mike West</a> (<span class="p-org org">Google Inc.</span>)</div>
+    </dl>
+   </div>
+  
+   <div data-fill-with="warning"></div>
+  
+   <p class="copyright" data-fill-with="copyright">©2015 Google, Inc.</p>
+  
+   <hr title="Separator for header">
+</div>
+
+
+  <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
+
+  <div class="p-summary" data-fill-with="abstract">
+   <p>This document defines a mechanism which allows authors to instruct a user
+
+agent to upgrade <i lang="la">a priori</i> insecure resource requests to
+secure transport before Fetching.</p>
+
+</div>
+
+  <div data-fill-with="at-risk"></div>
+
+
+  <h2 class="no-num no-toc no-ref heading settled" id="contents"><span class="content">Table of Contents</span></h2>
+
+  <div data-fill-with="table-of-contents" role="navigation">
+   <ul class="toc" role="directory">
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li><a href="#key-concepts"><span class="secno">2</span> <span class="content">Key Concepts and Terminology</span></a>
+     <ul class="toc">
+      <li><a href="#terms-defined-here"><span class="secno">2.1</span> <span class="content">Terms defined by this specification</span></a>
+      <li><a href="#terms-defined-by-reference"><span class="secno">2.2</span> <span class="content">Terms defined by reference</span></a>
+     </ul>
+    <li><a href="#upgrade"><span class="secno">3</span> <span class="content">Upgrading Insecure Resource Requests</span></a>
+     <ul class="toc">
+      <li><a href="#delivery"><span class="secno">3.1</span> <span class="content">Upgrade Policy Delivery</span></a>
+      <li><a href="#nesting"><span class="secno">3.2</span> <span class="content">Policy Inheritance</span></a>
+      <li><a href="#algorithms"><span class="secno">3.3</span> <span class="content">Processing Algorithms</span></a>
+       <ul class="toc">
+        <li><a href="#upgrade-request"><span class="secno">3.3.1</span> <span class="content">
+    Upgrade <var>request</var> to a potentially secure URL, if appropriate
+  </span></a>
+        <li><a href="#should-upgrade-for-client"><span class="secno">3.3.2</span> <span class="content">
+    Should insecure <code class="idl"><span data-lt="Request">Request</span></code>s be upgraded for <var>client</var>?
+  </span></a>
+       </ul>
+     </ul>
+    <li><a href="#acknowledgements"><span class="secno">4</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#conformance"><span class="secno"></span> <span class="content">
+Conformance</span></a>
+    <li><a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+     <ul class="toc">
+      <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
+     </ul>
+    <li><a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
+    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
+   </ul></div>
+
+  <main>
+
+
+
+
+
+
+
+   <section>
+  
+    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+
+
+    <p><em>This section is not normative.</em></p>
+
+
+    <p>Insert introduction here.</p>
+
+</section>
+
+
+
+   <section>
+  
+    <h2 class="heading settled" data-level="2" id="key-concepts"><span class="secno">2. </span><span class="content">Key Concepts and Terminology</span><a class="self-link" href="#key-concepts"></a></h2>
+
+  
+    <h3 class="heading settled" data-level="2.1" id="terms-defined-here"><span class="secno">2.1. </span><span class="content">Terms defined by this specification</span><a class="self-link" href="#terms-defined-here"></a></h3>
+
+
+    <p>Insert definitions here.</p>
+
+  
+    <h3 class="heading settled" data-level="2.2" id="terms-defined-by-reference"><span class="secno">2.2. </span><span class="content">Terms defined by reference</span><a class="self-link" href="#terms-defined-by-reference"></a></h3>
+
+
+    <p>The Augmented Backus-Naur Form (ABNF) notation used in <a href="#delivery">§3.1 Upgrade Policy Delivery</a> is
+  specified in RFC5234. <a data-link-type="biblio" href="#biblio-abnf">[ABNF]</a></p>
+
+  
+
+    <dl>
+     <dt data-md="">
+      <p><code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#content_security_policy">content-security-policy</a></code></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce a security policy</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitor a security policy</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#send-violation-reports">send violation reports</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#protected-resource">protected resource</a></p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-csp">[CSP]</a></p>
+      
+
+
+</dl>
+  
+
+    <dl>
+     <dt data-md="">
+      <p><code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> interface</p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-dom">[DOM]</a></p>
+      
+
+
+</dl>
+  
+
+    <dl>
+     <dt data-md="">
+      <p><code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> interface</p>
+      
+
+     <dt data-md="">
+      <p><code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code>'s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>, <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>, <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a></code>, and <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context-frame-type</a></code> attributes.</p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">fetching</a></p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a></p>
+      
+
+
+</dl>
+  
+
+    <dl>
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="http://www.w3.org/TR/html5/#ancestor-browsing-context">ancestor browsing context</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="http://www.w3.org/TR/html5/#browsing-context">browsing context</a></p>
+      
+
+     <dt data-md="">
+      <p>The <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#creating-a-new-document-object">creating a new <code>Document</code> object</a> algorithm</p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings object</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="http://www.w3.org/TR/html5/#incumbent-settings-object">incumbent settings object</a></p>
+      
+
+     <dt data-md="">
+      <p>An <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings object</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#responsible-document">responsible document</a> and <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#responsible-browsing-context">responsible browsing context</a> properties</p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-html5">[HTML5]</a></p>
+      
+
+
+</dl>
+  
+
+    <dl>
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure origin</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure url</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure origin</a></p>
+      
+
+     <dt data-md="">
+      <p><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#embedding-document">embedding document</a></p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-mix">[MIX]</a></p>
+      
+
+
+</dl>
+  
+
+    <dl>
+     <dt data-md="">
+      <p><code class="idl"><a data-link-type="idl" href="https://url.spec.whatwg.org/#concept-url">URL</a></code>'s <code class="idl"><a data-link-type="idl" href="https://url.spec.whatwg.org/#concept-url-scheme">scheme</a></code> property.</p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-url">[URL]</a></p>
+      
+
+
+</dl>
+  
+
+    <dl>
+     <dt data-md="">
+      <p><code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code> interface</p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-workers">[WORKERS]</a></p>
+      
+
+
+</dl>
+  
+
+
+</section>
+
+
+
+   <section>
+  
+    <h2 class="heading settled" data-level="3" id="upgrade"><span class="secno">3. </span><span class="content">Upgrading Insecure Resource Requests</span><a class="self-link" href="#upgrade"></a></h2>
+
+
+    <p>In order to allow authors to mitigate the negative side-effects of migration
+  away from <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure origins</a>, authors may
+  instruct the user agent to transparently upgrade resource requests to
+  <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure</a> variants of the original request’s URL.</p>
+
+
+    <p>To support this instruction, <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings objects</a> and
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#browsing-context">browsing contexts</a> have an <dfn data-dfn-type="dfn" data-noexport="" id="upgrade-insecure-resource-requests-flag">upgrade insecure resource requests
+  flag<a class="self-link" href="#upgrade-insecure-resource-requests-flag"></a></dfn> which is set to <code>false</code> unless otherwise specified.
+  This flag is checked in <a href="#upgrade-request">§3.3.1 
+    Upgrade request to a potentially secure URL, if appropriate
+  </a> in order to determine whether or
+  not resource requests should be upgraded during <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">Fetching</a>.</p>
+
+  
+    <h3 class="heading settled" data-level="3.1" id="delivery"><span class="secno">3.1. </span><span class="content">Upgrade Policy Delivery</span><a class="self-link" href="#delivery"></a></h3>
+
+
+    <p>A server MAY instruct a user agent to upgrade insecure resource requests for
+  a particular <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#protected-resource">protected resource</a> by sending a
+  <code>Content-Security-Policy</code> header <a data-link-type="biblio" href="#biblio-csp">[CSP]</a> that contains a
+  <dfn data-dfn-type="dfn" data-noexport="" id="upgrade_insecure_requests">upgrade-insecure-requests<a class="self-link" href="#upgrade_insecure_requests"></a></dfn> directive, defined via the following ABNF
+  grammar:</p>
+
+  
+    <pre>directive-name  = "upgrade-insecure-requests"
+directive-value = ""
+</pre>
+
+
+    <p>When <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforcing</a> the <code>block-all-mixed-content</code> directive,
+  set the <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#protected-resource">protected resource</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#incumbent-settings-object">incumbent settings object</a>’s
+  <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests flag</a> to <code>true</code>.</p>
+
+
+    <p>This directive has no effect when <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#monitor">monitored</a>. This directive’s only
+  effect is to set a policy flag on the protected resource; it will therefore
+  never be violated, and has no reporting requirements.</p>
+
+  
+    <h3 class="heading settled" data-level="3.2" id="nesting"><span class="secno">3.2. </span><span class="content">Policy Inheritance</span><a class="self-link" href="#nesting"></a></h3>
+
+
+    <p>If a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>'s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#incumbent-settings-object">incumbent settings object</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure
+  resource requests flag</a> is set to <code>true</code>, the user agent MUST
+  ensure that all <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#nested-browsing-context">nested browsing contexts</a> inherit the setting in the
+  following ways:</p>
+
+  
+    <ol>
+    
+     <li>
+      When a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#nested-browsing-context">nested browsing context</a> <var>context</var> is created, set
+      its <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests flag</a> to <code>true</code> if
+      <var>context</var>’s <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#embedding-document">embedding document</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure
+      resource requests flag</a> is set to <code>true</code>.
+    
+     
+    
+     <li>
+      When <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#creating-a-new-document-object">creating a new <code>Document</code> object</a>, set its
+      <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#incumbent-settings-object">incumbent settings object</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests
+      flag</a> to <code>true</code> if its <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#browsing-context">browsing context</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade
+      insecure resource requests flag</a> is <code>true</code>.
+    
+     
+  
+    </ol>
+
+  
+    <h3 class="heading settled" data-level="3.3" id="algorithms"><span class="secno">3.3. </span><span class="content">Processing Algorithms</span><a class="self-link" href="#algorithms"></a></h3>
+
+  
+    <h4 class="heading settled" data-level="3.3.1" id="upgrade-request"><span class="secno">3.3.1. </span><span class="content">
+    Upgrade <var>request</var> to a potentially secure URL, if appropriate
+  </span><a class="self-link" href="#upgrade-request"></a></h4>
+
+
+    <p>Given a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> <var>request</var>, this algorithm will rewrite its
+  <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code> if the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code> from which the request originates
+  has opted-in to upgrades.</p>
+
+
+    <p class="issue" id="issue-33fec19a"><a class="self-link" href="#issue-33fec19a"></a>This should be called from Fetch, probably after the existing step #3.
+  Hi, Anne!</p>
+
+  
+    <ol>
+    
+     <li>
+      If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context-frame-type</a></code> is
+      <code>top-level</code> or <code>auxiliary</code>, and its
+      <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a></code> is <strong>not</strong> <code>form</code>,
+      return without modifying <var>request</var>.
+    
+     
+    
+     <li>
+      If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code> is <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure</a>,
+      return without modifying <var>request</var>.
+    
+     
+    
+     <li>
+      If <a href="#should-upgrade-for-client">§3.3.2 
+    Should insecure Requests be upgraded for client?
+  </a> returns <code>Do Not Upgrade</code>
+      when executed upon <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>, return without
+      modifying <var>request</var>.
+    
+     
+    
+     <li>
+      If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="https://url.spec.whatwg.org/#concept-url-scheme">scheme</a></code> is
+      <code>http</code>, set <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>'s
+      <code class="idl"><a data-link-type="idl" href="https://url.spec.whatwg.org/#concept-url-scheme">scheme</a></code> to <code>https</code>, and return.
+    
+     
+    
+     <li>
+      If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="https://url.spec.whatwg.org/#concept-url-scheme">scheme</a></code> is
+      <code>ws</code>, set <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>'s
+      <code class="idl"><a data-link-type="idl" href="https://url.spec.whatwg.org/#concept-url-scheme">scheme</a></code> to <code>wss</code>, and return.
+    
+     
+  
+    </ol>
+
+
+    <p class="issue" id="issue-62e1b27c"><a class="self-link" href="#issue-62e1b27c"></a>Do something with CSP reporting here.</p>
+
+  
+    <h4 class="heading settled" data-level="3.3.2" id="should-upgrade-for-client"><span class="secno">3.3.2. </span><span class="content">
+    Should insecure <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code>s be upgraded for <var>client</var>?
+  </span><a class="self-link" href="#should-upgrade-for-client"></a></h4>
+
+
+    <p>Given an <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code>'s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code> <var>client</var> (an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment
+  settings object</a>), this algorithm returns <code>Upgrade</code> if
+  <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure</a> requests associated with that client
+  should be upgraded, and <code>Do Not Upgrade</code> otherwise. In short, this
+  will check the client to see if the <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests
+  flag</a> is set on it or its <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#browsing-context">browsing context</a>.</p>
+
+  
+    <ol>
+    
+     <li>
+      If <var>client</var> has a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#responsible-document">responsible document</a> whose
+      <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests flag</a> is set to
+      <code>true</code>, then return <code>Upgrade</code>.
+
+
+      <p class="note" role="note">Note: This catches <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>s or <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code>s whose flag is set directly
+      by the <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive, or which
+      have inherited the flag from an <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#embedding-document">embedding document</a>.</p>
+      
+    
+     
+    
+     <li>
+      If <var>client</var> has a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#responsible-browsing-context">responsible browsing context</a> whose
+      <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests flag</a> is set to
+      <code>true</code>, then return <code>Upgrade</code>.
+
+
+      <p class="note" role="note">Note: This catches requests triggered from detached <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>s.
+      Not sure this is necessary, really, given the inheritence structure
+      defined in <a href="#nesting">§3.2 Policy Inheritance</a>.</p>
+      
+    
+     
+    
+     <li>
+      Return <code>Do Not Upgrade</code>. 
+    
+     
+  
+    </ol>
+</section>
+
+
+   <section>
+  
+    <h2 class="heading settled" data-level="4" id="acknowledgements"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+
+
+    <p>Anne van Kesteren helped insure that the initial draft of this document was
+  sane. Peter Eckersley and Daniel Kahn Gillmor clarified the problem space, and
+  helped point out the impact.</p>
+</section>
+
+</main>
+
+  <h2 class="no-ref no-num heading settled" id="conformance"><span class="content">
+Conformance</span><a class="self-link" href="#conformance"></a></h2>
+
+    
+  <p>
+        Conformance requirements are expressed with a combination of descriptive assertions and RFC 2119 terminology.
+        The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL”
+        in the normative parts of this document
+        are to be interpreted as described in RFC 2119.
+        However, for readability,
+        these words do not appear in all uppercase letters in this specification.
+
+    </p>
+  <p>
+        All of the text of this specification is normative
+        except sections explicitly marked as non-normative, examples, and notes. <a data-link-type="biblio" href="#biblio-rfc2119">[RFC2119]</a>
+
+    </p>
+  <p>
+        Examples in this specification are introduced with the words “for example”
+        or are set apart from the normative text with <code>class="example"</code>, like this:
+
+    </p>
+  <div class="example">
+        This is an example of an informative example.
+    </div>
+
+    
+  <p>
+        Informative notes begin with the word “Note”
+        and are set apart from the normative text with <code>class="note"</code>, like this:
+
+    </p>
+  <p class="note" role="note">
+        Note, this is an informative note.
+
+
+
+</p>
+  <h2 class="no-num heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+  <h3 class="no-num heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
+  <dl>
+   <dt id="biblio-abnf"><a class="self-link" href="#biblio-abnf"></a>[ABNF]
+   <dd>Dave Crocker; Paul Overell. <a href="http://www.ietf.org/rfc/rfc5234.txt">Augmented BNF for Syntax Specifications: ABNF</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc5234.txt">http://www.ietf.org/rfc/rfc5234.txt</a>
+   <dt id="biblio-csp"><a class="self-link" href="#biblio-csp"></a>[CSP]
+   <dd>Mike West; Dan Veditz. <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">Content Security Policy</a>. WD. URL: <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">https://w3c.github.io/webappsec/specs/content-security-policy/</a>
+   <dt id="biblio-fetch"><a class="self-link" href="#biblio-fetch"></a>[FETCH]
+   <dd>Anne van Kesteren. <a href="https://fetch.spec.whatwg.org/">Fetch</a>. Living Standard. URL: <a href="https://fetch.spec.whatwg.org/">https://fetch.spec.whatwg.org/</a>
+   <dt id="biblio-mix"><a class="self-link" href="#biblio-mix"></a>[MIX]
+   <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">Mixed Content</a>. ED. URL: <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">https://w3c.github.io/webappsec/specs/mixedcontent/</a>
+   <dt id="biblio-url"><a class="self-link" href="#biblio-url"></a>[URL]
+   <dd>Anne van Kesteren. <a href="http://url.spec.whatwg.org/">URL</a>. Living Standard. URL: <a href="http://url.spec.whatwg.org/">http://url.spec.whatwg.org/</a>
+   <dt id="biblio-dom"><a class="self-link" href="#biblio-dom"></a>[dom]
+   <dd>Anne van Kesteren; et al. <a href="http://www.w3.org/TR/dom/">W3C DOM4</a>. 10 July 2014. LCWD. URL: <a href="http://www.w3.org/TR/dom/">http://www.w3.org/TR/dom/</a>
+   <dt id="biblio-html5"><a class="self-link" href="#biblio-html5"></a>[html5]
+   <dd>Robin Berjon; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
+   <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[rfc2119]
+   <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a>
+   <dt id="biblio-workers"><a class="self-link" href="#biblio-workers"></a>[workers]
+   <dd>Ian Hickson. <a href="http://www.w3.org/TR/workers/">Web Workers</a>. 1 May 2012. CR. URL: <a href="http://www.w3.org/TR/workers/">http://www.w3.org/TR/workers/</a>
+  </dl>
+  <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
+  <ul class="indexlist">
+   <li>upgrade-insecure-requests, <a href="#upgrade_insecure_requests">3.1</a>
+   <li>upgrade insecure resource requests
+  flag, <a href="#upgrade-insecure-resource-requests-flag">3</a>
+  </ul>
+  <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
+  <div style="counter-reset:issue">
+   <div class="issue">This should be called from Fetch, probably after the existing step #3.
+  Hi, Anne!<a href="#issue-33fec19a"> ↵ </a></div>
+   <div class="issue">Do something with CSP reporting here.<a href="#issue-62e1b27c"> ↵ </a></div>
+  </div></body>
+</html>
