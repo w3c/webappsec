@@ -36,10 +36,15 @@ Indent: 2
   Most notably, mixed content checking [[MIX]] has the potential to cause real
   headache for administrators tasked with moving substantial amounts of legacy
   content onto HTTPS. In particular, going through old content and rewriting
-  subresource URLs manually is a huge undertaking. We should remove this burden
-  from site authors by allowing them to assert to a user agent that they intend
-  a site to load only secure resources, and that insecure URLs ought to be
-  treated as though they had been replaced with secure URLs.
+  subresource URLs manually is a huge undertaking. Moreover, it's often the case
+  that truly legacy content is difficult or impossible to update. Consider the
+  BBC's archived websites [[BBC-ARCHIVE]], or the New York Times' hard-coded
+  URLs [[NYT-HTTPS]]. 
+  
+  We should remove this burden from site authors by allowing them to assert to a
+  user agent that they intend a site to load only secure resources, and that
+  insecure URLs ought to be treated as though they had been replaced with secure
+  URLs.
 
   This document defines a new Content Security Policy directive,
   <code><a>upgrade-insecure-requests</a></code>, through which authors can make
@@ -58,6 +63,11 @@ Indent: 2
   The URL will be rewritten before the request is made, meaning that no insecure
   requests will hit the network. Users will be safer, and authors and
   administrators will be happier.
+
+  Note: Delivering the policy as a header allows an administrator to easily
+  opt a set of pages into the upgrade mechanism without touching their source
+  code individually. The legacy content examples above would not be feasible
+  with an approach that inlined the policy into HTML, for example.
 </section>
 
 <!--
@@ -163,6 +173,7 @@ type: dfn
       text: incumbent settings object
       text: responsible document
       text: responsible browsing context
+      text: relevant settings object for a script
   </pre>
 
   <!-- MIXED CONTENT -->
@@ -206,16 +217,38 @@ urlPrefix: http://www.w3.org/TR/workers/
   type: interface
     text: Worker
   </pre>
+  
+  <!-- RFC6455 -->
+  : The <a>establish a WebSocket Connection</a> algorithm
+  : The <a>fail the WebSocket Connection</a> algorithm
+  :: Defined in [[!RFC6455]]
+
+  <pre class="anchors">
+urlPrefix: href="http://tools.ietf.org/html/rfc6455
+  type: dfn
+    text: establish a websocket connection; url: section-4.1
+    text: fail the websocket connection; url: section-7.1.7
+  </pre>
 
   <!-- BIBLIOGRAPHY -->
   <pre class="biblio">
 {
+  "BBC-ARCHIVE": {
+    "authors": [ "Neil McIntosh" ],
+    "title": "Labelling BBC Online's archived websites",
+    "href": "http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab"
+  },
   "CSP": {
     "authors": [ "Mike West", "Dan Veditz" ],
     "title": "Content Security Policy",
     "href": "https://w3c.github.io/webappsec/specs/content-security-policy/",
     "status": "WD",
     "publisher": "W3C"
+  },
+  "NYT-HTTPS": {
+    "authors": [ "Eitan Konigsburg", "Rajiv Pant", "Elena Kvochko" ],
+    "title": "Embracing HTTPS",
+    "href": "http://open.blogs.nytimes.com/2014/11/13/embracing-https/"
   },
   "WEB-HTTPS": {
     "authors": [ "Mark Nottingham" ],
@@ -311,12 +344,15 @@ urlPrefix: http://www.w3.org/TR/workers/
       insecure resource requests flag</a> is <code>true</code>.
     </li>
   </ol>
+</section>
 
-  <h3 id="algorithms">Processing Algorithms</h3>
+<!-- Big Text: Algorithms -->
+<section>
+  <h2 id="algorithms">Processing Algorithms</h2>
 
-  <h4 id="upgrade-request">
+  <h3 id="upgrade-request">
     Upgrade <var>request</var> to a potentially secure URL, if appropriate
-  </h4>
+  </h3>
 
   Given a {{Request}} <var>request</var>, this algorithm will rewrite its
   {{Request/url}} if the {{Request/client}} from which the request originates
@@ -367,9 +403,9 @@ urlPrefix: http://www.w3.org/TR/workers/
     </li>
   </ol>
 
-  <h4 id="should-upgrade-for-client">
+  <h3 id="should-upgrade-for-client">
     Should insecure {{Request}}s be upgraded for <var>client</var>?
-  </h4>
+  </h3>
 
   Given an {{Request}}'s {{Request/client}} <var>client</var> (an <a>environment
   settings object</a>), this algorithm returns <code>Enforced Upgrade</code> if
@@ -402,9 +438,9 @@ urlPrefix: http://www.w3.org/TR/workers/
     </li>
   </ol>
 
-  <h4 id="report-an-upgrade">
+  <h3 id="report-an-upgrade">
     Report an upgrade for <var>request</var>
-  </h4>
+  </h3>
 
   When a {{Request}} is upgraded, a CSP violation is triggered with the intent
   of informing authors that resources on their sites will fail to load in
@@ -425,6 +461,67 @@ urlPrefix: http://www.w3.org/TR/workers/
       and <var>request</var>'s {{Request/url}} as the <code>blocked-uri</code>.
     </li>
   </ol>
+</section>
+
+<!--
+██      ██ ████████ ████████   ██████   ███████   ██████  ██    ██ ████████ ████████  ██████
+██  ██  ██ ██       ██     ██ ██    ██ ██     ██ ██    ██ ██   ██  ██          ██    ██    ██
+██  ██  ██ ██       ██     ██ ██       ██     ██ ██       ██  ██   ██          ██    ██
+██  ██  ██ ██████   ████████   ██████  ██     ██ ██       █████    ██████      ██     ██████
+██  ██  ██ ██       ██     ██       ██ ██     ██ ██       ██  ██   ██          ██          ██
+██  ██  ██ ██       ██     ██ ██    ██ ██     ██ ██    ██ ██   ██  ██          ██    ██    ██
+ ███  ███  ████████ ████████   ██████   ███████   ██████  ██    ██ ████████    ██     ██████
+-->
+<section>
+  <h2 id="websockets-integration">Modifications to WebSockets</h2>
+
+  WebSockets do not use the <a>Fetching</a> algorithm, so we need to handle
+  those requests separately.
+
+  The <a href="http://tools.ietf.org/html/rfc6455#section-4.1">Establish a
+  WebSocket Connection algorithm</a> [[!RFC6455]] is modified as follows:
+
+  <ul>
+    <li>
+      After the current step 1 (and before the new step #2 introduced in
+      [[!MIX]]), perform the following step:
+
+      <ol>
+        <li>
+          If <var>secure</var> is <strong>false</strong>:
+         
+          <ol>
+            <li>
+              Let <var>upgrade state</var> be the result of executing
+              [[#should-upgrade-for-client]] upon the
+              <a lt="relevant settings object for a script">relevant settings
+              object</a> for <var>client</var>'s <var>entry script</var>.
+            </li>
+            <li>
+              If <var>upgrade state</var> is <code>No Upgrade</code>, skip the
+              remaining substeps.
+            </li>
+            <li>
+              Execute [[#report-an-upgrade]].
+            </li>
+            <li>
+              If <var>upgrade state</var> is <code>Monitored Upgrade</code>,
+              skip the remaining substeps.
+            </li>
+            <li>
+              Set <var>secure</var> to <code>true</code>.
+            </li>
+            <li>
+              If <var>port</var> is <code>80</code>, set <var>port</var> to
+              <code>443</code>.
+
+              ISSUE: This likely misses a lot of edge cases.
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ul>
 </section>
 
 <section>

@@ -611,29 +611,30 @@ secure transport before Fetching them.</p>
      <ul class="toc">
       <li><a href="#delivery"><span class="secno">3.1</span> <span class="content">Upgrade Policy Delivery</span></a>
       <li><a href="#nesting"><span class="secno">3.2</span> <span class="content">Policy Inheritance</span></a>
-      <li><a href="#algorithms"><span class="secno">3.3</span> <span class="content">Processing Algorithms</span></a>
-       <ul class="toc">
-        <li><a href="#upgrade-request"><span class="secno">3.3.1</span> <span class="content">
+     </ul>
+    <li><a href="#algorithms"><span class="secno">4</span> <span class="content">Processing Algorithms</span></a>
+     <ul class="toc">
+      <li><a href="#upgrade-request"><span class="secno">4.1</span> <span class="content">
     Upgrade <var>request</var> to a potentially secure URL, if appropriate
   </span></a>
-        <li><a href="#should-upgrade-for-client"><span class="secno">3.3.2</span> <span class="content">
+      <li><a href="#should-upgrade-for-client"><span class="secno">4.2</span> <span class="content">
     Should insecure <code class="idl"><span data-lt="Request">Request</span></code>s be upgraded for <var>client</var>?
   </span></a>
-        <li><a href="#report-an-upgrade"><span class="secno">3.3.3</span> <span class="content">
+      <li><a href="#report-an-upgrade"><span class="secno">4.3</span> <span class="content">
     Report an upgrade for <var>request</var>
   </span></a>
-       </ul>
      </ul>
-    <li><a href="#security"><span class="secno">4</span> <span class="content">Security Considerations</span></a>
+    <li><a href="#websockets-integration"><span class="secno">5</span> <span class="content">Modifications to WebSockets</span></a>
+    <li><a href="#security"><span class="secno">6</span> <span class="content">Security Considerations</span></a>
      <ul class="toc">
-      <li><a href="#hsts"><span class="secno">4.1</span> <span class="content">Interaction with HSTS</span></a>
-      <li><a href="#violation-report-target"><span class="secno">4.2</span> <span class="content">CSP Violation Reports</span></a>
+      <li><a href="#hsts"><span class="secno">6.1</span> <span class="content">Interaction with HSTS</span></a>
+      <li><a href="#violation-report-target"><span class="secno">6.2</span> <span class="content">CSP Violation Reports</span></a>
      </ul>
-    <li><a href="#authoring"><span class="secno">5</span> <span class="content">Authoring Considerations</span></a>
+    <li><a href="#authoring"><span class="secno">7</span> <span class="content">Authoring Considerations</span></a>
      <ul class="toc">
-      <li><a href="#legacy-clients"><span class="secno">5.1</span> <span class="content">Legacy Clients</span></a>
+      <li><a href="#legacy-clients"><span class="secno">7.1</span> <span class="content">Legacy Clients</span></a>
      </ul>
-    <li><a href="#acknowledgements"><span class="secno">6</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#acknowledgements"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content">
 Conformance</span></a>
     <li><a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -670,10 +671,16 @@ Conformance</span></a>
     <p>Most notably, mixed content checking <a data-link-type="biblio" href="#biblio-mix">[MIX]</a> has the potential to cause real
   headache for administrators tasked with moving substantial amounts of legacy
   content onto HTTPS. In particular, going through old content and rewriting
-  subresource URLs manually is a huge undertaking. We should remove this burden
-  from site authors by allowing them to assert to a user agent that they intend
-  a site to load only secure resources, and that insecure URLs ought to be
-  treated as though they had been replaced with secure URLs.</p>
+  subresource URLs manually is a huge undertaking. Moreover, it’s often the case
+  that truly legacy content is difficult or impossible to update. Consider the
+  BBC’s archived websites <a data-link-type="biblio" href="#biblio-bbc-archive">[BBC-ARCHIVE]</a>, or the New York Times' hard-coded
+  URLs <a data-link-type="biblio" href="#biblio-nyt-https">[NYT-HTTPS]</a>.</p>
+
+
+    <p>We should remove this burden from site authors by allowing them to assert to a
+  user agent that they intend a site to load only secure resources, and that
+  insecure URLs ought to be treated as though they had been replaced with secure
+  URLs.</p>
 
 
     <p>This document defines a new Content Security Policy directive,
@@ -695,6 +702,12 @@ Conformance</span></a>
     <p>The URL will be rewritten before the request is made, meaning that no insecure
   requests will hit the network. Users will be safer, and authors and
   administrators will be happier.</p>
+
+
+    <p class="note" role="note">Note: Delivering the policy as a header allows an administrator to easily
+  opt a set of pages into the upgrade mechanism without touching their source
+  code individually. The legacy content examples above would not be feasible
+  with an approach that inlined the policy into HTML, for example.</p>
 </section>
 
 
@@ -886,6 +899,23 @@ Conformance</span></a>
 </dl>
   
 
+    <dl>
+     <dt data-md="">
+      <p>The <a data-link-type="dfn" href="href=&quot;http://tools.ietf.org/html/rfc6455#section-4.1">establish a WebSocket Connection</a> algorithm</p>
+      
+
+     <dt data-md="">
+      <p>The <a data-link-type="dfn" href="href=&quot;http://tools.ietf.org/html/rfc6455#section-7.1.7">fail the WebSocket Connection</a> algorithm</p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-rfc6455">[RFC6455]</a></p>
+      
+
+
+</dl>
+  
+
 
 </section>
 
@@ -905,7 +935,7 @@ Conformance</span></a>
     <p>To support this instruction, <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment settings objects</a> and
   <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#browsing-context">browsing contexts</a> have an <dfn data-dfn-type="dfn" data-noexport="" id="upgrade-insecure-resource-requests-flag">upgrade insecure resource requests
   flag<a class="self-link" href="#upgrade-insecure-resource-requests-flag"></a></dfn> which is set to <code>No Upgrade</code> unless otherwise specified.
-  This flag is checked in <a href="#upgrade-request">§3.3.1 
+  This flag is checked in <a href="#upgrade-request">§4.1 
     Upgrade request to a potentially secure URL, if appropriate
   </a> in order to determine whether or
   not resource requests should be upgraded during <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">Fetching</a>.</p>
@@ -996,14 +1026,18 @@ directive-value = ""
      
   
     </ol>
+</section>
+
+
+
+   <section>
+  
+    <h2 class="heading settled" data-level="4" id="algorithms"><span class="secno">4. </span><span class="content">Processing Algorithms</span><a class="self-link" href="#algorithms"></a></h2>
 
   
-    <h3 class="heading settled" data-level="3.3" id="algorithms"><span class="secno">3.3. </span><span class="content">Processing Algorithms</span><a class="self-link" href="#algorithms"></a></h3>
-
-  
-    <h4 class="heading settled" data-level="3.3.1" id="upgrade-request"><span class="secno">3.3.1. </span><span class="content">
+    <h3 class="heading settled" data-level="4.1" id="upgrade-request"><span class="secno">4.1. </span><span class="content">
     Upgrade <var>request</var> to a potentially secure URL, if appropriate
-  </span><a class="self-link" href="#upgrade-request"></a></h4>
+  </span><a class="self-link" href="#upgrade-request"></a></h3>
 
 
     <p>Given a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> <var>request</var>, this algorithm will rewrite its
@@ -1038,7 +1072,7 @@ directive-value = ""
     
      <li>
       Let <var>upgrade state</var> be the result of executing
-      <a href="#should-upgrade-for-client">§3.3.2 
+      <a href="#should-upgrade-for-client">§4.2 
     Should insecure Requests be upgraded for client?
   </a> upon <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>.
     
@@ -1051,7 +1085,7 @@ directive-value = ""
      
     
      <li>
-      Execute <a href="#report-an-upgrade">§3.3.3 
+      Execute <a href="#report-an-upgrade">§4.3 
     Report an upgrade for request
   </a> on <var>request</var>.
     
@@ -1080,16 +1114,16 @@ directive-value = ""
     </ol>
 
   
-    <h4 class="heading settled" data-level="3.3.2" id="should-upgrade-for-client"><span class="secno">3.3.2. </span><span class="content">
+    <h3 class="heading settled" data-level="4.2" id="should-upgrade-for-client"><span class="secno">4.2. </span><span class="content">
     Should insecure <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code>s be upgraded for <var>client</var>?
-  </span><a class="self-link" href="#should-upgrade-for-client"></a></h4>
+  </span><a class="self-link" href="#should-upgrade-for-client"></a></h3>
 
 
     <p>Given an <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code>'s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code> <var>client</var> (an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#settings-object">environment
   settings object</a>), this algorithm returns <code>Enforced Upgrade</code> if
   <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure</a> requests associated with that client
   should be upgraded, <code>Monitored Upgrade</code> if requests should be
-  reported (via <a href="#report-an-upgrade">§3.3.3 
+  reported (via <a href="#report-an-upgrade">§4.3 
     Report an upgrade for request
   </a>) but not actually upgraded, and <code>No
   Upgrade</code> otherwise. In short, this will check the client and return the
@@ -1131,9 +1165,9 @@ directive-value = ""
     </ol>
 
   
-    <h4 class="heading settled" data-level="3.3.3" id="report-an-upgrade"><span class="secno">3.3.3. </span><span class="content">
+    <h3 class="heading settled" data-level="4.3" id="report-an-upgrade"><span class="secno">4.3. </span><span class="content">
     Report an upgrade for <var>request</var>
-  </span><a class="self-link" href="#report-an-upgrade"></a></h4>
+  </span><a class="self-link" href="#report-an-upgrade"></a></h3>
 
 
     <p>When a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> is upgraded, a CSP violation is triggered with the intent
@@ -1145,7 +1179,7 @@ directive-value = ""
   <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code> that triggers the request. This might or might not be the same
   <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#protected-resource">protected resource</a> that set the
   <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive, due to <a href="#nesting">§3.2 Policy Inheritance</a>.
-  See <a href="#violation-report-target">§4.2 CSP Violation Reports</a> for detail.</p>
+  See <a href="#violation-report-target">§6.2 CSP Violation Reports</a> for detail.</p>
 
   
     <ol>
@@ -1163,12 +1197,99 @@ directive-value = ""
 </section>
 
 
+
    <section>
   
-    <h2 class="heading settled" data-level="4" id="security"><span class="secno">4. </span><span class="content">Security Considerations</span><a class="self-link" href="#security"></a></h2>
+    <h2 class="heading settled" data-level="5" id="websockets-integration"><span class="secno">5. </span><span class="content">Modifications to WebSockets</span><a class="self-link" href="#websockets-integration"></a></h2>
+
+
+    <p>WebSockets do not use the <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">Fetching</a> algorithm, so we need to handle
+  those requests separately.</p>
+
+
+    <p>The <a href="http://tools.ietf.org/html/rfc6455#section-4.1">Establish a
+  WebSocket Connection algorithm</a> <a data-link-type="biblio" href="#biblio-rfc6455">[RFC6455]</a> is modified as follows:</p>
 
   
-    <h3 class="heading settled" data-level="4.1" id="hsts"><span class="secno">4.1. </span><span class="content">Interaction with HSTS</span><a class="self-link" href="#hsts"></a></h3>
+    <ul>
+    
+     <li>
+      After the current step 1 (and before the new step #2 introduced in
+      <a data-link-type="biblio" href="#biblio-mix">[MIX]</a>), perform the following step:
+
+      
+      <ol>
+        
+       <li>
+          If <var>secure</var> is <strong>false</strong>:
+
+          
+        <ol>
+            
+         <li>
+              Let <var>upgrade state</var> be the result of executing
+              <a href="#should-upgrade-for-client">§4.2 
+    Should insecure Requests be upgraded for client?
+  </a> upon the
+              <a data-link-type="dfn" href="http://www.w3.org/TR/html5/#relevant-settings-object-for-a-script">relevant settings
+              object</a> for <var>client</var>’s <var>entry script</var>.
+            
+         
+            
+         <li>
+              If <var>upgrade state</var> is <code>No Upgrade</code>, skip the
+              remaining substeps.
+            
+         
+            
+         <li>
+              Execute <a href="#report-an-upgrade">§4.3 
+    Report an upgrade for request
+  </a>.
+            
+         
+            
+         <li>
+              If <var>upgrade state</var> is <code>Monitored Upgrade</code>,
+              skip the remaining substeps.
+            
+         
+            
+         <li>
+              Set <var>secure</var> to <code>true</code>.
+            
+         
+            
+         <li>
+              If <var>port</var> is <code>80</code>, set <var>port</var> to
+              <code>443</code>.
+
+
+          <p class="issue" id="issue-f5724416"><a class="self-link" href="#issue-f5724416"></a>This likely misses a lot of edge cases.</p>
+          
+            
+         
+          
+        </ol>
+        
+        
+       
+      
+      </ol>
+      
+    
+     
+  
+    </ul>
+</section>
+
+
+   <section>
+  
+    <h2 class="heading settled" data-level="6" id="security"><span class="secno">6. </span><span class="content">Security Considerations</span><a class="self-link" href="#security"></a></h2>
+
+  
+    <h3 class="heading settled" data-level="6.1" id="hsts"><span class="secno">6.1. </span><span class="content">Interaction with HSTS</span><a class="self-link" href="#hsts"></a></h3>
 
 
     <p>The <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive does not replace
@@ -1178,7 +1299,7 @@ directive-value = ""
   not subject to SSL stripping attacks by maliciously active network attackers.</p>
 
   
-    <h3 class="heading settled" data-level="4.2" id="violation-report-target"><span class="secno">4.2. </span><span class="content">CSP Violation Reports</span><a class="self-link" href="#violation-report-target"></a></h3>
+    <h3 class="heading settled" data-level="6.2" id="violation-report-target"><span class="secno">6.2. </span><span class="content">CSP Violation Reports</span><a class="self-link" href="#violation-report-target"></a></h3>
 
 
     <p>When sending a violation report for an upgraded resource, user agents MUST
@@ -1198,10 +1319,10 @@ directive-value = ""
 
    <section>
   
-    <h2 class="heading settled" data-level="5" id="authoring"><span class="secno">5. </span><span class="content">Authoring Considerations</span><a class="self-link" href="#authoring"></a></h2>
+    <h2 class="heading settled" data-level="7" id="authoring"><span class="secno">7. </span><span class="content">Authoring Considerations</span><a class="self-link" href="#authoring"></a></h2>
 
   
-    <h3 class="heading settled" data-level="5.1" id="legacy-clients"><span class="secno">5.1. </span><span class="content">Legacy Clients</span><a class="self-link" href="#legacy-clients"></a></h3>
+    <h3 class="heading settled" data-level="7.1" id="legacy-clients"><span class="secno">7.1. </span><span class="content">Legacy Clients</span><a class="self-link" href="#legacy-clients"></a></h3>
 
 
     <p>Legacy clients which do support mixed content blocking <a data-link-type="biblio" href="#biblio-mix">[MIX]</a>, but do not
@@ -1218,7 +1339,7 @@ directive-value = ""
 
    <section>
   
-    <h2 class="heading settled" data-level="6" id="acknowledgements"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+    <h2 class="heading settled" data-level="8" id="acknowledgements"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
 
 
     <p>Anne van Kesteren helped insure that the initial draft of this document was
@@ -1278,6 +1399,8 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
    <dd>Anne van Kesteren. <a href="https://fetch.spec.whatwg.org/">Fetch</a>. Living Standard. URL: <a href="https://fetch.spec.whatwg.org/">https://fetch.spec.whatwg.org/</a>
    <dt id="biblio-mix"><a class="self-link" href="#biblio-mix"></a>[MIX]
    <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">Mixed Content</a>. ED. URL: <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">https://w3c.github.io/webappsec/specs/mixedcontent/</a>
+   <dt id="biblio-rfc6455"><a class="self-link" href="#biblio-rfc6455"></a>[RFC6455]
+   <dd>Ian Fette; Alexey Melnikov. <a href="http://www.ietf.org/rfc/rfc6455.txt">The WebSocket Protocol</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6455.txt">http://www.ietf.org/rfc/rfc6455.txt</a>
    <dt id="biblio-url"><a class="self-link" href="#biblio-url"></a>[URL]
    <dd>Anne van Kesteren. <a href="http://url.spec.whatwg.org/">URL</a>. Living Standard. URL: <a href="http://url.spec.whatwg.org/">http://url.spec.whatwg.org/</a>
    <dt id="biblio-dom"><a class="self-link" href="#biblio-dom"></a>[dom]
@@ -1291,6 +1414,10 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   </dl>
   <h3 class="no-num heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-bbc-archive"><a class="self-link" href="#biblio-bbc-archive"></a>[BBC-ARCHIVE]
+   <dd>Neil McIntosh. <a href="http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab">Labelling BBC Online's archived websites</a>. URL: <a href="http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab">http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab</a>
+   <dt id="biblio-nyt-https"><a class="self-link" href="#biblio-nyt-https"></a>[NYT-HTTPS]
+   <dd>Eitan Konigsburg; Rajiv Pant; Elena Kvochko. <a href="http://open.blogs.nytimes.com/2014/11/13/embracing-https/">Embracing HTTPS</a>. URL: <a href="http://open.blogs.nytimes.com/2014/11/13/embracing-https/">http://open.blogs.nytimes.com/2014/11/13/embracing-https/</a>
    <dt id="biblio-rfc6797"><a class="self-link" href="#biblio-rfc6797"></a>[RFC6797]
    <dd>Jeff Hodges; Collin Jackson; Adam Barth. <a href="http://www.ietf.org/rfc/rfc6797.txt">HTTP Strict Transport Security (HSTS)</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6797.txt">http://www.ietf.org/rfc/rfc6797.txt</a>
    <dt id="biblio-web-https"><a class="self-link" href="#biblio-web-https"></a>[WEB-HTTPS]
@@ -1307,5 +1434,6 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   <div style="counter-reset:issue">
    <div class="issue">This should be called from Fetch, probably after the existing step #3.
   Hi, Anne!<a href="#issue-33fec19a"> ↵ </a></div>
+   <div class="issue">This likely misses a lot of edge cases.<a href="#issue-f5724416"> ↵ </a></div>
   </div></body>
 </html>
