@@ -8,7 +8,7 @@ Editor: Mike West, Google Inc., mkwst@google.com
 Abstract: 
   This document defines a mechanism which allows authors to instruct a user
   agent to upgrade <i lang="la">a priori</i> insecure resource requests to
-  secure transport before Fetching.
+  secure transport before Fetching them.
 Indent: 2
 </pre>
 
@@ -28,8 +28,36 @@ Indent: 2
 
   <em>This section is not normative.</em>
 
-  Insert introduction here.
+  Increasingly, we encourage authors to transition their sites and applications
+  away from insecure transport, and onto encrypted and authenticated connections
+  [[WEB-HTTPS]]. While this migration has significant advantages for both
+  authors and users, it isn't without negative side-effects.
 
+  Most notably, mixed content checking [[MIX]] has the potential to cause real
+  headache for administrators tasked with moving substantial amounts of legacy
+  content onto HTTPS. In particular, going through old content and rewriting
+  subresource URLs manually is a huge undertaking. We should remove this burden
+  from site authors by allowing them to assert to a user agent that they intend
+  a site to load only secure resources, and that insecure URLs ought to be
+  treated as though they had been replaced with secure URLs.
+
+  This document defines a new Content Security Policy directive,
+  <code><a>upgrade-insecure-requests</a></code>, through which authors can make
+  this assertion, allowing a user agent to treat the following HTML code:
+
+  <pre>
+    &lt;img src="http://example.com/image.png"&gt;
+  </pre>
+
+  as though it had been delivered as:
+
+  <pre>
+    &lt;img src="https://example.com/image.png"&gt;
+  </pre>
+
+  The URL will be rewritten before the request is made, meaning that no insecure
+  requests will hit the network. Users will be safer, and authors and
+  administrators will be happier.
 </section>
 
 <!--
@@ -46,7 +74,10 @@ Indent: 2
 
   <h3 id="terms-defined-here">Terms defined by this specification</h3>
 
-  Insert definitions here.
+  : <dfn>upgrade</dfn>
+  :: A {{Request}} is said to be <strong>upgraded</strong> if it is rewritten
+     to contain a URL with a {{URL/scheme}} of <code>https</code> or
+     <code>wss</code>.
 
   <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
 
@@ -55,10 +86,12 @@ Indent: 2
 
   <!-- CSP -->
   : <code><a>content-security-policy</a></code>
+  : <code><a>content-security-policy-report-only</a></code>
   : <a lt="enforce">enforce a security policy</a>
   : <a lt="monitor">monitor a security policy</a>
   : <a>security policy</a>
-  : <a>send violation reports</a>
+  : <a>send violation reports</a> algorithm
+  : <a>report a violation</a> algorithm
   : <a>protected resource</a>
   :: Defined in [[!CSP]]
 
@@ -66,9 +99,11 @@ Indent: 2
 urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
   type: dfn
     text: content-security-policy; url: content_security_policy
+    text: content-security-policy-report-only; url: content_security_policy_report_only
     text: protected resource
     text: security policy
     text: send violation reports
+    text: report a violation
     url: enforce
       text: enforce
       text: enforced
@@ -181,6 +216,13 @@ urlPrefix: http://www.w3.org/TR/workers/
     "href": "https://w3c.github.io/webappsec/specs/content-security-policy/",
     "status": "WD",
     "publisher": "W3C"
+  },
+  "WEB-HTTPS": {
+    "authors": [ "Mark Nottingham" ],
+    "title": "Securing the Web",
+    "href": "http://www.w3.org/2001/tag/doc/web-https",
+    "status": "TAG Finding",
+    "publisher": "W3C"
   }
 }
   </pre>
@@ -189,7 +231,7 @@ urlPrefix: http://www.w3.org/TR/workers/
 
 <!-- Big Text: Delivery -->
 <section>
-  <h2 id="upgrade">Upgrading Insecure Resource Requests</h2>
+  <h2 id="upgrading">Upgrading Insecure Resource Requests</h2>
 
   In order to allow authors to mitigate the negative side-effects of migration
   away from <a><i lang="la">a priori</i> insecure origins</a>, authors may
@@ -198,7 +240,7 @@ urlPrefix: http://www.w3.org/TR/workers/
 
   To support this instruction, <a>environment settings objects</a> and
   <a>browsing contexts</a> have an <dfn>upgrade insecure resource requests
-  flag</dfn> which is set to <code>false</code> unless otherwise specified.
+  flag</dfn> which is set to <code>No Upgrade</code> unless otherwise specified.
   This flag is checked in [[#upgrade-request]] in order to determine whether or
   not resource requests should be upgraded during <a>Fetching</a>.
 
@@ -215,13 +257,38 @@ urlPrefix: http://www.w3.org/TR/workers/
     directive-value = ""
   </pre>
 
-  When <a>enforcing</a> the <code>block-all-mixed-content</code> directive,
+  When <a>enforcing</a> the <code>upgrade-insecure-requests</code> directive,
   set the <a>protected resource</a>'s <a>incumbent settings object</a>'s
-  <a>upgrade insecure resource requests flag</a> to <code>true</code>.
+  <a>upgrade insecure resource requests flag</a> to <code>Enforced
+  Upgrade</code>.
+
+  When <a>monitoring</a> the <code>upgrade-insecure-requests</code> directive,
+  set the <a>protected resource</a>'s <a>incumbent settings object</a>'s
+  <a>upgrade insecure resource requests flag</a> to <code>Monitored
+  Upgrade</code>.
 
   This directive has no effect when <a>monitored</a>. This directive's only
   effect is to set a policy flag on the protected resource; it will therefore
   never be violated, and has no reporting requirements. 
+
+  <div class="example">
+    For example, sending the following header with a document will ensure that
+    subresource requests are upgraded, and that reports are sent out for each
+    upgrade:
+
+    <pre>
+      <a>Content-Security-Policy</a>: <a>upgrade-insecure-requests</a>;
+                               report-uri /upgrade-endpoint
+    </pre>
+
+    Sending the following header will not upgrade requests, but will send
+    reports:
+
+    <pre>
+      <a>Content-Security-Policy-Report-Only</a>: <a>upgrade-insecure-requests</a>;
+                                           report-uri /upgrade-endpoint
+    </pre>
+  </div>
 
   <h3 id="nesting">Policy Inheritance</h3>
 
@@ -255,6 +322,10 @@ urlPrefix: http://www.w3.org/TR/workers/
   {{Request/url}} if the {{Request/client}} from which the request originates
   has opted-in to upgrades.
 
+  We will not upgrade navigational requests, with the exception of form
+  submissions. Form submissions will be upgraded to mitigate the risk of data
+  leakage via plaintext submissions.
+
   ISSUE: This should be called from Fetch, probably after the existing step #3.
   Hi, Anne!
 
@@ -270,9 +341,19 @@ urlPrefix: http://www.w3.org/TR/workers/
       return without modifying <var>request</var>.
     </li>
     <li>
-      If [[#should-upgrade-for-client]] returns <code>Do Not Upgrade</code>
-      when executed upon <var>request</var>'s {{Request/client}}, return without
-      modifying <var>request</var>.
+      Let <var>upgrade state</var> be the result of executing
+      [[#should-upgrade-for-client]] upon <var>request</var>'s {{Request/client}}.
+    </li>
+    <li>
+      If <var>upgrade state</var> is <code>No Upgrade</code>, return without
+      modifying <var>request</var>. 
+    </li>
+    <li>
+      Execute [[#report-an-upgrade]] on <var>request</var>.
+    </li>
+    <li>
+      If <var>upgrade state</var> is <code>Monitored Upgrade</code>, return
+      without modifying <var>request</var>. 
     </li>
     <li>
       If <var>request</var>'s {{Request/url}}'s {{URL/scheme}} is
@@ -286,43 +367,107 @@ urlPrefix: http://www.w3.org/TR/workers/
     </li>
   </ol>
 
-  ISSUE: Do something with CSP reporting here.
-
   <h4 id="should-upgrade-for-client">
     Should insecure {{Request}}s be upgraded for <var>client</var>?
   </h4>
 
   Given an {{Request}}'s {{Request/client}} <var>client</var> (an <a>environment
-  settings object</a>), this algorithm returns <code>Upgrade</code> if
+  settings object</a>), this algorithm returns <code>Enforced Upgrade</code> if
   <a><i lang="la">a priori</i> insecure</a> requests associated with that client
-  should be upgraded, and <code>Do Not Upgrade</code> otherwise. In short, this
-  will check the client to see if the <a>upgrade insecure resource requests
-  flag</a> is set on it or its <a>browsing context</a>.
+  should be upgraded, <code>Monitored Upgrade</code> if requests should be
+  reported (via [[#report-an-upgrade]]) but not actually upgraded, and <code>No
+  Upgrade</code> otherwise. In short, this will check the client and return the
+  appropriate <a>upgrade insecure resource requests flag</a> set on it or its
+  <a>browsing context</a>.
 
   <ol>
     <li>
-      If <var>client</var> has a <a>responsible document</a> whose
-      <a>upgrade insecure resource requests flag</a> is set to
-      <code>true</code>, then return <code>Upgrade</code>.
+      If <var>client</var> has a <a>responsible document</a>, return the value
+      of its <a>upgrade insecure resource requests flag</a>.
 
       Note: This catches {{Document}}s or {{Worker}}s whose flag is set directly
       by the <code><a>upgrade-insecure-requests</a></code> directive, or which
       have inherited the flag from an <a>embedding document</a>.
     </li>
     <li>
-      If <var>client</var> has a <a>responsible browsing context</a> whose
-      <a>upgrade insecure resource requests flag</a> is set to
-      <code>true</code>, then return <code>Upgrade</code>.
+      If <var>client</var> has a <a>responsible browsing context</a>, return the
+      value of its <a>upgrade insecure resource requests flag</a>.
 
       Note: This catches requests triggered from detached {{Request/client}}s.
       Not sure this is necessary, really, given the inheritence structure
       defined in [[#nesting]].
     </li>
     <li>
-      Return <code>Do Not Upgrade</code>. 
+      Return <code>No Upgrade</code>. 
+    </li>
+  </ol>
+
+  <h4 id="report-an-upgrade">
+    Report an upgrade for <var>request</var>
+  </h4>
+
+  When a {{Request}} is upgraded, a CSP violation is triggered with the intent
+  of informing authors that resources on their sites will fail to load in
+  user agents that do not support this upgrade mechanism.
+
+  Note: This violation report will be triggered for the {{Document}} or
+  {{Worker}} that triggers the request. This might or might not be the same
+  <a>protected resource</a> that set the
+  <code><a>upgrade-insecure-requests</a></code> directive, due to [[#nesting]].
+  See [[#violation-report-target]] for detail.
+
+  <ol>
+    <li>
+      <a>Report a violation</a> for <var>request</var>'s {{Request/client}}'s
+      <a>responsible document</a>, using
+      <code><a>upgrade-insecure-requests</a></code> as the
+      <code>violated-directive</code> and <code>effective-directive</code>,
+      and <var>request</var>'s {{Request/url}} as the <code>blocked-uri</code>.
     </li>
   </ol>
 </section>
+
+<section>
+  <h2 id="security">Security Considerations</h2>
+
+  <h3 id="hsts">Interaction with HSTS</h3>
+
+  The <code><a>upgrade-insecure-requests</a></code> directive does not replace
+  the <code>Strict-Transport-Security</code> HTTP response header [[RFC6797]].
+  Authors who serve their site over secure transport SHOULD send that header
+  with an appropriate <code>max-age</code> in order to ensure that users are
+  not subject to SSL stripping attacks by maliciously active network attackers.
+
+  <h3 id="violation-report-target">CSP Violation Reports</h3>
+
+  When sending a violation report for an upgraded resource, user agents MUST
+  target the {{Document}} or {{Worker}} that triggered the request, rather
+  than the {{Document}} or {{Worker}} on which the
+  <code><a>upgrade-insecure-requests</a></code> directive was set. Due to
+  [[#nesting]], the latter might be a cross-origin ancestor of the former, and
+  sending violation reports to that set of reporting endpoints could leak data
+  in unexpected ways.
+
+  Likewise, the <code>SecurityPolicyViolationEvent</code> MUST NOT target any
+  {{Document}} other than the one which triggered the request, for the same
+  reasons.
+</section>
+
+<section>
+  <h2 id="authoring">Authoring Considerations</h2>
+
+  <h3 id="legacy-clients">Legacy Clients</h3>
+
+  Legacy clients which do support mixed content blocking [[MIX]], but do not
+  support the <code><a>upgrade-insecure-requests</a></code> directive will
+  continue to have a suboptimal experience on pages which contain
+  <a><i lang="la">a priori</i> insecure URLs</a>. Authors SHOULD ensure that
+  they collect <a lt="send violation reports">violation reports</a> in order
+  to determine which resources are most problematic for their users, and SHOULD
+  use that information to prioritize fixes for URLs in legacy content that
+  users will most likely request.
+</section>
+
 
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>

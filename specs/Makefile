@@ -12,7 +12,7 @@ CSP2: CSP2/index.html CSP2/published/2015-01-CR.html
 CSP3: content-security-policy/index.html
 MIX: mixedcontent/index.html
 POWER: powerfulfeatures/index.html
-UPGRADE: upgrade-insecure-content/index.html
+UPGRADE: upgrade/index.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 	bikeshed -f spec ./csp-pinning/index.src.html
@@ -38,8 +38,8 @@ referrer-policy/index.html: referrer-policy/index.src.html biblio.json
 powerfulfeatures/index.html: powerfulfeatures/index.src.html biblio.json
 	bikeshed -f spec ./powerfulfeatures/index.src.html
 
-upgrade-insecure-content/index.html: upgrade-insecure-content/index.src.html biblio.json
-	bikeshed -f spec ./upgrade-insecure-content/index.src.html
+upgrade/index.html: upgrade/index.src.html biblio.json
+	bikeshed -f spec ./upgrade/index.src.html
 
 publish: all
 	git push origin master master:gh-pages
