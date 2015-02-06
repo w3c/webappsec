@@ -206,6 +206,7 @@ urlPrefix: https://url.spec.whatwg.org/
     text: URL; url: concept-url
   type: attribute
     text: scheme; for: URL; url: concept-url-scheme
+    text: host; for: URL; url: concept-url-host
     text: port; for: URL; url: concept-url-port
   </pre>
 
@@ -372,13 +373,28 @@ urlPrefix: href="http://tools.ietf.org/html/rfc6455
   <ol>
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
-      <code>top-level</code> or <code>auxiliary</code>, and its
-      {{Request/context}} is <strong>not</strong> <code>form</code>,
-      return without modifying <var>request</var>.
+      <code>top-level</code> or <code>auxiliary</code>, then:
+     
+      <ol>
+        <li>
+          If <var>request</var>'s {{Request/context}} is <code>form</code>,
+          skip the remaining substeps, and continue upgrading
+          <var>request</var>.
+        </li>
+        <li>
+          If <var>request</var>'s {{Request/url}}'s {{URL/host}} is the same
+          as <var>request</var>'s {{Request/client}}'s origin's {{URL/host}},
+          skip the remaining substeps, and continue upgrading
+          <var>request</var>.
 
-      ISSUE: In <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Feb/0063.html">a thread on public-webappsec@</a>,
-      Peter Eckersley suggested modifying this to allow upgrades for same-origin
-      navigations.
+          ISSUE: This isn't correct for nested documents. We need to pass the
+          policy-setting document's host down to ensure that we're only
+          attempting "first-party" upgrades.
+        </li>
+        <li>
+          Return without modifying <var>request</var>.
+        </li>
+      </ol>
     </li>
     <li>
       If <var>request</var>'s {{Request/url}} is <a>potentially secure</a>,
