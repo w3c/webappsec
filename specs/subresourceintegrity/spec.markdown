@@ -543,7 +543,7 @@ for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
 
 The `integrity` attribute represents [integrity metadata][] for an element.
 The value of the attribute MUST be either the empty string, or at least one
-valid "named information" (`ni`) URI [[!RFC6920]], as described by the
+valid absolute "named information" (`ni`) URI [[!RFC6920]], as described by the
 following ABNF grammar:
 
     integrity-metadata = "" / 1*( *WSP NI-URL ) *WSP ]
@@ -551,6 +551,10 @@ following ABNF grammar:
 The `NI-URL` rule is defined in [RFC6920, section 3, figure 4][niurl].
 
 [niurl]: http://tools.ietf.org/html/rfc6920#section-3
+
+The `authority` component of `ni` URIs is not currently used, but its
+presence does not make the URI invalid.
+{:.note}
 
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
