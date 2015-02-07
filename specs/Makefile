@@ -12,6 +12,7 @@ CSP2: CSP2/index.html CSP2/published/2015-01-CR.html
 CSP3: content-security-policy/index.html
 MIX: mixedcontent/index.html
 POWER: powerfulfeatures/index.html
+REFERRER: referrer-policy/index.html
 UPGRADE: upgrade/index.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
@@ -33,7 +34,7 @@ mixedcontent/index.html: mixedcontent/index.src.html biblio.json
 	bikeshed -f spec ./mixedcontent/index.src.html
 
 referrer-policy/index.html: referrer-policy/index.src.html biblio.json
-	bikeshed -q spec ./referrer-policy/index.src.html index.html
+	bikeshed -f spec ./referrer-policy/index.src.html
 
 powerfulfeatures/index.html: powerfulfeatures/index.src.html biblio.json
 	bikeshed -f spec ./powerfulfeatures/index.src.html

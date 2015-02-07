@@ -188,13 +188,17 @@
      </ul>
     <li><a href="#referrer-policy-delivery"><span class="secno">4</span> <span class="content">Referrer Policy Delivery</span></a>
      <ul class="toc">
-      <li><a href="#referrer-policy-delivery-meta"><span class="secno">4.1</span> <span class="content">Delivery via <span data-lt="meta">meta</span></span></a>
-      <li><a href="#referrer-policy-delivery-implicit"><span class="secno">4.2</span> <span class="content">Implicit Delivery</span></a>
+      <li><a href="#directive-referrer"><span class="secno">4.1</span> <span class="content">Delivery via CSP</span></a>
        <ul class="toc">
-        <li><a href="#referrer-policy-delivery-implicit-nested"><span class="secno">4.2.1</span> <span class="content">
+        <li><a href="#referrer-usage"><span class="secno">4.1.1</span> <span class="content">Usage</span></a>
+       </ul>
+      <li><a href="#referrer-policy-delivery-meta"><span class="secno">4.2</span> <span class="content">Delivery via <span data-lt="meta">meta</span></span></a>
+      <li><a href="#referrer-policy-delivery-implicit"><span class="secno">4.3</span> <span class="content">Implicit Delivery</span></a>
+       <ul class="toc">
+        <li><a href="#referrer-policy-delivery-implicit-nested"><span class="secno">4.3.1</span> <span class="content">
      Nested Browsing Contexts
   </span></a>
-        <li><a href="#referrer-policy-delivery-implicit-workers"><span class="secno">4.2.2</span> <span class="content">
+        <li><a href="#referrer-policy-delivery-implicit-workers"><span class="secno">4.3.2</span> <span class="content">
     Workers
   </span></a>
        </ul>
@@ -203,16 +207,16 @@
     <li><a href="#algorithms"><span class="secno">6</span> <span class="content">Algorithms</span></a>
      <ul class="toc">
       <li><a href="#set-referrer-policy"><span class="secno">6.1</span> <span class="content">
-    Set <var>environment</var>’s referrer policy to <var>policy</var>.
+    Set <var>environment</var>’s referrer policy to <var>policy</var>
   </span></a>
       <li><a href="#determine-requests-referrer"><span class="secno">6.2</span> <span class="content">
-    Determine <var>request</var>’s Referrer.
+    Determine <var>request</var>’s Referrer
   </span></a>
       <li><a href="#strip-url"><span class="secno">6.3</span> <span class="content">
-    Strip <var>url</var> for use as a referrer.
+    Strip <var>url</var> for use as a referrer
   </span></a>
       <li><a href="#determine-policy-for-token"><span class="secno">6.4</span> <span class="content">
-    Determine <var>token</var>’s Policy.
+    Determine <var>token</var>’s Policy
   </span></a>
      </ul>
     <li><a href="#privacy"><span class="secno">7</span> <span class="content">Privacy Considerations</span></a>
@@ -320,7 +324,7 @@
       then the value of the property is <code>null</code>. Otherwise, the value
       is whatever has been explicitly set, as explained in the
       <a href="#set-referrer-policy">§6.1 
-    Set environment’s referrer policy to policy.
+    Set environment’s referrer policy to policy
   </a> algorithm.</p>
       
     
@@ -725,18 +729,16 @@
     <ul>
     
      <li>
-      Via the
-      <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer"><code>referrer</code>
-      Content Security Policy directive</a>, delivered via the
+      Via the <code>referrer</code> Content Security Policy directive (defined
+      in <a href="#directive-referrer">§4.1 Delivery via CSP</a>), delivered via the
       <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#content-security-policy-header-field"><code>Content-Security-Policy</code></a>
       HTTP header. <a data-link-type="biblio" href="#biblio-csp">[CSP]</a>
     
      
     
      <li>
-      Via the
-      <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer"><code>referrer</code>
-      Content Security Policy directive</a>, delivered via a
+      Via the <code>referrer</code> Content Security Policy directive (defined
+      in <a href="#directive-referrer">§4.1 Delivery via CSP</a>), delivered via a
       <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#delivery-html-meta-element"><code>&lt;meta></code> element</a>
       <a data-link-type="biblio" href="#biblio-csp">[CSP]</a>
     
@@ -754,13 +756,67 @@
   
     </ul>
 
+  
+    <h3 class="heading settled" data-level="4.1" id="directive-referrer"><span class="secno">4.1. </span><span class="content">Delivery via CSP</span><a class="self-link" href="#directive-referrer"></a></h3>
 
-    <p>The CSP-based delivery mechanisms are defined in the Content Security Policy
-  specification. <a data-link-type="biblio" href="#biblio-csp">[CSP]</a> The <a data-link-type="element" href="https://html.spec.whatwg.org/#meta">meta</a> and implicit mechanisms are
-  defined below.</p>
+
+    <p>The <code><dfn data-dfn-type="dfn" data-lt="referrer directive" data-noexport="" id="referrer-directive">referrer<a class="self-link" href="#referrer-directive"></a></dfn></code> directive
+  specifies the referrer policy that the user agent applies when determining
+  what referrer information should be included with requests made, and with
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> created from the context of the protected resource.
+  The syntax for the name and value of the directive are described by the
+  following ABNF grammar:</p>
 
   
-    <h3 class="heading settled" data-level="4.1" id="referrer-policy-delivery-meta"><span class="secno">4.1. </span><span class="content">Delivery via <a data-link-type="element" href="https://html.spec.whatwg.org/#meta">meta</a></span><a class="self-link" href="#referrer-policy-delivery-meta"></a></h3>
+    <pre>directive-name    = "referrer"
+directive-value   = "no-referrer" / "no-referrer-when-downgrade" / "origin" / "origin-when-cross-origin" / "unsafe-url"
+</pre>
+
+
+    <p class="note" role="note">Note: The directive name does not share the HTTP header’s misspelling.</p>
+
+
+    <p>When
+  <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforcing</a>
+  the <code>referrer</code> directive, the user agent MUST execute
+  <a href="#set-referrer-policy">§6.1 
+    Set environment’s referrer policy to policy
+  </a> on the protected resource’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings
+  object</a>, using the result of executing <a href="#determine-policy-for-token">§6.4 
+    Determine token’s Policy
+  </a>
+  on the <code>referrer</code> directive’s value.</p>
+
+  
+    <section class="informative">
+    
+     <h4 class="heading settled" data-level="4.1.1" id="referrer-usage"><span class="secno">4.1.1. </span><span class="content">Usage</span><a class="self-link" href="#referrer-usage"></a></h4>
+     
+
+
+     <p><em>This section is not normative.</em></p>
+     
+
+
+     <p>A protected resource can prevent referrer leakage by specifying
+    <code>no-referrer</code> as the value of its policy’s
+    <code>referrer</code> directive:</p>
+     
+
+    
+     <pre>Content-Security-Policy: referrer no-referrer;
+</pre>
+     
+
+
+     <p>This will cause all requests made from the protected resource’s
+    context to have an empty <code>Referer</code> [sic] header.</p>
+     
+  
+    </section>
+
+  
+    <h3 class="heading settled" data-level="4.2" id="referrer-policy-delivery-meta"><span class="secno">4.2. </span><span class="content">Delivery via <a data-link-type="element" href="https://html.spec.whatwg.org/#meta">meta</a></span><a class="self-link" href="#referrer-policy-delivery-meta"></a></h3>
 
 
     <p>A referrer policy may be set when an HTML <code><a data-link-type="element" href="https://html.spec.whatwg.org/#meta">meta</a></code>
@@ -868,7 +924,7 @@
        <li>
           Let <var>policy</var> be the result of executing the
           <a href="#determine-policy-for-token">§6.4 
-    Determine token’s Policy.
+    Determine token’s Policy
   </a> algorithm on <var>meta-value</var>.
         
        
@@ -876,7 +932,7 @@
         
        <li>
           Execute the <a href="#set-referrer-policy">§6.1 
-    Set environment’s referrer policy to policy.
+    Set environment’s referrer policy to policy
   </a> algorithm on
           <var>environment</var> using <var>policy</var>, if <var>policy</var>
           is not <code>null</code>.
@@ -905,14 +961,14 @@
     </dl>
 
   
-    <h3 class="heading settled" data-level="4.2" id="referrer-policy-delivery-implicit"><span class="secno">4.2. </span><span class="content">Implicit Delivery</span><a class="self-link" href="#referrer-policy-delivery-implicit"></a></h3>
+    <h3 class="heading settled" data-level="4.3" id="referrer-policy-delivery-implicit"><span class="secno">4.3. </span><span class="content">Implicit Delivery</span><a class="self-link" href="#referrer-policy-delivery-implicit"></a></h3>
 
 
     <p>A <a data-link-type="dfn" href="#javascript-global-environment">global environment</a> inherits the <a data-link-type="dfn" href="#referrer-policy">referrer policy</a> of another
   environment in several circumstances:</p>
 
   
-    <h4 class="heading settled" data-level="4.2.1" id="referrer-policy-delivery-implicit-nested"><span class="secno">4.2.1. </span><span class="content">
+    <h4 class="heading settled" data-level="4.3.1" id="referrer-policy-delivery-implicit-nested"><span class="secno">4.3.1. </span><span class="content">
      Nested Browsing Contexts
   </span><a class="self-link" href="#referrer-policy-delivery-implicit-nested"></a></h4>
 
@@ -939,7 +995,7 @@
     
      <li>
       Execute the <a href="#set-referrer-policy">§6.1 
-    Set environment’s referrer policy to policy.
+    Set environment’s referrer policy to policy
   </a> algorithm on
       <var>environment</var> using <var>policy</var>, if <var>policy</var>
       is not <code>null</code>.
@@ -949,7 +1005,7 @@
     </ol>
 
   
-    <h4 class="heading settled" data-level="4.2.2" id="referrer-policy-delivery-implicit-workers"><span class="secno">4.2.2. </span><span class="content">
+    <h4 class="heading settled" data-level="4.3.2" id="referrer-policy-delivery-implicit-workers"><span class="secno">4.3.2. </span><span class="content">
     Workers
   </span><a class="self-link" href="#referrer-policy-delivery-implicit-workers"></a></h4>
 
@@ -973,7 +1029,7 @@
     
      <li>
       Execute the <a href="#set-referrer-policy">§6.1 
-    Set environment’s referrer policy to policy.
+    Set environment’s referrer policy to policy
   </a> algorithm on
       <var>environment</var> using <var>policy</var>.
     
@@ -1005,7 +1061,7 @@
 
   
     <h3 class="heading settled" data-level="6.1" id="set-referrer-policy"><span class="secno">6.1. </span><span class="content">
-    Set <var>environment</var>’s referrer policy to <var>policy</var>.
+    Set <var>environment</var>’s referrer policy to <var>policy</var>
   </span><a class="self-link" href="#set-referrer-policy"></a></h3>
 
 
@@ -1067,7 +1123,7 @@
 
   
     <h3 class="heading settled" data-level="6.2" id="determine-requests-referrer"><span class="secno">6.2. </span><span class="content">
-    Determine <var>request</var>’s Referrer.
+    Determine <var>request</var>’s Referrer
   </span><a class="self-link" href="#determine-requests-referrer"></a></h3>
 
 
@@ -1290,7 +1346,7 @@
 
   
     <h3 class="heading settled" data-level="6.3" id="strip-url"><span class="secno">6.3. </span><span class="content">
-    Strip <var>url</var> for use as a referrer.
+    Strip <var>url</var> for use as a referrer
   </span><a class="self-link" href="#strip-url"></a></h3>
 
 
@@ -1362,13 +1418,12 @@
 
   
     <h3 class="heading settled" data-level="6.4" id="determine-policy-for-token"><span class="secno">6.4. </span><span class="content">
-    Determine <var>token</var>’s Policy.
+    Determine <var>token</var>’s Policy
   </span><a class="self-link" href="#determine-policy-for-token"></a></h3>
 
 
     <p>Given a string <var>token</var> (for example, the value of a
-  <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer"><code>referrer</code>
-  Content Security Policy directive</a>), this algorithm will return the
+  <a data-link-type="dfn" href="#referrer-directive"><code>referrer</code> directive</a>), this algorithm will return the
   <a data-link-type="dfn" href="#referrer-policy">referrer policy</a> it refers to:</p>
 
   
@@ -1579,6 +1634,7 @@
    <li>Referer, <a href="#referer-http-header-field">2.2</a>
    <li>Referer header, <a href="#referer-http-header-field">2.2</a>
    <li>Referer HTTP header field, <a href="#referer-http-header-field">2.2</a>
+   <li>referrer directive, <a href="#referrer-directive">4.1</a>
    <li>referrer policy, <a href="#referrer-policy">2.1</a>
    <li>relative scheme, <a href="#relative-scheme">2.2</a>
    <li>request, <a href="#request">2.2</a>

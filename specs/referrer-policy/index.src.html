@@ -436,16 +436,14 @@ urlPrefix: http://www.w3.org/TR/html5/
 
   <ul>
     <li>
-      Via the
-      <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer"><code>referrer</code>
-      Content Security Policy directive</a>, delivered via the
+      Via the <code>referrer</code> Content Security Policy directive (defined
+      in [[#directive-referrer]]), delivered via the
       <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#content-security-policy-header-field"><code>Content-Security-Policy</code></a>
       HTTP header. [[!CSP]]
     </li>
     <li>
-      Via the
-      <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer"><code>referrer</code>
-      Content Security Policy directive</a>, delivered via a
+      Via the <code>referrer</code> Content Security Policy directive (defined
+      in [[#directive-referrer]]), delivered via a
       <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#delivery-html-meta-element"><code>&lt;meta&gt;</code> element</a>
       [[!CSP]]
     </li>
@@ -457,9 +455,45 @@ urlPrefix: http://www.w3.org/TR/html5/
     </li>
   </ul>
 
-  The CSP-based delivery mechanisms are defined in the Content Security Policy
-  specification. [[!CSP]] The <a element>meta</a> and implicit mechanisms are
-  defined below.
+  <h3 id="directive-referrer">Delivery via CSP</h3>
+
+  The <code><dfn lt="referrer directive">referrer</dfn></code> directive
+  specifies the referrer policy that the user agent applies when determining
+  what referrer information should be included with requests made, and with
+  <a>browsing contexts</a> created from the context of the protected resource.
+  The syntax for the name and value of the directive are described by the
+  following ABNF grammar:
+
+  <pre>
+    directive-name    = "referrer"
+    directive-value   = "no-referrer" / "no-referrer-when-downgrade" / "origin" / "origin-when-cross-origin" / "unsafe-url"
+  </pre>
+
+  Note: The directive name does not share the HTTP header's misspelling.
+
+  When
+  <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforcing</a>
+  the <code>referrer</code> directive, the user agent MUST execute
+  [[#set-referrer-policy]] on the protected resource's <a>incumbent settings
+  object</a>, using the result of executing [[#determine-policy-for-token]]
+  on the <code>referrer</code> directive's value.
+
+  <section class="informative">
+    <h4 id="referrer-usage">Usage</h4>
+
+    <em>This section is not normative.</em>
+
+    A protected resource can prevent referrer leakage by specifying
+    <code>no-referrer</code> as the value of its policy's
+    <code>referrer</code> directive:
+
+    <pre>
+      Content-Security-Policy: referrer no-referrer;
+    </pre>
+
+    This will cause all requests made from the protected resource's
+    context to have an empty <code>Referer</code> [sic] header.
+  </section>
 
   <h3 id="referrer-policy-delivery-meta">Delivery via <a element>meta</a></h3>
 
@@ -618,7 +652,7 @@ urlPrefix: http://www.w3.org/TR/html5/
   <h2 id="algorithms">Algorithms</h2>
 
   <h3 id="set-referrer-policy">
-    Set <var>environment</var>'s referrer policy to <var>policy</var>.
+    Set <var>environment</var>'s referrer policy to <var>policy</var>
   </h3>
 
   If no referrer policy has been set for a <a>global environment</a>, then
@@ -661,7 +695,7 @@ urlPrefix: http://www.w3.org/TR/html5/
   </ol>
 
   <h3 id="determine-requests-referrer">
-    Determine <var>request</var>'s Referrer.
+    Determine <var>request</var>'s Referrer
   </h3>
 
   Given a <a>Request</a> <var>request</var>, we can determine the correct
@@ -798,7 +832,7 @@ urlPrefix: http://www.w3.org/TR/html5/
   </ol>
 
   <h3 id="strip-url">
-    Strip <var>url</var> for use as a referrer.
+    Strip <var>url</var> for use as a referrer
   </h3>
 
   Certain portions of URLs MUST not be included when sending a URL as the value
@@ -845,12 +879,11 @@ urlPrefix: http://www.w3.org/TR/html5/
   </ol>
 
   <h3 id="determine-policy-for-token">
-    Determine <var>token</var>'s Policy.
+    Determine <var>token</var>'s Policy
   </h3>
 
   Given a string <var>token</var> (for example, the value of a
-  <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-referrer"><code>referrer</code>
-  Content Security Policy directive</a>), this algorithm will return the
+  <a><code>referrer</code> directive</a>), this algorithm will return the
   <a>referrer policy</a> it refers to:
 
   <ol>
