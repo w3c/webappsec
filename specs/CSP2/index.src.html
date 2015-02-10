@@ -18,7 +18,6 @@ Link Defaults: dom-core-ls (interface) event
 Indent: 2
 At Risk: [[#csp-request-header]]
 At Risk: [[#directive-child-src]]
-At Risk: [[#directive-reflected-xss]]
 </pre>
 
 <!--
@@ -314,11 +313,6 @@ type: method
         <li>
           <a><code>plugin-types</code></a> controls the <a>protected
           resource</a>'s ability to load specific types of plugins.
-        </li>
-        <li>
-          <a><code>reflected-xss</code></a> controls the user agent's built-in
-          heuristics to actively protect against XSS. It is meant to supplant
-          the <code>X-XSS-Protection</code> HTTP request header.
         </li>
       </ol>
     </li>
@@ -656,11 +650,10 @@ type: method
           <a lt="parse the policy">parsing <var>policy</var></a>.</li>
 
           <li>
-            Remove all occurrences of <code><a>reflected-xss</a></code>,
-            <code><a>report-uri</a></code>, <code><a>frame-ancestors</a></code>,
-            and <code><a>sandbox</a></code> directives from
-            <var>directive-set</var>.
-          
+            Remove all occurrences of <code><a>report-uri</a></code>,
+            <code><a>frame-ancestors</a></code>, and <code><a>sandbox</a></code>
+            directives from <var>directive-set</var>.
+
             Note: User agents are encouraged to issue a warning to developers
             if one or more of these directives are included in a policy
             delivered via <{meta}>.
@@ -2835,77 +2828,6 @@ type: method
       if its media type is otherwise whitelisted: resources will only load
       when their media type is whitelisted <em>and</em> matches the
       declared type in their containing element.
-    </section>
-  </section>
-
-<!--
-████████  ████████ ████████ ██       ████████  ██████  ████████ ████████ ████████          ██     ██  ██████   ██████
-██     ██ ██       ██       ██       ██       ██    ██    ██    ██       ██     ██          ██   ██  ██    ██ ██    ██
-██     ██ ██       ██       ██       ██       ██          ██    ██       ██     ██           ██ ██   ██       ██
-████████  ██████   ██████   ██       ██████   ██          ██    ██████   ██     ██ ███████    ███     ██████   ██████
-██   ██   ██       ██       ██       ██       ██          ██    ██       ██     ██           ██ ██         ██       ██
-██    ██  ██       ██       ██       ██       ██    ██    ██    ██       ██     ██          ██   ██  ██    ██ ██    ██
-██     ██ ████████ ██       ████████ ████████  ██████     ██    ████████ ████████          ██     ██  ██████   ██████
--->
-  <section>
-    <h3 id="directive-reflected-xss"><code>reflected-xss</code></h3>
-
-    The <code><dfn>reflected-xss</dfn></code> directive instructs a user agent
-    to activate or deactivate any heuristics used to filter or block
-    reflected cross-site scripting attacks. The syntax for the name and
-    value of the directive are described by the following ABNF grammar:
-
-    <pre>
-      directive-name    = "reflected-xss"
-      directive-value   = "allow" / "block" / "filter"
-    </pre>
-
-    A user agent with support for XSS protection MUST enforce this
-    directive as follows:
-
-    <ul>
-      <li>If the value of the directive is <code>allow</code>, the user
-      agent MUST disable its active protections against reflected cross-site
-      scripting attacks for the protected resource.</li>
-
-      <li>If the value of the directive is <code>filter</code>, the user
-      agent MUST enable its active protections against reflected cross-site
-      scripting attacks for the protected resource. This might result in
-      filtering script that is believed to be reflected being filtered or
-      selectively blocking script execution.</li>
-
-      <li>If the value of the directive is <code>block</code>, the user
-      agent MUST stop rendering the protected resource upon detection of
-      reflected script, and instead act as if there was a fatal network
-      error and no resource was obtained, <em>and</em> <a>report a
-      violation</a>:
-    </ul>
-
-    If the user agent's active protections against reflected cross-site
-    scripting attacks detect or prevent script execution, the user agent
-    MUST <a>report a violation</a>.
-
-    Note: The <code>reflected-xss</code> directive will be ignored if
-    contained within a
-    <a href="#delivery-html-meta-element"><code>meta</code> element</a>.
-
-    <section class="informative">
-      <h4 id="reflected-xss-and-x-xss-protection">
-        Relationship to <code>X-XSS-Protection</code>
-      </h4>
-
-      This directive is meant to subsume the functionality provided by
-      the proprietary <code>X-XSS-Protection</code> HTTP header which is
-      supported by a number of user agents. Roughly speaking:
-
-      <ul>
-        <li><code>reflected-xss allow</code> is equivalent to
-        <code>X-XSS-Protection: 0</code></li>
-        <li><code>reflected-xss filter</code> is equivalent to
-        <code>X-XSS-Protection: 1</code></li>
-        <li><code>reflected-xss block</code> is equivalent to
-        <code>X-XSS-Protection: 1; mode=block</code></li>
-      </ul>
     </section>
   </section>
 
