@@ -8,6 +8,7 @@ clean:
 
 CREDENTIAL: credentialmanagement/index.html
 CSP-PINNING: csp-pinning/index.html
+CSP-PINNING-FPWD: csp-pinning/published/2015-02-FPWD.html
 CSP2: CSP2/index.html CSP2/published/2015-02-CR.html
 CSP3: content-security-policy/index.html
 MIX: mixedcontent/index.html
@@ -17,6 +18,9 @@ UPGRADE: upgrade/index.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 	bikeshed -f spec ./csp-pinning/index.src.html
+
+csp-pinning/published/2015-02-FPWD.html: csp-pinning/index.src.html
+	bikeshed -f spec --md-status=FPWD ./csp-pinning/index.src.html ./csp-pinning/published/2015-02-FPWD.html
 
 CSP2/index.html: CSP2/index.src.html biblio.json
 	bikeshed -f spec ./CSP2/index.src.html
