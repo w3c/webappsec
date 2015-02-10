@@ -105,6 +105,8 @@ type: dfn
     text: ipv6 address; url: concept-ipv6
   urlPrefix: http://www.w3.org/TR/CSS21/conform.html
     text: style sheet
+  urlPrefix: https://tools.ietf.org/html/rfc3986
+    text: IPv4address; url: section-3.2.2
 type: element
   urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: document-metadata.html
@@ -988,9 +990,7 @@ type: method
       <dfn>hash-algo</dfn>         = "sha256" / "sha384" / "sha512"
       <dfn>hash-source</dfn>       = "'" <a>hash-algo</a> "-" <a>hash-value</a> "'"
       <dfn>scheme-part</dfn>       = &lt;scheme production from <a href="https://tools.ietf.org/html/rfc3986#section-3.1">RFC 3986, section 3.1</a>&gt;
-      <dfn>host-part</dfn>         = <a>wildcard-host</a> / &lt;IP-literal production from <a href="https://tools.ietf.org/html/rfc3986#section-3.2.2">RFC 3986, section 3.2.2</a>&gt;
-                        &lt;IPv4address production from <a href="https://tools.ietf.org/html/rfc3986#section-3.2.2">RFC 3986, section 3.2.2</a>&gt;
-      <dfn>wildcard-host</dfn>     = "*" / [ "*." ] 1*<a>host-char</a> *( "." 1*<a>host-char</a> )
+      <dfn>host-part</dfn>         = "*" / [ "*." ] 1*<a>host-char</a> *( "." 1*<a>host-char</a> )
       <dfn>host-char</dfn>         = ALPHA / DIGIT / "-"
       <dfn>path-part</dfn>         = &lt;path production from <a href="https://tools.ietf.org/html/rfc3986#section-3.3">RFC 3986, section 3.3</a>&gt;
       <dfn>port-part</dfn>         = ":" ( 1*DIGIT / "*" )
@@ -1003,7 +1003,7 @@ type: method
     and generated via a cryptographically secure random number generator.
     This requirement ensures that the <code><a>nonce-value</a></code> is
     difficult for an attacker to predict.
-      
+
     Note: Using a nonce to whitelist inline script or style is less secure than
     not using a nonce, as nonces override the restrictions in the directive in
     which they are present. An attacker who can gain access to the nonce can
@@ -1019,9 +1019,11 @@ type: method
     [[!RFC3492]]. For example, the domain <code>üüüüüü.de</code> would be
     encoded as <code>xn--tdaaaaaa.de</code>.
 
-    NOTE: Though IP addresses are allowed by the grammar above, their security
-    properties are suspect. Authors ought to prefer hostnames to IP addresses
-    when possible.
+    NOTE: Though IP addresses do match the grammar above, only
+    <code>127.0.0.1</code> will actually match a URL when used in a source
+    expression (see [[#match-source-expression]] for details). The security
+    properties of IP addresses are suspect, and authors ought to prefer
+    hostnames to IP addresses whenever possible.
 
     <section>
       <h4 id="source-list-parsing">Parsing Source Lists</h4>
@@ -1047,7 +1049,7 @@ type: method
         <code><a>source-expression</a></code>, add the token to the <var>set
         of source expressions</var>.</li>
 
-      <li>Return the <var>set of source expressions</var>.</li>
+        <li>Return the <var>set of source expressions</var>.</li>
       </ol>
 
       Note: Characters like U+003B SEMICOLON (<code>;</code>) and
@@ -1160,13 +1162,16 @@ type: method
             </li>
 
             <li>
-              If the source expression's <code><a>host-part</a></code> is an
-              <a>IPv6 address</a>, return <em>does not match</em>.
+              If the source expression's <code><a>host-part</a></code> matches
+              the <code><a>IPv4address</a></code> production from [[!RFC3986]],
+              and is not <code>127.0.0.1</code>, or is an <a>IPv6 address</a>,
+              return <em>does not match</em>.
 
-              Note: A future version of this specification may allow IPv6 addresses,
-              depending on usage and demand. Given the weak security properties of
-              IP addresses in relation to named hosts, however, authors are
-              encouraged to prefer the latter whenever possible.
+              Note: A future version of this specification may allow literal
+              IPv6 and IPv4 addresses, depending on usage and demand. Given the
+              weak security properties of IP addresses in relation to named
+              hosts, however, authors are encouraged to prefer the latter
+              whenever possible.
             </li>
 
             <li>

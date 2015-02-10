@@ -1559,9 +1559,7 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
 <dfn data-dfn-type="dfn" data-noexport="" id="hash_algo">hash-algo<a class="self-link" href="#hash_algo"></a></dfn>         = "sha256" / "sha384" / "sha512"
 <dfn data-dfn-type="dfn" data-noexport="" id="hash_source">hash-source<a class="self-link" href="#hash_source"></a></dfn>       = "'" <a data-link-type="dfn" href="#hash_algo">hash-algo</a> "-" <a data-link-type="dfn" href="#hash_value">hash-value</a> "'"
 <dfn data-dfn-type="dfn" data-noexport="" id="scheme_part">scheme-part<a class="self-link" href="#scheme_part"></a></dfn>       = &lt;scheme production from <a href="https://tools.ietf.org/html/rfc3986#section-3.1">RFC 3986, section 3.1</a>>
-<dfn data-dfn-type="dfn" data-noexport="" id="host_part">host-part<a class="self-link" href="#host_part"></a></dfn>         = <a data-link-type="dfn" href="#wildcard_host">wildcard-host</a> / &lt;IP-literal production from <a href="https://tools.ietf.org/html/rfc3986#section-3.2.2">RFC 3986, section 3.2.2</a>>
-                  &lt;IPv4address production from <a href="https://tools.ietf.org/html/rfc3986#section-3.2.2">RFC 3986, section 3.2.2</a>>
-<dfn data-dfn-type="dfn" data-noexport="" id="wildcard_host">wildcard-host<a class="self-link" href="#wildcard_host"></a></dfn>     = "*" / [ "*." ] 1*<a data-link-type="dfn" href="#host_char">host-char</a> *( "." 1*<a data-link-type="dfn" href="#host_char">host-char</a> )
+<dfn data-dfn-type="dfn" data-noexport="" id="host_part">host-part<a class="self-link" href="#host_part"></a></dfn>         = "*" / [ "*." ] 1*<a data-link-type="dfn" href="#host_char">host-char</a> *( "." 1*<a data-link-type="dfn" href="#host_char">host-char</a> )
 <dfn data-dfn-type="dfn" data-noexport="" id="host_char">host-char<a class="self-link" href="#host_char"></a></dfn>         = ALPHA / DIGIT / "-"
 <dfn data-dfn-type="dfn" data-noexport="" id="path_part">path-part<a class="self-link" href="#path_part"></a></dfn>         = &lt;path production from <a href="https://tools.ietf.org/html/rfc3986#section-3.3">RFC 3986, section 3.3</a>>
 <dfn data-dfn-type="dfn" data-noexport="" id="port_part">port-part<a class="self-link" href="#port_part"></a></dfn>         = ":" ( 1*DIGIT / "*" )
@@ -1598,9 +1596,11 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
      
 
 
-     <p class="note" role="note">NOTE: Though IP addresses are allowed by the grammar above, their security
-    properties are suspect. Authors ought to prefer hostnames to IP addresses
-    when possible.</p>
+     <p class="note" role="note">NOTE: Though IP addresses do match the grammar above, only
+    <code>127.0.0.1</code> will actually match a URL when used in a source
+    expression (see <a href="#match-source-expression">§4.2.2 Matching Source Expressions</a> for details). The security
+    properties of IP addresses are suspect, and authors ought to prefer
+    hostnames to IP addresses whenever possible.</p>
      
 
     
@@ -1641,7 +1641,7 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
         of source expressions</var>.
        
 
-      
+        
        <li>Return the <var>set of source expressions</var>.
        
       
@@ -1807,14 +1807,17 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
 
             
          <li>
-              If the source expression’s <code><a data-link-type="dfn" href="#host_part">host-part</a></code> is an
-              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-ipv6">IPv6 address</a>, return <em>does not match</em>.
+              If the source expression’s <code><a data-link-type="dfn" href="#host_part">host-part</a></code> matches
+              the <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc3986#section-3.2.2">IPv4address</a></code> production from <a data-link-type="biblio" href="#biblio-rfc3986">[RFC3986]</a>,
+              and is not <code>127.0.0.1</code>, or is an <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-ipv6">IPv6 address</a>,
+              return <em>does not match</em>.
 
 
-          <p class="note" role="note">Note: A future version of this specification may allow IPv6 addresses,
-              depending on usage and demand. Given the weak security properties of
-              IP addresses in relation to named hosts, however, authors are
-              encouraged to prefer the latter whenever possible.</p>
+          <p class="note" role="note">Note: A future version of this specification may allow literal
+              IPv6 and IPv4 addresses, depending on usage and demand. Given the
+              weak security properties of IP addresses in relation to named
+              hosts, however, authors are encouraged to prefer the latter
+              whenever possible.</p>
           
             
          
@@ -5909,6 +5912,8 @@ Content-Security-Policy: style-src 'none'
    <dd>Robin Berjon; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[rfc2119]
    <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a>
+   <dt id="biblio-rfc3986"><a class="self-link" href="#biblio-rfc3986"></a>[rfc3986]
+   <dd>T. Berners-Lee; R. Fielding; L. Masinter. <a href="http://www.ietf.org/rfc/rfc3986.txt">Uniform Resource Identifier (URI): Generic Syntax</a>. January 2005. Internet Standard. URL: <a href="http://www.ietf.org/rfc/rfc3986.txt">http://www.ietf.org/rfc/rfc3986.txt</a>
    <dt id="biblio-rfc5988"><a class="self-link" href="#biblio-rfc5988"></a>[rfc5988]
    <dd>M. Nottingham. <a href="http://www.ietf.org/rfc/rfc5988.txt">Web Linking</a>. October 2010. Proposed Standard. URL: <a href="http://www.ietf.org/rfc/rfc5988.txt">http://www.ietf.org/rfc/rfc5988.txt</a>
    <dt id="biblio-websockets"><a class="self-link" href="#biblio-websockets"></a>[websockets]
@@ -6183,7 +6188,6 @@ Content-Security-Policy: style-src 'none'
      <li>attribute for SecurityPolicyViolationEvent, <a href="#dom-securitypolicyviolationevent-violateddirective">6.2</a>
      <li>dict-member for SecurityPolicyViolationEventInit, <a href="#dom-securitypolicyviolationeventinit-violateddirective">6.3</a>
     </ul>
-   <li>wildcard-host, <a href="#wildcard_host">4.2</a>
    <li>WSP, <a href="#wsp">2.4</a></ul>
   <h2 class="no-num heading settled" id="idl-index"><span class="content">IDL Index</span><a class="self-link" href="#idl-index"></a></h2>
   <pre class="idl">partial interface <a class="idl-code" data-global-name="" data-link-type="interface" href="http://www.w3.org/TR/html5/scripting-1.html#htmlscriptelement">HTMLScriptElement</a> {
