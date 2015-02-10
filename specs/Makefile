@@ -9,9 +9,11 @@ clean:
 CREDENTIAL: credentialmanagement/index.html
 CSP-PINNING: csp-pinning/index.html
 CSP-PINNING-FPWD: csp-pinning/published/2015-02-FPWD.html
-CSP2: CSP2/index.html CSP2/published/2015-02-CR.html
+CSP2: CSP2/index.html
+CSP2-CR: CSP2/published/2015-02-CR.html
 CSP3: content-security-policy/index.html
 MIX: mixedcontent/index.html
+MIX-CR: mixedcontent/published/2015-02-CR.html
 POWER: powerfulfeatures/index.html
 REFERRER: referrer-policy/index.html
 UPGRADE: upgrade/index.html
@@ -36,6 +38,9 @@ credentialmanagement/index.html: credentialmanagement/index.src.html biblio.json
 
 mixedcontent/index.html: mixedcontent/index.src.html biblio.json
 	bikeshed -f spec ./mixedcontent/index.src.html
+
+mixedcontent/published/2015-02-CR.html: mixedcontent/index.src.html
+	bikeshed -f spec --md-status=CR --md-deadline=2015-05-01 ./mixedcontent/index.src.html ./mixedcontent/published/2015-02-CR.html
 
 referrer-policy/index.html: referrer-policy/index.src.html biblio.json
 	bikeshed -f spec ./referrer-policy/index.src.html
