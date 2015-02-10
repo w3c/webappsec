@@ -55,7 +55,7 @@
   </style>
   
 
-  <meta content="1.0.0" name="bikeshed-semver">
+  <meta content="Bikeshed 1.0.0" name="generator">
  </head>
  
 
@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Content Security Policy Pinning</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-02-05">5 February 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-02-10">10 February 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -91,19 +91,13 @@
   
    <div data-fill-with="warning"></div>
   
-   <p class="copyright" data-fill-with="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> © 2015
-  <a href="http://www.w3.org/"><abbr title="World Wide Web Consortium">W3C</abbr></a><sup>®</sup>
-  (<a href="http://www.csail.mit.edu/"><abbr title="Massachusetts Institute of Technology">MIT</abbr></a>,
-  <a href="http://www.ercim.eu/"><abbr title="European Research Consortium for Informatics and Mathematics">ERCIM</abbr></a>,
-  <a href="http://www.keio.ac.jp/">Keio</a>, <a href="http://ev.buaa.edu.cn/">Beihang</a>),
-
-  All Rights Reserved.
-
-  <abbr title="World Wide Web Consortium">W3C</abbr> <a href="http://www.w3.org/Consortium/Legal/ipr-notice#Legal_Disclaimer">liability</a>,
-  <a href="http://www.w3.org/Consortium/Legal/ipr-notice#W3C_Trademarks">trademark</a> and
-
-  <a href="http://www.w3.org/Consortium/Legal/copyright-documents">document use</a>
-  rules apply.
+   <p class="copyright" data-fill-with="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> © 2015 <a href="http://www.w3.org/">
+     <acronym title="World Wide Web Consortium">W3C</acronym>
+    </a><sup>®</sup> (<a href="http://www.csail.mit.edu/">
+     <acronym title="Massachusetts Institute of Technology">MIT</acronym>
+    </a>, <a href="http://www.ercim.eu/">
+     <acronym title="European Research Consortium for Informatics and Mathematics">ERCIM</acronym>
+    </a>, <a href="http://www.keio.ac.jp/">Keio</a>, <a href="http://ev.buaa.edu.cn/">Beihang</a>). W3C <a href="http://www.w3.org/Consortium/Legal/ipr-notice#Legal_Disclaimer">liability</a>, <a href="http://www.w3.org/Consortium/Legal/ipr-notice#W3C_Trademarks">trademark</a> and <a href="http://www.w3.org/Consortium/Legal/copyright-documents">document use</a> rules apply.
 </p>
   
    <hr title="Separator for header">
@@ -326,7 +320,7 @@ of hosts for a period of time.</p>
     
      <pre>Content-Security-Policy-Pin: <a data-link-type="dfn" href="#max_age">max-age</a>: 10886400;
                              <a data-link-type="dfn" href="#includesubdomains">includeSubDomains</a>;
-                             default-src 'none';
+                             default-src https:;
                              form-action 'none';
                              frame-ancestors 'none';
                              referrer no-referrer;
@@ -360,7 +354,7 @@ Content-Security-Policy: script-src https://application2.cdn.com;
      <p>Meanwhile, they’ve forgotten about the coincidentally well-named
     <code>https://forgotten-partnership.example.com/</code>. It doesn’t send
     any CSP headers at all, and yet, it is still protected by the pinned policy
-    for any users who have visited either Application 1 or Application 2. Yay!</p>
+    for any users who have visited either Application 1 or Application 2.</p>
      
   
     </div>
@@ -386,9 +380,9 @@ Content-Security-Policy: script-src https://application2.cdn.com;
      
     
      <dd>
-      A <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> which is enforced for policyless resources
-      delivered from a <a data-link-type="dfn" href="#protected-host">protected host</a>. The pinned policy’s properties
-      are defined in <a href="#policy-delivery">§3 Pinned Policy Delivery</a>.
+      A <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#security-policy">security policy</a> which is enforced for resources
+      delivered from a <a data-link-type="dfn" href="#protected-host">protected host</a> without their own policy.
+      The pinned policy’s properties are defined in <a href="#policy-delivery">§3 Pinned Policy Delivery</a>.
     
      
 
@@ -424,9 +418,10 @@ Content-Security-Policy: script-src https://application2.cdn.com;
         
        <li>
           The <dfn data-dfn-type="dfn" data-noexport="" id="policy-directive-set">policy directive set<a class="self-link" href="#policy-directive-set"></a></dfn>: a set of Content Security Policy
-          directives <a data-link-type="biblio" href="#biblio-csp">[CSP]</a> which the user agent MUST <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#enforce">enforce</a> for each
-          <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> and <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code> served from <a data-link-type="dfn" href="#protected-host">protected host</a> (and,
-          potentially, its subdomains).
+          directives <a data-link-type="biblio" href="#biblio-csp">[CSP]</a> which the user agent MUST apply, according to its
+          <a data-link-type="dfn" href="#mode">mode</a>, for each <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> and <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code> served from 
+          <a data-link-type="dfn" href="#protected-host">protected host</a>, (and, potentially, its subdomains)
+          that does not provide its own policy.
         
        
         
@@ -897,7 +892,7 @@ directive-value = 1*DIGIT
       
 </ol>
 
-    <p class="issue" id="issue-396704e8"><a class="self-link" href="#issue-396704e8"></a>We probably need a hook in <a data-link-type="biblio" href="#biblio-fetch">[Fetch]</a>. Hi, Anne! Let’s chat! In
+    <p class="issue" id="issue-084d693a"><a class="self-link" href="#issue-084d693a"></a>We probably need a hook in <a data-link-type="biblio" href="#biblio-fetch">[Fetch]</a>. In
   particular, we need to ensure that we detect and pin a policy early enough
   for <code>frame-ancestors</code> and <code>referrer</code> to handle blocking
   and redirects.</p>
@@ -1288,7 +1283,7 @@ directive-value = 1*DIGIT
   policy. If no policies match, this algorithm returns <code>null</code>.</p>
 
 
-    <p class="note" role="note">Note: There ought to be at most policy that matches, given the constraints
+    <p class="note" role="note">Note: There ought to be at most one policy that matches, given the constraints
   in <a href="#pin-policy">§4.1.2 
     Pin policy for origin in mode
   </a>.</p>
@@ -1740,10 +1735,10 @@ directive-value = 1*DIGIT
    <li>subdomains included, <a href="#subdomains-included">2.1</a></ul>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue">We probably need a hook in <a data-link-type="biblio" href="#biblio-fetch">[Fetch]</a>. Hi, Anne! Let’s chat! In
+   <div class="issue">We probably need a hook in <a data-link-type="biblio" href="#biblio-fetch">[Fetch]</a>. In
   particular, we need to ensure that we detect and pin a policy early enough
   for <code>frame-ancestors</code> and <code>referrer</code> to handle blocking
-  and redirects.<a href="#issue-396704e8"> ↵ </a></div>
+  and redirects.<a href="#issue-084d693a"> ↵ </a></div>
    <div class="issue">Explain something about the theory; pins act as a baseline for
   resources that don’t otherwise have a policy. Explain layering, granularity,
   etc.<a href="#issue-c9a0c3af"> ↵ </a></div></div></body>
