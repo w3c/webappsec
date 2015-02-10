@@ -97,10 +97,14 @@ Indent: 2
                                style-src https://application2.cdn.com;
     </pre>
 
+		ISSUE: This example contradicts advice elsewhere that the
+    value of the header SHOULD be the same for every <a>resource
+    representation</a>.
+
     Meanwhile, they've forgotten about the coincidentally well-named
     <code>https://forgotten-partnership.example.com/</code>. It doesn't send
     any CSP headers at all, and yet, it is still protected by the pinned policy
-    for any users who have visited either Application 1 or Application 2. Yay!
+    for any users who have visited either Application 1 or Application 2.
   </div>
 </section>
 
@@ -125,9 +129,9 @@ Indent: 2
       </dfn>
     </dt>
     <dd>
-      A <a>security policy</a> which is enforced for policyless resources
-      delivered from a <a>protected host</a>. The pinned policy's properties
-      are defined in [[#policy-delivery]].
+      A <a>security policy</a> which is enforced for resources
+      delivered from a <a>protected host</a> without their own policy.
+			The pinned policy's properties are defined in [[#policy-delivery]].
     </dd>
 
     <dt><dfn>pinned policy cache</dfn></dt>
@@ -151,9 +155,10 @@ Indent: 2
         </li>
         <li>
           The <dfn>policy directive set</dfn>: a set of Content Security Policy
-          directives [[!CSP]] which the user agent MUST <a>enforce</a> for each
-          {{Document}} and {{Worker}} served from <a>protected host</a> (and,
-          potentially, its subdomains).
+          directives [[!CSP]] which the user agent MUST apply, according to its
+					<a>mode</a>, for each {{Document}} and {{Worker}} served from 
+					<a>protected host</a>, (and, potentially, its subdomains)
+					that does not provide its own policy.
         </li>
         <li>
           <dfn>mode</dfn>: <code>monitor</code> if the <a>policy directive
@@ -498,7 +503,7 @@ urlPrefix: https://tools.ietf.org/html/rfc7231
      policies</a> are applied, according to the [[#apply-pinned-policy]]
      algorithm.
 
-  ISSUE: We probably need a hook in [[Fetch]]. Hi, Anne! Let's chat! In
+  ISSUE: We probably need a hook in [[Fetch]]. In
   particular, we need to ensure that we detect and pin a policy early enough
   for <code>frame-ancestors</code> and <code>referrer</code> to handle blocking
   and redirects.
@@ -758,7 +763,7 @@ urlPrefix: https://tools.ietf.org/html/rfc7231
   walks through the <a>pinned policy cache</a>, and returns the first matching
   policy. If no policies match, this algorithm returns <code>null</code>.
 
-  Note: There ought to be at most policy that matches, given the constraints
+  Note: There ought to be at most one policy that matches, given the constraints
   in [[#pin-policy]].
 
   <ol>
