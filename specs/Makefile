@@ -8,7 +8,7 @@ clean:
 
 CREDENTIAL: credentialmanagement/index.html
 CSP-PINNING: csp-pinning/index.html
-CSP2: CSP2/index.html CSP2/published/2015-01-CR.html
+CSP2: CSP2/index.html CSP2/published/2015-02-CR.html
 CSP3: content-security-policy/index.html
 MIX: mixedcontent/index.html
 POWER: powerfulfeatures/index.html
@@ -21,8 +21,8 @@ csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 CSP2/index.html: CSP2/index.src.html biblio.json
 	bikeshed -f spec ./CSP2/index.src.html
 
-CSP2/published/2015-01-CR.html: CSP2/index.src.html
-	bikeshed -f spec --md-status=CR ./CSP2/index.src.html ./CSP2/published/2015-01-CR.html
+CSP2/published/2015-02-CR.html: CSP2/index.src.html
+	bikeshed -f spec --md-status=CR ./CSP2/index.src.html ./CSP2/published/2015-02-CR.html
 
 content-security-policy/index.html: content-security-policy/index.src.html biblio.json
 	bikeshed -f spec ./content-security-policy/index.src.html
