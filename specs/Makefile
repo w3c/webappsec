@@ -17,6 +17,7 @@ MIX-CR: mixedcontent/published/2015-02-CR.html
 POWER: powerfulfeatures/index.html
 REFERRER: referrer-policy/index.html
 UPGRADE: upgrade/index.html
+UPGRADE-FPWD: upgrade/published/2015-02-FPWD.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 	bikeshed -f spec ./csp-pinning/index.src.html
@@ -50,6 +51,9 @@ powerfulfeatures/index.html: powerfulfeatures/index.src.html biblio.json
 
 upgrade/index.html: upgrade/index.src.html biblio.json
 	bikeshed -f spec ./upgrade/index.src.html
+
+upgrade/published/2015-02-FPWD.html: upgrade/index.src.html
+	bikeshed -f spec --md-status=FPWD ./upgrade/index.src.html ./upgrade/published/2015-02-FPWD.html
 
 publish: all
 	git push origin master master:gh-pages
