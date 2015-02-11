@@ -198,6 +198,7 @@ secure transport before Fetching them.</p>
     <li><a href="#authoring"><span class="secno">7</span> <span class="content">Authoring Considerations</span></a>
      <ul class="toc">
       <li><a href="#legacy-clients"><span class="secno">7.1</span> <span class="content">Legacy Clients</span></a>
+      <li><a href="#relation-to-hsts"><span class="secno">7.2</span> <span class="content">Relation to HSTS</span></a>
      </ul>
     <li><a href="#acknowledgements"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content">Conformance</span></a>
@@ -303,14 +304,24 @@ secure transport before Fetching them.</p>
      
     
      <li>
-      Moreover, authors should be able to achieve all these goals without
-      editing a site’s content. This is particularly important for archived
-      content, legacy systems, and the truly old sites, handcrafted in a time
-      before templating engines.
+      Authors should be able to achieve all these goals without editing a site’s
+      content. This is particularly important for archived content and legacy
+      systems for which maintenance is difficult enough, never mind upgrades.
+    
+     
+    
+     <li>
+      Authors should be able to persue a gradual transition from insecure to
+      secure, serving secure resources to clients that support upgrades, while
+      retaining insecure resources for clients that don’t.
     
      
   
     </ol>
+
+
+    <p class="note" role="note">Note: The mechanism defined here does <em>not</em> intend to supplant Strict
+  Transport Security <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>. See <a href="#relation-to-hsts">§7.2 Relation to HSTS</a> for details.</p>
 
   
     <h3 class="heading settled" data-level="1.2" id="examples"><span class="secno">1.2. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h3>
@@ -837,6 +848,10 @@ directive-value = ""
   
     </ol>
 
+
+    <p class="note" role="note">Note: Due to Fetch’s recursive nature, this algorithm will upgrade
+  insecurely-redirected requests as well as insecure initial requests.</p>
+
   
     <h3 class="heading settled" data-level="4.2" id="should-upgrade-for-client"><span class="secno">4.2. </span><span class="content">
     Should insecure <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code>s be upgraded for <var>client</var>?
@@ -1065,6 +1080,61 @@ directive-value = ""
   to determine which resources are most problematic for their users, and SHOULD
   use that information to prioritize fixes for URLs in legacy content that
   users will most likely request.</p>
+
+  
+    <h3 class="heading settled" data-level="7.2" id="relation-to-hsts"><span class="secno">7.2. </span><span class="content">Relation to HSTS</span><a class="self-link" href="#relation-to-hsts"></a></h3>
+
+
+    <p>The mechanism specified here deals only with the security policy for a
+  specific <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#protected-resource">protected resource</a>. It does not deprecate, replace, or in any
+  way reduce the value of the <code>Strict-Transport-Security</code> HTTP
+  response header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>. Authors can and should continue to use that
+  header to ensure that their users are not subject to SSL stripping downgrade
+  attacks, as the <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive will
+  not ensure that users visiting your site via links on third-party sites will
+  be upgraded to HTTPS for the top-level navigation.</p>
+
+
+    <p>Likewise, the <code>Strict-Transport-Security</code> header does not imply
+  the behavior that <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> activates.
+  It only ensures that resources requested from an origin will never hit the
+  network insecurely.</p>
+
+
+    <p>Therefore, we recommend that authors who wish to ensure that their users have
+  a secure experience do the following:</p>
+
+  
+    <ol>
+    
+     <li>
+      Redirect incoming traffic from HTTP to HTTPS by serving a
+      <code>Location</code> header along with a <code>302</code> status code.
+    
+     
+    
+     <li>
+      Respond to HTTPS requests with a <code>Strict-Transport-Security</code>
+      header with a reasonable <code>max-age</code>.
+    
+     
+    
+     <li>
+      Work with user agent vendors to add their sites to those user agent’s
+      HSTS Preload Lists (for example, by visiting
+      <a href="https://hstspreload.appspot.com/">hstspreload.appspot.com</a>).
+    
+     
+    
+     <li>
+      Opt-into either this document’s
+      <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> mechanism, or into Mixed
+      Content’s <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode">strict mode</a> in order to ensure that insecure content is
+      never loaded.
+    
+     
+  
+    </ol>
 </section>
 
 

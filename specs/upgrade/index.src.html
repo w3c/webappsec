@@ -86,12 +86,19 @@ Indent: 2
       address.
     </li>
     <li>
-      Moreover, authors should be able to achieve all these goals without
-      editing a site's content. This is particularly important for archived
-      content, legacy systems, and the truly old sites, handcrafted in a time
-      before templating engines.
+      Authors should be able to achieve all these goals without editing a site's
+      content. This is particularly important for archived content and legacy
+      systems for which maintenance is difficult enough, never mind upgrades.
+    </li>
+    <li>
+      Authors should be able to persue a gradual transition from insecure to
+      secure, serving secure resources to clients that support upgrades, while
+      retaining insecure resources for clients that don't.
     </li>
   </ol>
+
+  Note: The mechanism defined here does <em>not</em> intend to supplant Strict
+  Transport Security [[RFC6797]]. See [[#relation-to-hsts]] for details.
 
   <h3 id="examples">Examples</h3>
 
@@ -517,6 +524,9 @@ urlPrefix: http://tools.ietf.org/html/rfc6455
     </li>
   </ol>
 
+  Note: Due to Fetch's recursive nature, this algorithm will upgrade
+  insecurely-redirected requests as well as insecure initial requests.
+
   <h3 id="should-upgrade-for-client">
     Should insecure {{Request}}s be upgraded for <var>client</var>?
   </h3>
@@ -685,6 +695,47 @@ urlPrefix: http://tools.ietf.org/html/rfc6455
   to determine which resources are most problematic for their users, and SHOULD
   use that information to prioritize fixes for URLs in legacy content that
   users will most likely request.
+
+  <h3 id="relation-to-hsts">Relation to HSTS</h3>
+
+  The mechanism specified here deals only with the security policy for a
+  specific <a>protected resource</a>. It does not deprecate, replace, or in any
+  way reduce the value of the <code>Strict-Transport-Security</code> HTTP
+  response header [[RFC6797]]. Authors can and should continue to use that
+  header to ensure that their users are not subject to SSL stripping downgrade
+  attacks, as the <code><a>upgrade-insecure-requests</a></code> directive will
+  not ensure that users visiting your site via links on third-party sites will
+  be upgraded to HTTPS for the top-level navigation.
+
+  Likewise, the <code>Strict-Transport-Security</code> header does not imply
+  the behavior that <code><a>upgrade-insecure-requests</a></code> activates.
+  It only ensures that resources requested from an origin will never hit the
+  network insecurely.
+
+  Therefore, we recommend that authors who wish to ensure that their users have
+  a secure experience do the following:
+
+  <ol>
+    <li>
+      Redirect incoming traffic from HTTP to HTTPS by serving a
+      <code>Location</code> header along with a <code>302</code> status code.
+    </li>
+    <li>
+      Respond to HTTPS requests with a <code>Strict-Transport-Security</code>
+      header with a reasonable <code>max-age</code>.
+    </li>
+    <li>
+      Work with user agent vendors to add their sites to those user agent's
+      HSTS Preload Lists (for example, by visiting
+      <a href="https://hstspreload.appspot.com/">hstspreload.appspot.com</a>).
+    </li>
+    <li>
+      Opt-into either this document's
+      <code><a>upgrade-insecure-requests</a></code> mechanism, or into Mixed
+      Content's <a>strict mode</a> in order to ensure that insecure content is
+      never loaded.
+    </li>
+  </ol>
 </section>
 
 
