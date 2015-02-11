@@ -48,26 +48,97 @@ Indent: 2
 
   This document defines a new Content Security Policy directive,
   <code><a>upgrade-insecure-requests</a></code>, through which authors can make
-  this assertion, allowing a user agent to treat the following HTML code:
-
-  <pre>
-    &lt;img src="http://example.com/image.png"&gt;
-  </pre>
-
-  as though it had been delivered as:
-
-  <pre>
-    &lt;img src="https://example.com/image.png"&gt;
-  </pre>
-
-  The URL will be rewritten before the request is made, meaning that no insecure
-  requests will hit the network. Users will be safer, and authors and
-  administrators will be happier.
-
+  this assertion.
   Note: Delivering the policy as a header allows an administrator to easily
   opt a set of pages into the upgrade mechanism without touching their source
   code individually. The legacy content examples above would not be feasible
   with an approach that inlined the policy into HTML, for example.
+
+  <h3 id="goals">Goals</h3>
+
+  The overarching goal is to reduce the burden of migrating websites from
+  <a><i lang="la">a priori</i> insecure origins</a> by reducing the negative
+  side effects of mixed content blocking [[MIX]]. 
+  
+  If we assume that authors do the server-side legwork (obtaining a certificate,
+  configuring the server, setting up redirects), and that authors also ensure
+  that content is accessible at <em>the same {{URL/host}} and {{URL/path}}</em>
+  on a secure {{URL/scheme}}, then the following statements ought to hold after
+  implementing this feature:
+
+  <ol>
+    <li>
+      Authors should be able to ensure that all content requested by a given
+      page loads successfully, and securely. Mixed content blocking should not
+      break pages as a result of migrating to a secure origin.
+
+      Note: This requirement is <em>not</em> met by Mixed Content's <a>strict
+      mode</a>, which makes something like the opposite assertion.
+    </li>
+    <li>
+      As a result of #1, the user agent should not degrade any security
+      indicators related to requesting mixed content, as no insecure content
+      should be requested.
+    </li>
+    <li>
+      Authors should be able to ensure that all inter-site links correctly send
+      users to the site's secure address, and not to it's pre-migration insecure
+      address.
+    </li>
+    <li>
+      Moreover, authors should be able to achieve all these goals without
+      editing a site's content. This is particularly important for archived
+      content, legacy systems, and the truly old sites, handcrafted in a time
+      before templating engines.
+    </li>
+  </ol>
+
+  <h3 id="examples">Examples</h3>
+
+  <div class="example">
+    Megacorp, Inc. wishes to migrate <code>http://example.com/</code> to
+    <code>https://example.com</code>. They set up the server-side requirements
+    to make their own resources available over HTTPS, and work with partners in
+    order to make third-party widgets available as well.
+
+    They quickly realize, however, that the majority of their long-tail content
+    is locked up in a database tied to an old content management system that
+    they've been avoiding for years ("If it ain't broke..."). They'll need to
+    spend quite a bit of time either migrating the content to their new system,
+    or modifying it in-place in the old system. Either way, it ends up being a
+    substantial amount of work, and though they put top programmers on the task,
+    it clearly won't be done any time soon.
+
+    As a stopgap measure, Megacorp injects the following header into every
+    response that goes out through their servers:
+
+    <pre>
+      Content-Security-Policy: <a>upgrade-insecure-requests</a>
+    </pre>
+
+    This automatically upgrades all insecure resource requests for their pages
+    to secure variants, allowing a user agent to treat the following HTML code:
+
+    <pre>
+      &lt;img src="http://example.com/image.png"&gt;
+    </pre>
+
+    as though it had been delivered as:
+
+    <pre>
+      &lt;img src="https://example.com/image.png"&gt;
+    </pre>
+
+    The URL will be rewritten before the request is made, meaning that no
+    insecure requests will hit the network. Users will be safer, and Megacorp's
+    administrators will be happier.
+  </div>
+
+  ISSUE: How does Megacorp know that it can safely redirect a client to a secure
+  origin? Perhaps we ought to send a hint that the UA supports upgrades along
+  with any {{Request}} whose {{Request/context-frame-type}} is
+  <code>top-level</code>, <code>ancilliary</code>, or <code>nested</code>.
+  Something like <code>Accept-Upgrade: https</code>, perhaps?
 </section>
 
 <!--
@@ -179,8 +250,9 @@ type: dfn
   <!-- MIXED CONTENT -->
   : <a><i lang="la">a priori</i> insecure origin</a>
   : <a><i lang="la">a priori</i> insecure url</a>
-  : <a>potentially secure origin</a>
   : <a>embedding document</a>
+  : <a>potentially secure origin</a>
+  : <a>strict mode</a>
   :: Defined in [[!MIX]]
 
   <pre class="anchors">
@@ -188,6 +260,7 @@ urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
   type: dfn
     text: a priori insecure url
     text: embedding document
+    text: strict mode
     url: a-priori-insecure-url
       text: a priori insecure origin
       text: a priori insecure
@@ -197,7 +270,7 @@ urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
   </pre>
 
   <!-- URL -->
-  : {{URL}}'s {{URL/scheme}} and {{URL/port}} properties.
+  : {{URL}}'s {{URL/scheme}}, {{URL/host}}, {{URL/port}}, and {{URL/path}} properties.
   :: Defined in [[!URL]]
 
   <pre class="anchors">
@@ -205,9 +278,10 @@ urlPrefix: https://url.spec.whatwg.org/
   type: interface
     text: URL; url: concept-url
   type: attribute
-    text: scheme; for: URL; url: concept-url-scheme
     text: host; for: URL; url: concept-url-host
+    text: path; for: URL; url: concept-url-path
     text: port; for: URL; url: concept-url-port
+    text: scheme; for: URL; url: concept-url-scheme
   </pre>
 
   <!-- WORKERS -->
