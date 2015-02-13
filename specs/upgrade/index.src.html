@@ -212,14 +212,16 @@ urlPrefix: http://www.w3.org/TR/dom/
 
   <!-- FETCH -->
   : {{Request}} interface
-  : {{Request}}'s {{Request/url}}, {{Request/client}}, {{Request/context}}, and {{Request/context-frame-type}} attributes.
+  : {{Request}}'s {{Request/url}}, {{Request/client}}, {{Request/context}}, {{Request/header-list}}, and {{Request/context-frame-type}} attributes.
   : <a>fetching</a>
+  : The <a lt="append">append <var>header</var> to a <var>header list</var></a> algorithm
   :: Defined in [[!FETCH]]
 
   <pre class="anchors">
 urlPrefix: https://fetch.spec.whatwg.org/
   type: dfn
     text: fetching
+    text: append; url: concept-header-list-append
   type: interface
     text: Request
   type: attribute
@@ -227,6 +229,7 @@ urlPrefix: https://fetch.spec.whatwg.org/
     text: client; for: Request; url: concept-request-client
     text: context; for: Request; url: concept-request-context
     text: context-frame-type; for: Request; url: concept-request-context-frame-type
+    text: header-list; for: Request; url: concept-request-header-list
   </pre>
 
   <!-- HTML5 -->
@@ -311,6 +314,18 @@ urlPrefix: http://tools.ietf.org/html/rfc6455
   type: dfn
     text: establish a websocket connection; url: section-4.1
     text: fail the websocket connection; url: section-7.1.7
+  </pre>
+
+  <!-- RFC7240 -->
+  : The <code><a>Prefer</a></code> HTTP request header
+  : The <code><a>return</a></code> preference
+  :: Defined in [[!RFC7240]]
+
+  <pre class="anchors">
+urlPrefix: https://tools.ietf.org/html/rfc7240
+  type: dfn
+    text: prefer; url: section-2
+    text: return; url: section-4.2
   </pre>
 
   <!-- BIBLIOGRAPHY -->
@@ -409,6 +424,43 @@ urlPrefix: http://tools.ietf.org/html/rfc6455
     </pre>
   </div>
 
+  <h3 id="feature-detect">Feature Detecting Clients Capable of Upgrading</h3>
+
+  If a site requires the upgrade mechanism described in this document in order
+  to provide users with a reasonable experience over secure transit, then
+  authors need to determine whether or not it is safe to redirect a client to
+  the secure version of a site. Rather than relying on user-agent sniffing to
+  make this decision, user agents MUST advertise their capabilities when
+  making insecure navigational requests by sending a <code>Prefer</code> HTTP
+  request header expressing the desire for a secure representation [[RFC7240]]
+  as described in [[#preference]].
+
+  <h4 id="preference">
+    The <code>return=secure-representation</code> Preference
+  </h4>
+
+  The "<code><dfn>return=secure-representation</dfn></code>" preference
+  indicates that the client prefers that the server redirect from an insecure
+  resource representation to a secure one, and that it can successfully handle
+  the <code><a>upgrade-insecure-requests</a></code> directive in order to make
+  that redirection as seamless as possible.
+
+  This new preference changes the <code><a>return</a></code> ABNF defined in
+  <a lt="return">RFC7240 Section 4.2</a> to the following:
+
+  <pre>
+    return = "return" BWS "=" BWS ( "secure-representation" / "representation" / "minimal" )
+  </pre>
+
+  When a server encounters this preference in an HTTP request's headers, it
+  SHOULD redirect the user to a secure version of the resource being requested.
+
+  User agent implementation details are described in step #2 of the the
+  [[#upgrade-request]] algorithm. Note in particular that to mitigate the risk
+  that this header will become a vestigial part of the platform, user agents
+  SHOULD omit the preference when making requests to <a>potentially secure
+  origins</a>.
+
   <h3 id="nesting">Policy Inheritance</h3>
 
   If a {{Document}}'s <a>incumbent settings object</a>'s <a>upgrade insecure
@@ -442,15 +494,29 @@ urlPrefix: http://tools.ietf.org/html/rfc6455
 
   Given a {{Request}} <var>request</var>, this algorithm will rewrite its
   {{Request/url}} if the {{Request/client}} from which the request originates
-  has opted-in to upgrades.
+  has opted-in to upgrades. It will also inject a
+  <code><a>return=secure-representation</a></code> preference for insecure
+  navigational requests in order to improve a server's ability to feature-detect
+  a client's upgrade capabilities.
 
-  We will not upgrade navigational requests, with the exception of form
-  submissions. Form submissions will be upgraded to mitigate the risk of data
-  leakage via plaintext submissions.
+  We will not upgrade cross-origin navigational requests, with the exception of
+  form submissions. Form submissions will be upgraded to mitigate the risk of
+  data leakage via plaintext submissions.
 
   ISSUE: This should be called from Fetch, probably after the existing step #3.
 
   <ol>
+    <li>
+      If <var>request</var>'s {{Request/url}} is <a>potentially secure</a>:
+      return without modifying <var>request</var>.
+    </li>
+    <li>
+      If <var>request</var>'s {{Request/context-frame-type}} is
+      <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
+      then <a>append</a> a header named <code>Prefer</code> with a value
+      of <code><a>return=secure-representation</a></code> to
+      <var>request</var>'s {{Request/header-list}}.
+    </li>
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
       <code>top-level</code> or <code>auxiliary</code>, then:
@@ -479,13 +545,9 @@ urlPrefix: http://tools.ietf.org/html/rfc6455
           attempting "first-party" upgrades.
         </li>
         <li>
-          Return without modifying <var>request</var>.
+          Return without further modifying <var>request</var>.
         </li>
       </ol>
-    </li>
-    <li>
-      If <var>request</var>'s {{Request/url}} is <a>potentially secure</a>,
-      return without modifying <var>request</var>.
     </li>
     <li>
       Let <var>upgrade state</var> be the result of executing

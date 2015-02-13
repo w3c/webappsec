@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Upgrade Insecure Requests</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-02-11">11 February 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-02-13">13 February 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -175,7 +175,13 @@ secure transport before Fetching them.</p>
     <li><a href="#upgrading"><span class="secno">3</span> <span class="content">Upgrading Insecure Resource Requests</span></a>
      <ul class="toc">
       <li><a href="#delivery"><span class="secno">3.1</span> <span class="content">Upgrade Policy Delivery</span></a>
-      <li><a href="#nesting"><span class="secno">3.2</span> <span class="content">Policy Inheritance</span></a>
+      <li><a href="#feature-detect"><span class="secno">3.2</span> <span class="content">Feature Detecting Clients Capable of Upgrading</span></a>
+       <ul class="toc">
+        <li><a href="#preference"><span class="secno">3.2.1</span> <span class="content">
+    The <code>return=secure-representation</code> Preference
+  </span></a>
+       </ul>
+      <li><a href="#nesting"><span class="secno">3.3</span> <span class="content">Policy Inheritance</span></a>
      </ul>
     <li><a href="#algorithms"><span class="secno">4</span> <span class="content">Processing Algorithms</span></a>
      <ul class="toc">
@@ -478,11 +484,15 @@ secure transport before Fetching them.</p>
       
 
      <dt data-md="">
-      <p><code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code>'s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>, <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>, <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a></code>, and <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context-frame-type</a></code> attributes.</p>
+      <p><code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code>'s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>, <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>, <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a></code>, <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-header-list">header-list</a></code>, and <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context-frame-type</a></code> attributes.</p>
       
 
      <dt data-md="">
       <p><a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">fetching</a></p>
+      
+
+     <dt data-md="">
+      <p>The <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-list-append">append <var>header</var> to a <var>header list</var></a> algorithm</p>
       
 
      <dd data-md="">
@@ -598,6 +608,23 @@ secure transport before Fetching them.</p>
 </dl>
   
 
+    <dl>
+     <dt data-md="">
+      <p>The <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7240#section-2">Prefer</a></code> HTTP request header</p>
+      
+
+     <dt data-md="">
+      <p>The <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7240#section-4.2">return</a></code> preference</p>
+      
+
+     <dd data-md="">
+      <p>Defined in <a data-link-type="biblio" href="#biblio-rfc7240">[RFC7240]</a></p>
+      
+
+
+</dl>
+  
+
 
 </section>
 
@@ -683,7 +710,55 @@ directive-value = ""
     </div>
 
   
-    <h3 class="heading settled" data-level="3.2" id="nesting"><span class="secno">3.2. </span><span class="content">Policy Inheritance</span><a class="self-link" href="#nesting"></a></h3>
+    <h3 class="heading settled" data-level="3.2" id="feature-detect"><span class="secno">3.2. </span><span class="content">Feature Detecting Clients Capable of Upgrading</span><a class="self-link" href="#feature-detect"></a></h3>
+
+
+    <p>If a site requires the upgrade mechanism described in this document in order
+  to provide users with a reasonable experience over secure transit, then
+  authors need to determine whether or not it is safe to redirect a client to
+  the secure version of a site. Rather than relying on user-agent sniffing to
+  make this decision, user agents MUST advertise their capabilities when
+  making insecure navigational requests by sending a <code>Prefer</code> HTTP
+  request header expressing the desire for a secure representation <a data-link-type="biblio" href="#biblio-rfc7240">[RFC7240]</a>
+  as described in <a href="#preference">§3.2.1 
+    The return=secure-representation Preference
+  </a>.</p>
+
+  
+    <h4 class="heading settled" data-level="3.2.1" id="preference"><span class="secno">3.2.1. </span><span class="content">
+    The <code>return=secure-representation</code> Preference
+  </span><a class="self-link" href="#preference"></a></h4>
+
+
+    <p>The "<code><dfn data-dfn-type="dfn" data-noexport="" id="returnsecure_representation">return=secure-representation<a class="self-link" href="#returnsecure_representation"></a></dfn></code>" preference
+  indicates that the client prefers that the server redirect from an insecure
+  resource representation to a secure one, and that it can successfully handle
+  the <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive in order to make
+  that redirection as seamless as possible.</p>
+
+
+    <p>This new preference changes the <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7240#section-4.2">return</a></code> ABNF defined in
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7240#section-4.2">RFC7240 Section 4.2</a> to the following:</p>
+
+  
+    <pre>return = "return" BWS "=" BWS ( "secure-representation" / "representation" / "minimal" )
+</pre>
+
+
+    <p>When a server encounters this preference in an HTTP request’s headers, it
+  SHOULD redirect the user to a secure version of the resource being requested.</p>
+
+
+    <p>User agent implementation details are described in step #2 of the the
+  <a href="#upgrade-request">§4.1 
+    Upgrade request to a potentially secure URL, if appropriate
+  </a> algorithm. Note in particular that to mitigate the risk
+  that this header will become a vestigial part of the platform, user agents
+  SHOULD omit the preference when making requests to <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure
+  origins</a>.</p>
+
+  
+    <h3 class="heading settled" data-level="3.3" id="nesting"><span class="secno">3.3. </span><span class="content">Policy Inheritance</span><a class="self-link" href="#nesting"></a></h3>
 
 
     <p>If a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>'s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure
@@ -727,18 +802,36 @@ directive-value = ""
 
     <p>Given a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> <var>request</var>, this algorithm will rewrite its
   <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code> if the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code> from which the request originates
-  has opted-in to upgrades.</p>
+  has opted-in to upgrades. It will also inject a
+  <code><a data-link-type="dfn" href="#returnsecure_representation">return=secure-representation</a></code> preference for insecure
+  navigational requests in order to improve a server’s ability to feature-detect
+  a client’s upgrade capabilities.</p>
 
 
-    <p>We will not upgrade navigational requests, with the exception of form
-  submissions. Form submissions will be upgraded to mitigate the risk of data
-  leakage via plaintext submissions.</p>
+    <p>We will not upgrade cross-origin navigational requests, with the exception of
+  form submissions. Form submissions will be upgraded to mitigate the risk of
+  data leakage via plaintext submissions.</p>
 
 
     <p class="issue" id="issue-3615b173"><a class="self-link" href="#issue-3615b173"></a>This should be called from Fetch, probably after the existing step #3.</p>
 
   
     <ol>
+    
+     <li>
+      If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code> is <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure</a>:
+      return without modifying <var>request</var>.
+    
+     
+    
+     <li>
+      If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context-frame-type</a></code> is
+      <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
+      then <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-list-append">append</a> a header named <code>Prefer</code> with a value
+      of <code><a data-link-type="dfn" href="#returnsecure_representation">return=secure-representation</a></code> to
+      <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-header-list">header-list</a></code>.
+    
+     
     
      <li>
       If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context-frame-type</a></code> is
@@ -764,9 +857,9 @@ directive-value = ""
         <p class="note" role="note">Note: We allow only same-origin upgrades in order to ensure that
           navigations between pages of a single site that has opted-into
           the upgrade behavior remain on HTTPS, regardless of the hard-coded
-          values in &lt;a> tags. Performing upgrades for third-party
-          resources brings a significantly higher potential for breakage, so
-          we’re avoiding it for the moment.</p>
+          values in &lt;a> tags. Performing upgrades for navigations to
+          third-party resources brings a significantly higher potential for
+          breakage, so we’re avoiding it for the moment.</p>
         
 
 
@@ -778,18 +871,12 @@ directive-value = ""
        
         
        <li>
-          Return without modifying <var>request</var>.
+          Return without further modifying <var>request</var>.
         
        
       
       </ol>
       
-    
-     
-    
-     <li>
-      If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code> is <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure</a>,
-      return without modifying <var>request</var>.
     
      
     
@@ -891,7 +978,7 @@ directive-value = ""
 
       <p class="note" role="note">Note: This catches requests triggered from detached <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>s.
       Not sure this is necessary, really, given the inheritance structure
-      defined in <a href="#nesting">§3.2 Policy Inheritance</a>.</p>
+      defined in <a href="#nesting">§3.3 Policy Inheritance</a>.</p>
       
     
      
@@ -917,7 +1004,7 @@ directive-value = ""
     <p class="note" role="note">Note: This violation report will be triggered for the <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> or
   <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code> that triggers the request. This might or might not be the same
   <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#protected-resource">protected resource</a> that set the
-  <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive, due to <a href="#nesting">§3.2 Policy Inheritance</a>.
+  <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive, due to <a href="#nesting">§3.3 Policy Inheritance</a>.
   See <a href="#violation-report-target">§6.2 CSP Violation Reports</a> for detail.</p>
 
   
@@ -1053,7 +1140,7 @@ directive-value = ""
   target the <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> or <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code> that triggered the request, rather
   than the <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code> or <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code> on which the
   <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive was set. Due to
-  <a href="#nesting">§3.2 Policy Inheritance</a>, the latter might be a cross-origin ancestor of the former, and
+  <a href="#nesting">§3.3 Policy Inheritance</a>, the latter might be a cross-origin ancestor of the former, and
   sending violation reports to that set of reporting endpoints could leak data
   in unexpected ways.</p>
 
@@ -1240,6 +1327,8 @@ directive-value = ""
    <dd>Robin Berjon; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[rfc2119]
    <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a>
+   <dt id="biblio-rfc7240"><a class="self-link" href="#biblio-rfc7240"></a>[rfc7240]
+   <dd>J. Snell. <a href="http://www.ietf.org/rfc/rfc7240.txt">Prefer Header for HTTP</a>. June 2014. Proposed Standard. URL: <a href="http://www.ietf.org/rfc/rfc7240.txt">http://www.ietf.org/rfc/rfc7240.txt</a>
    <dt id="biblio-workers"><a class="self-link" href="#biblio-workers"></a>[workers]
    <dd>Ian Hickson. <a href="http://www.w3.org/TR/workers/">Web Workers</a>. 1 May 2012. CR. URL: <a href="http://www.w3.org/TR/workers/">http://www.w3.org/TR/workers/</a></dl>
   <h3 class="no-num heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
@@ -1256,6 +1345,7 @@ directive-value = ""
   <ul class="indexlist">
    <li>conformant server, <a href="#conformant-server">Unnumbered section</a>
    <li>conformant user agent, <a href="#conformant-user-agent">Unnumbered section</a>
+   <li>return=secure-representation, <a href="#returnsecure_representation">3.2.1</a>
    <li>upgrade, <a href="#upgrade">2.1</a>
    <li>upgrade-insecure-requests, <a href="#upgrade_insecure_requests">3.1</a>
    <li>upgrade insecure resource requests
