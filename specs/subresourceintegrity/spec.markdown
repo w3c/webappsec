@@ -721,9 +721,10 @@ in general.
 origin against a compromise of the server where an external resources is
 hosted. Network attackers can alter the digest in-flight (or remove it
 entirely (or do absolutely anything else to the document)), just as they
-could alter the resource the hash is meant to validate. Authors who desire
-any sort of security whatsoever SHOULD deliver resources containing
-digests over secure channels.
+could alter the resource the hash is meant to validate. Authors SHOULD
+deliver integrity metadata over secure channels. See also [securing the web][].
+
+[Securing the Web]: https://w3ctag.github.io/web-https/
 </section><!-- /Security::Insecure channels -->
 
 <section>
