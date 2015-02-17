@@ -618,7 +618,7 @@ failure, refuse to fetch the resource, and [report a violation][].
 ###### The `link` element for stylesheets
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
-`link` element that has a `rel` attribute with the value of `stylesheet` and a type of `text/css`:
+`link` element that has a `rel` attribute with the value of `stylesheet`:
 
 1.  Set the [integrity metadata][] of the request to the value
     of the element's `integrity` attribute.
