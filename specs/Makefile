@@ -55,5 +55,5 @@ upgrade/index.html: upgrade/index.src.html biblio.json
 upgrade/published/2015-02-FPWD.html: upgrade/index.src.html
 	bikeshed -f spec --md-status=FPWD ./upgrade/index.src.html ./upgrade/published/2015-02-FPWD.html
 
-publish: all
+publish:
 	git push origin master master:gh-pages
