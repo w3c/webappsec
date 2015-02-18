@@ -23,8 +23,8 @@
         // editors, add as many as you like
         // only "name" is required
         editors:  [
-            { name: "Frederik Braun", url: "mailto:fbraun@mozilla.com", company: "Mozilla Corporation", companyURL: "https://www.mozilla.com/" },
-            { name: "Francois Marier", url: "mailto:francois@mozilla.com", company: "Mozilla Corporation", companyURL: "https://www.mozilla.com/" },
+            { name: "Frederik Braun", url: "mailto:fbraun@mozilla.com", company: "Mozilla", companyURL: "https://www.mozilla.org/" },
+            { name: "Francois Marier", url: "mailto:francois@mozilla.com", company: "Mozilla", companyURL: "https://www.mozilla.org/" },
             { name: "Devdatta Akhawe", url: "mailto:dev.akhawe@gmail.com", company: "UC Berkeley" },
             { name: "Joel Weinberger", url: "mailto:jww@google.com", company: "Google, Inc.", companyURL: "https://google.com/" },
         ],
@@ -133,7 +133,7 @@ the representation of the resource the author expects to load. For instance,
 an author may wish to load jQuery from a shared server rather than hosting it
 on their own origin. Specifying that the <em>expected</em> SHA-256 hash of
 <code>https://code.jquery.com/jquery-1.10.2.min.js</code>
-is <code>C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg</code> means
+is <code>C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=</code> means
 that the user agent can verify that the data it loads from that URL matches
 that expected hash before executing the JavaScript it contains. This
 integrity verification significantly reduces the risk that an attacker can
@@ -142,8 +142,9 @@ substitute malicious content.</p>
   <p>This example can be communicated to a user agent by adding the hash to a
 <code>script</code> element, like so:</p>
 
-  <pre class="example highlight"><code>&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"
-        integrity="ni:///sha-256;C6CB9UYIS9UJeqinPHWTHVqh_E1uhG5Twh-Y5qFQmYg?ct=application/javascript"&gt;
+  <pre><code>&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"
+        integrity="type:application/javascript
+                   sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="&gt;
 </code></pre>
 
   <p>Scripts, of course, are not the only resource type which would benefit
@@ -203,7 +204,8 @@ behavior) would change her code in unfortunate ways by adding
 <a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>script</code> element included on her page:</p>
 
           <pre class="example highlight"><code>&lt;script src="https://site53.cdn.net/include.js"
-        integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"&gt;&lt;/script&gt;
+        integrity="type:application/javascript
+                   sha256-SDfwewFAE...wefjijfE"&gt;&lt;/script&gt;
 </code></pre>
         </li>
         <li>
@@ -214,7 +216,8 @@ the code she’s carefully reviewed is executed. She can do so by generating
 adding it to the <code>script</code> element she includes on her page:</p>
 
           <pre class="example highlight"><code>&lt;script src="https://analytics-r-us.com/v1.0/include.js"
-        integrity="ni:///sha-256;SDfwewFAE...wefjijfE?ct=application/javascript"&gt;&lt;/script&gt;
+        integrity="type:application/javascript
+                   sha256-SDfwewFAE...wefjijfE"&gt;&lt;/script&gt;
 </code></pre>
         </li>
         <li>
@@ -250,8 +253,7 @@ are encouraged to optimize.</p>
 
     <p>This section defines several terms used throughout the document.</p>
 
-    <p>The term <dfn>digest</dfn> refers to the base64url-encoded (with
-any trailing U+003D EQUALS SIGN (<code>=</code>) characters removed) result of
+    <p>The term <dfn>digest</dfn> refers to the base64-encoded result of
 executing a cryptographic hash function on an arbitrary block of data.</p>
 
     <p>A <dfn>secure channel</dfn> is any communication mechanism that the user
@@ -275,11 +277,8 @@ are defined by <a href="http://tools.ietf.org/html/rfc7230#section-3">RFC7230, s
     <p>The <dfn>representation data</dfn> and <dfn>content encoding</dfn> of a resource
 are defined by <a href="http://tools.ietf.org/html/rfc7231#section-3">RFC7231, section 3</a>. [[!RFC7231]]</p>
 
-    <p>A <dfn>base64url encoding</dfn> is defined in
-<a href="http://tools.ietf.org/html/rfc4648#section-5">RFC 4648, section 5</a>. In a nutshell, it replaces the characters
-U+002B PLUS SIGN (<code>+</code>) and U+002F SOLIDUS (<code>/</code>) characters in normal base64
-encoding with the U+002D HYPHEN-MINUS (<code>-</code>) and U+005F LOW LINE (<code>_</code>)
-characters, respectively. [[!RFC4648]]</p>
+    <p>A <dfn>base64 encoding</dfn> is defined in <a href="http://tools.ietf.org/html/rfc4648#section-4">RFC 4648, section 4</a>.
+[[!RFC4648]]</p>
 
     <p>The Augmented Backus-Naur Form (ABNF) notation used in this document is
 specified in RFC 5234. [[!ABNF]]</p>
@@ -315,20 +314,20 @@ metadata</dfn>, which consists of the following pieces of information:</p>
 resource’s integrity. The MIME type SHOULD be provided, as it mitigates the
 risk of certain attack vectors.</p>
 
-    <p>This metadata MUST be encoded as a “named information” (<code>ni</code>) URI, as defined
-in RFC6920. [[!RFC6920]]</p>
+    <p>This metadata MUST be encoded in the same format as the <code>hash-source</code>
+in <a href="http://www.w3.org/TR/CSP11/#source-list-syntax">section 4.2 of the Content Security Policy Level 2 specification</a>.</p>
 
     <p>For example, given a resource containing only the string “Hello, world.”,
 an author might choose <a href="#dfn-sha-2">SHA-256</a> as a hash function.
-<code>-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8</code> is the base64url-encoded
-digest that results. This can be encoded as an <code>ni</code> URI as follows:</p>
+<code>+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=</code> is the base64-encoded
+digest that results. This can be encoded as follows:</p>
 
-    <pre class="example highlight"><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8
+    <pre class="example highlight"><code>sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
 </code></pre>
 
     <p>Or, if the author further wishes to specify the Content Type (<code>text/plain</code>):</p>
 
-    <pre class="example highlight"><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=text/plain
+    <pre class="example highlight"><code>type:text/plain sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
 </code></pre>
 
     <div class="note">
@@ -336,7 +335,7 @@ digest that results. This can be encoded as an <code>ni</code> URI as follows:</
 example, is quite commonly available. The example in this section is the
 result of the following command line:</p>
 
-      <pre><code>echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 -A | sed -e 's/+/-/g' -e 's/\//_/g' -e 's/=*$//g'
+      <pre><code>echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 -A
 </code></pre>
 
     </div>
@@ -359,16 +358,16 @@ resource in order to provide agility in the face of future discoveries.
 For example, the “Hello, world.” resource described above may be described
 either of the following <code>ni</code> URLs:</p>
 
-      <pre class="example highlight"><code>ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=application/javascript
-ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=application/javascript
+      <pre class="example highlight"><code>sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
 </code></pre>
 
       <p>Authors may choose to specify both, for example:</p>
 
       <pre><code>&lt;script src="hello_world.js"
-   integrity="
-      ni:///sha-256;-MO_YqmqPm_BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8?ct=application/javascript
-      ni:///sha-512;rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg?ct=application/javascript
+   integrity="type:application/javascript
+      sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+      sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
     "&gt;&lt;/script&gt;
 </code></pre>
 
@@ -418,10 +417,8 @@ applied, except when the user agent intends to consumes the content with
 content-encodings applied (e.g., saving a gzip’d file to disk). In the
 latter case, let <var>result</var> be the result of applying
 <var>algorithm</var> to the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a>.</li>
-        <li>Let <var>encodedResult</var> be result of base64url-encoding
+        <li>Let <var>encodedResult</var> be result of base64-encoding
 <var>result</var>.</li>
-        <li>Strip any trailing U+003D EQUALS SIGN (<code>=</code>) characters from
-<var>encodedResult</var>.</li>
         <li>Return <var>encodedResult</var>.</li>
       </ol>
 
@@ -495,12 +492,10 @@ the user agent.</p>
         <li>For each <var>token</var> returned by <a href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">splitting <var>metadata</var> on
 spaces</a>:
           <ol>
-            <li>If <var>token</var> is not a valid “named information” (<code>ni</code>) URI,
-skip the remaining steps, and proceed to the next token.</li>
+            <li>If <var>token</var> is not a valid metadata, skip the remaining
+steps, and proceed to the next token.</li>
             <li>Let <var>algorithm</var> be the <var>alg</var> component of
 <var>token</var>.</li>
-            <li>Transform all ASCII characters to lowercase ASCII and remove the dash
-from the <code>sha-</code> prefix in <var>algorithm</var> if there is one.</li>
             <li>If <var>algorithm</var> is a hash function recognized by the user
 agent, add <var>token</var> to <var>result</var>.</li>
           </ol>
@@ -549,9 +544,9 @@ metadata from <var>parsedMetadata</var></a>.</li>
         <li>Let <var>algorithm</var> be the <var>alg</var> component of
 <var>metadata</var>.</li>
         <li>Let <var>expectedValue</var> be the <var>val</var> component of
-<var>metadata</var> with any trailing U+003D EQUALS SIGN (<code>=</code>) removed.</li>
-        <li>Let <var>expectedType</var> be the value of <var>metadata</var>’s <code>ct</code>
-query string parameter.</li>
+<var>metadata</var>.</li>
+        <li>Let <var>expectedType</var> be the <var>type</var> component of
+<var>metadata</var>.</li>
         <li>If <var>expectedType</var> is not the empty string, and is not a
 case-insensitive match for <var>resource</var>’s <a href="#dfn-mime-type">MIME type</a>,
 return <code>false</code>.</li>
@@ -676,13 +671,19 @@ for all possible subresources, i.e., <code>a</code>, <code>audio</code>, <code>e
 
     <p>The <code>integrity</code> attribute represents <a href="#dfn-integrity-metadata">integrity metadata</a> for an element.
 The value of the attribute MUST be either the empty string, or at least one
-valid “named information” (<code>ni</code>) URI [[!RFC6920]], as described by the
-following ABNF grammar:</p>
+valid metadata as described by the following ABNF grammar:</p>
 
-    <pre><code>integrity-metadata = "" / 1*( *WSP NI-URL ) *WSP ]
+    <pre><code>integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) *WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
+option-expression  =  option-name ":" [ option-value ]
+option-name        = ALPHA / DIGIT / "-"
+option-value       = ALPHA / DIGIT / "-" / "+" / "." / "/"
+hash-algo          = &lt;hash-algo production from [Content Security Policy Level 2, section 4.2]&gt;
+base64-value       = &lt;base64-value production from [Content Security Policy Level 2, section 4.2]&gt;
+hash-expression    = hash-algo "-" base64-value
 </code></pre>
 
-    <p>The <code>NI-URL</code> rule is defined in <a href="http://tools.ietf.org/html/rfc6920#section-3">RFC6920, section 3, figure 4</a>.</p>
+    <p>At the moment, the only option-name that is defined is <code>type</code> and its
+value must be a valid <a href="#dfn-mime-type">MIME type</a>.</p>
 
     <p>The <code>integrity</code> IDL attribute must <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a> the <code>integrity</code> content attribute.</p>
 
@@ -749,7 +750,7 @@ failure, refuse to fetch the resource, and <a href="http://www.w3.org/TR/CSP2/#r
       <h6 id="the-link-element-for-stylesheets">The <code>link</code> element for stylesheets</h6>
 
       <p>Whenever a user agent attempts to <a href="http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain">obtain a resource</a> pointed to by a
-<code>link</code> element that has a <code>rel</code> attribute with the value of <code>stylesheet</code> and a type of <code>text/css</code>:</p>
+<code>link</code> element that has a <code>rel</code> attribute with the value of <code>stylesheet</code>:</p>
 
       <ol>
         <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
@@ -865,12 +866,13 @@ in general.</p>
   <section>
     <h3 id="insecure-channels-remain-insecure">Insecure channels remain insecure</h3>
 
-    <p><a href="#dfn-integrity-metadata">Integrity metadata</a> delivered over an insecure channel provides no security
-benefit. Attackers can alter the digest in-flight (or remove it entirely (or
-do absolutely anything else to the document)), just as they could alter the
-resource the hash is meant to validate. Authors who desire any sort of
-security whatsoever SHOULD deliver resources containing digests over
-secure channels.</p>
+    <p><a href="#dfn-integrity-metadata">Integrity metadata</a> delivered over an insecure channel only protects an
+origin against a compromise of the server where an external resources is
+hosted. Network attackers can alter the digest in-flight (or remove it
+entirely (or do absolutely anything else to the document)), just as they
+could alter the resource the hash is meant to validate. Authors SHOULD
+deliver integrity metadata over secure channels. See also <a href="https://w3ctag.github.io/web-https/">securing the web</a>.</p>
+
   </section>
   <!-- /Security::Insecure channels -->
 
