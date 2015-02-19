@@ -451,6 +451,10 @@ urlPrefix: http://www.w3.org/TR/html5/
       Via a <{meta}> element with a <{meta/name}> of <code>referrer</code>.
     </li>
     <li>
+      Via a <code>referrer</code> attribute on an <{a}>, <{area}>, <{img}>
+      or <{iframe}> element.
+    </li>
+    <li>
       Implicitly, via inheritance.
     </li>
   </ul>
@@ -583,6 +587,45 @@ urlPrefix: http://www.w3.org/TR/html5/
     </dd>
   </dl>
 
+  <h3 id="referrer-policy-delivery-referrer-attribute">Delivery
+  via a <code>referrer</code> attribute</h3>
+
+  A referrer policy may be set when a <code>referrer</code> attribute is
+  added to an <code><a element>a</a></code>, <code><a element>area</a></code>,
+  <code><a element>img</a></code> or <code><a element>iframe</a></code>
+  element, for example:
+
+  <pre class="example">
+    &lt;a href="http://example.com" referrer="origin"&gt;
+  </pre>
+
+  The following values for the <code>referrer</code> attribute are valid,
+  and map to the listed <a>referrer policy</a> values:
+
+  <dl>
+    <dt>no-referrer</dt>
+    <dd><a><code>No Referrer</code></a></dd>
+    <dt>origin</dt>
+    <dd><a><code>Origin</code></a></dd>
+    <dt>unsafe-url</dt>
+    <dd><a><code>Unsafe URL</code></a></dd>
+  </dl>
+
+  A policy delivered via a <code>referrer</code> attribute on an element
+  takes precedence over the policy defined for the whole document via CSP or
+  a <a element>meta</a> element.
+
+  ISSUE: If an <code><a element>a</a></code>
+  or <code><a element>area</a></code> element includes both
+  a <code>referrer</code> attribute as well as
+  a <a href="https://html.spec.whatwg.org/#link-type-noreferrer"><code>noreferrer</code>
+  link type</a>, should the policy of the <code>referrer</code> attribute
+  take precedence over the link type, as suggested
+  by <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Feb/0235.html">Martin
+  Thomson</a>, or should we take the more conservative approach as suggested
+  by <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Feb/0283.html">Brian
+  Smith</a> and honor the <code>noreferrer</code> link type?
+
   <h3 id="referrer-policy-delivery-implicit">Implicit Delivery</h3>
 
   A <a>global environment</a> inherits the <a>referrer policy</a> of another
@@ -687,6 +730,9 @@ urlPrefix: http://www.w3.org/TR/html5/
   <code><a>noreferrer</a></code>, then <var>request</var>'s
   <code>referrer</code> will be <code>no referrer</code>, and Fetch won't call
   into this algorithm.
+
+  ISSUE: This algorithm needs to be modifed to take into account any local
+  overrides via the referrer attribute on elements.
 
   <ol>
     <li>
