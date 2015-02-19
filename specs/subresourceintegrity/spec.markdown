@@ -98,11 +98,10 @@ regardless of the URL from which they are loaded.
     the CDN's servers deliver _only_ the code she expects them to deliver. She
     can mitigate the risk that CDN compromise (or unexpectedly malicious
     behavior) would change her code in unfortunate ways by adding
-    [integrity metadata][] to the `script` element included on her page:
+    [integrity metadata][] to the `link` element included on her page:
 
-        <script src="https://site53.cdn.net/include.js"
-                integrity="type:application/javascript
-                           sha256-SDfwewFAE...wefjijfE"></script>
+        <link rel="stylesheet" href="https://site53.cdn.net/style.css"
+              integrity="type:text/css sha256-SDfwewFAE...wefjijfE">
     {:.example.highlight}
 
 *   An author wants to include JavaScript provided by a third-party
