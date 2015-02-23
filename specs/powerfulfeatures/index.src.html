@@ -1,4 +1,4 @@
-<h1>Requirements for Powerful Features</h1>
+<h1>Privileged Contexts</h1>
 <pre class="metadata">
 Status: ED
 ED: https://w3c.github.io/webappsec/specs/powerfulfeatures/
@@ -15,7 +15,64 @@ Abstract:
 Version History: https://github.com/w3c/webappsec/commits/master/specs/powerfulfeatures/index.src.html
 Indent: 2
 </pre>
-
+<pre class="anchors">
+urlPrefix: http://www.w3.org/TR/dom/; spec: DOM
+  type: interface
+    text: Document; url: interface-document
+urlPrefix: https://fetch.spec.whatwg.org/; spec: FETCH
+  type: dfn
+    text: TLS State; url: concept-response-tls-state
+  type: interface
+    text: Response
+urlPrefix: http://www.w3.org/TR/geolocation-API/; spec: GEOLOCATION-API
+  type: method
+    text: getCurrentPosition(); url: get-current-position
+    text: watchPosition(); url: watch-position
+urlPrefix: http://www.w3.org/TR/html5/; spec: HTML5
+  type: dfn
+    urlPrefix: embedded-content-0.html
+      text: an iframe srcdoc document
+    urlPrefix: browsers.html
+      text: active document
+      text: ancestor browsing context
+      text: browsing context
+      text: browsing context container
+      text: creating a new Document object
+      text: nested through; url: browsing-context-nested-through
+      text: sandboxed origin browsing context flag
+      text: sandboxing flag set
+      text: top-level browsing context
+    urlPrefix: webappapis.html
+      text: API base URL
+      text: incumbent settings object
+      text: responsible document
+      text: settings object
+  type: attribute
+    urlPrefix: webstorage.html
+      text: sessionStorage; for: WindowSessionStorage; url: the-sessionstorage-attribute
+urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/; spec: MIX
+  type: dfn
+    text: potentially secure origin
+urlPrefix: http://www.w3.org/TR/service-workers/; spec: SERVICE-WORKERS
+  type: interface
+    text: ServiceWorker; url: service-worker-obj
+urlPrefix: http://www.w3.org/2014/Process-20140801/; spec: W3C-PROCESS
+  type: dfn
+    text: modify a specification; url: rec-modify
+urlPrefix: https://url.spec.whatwg.org/; spec: URL
+  type: dfn
+    text: origin of a url; url: concept-url-origin
+  type: interface
+    text: URL
+urlPrefix: http://www.w3.org/TR/workers/; spec: WORKERS
+  type: interface
+    text: Worker
+    text: SharedWorker
+urlPrefix: https://tools.ietf.org/html/rfc6454; spec: RFC6454
+  type: dfn
+    text: globally unique identifier; url: section-2.3
+    text: origin; url: section-3.2 
+</pre>
 <!--
 ████ ██    ██ ████████ ████████   ███████
  ██  ███   ██    ██    ██     ██ ██     ██
@@ -56,31 +113,30 @@ Indent: 2
 <section>
   <h2 id="terms">Key Concepts and Terminology</h2>
 
-  <h3 id="terms-defined-here">Terms defined by this specification</h3>
   <dl>
-    <dt><dfn export>powerful feature</dfn></dt>
-    <dd>
-      Defined in [[#is-feature-powerful]].
-    </dd>
-
     <dt><dfn export>
-      sufficiently secure context
+      privileged context
     </dfn></dt>
     <dd>
-      A {{Document}} is considered <strong>sufficiently secure</strong> if
-      the algorithm defined in [[#settings-sufficiently-secure]] returns
-      <code>Sufficiently Secure</code> when executed upon its <a>incumbent
-      settings object</a>.
+      A <strong>privileged context</strong> is one in which features with the
+      kinds of properties discussed in [[#feature-requires-privilege]] can
+      safely execute. In this document, we tie the notion of privilege to a
+      particular <a>settings object</a>. That is:
 
-      A {{Worker}}, {{SharedWorker}}, or {{ServiceWorker}} is considered
-      <strong>sufficiently secure</strong> if the algorithm defined in
-      [[#settings-sufficiently-secure]] returns <code>Sufficiently Secure</code>
-      when executed upon its <a>incumbent settings object</a>.
-
-      More generally, any <a>settings object</a> is <strong>sufficiently
-      secure</strong> if the algorithm defined in
-      [[#settings-sufficiently-secure]] returns <code>Sufficiently Secure</code>
-      when executed upon it.
+      <ul>
+        <li>
+          A {{Document}} is considered a <dfn export>privileged document</dfn>
+          if the algorithm defined in [[#settings-privileged]] returns
+          <code>Privileged</code> when executed upon its <a>incumbent settings
+          object</a>.
+        </li>
+        <li>
+          A {{Worker}}, {{SharedWorker}}, or {{ServiceWorker}} is considered a
+          <dfn export>privileged worker</dfn> if the algorithm defined in
+          [[#settings-privileged]] returns <code>Privileged</code> when executed
+          upon its <a>incumbent settings object</a>.
+        </li>
+      </ul>
     </dd>
 
     <dt><dfn>embedding document</dfn></dt>
@@ -91,164 +147,18 @@ Indent: 2
       context</a> is nested.
     </dd>
   </dl>
-
-  <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
-
-<!-- DOM -->
-  : {{Document}} interface
-  :: Defined in [[!DOM]]
-
-<pre class="anchors">
-urlPrefix: http://www.w3.org/TR/dom/
-  type: interface
-    text: Document; url: interface-document
-</pre>
-
-<!-- FETCH -->
-  : <a>TLS State</a>
-  : {{Response}}
-  :: Defined in [[!FETCH]]
-
-<pre class="anchors">
-urlPrefix: https://fetch.spec.whatwg.org/
-  type: dfn
-    text: TLS State; url: concept-response-tls-state
-  type: interface
-    text: Response
-</pre>
-
-<!-- GEOLOCATION API -->
-  : {{getCurrentPosition()}}
-  : {{watchPosition()}}
-  :: Defined in [[GEOLOCATION-API]]
-
-<pre class="anchors">
-urlPrefix: http://www.w3.org/TR/geolocation-API/
-  type: method
-    text: getCurrentPosition(); url: get-current-position
-    text: watchPosition(); url: watch-position
-</pre>
-
-<!-- HTML5 -->
-
-  : <a>active document</a>
-  : <a>an IFrame srcdoc <code>Document</code></a>
-  : <a>ancestor browsing context</a>
-  : <a>API base URL</a>
-  : <a>browsing context</a>
-  : <a>browsing context container</a>
-  : <a>incumbent settings object</a>
-  : <a>nested through</a>
-  : <a>sandboxed origin browsing context flag</a>
-  : <a>responsible document</a>
-  : <a>sandboxing flag set</a>
-  : {{sessionStorage}}
-  : <a>settings object</a>
-  : <a>top-level browsing context</a>
-  :: Defined in [[!HTML5]]
-
-<pre class="anchors">
-urlPrefix: http://www.w3.org/TR/html5/
-  type: dfn
-    urlPrefix: embedded-content-0.html
-      text: an iframe srcdoc document
-    urlPrefix: browsers.html
-      text: active document
-      text: ancestor browsing context
-      text: browsing context
-      text: browsing context container
-      text: creating a new Document object
-      text: nested through; url: browsing-context-nested-through
-      text: sandboxed origin browsing context flag
-      text: sandboxing flag set
-      text: top-level browsing context
-    urlPrefix: webappapis.html
-      text: API base URL
-      text: incumbent settings object
-      text: responsible document
-      text: settings object
-  type: attribute
-    urlPrefix: webstorage.html
-      text: sessionStorage; for: WindowSessionStorage; url: the-sessionstorage-attribute
-</pre>
-
-<!-- MIXED CONTENT -->
-  : <a>potentially secure origin</a>
-  :: Defined in [[!MIX]]
-
-<pre class="anchors">
-urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
-  type: dfn
-    text: potentially secure origin
-</pre>
-
-<!-- SERVICE WORKERS -->
-  : {{ServiceWorker}} interface
-  :: Defined in [[SERVICEWORKERS]]
-
-<pre class="anchors">
-urlPrefix: http://www.w3.org/TR/service-workers/
-  type: interface
-    text: ServiceWorker; url: service-worker-obj
-</pre>
-
-<!-- W3C-PROCESS -->
-
-  : <a>modify a specification</a>
-  :: Defined in [[W3C-PROCESS]]
-
-<pre class="anchors">
-urlPrefix: http://www.w3.org/2014/Process-20140801/
-  type: dfn
-    text: modify a specification; url: rec-modify
-</pre>
-
-<!-- URL -->
-  : {{URL}} interface
-  : <a>origin of a URL</a>
-  :: Defined in [[!URL]]
-
-<pre class="anchors">
-urlPrefix: https://url.spec.whatwg.org/
-  type: dfn
-    text: origin of a url; url: concept-url-origin
-  type: interface
-    text: URL
-</pre>
-
-<!-- WORKERS -->
-  : {{Worker}} interface
-  : {{SharedWorker}} interface
-  :: Defined in [[WORKERS]]
-
-<pre class="anchors">
-urlPrefix: http://www.w3.org/TR/workers/
-  type: interface
-    text: Worker
-    text: SharedWorker
-</pre>
-
-<!-- ORIGIN -->
-  : <a>globally unique identifier</a>
-  : <a>origin</a>
-  :: Defined in [[!RFC6454]]
-
-<pre class="anchors">
-urlPrefix: https://tools.ietf.org/html/rfc6454
-  type: dfn
-    text: globally unique identifier; url: section-2.3
-    text: origin; url: section-3.2 
-</pre>
 </section>
 
 <section>
-  <h2 id="is-feature-powerful">
-    Is <var>[insert feature here]</var> powerful?
+  <h2 id="feature-requires-privilege">
+    Should <var>[insert feature here]</var> require a privileged context?
   </h2>
 
+  <em>This section is non-normative.</em>
+
   Certain web platform features that have a distinct impact on a user's
-  security or privacy should be available for use only in <a>sufficiently
-  secure contexts</a>.
+  security or privacy should be available for use only in <a>privileged
+  contexts</a>.
 
   Broadly speaking, we consider a feature powerful enough to restrict when it
   fits into one or more of the following categories:
@@ -290,10 +200,10 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
   features we should be concerned about when writing or implementing
   specifications.
 
-  Note: While restricting the feature itself to <a>sufficiently secure
-  contexts</a> is critical, we ought not forget that facilities that carry such
-  information (such as new network access mechanisms, or other generic
-  functions with access to network data) are equally sensitive.
+  Note: While restricting the feature itself to <a>privileged contexts</a> is
+  critical, we ought not forget that facilities that carry such information
+  (such as new network access mechanisms, or other generic functions with access
+  to network data) are equally sensitive.
 
   <h3 id="threat-models">Threat Models</h3>
 
@@ -337,16 +247,16 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
 
   When writing a specification for new features, we recommend that authors
   and editors guard sensitive APIs with checks against
-  [[#settings-sufficiently-secure]]. For example, something like the following
+  [[#settings-privileged]]. For example, something like the following
   would be a good approach:
 
   <div class="example">
     <ol>
       <li>
-        If the <a>incumbent settings object</a> is not a <a>sufficiently
-        secure context</a>, then [<i>insert something appropriate here:
-        perhaps you could reject a Promise with a <code>SecurityError</code>,
-        call an error callback, deny a permission request, etc.</i>].
+        If the <a>incumbent settings object</a> is not a <a>privileged
+        context</a>, then [<i>insert something appropriate here: perhaps you
+        could reject a Promise with a <code>SecurityError</code>, call an error
+        callback, deny a permission request, etc.</i>].
       </li>
     </ol>
 
@@ -359,22 +269,22 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
 
   The list above clearly includes some existing functionality that is currently
   available to the web over insecure channels. We recommend that such legacy
-  functionality begin requiring a <a>sufficiently secure context</a> as quickly
-  as is reasonably possible.
+  functionality begin requiring a <a>privileged context</a> as quickly as is
+  reasonably possible.
 
   <ol>
     <li>
       If such a feature is not widely implemented, we recommend that the
       specification be immediately
       <a lt="modify a specification">modified</a> to include a restriction
-      to <a>sufficiently secure contexts</a>.
+      to <a>privileged contexts</a>.
     </li>
     <li>
       If such a feature is widely implemented, but not yet in wide use, we
-      recommend that it be quickly restricted to <a>sufficiently secure
-      contexts</a> by adding a check as described in [[#new]] to existing
-      implementations, and <a lt="modify a specification">modifying the
-      specification</a> accordingly.
+      recommend that it be quickly restricted to <a>privileged contexts</a> by
+      adding a check as described in [[#new]] to existing implementations, and
+      <a lt="modify a specification">modifying the specification</a>
+      accordingly.
     </li>
     <li>
       If such a feature is in wide use, we recommend that the existing
@@ -395,16 +305,16 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
   <ol>
     <li>
       <a lt="modify a specification">Modify</a> the specification to include
-      checks against [[#settings-sufficiently-secure]] before executing the
-      algorithms for {{getCurrentPosition()}} and {{watchPosition()}}.
+      checks against [[#settings-privileged] before executing the algorithms for
+      {{getCurrentPosition()}} and {{watchPosition()}}.
 
-      If [[#settings-sufficiently-secure]] returns <code>Insecure</code>, then
+      If [[#settings-privileged]] returns <code>Not Privileged</code>, then
       the algorithms should be aborted, and the <var>errorCallback</var> invoked
       with a <code>code</code> of <code>PERMISSION_DENIED</code>.
     </li>
     <li>
       User agents should announce clear intentions to disable the API for
-      insecure contexts on a specific date, and warn developers accordingly
+      unprivileged contexts on a specific date, and warn developers accordingly
       (via console messages, for example).
     </li>
     <li>
@@ -434,13 +344,13 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
   <h2 id="algorithms">Algorithms</h2>
 
   <section>
-    <h3 id="settings-sufficiently-secure">
-      Is <var>settings object</var> a sufficiently secure context?
+    <h3 id="settings-privileged">
+      Is <var>settings object</var> a privileged context?
     </h3>
 
     Given a <a>settings object</a> <var>settings</var>, this algorithm returns
-    <code>Sufficiently Secure</code> if the object represents a <a>sufficiently
-    secure context</a>, and <code>Insecure</code> otherwise.
+    <code>Privileged</code> if the object represents a <a>privileged
+    context</a>, and <code>Not Privileged</code> otherwise.
 
     <ol>
       <li>
@@ -467,7 +377,7 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
           <li>
             If the result of executing the [[#is-origin-trustworthy]] algorithm
             on <var>origin</var> is <strong>not</strong> <code>Potentially
-            Trustworthy</code>, return <code>Insecure</code>.
+            Trustworthy</code>, return <code>Not Privileged</code>.
           </li>
         </ol>
 
@@ -484,7 +394,7 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
         Note: If <var>settings</var> maps to a {{Document}} (either directly,
         or as the <a>responsible document</a> of a {{Worker}}), we'll walk all
         the way up the document's ancestor chain to verify that the whole chain
-        is sufficiently secure.
+        is privileged.
 
         <ol>
           <li>
@@ -517,14 +427,14 @@ urlPrefix: https://tools.ietf.org/html/rfc6454
                 If the result of executing the [[#is-origin-trustworthy]]
                 algorithm on <var>origin</var> is <strong>not</strong>
                 <code>Potentially Trustworthy</code>, return
-                <code>Insecure</code>.
+                <code>Not Privileged</code>.
               </li>
             </ol>
           </li>
         </ol>
       </li>
       <li>
-        Return <code>Sufficiently Secure</code>
+        Return <code>Privileged</code>
       </li>
     </ol>
   </section>
