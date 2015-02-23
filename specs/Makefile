@@ -23,7 +23,7 @@ csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 	bikeshed -f spec ./csp-pinning/index.src.html
 
 csp-pinning/published/2015-02-FPWD.html: csp-pinning/index.src.html
-	bikeshed -f spec --md-status=FPWD ./csp-pinning/index.src.html ./csp-pinning/published/2015-02-FPWD.html
+	bikeshed -f spec --md-status=FPWD --md-date=2015-02-26 ./csp-pinning/index.src.html ./csp-pinning/published/2015-02-FPWD.html
 
 CSP2/index.html: CSP2/index.src.html biblio.json
 	bikeshed -f spec ./CSP2/index.src.html
@@ -53,7 +53,7 @@ upgrade/index.html: upgrade/index.src.html biblio.json
 	bikeshed -f spec ./upgrade/index.src.html
 
 upgrade/published/2015-02-FPWD.html: upgrade/index.src.html
-	bikeshed -f spec --md-status=FPWD ./upgrade/index.src.html ./upgrade/published/2015-02-FPWD.html
+	bikeshed -f spec --md-status=FPWD --md-date=2015-02-26 ./upgrade/index.src.html ./upgrade/published/2015-02-FPWD.html
 
 publish:
 	git push origin master master:gh-pages

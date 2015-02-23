@@ -13,6 +13,110 @@ Abstract:
   secure transport before Fetching them.
 Indent: 2
 </pre>
+<pre class="anchors">
+spec: CSP; urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
+  type: dfn
+    text: content-security-policy; url: content_security_policy
+    text: content-security-policy-report-only; url: content_security_policy_report_only
+    text: protected resource
+    text: security policy
+    text: send violation reports
+    text: report a violation
+    url: enforce
+      text: enforce
+      text: enforced
+    url: monitor
+      text: monitor
+      text: monitored
+spec: DOM; urlPrefix: http://www.w3.org/TR/dom/
+  type: interface
+    text: Document; url: interface-document
+spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+    text: append; url: concept-header-list-append
+  type: interface
+    text: Request
+  type: attribute
+    text: url; for: Request; url: concept-request-url
+    text: client; for: Request; url: concept-request-client
+    text: context; for: Request; url: concept-request-context
+    text: context-frame-type; for: Request; url: concept-request-context-frame-type
+    text: header-list; for: Request; url: concept-request-header-list
+spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
+  type: dfn
+    urlPrefix: browsers.html
+      text: ancestor browsing context
+      text: browsing context
+      text: creating a new document object; url: create-a-document-object
+      text: nested browsing context
+    urlPrefix: webappapis.html
+      text: environment settings object; url: settings-object
+      text: incumbent settings object
+      text: responsible document
+      text: responsible browsing context
+      text: relevant settings object for a script
+spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+  type: dfn
+    text: a priori insecure url
+    text: embedding document
+    text: strict mode
+    url: a-priori-insecure-url
+      text: a priori insecure origin
+      text: a priori insecure
+    url: potentially-secure-origin
+      text: potentially secure origin
+      text: potentially secure
+spec: URL; urlPrefix: http://www.w3.org/TR/url/
+  type: interface
+    text: URL; url: concept-url
+  type: attribute
+    text: host; for: URL; url: concept-url-host
+    text: path; for: URL; url: concept-url-path
+    text: port; for: URL; url: concept-url-port
+    text: scheme; for: URL; url: concept-url-scheme
+spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
+  type: interface
+    text: Worker
+spec: RFC6455; urlPrefix: http://tools.ietf.org/html/rfc6455
+  type: dfn
+    text: establish a websocket connection; url: section-4.1
+    text: fail the websocket connection; url: section-7.1.7
+spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
+  type: dfn
+    text: prefer; url: section-2
+    text: return; url: section-4.2
+</pre>
+
+<!-- BIBLIOGRAPHY -->
+<pre class="biblio">
+{
+  "BBC-ARCHIVE": {
+    "authors": [ "Neil McIntosh" ],
+    "title": "Labelling BBC Online's archived websites",
+    "href": "http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab"
+  },
+  "CSP": {
+    "authors": [ "Mike West", "Dan Veditz" ],
+    "title": "Content Security Policy",
+    "href": "https://w3c.github.io/webappsec/specs/content-security-policy/",
+    "status": "WD",
+    "publisher": "W3C"
+  },
+  "NYT-HTTPS": {
+    "authors": [ "Eitan Konigsburg", "Rajiv Pant", "Elena Kvochko" ],
+    "title": "Embracing HTTPS",
+    "href": "http://open.blogs.nytimes.com/2014/11/13/embracing-https/"
+  },
+  "WEB-HTTPS": {
+    "authors": [ "Mark Nottingham" ],
+    "title": "Securing the Web",
+    "href": "http://www.w3.org/2001/tag/doc/web-https",
+    "status": "TAG Finding",
+    "publisher": "W3C"
+  }
+}
+</pre>
 
 <!--
 ████ ██    ██ ████████ ████████   ███████
@@ -58,8 +162,8 @@ Indent: 2
 
   The overarching goal is to reduce the burden of migrating websites from
   <a><i lang="la">a priori</i> insecure origins</a> by reducing the negative
-  side effects of mixed content blocking [[MIX]]. 
-  
+  side effects of mixed content blocking [[MIX]].
+
   If we assume that authors do the server-side legwork (obtaining a certificate,
   configuring the server, setting up redirects), and that authors also ensure
   that content is accessible at <em>the same {{URL/host}} and {{URL/path}}</em>
@@ -140,12 +244,6 @@ Indent: 2
     insecure requests will hit the network. Users will be safer, and Megacorp's
     administrators will be happier.
   </div>
-
-  ISSUE: How does Megacorp know that it can safely redirect a client to a secure
-  origin? Perhaps we ought to send a hint that the UA supports upgrades along
-  with any {{Request}} whose {{Request/context-frame-type}} is
-  <code>top-level</code>, <code>ancilliary</code>, or <code>nested</code>.
-  Something like <code>Accept-Upgrade: https</code>, perhaps?
 </section>
 
 <!--
@@ -160,204 +258,13 @@ Indent: 2
 <section>
   <h2 id="key-concepts">Key Concepts and Terminology</h2>
 
-  <h3 id="terms-defined-here">Terms defined by this specification</h3>
-
   : <dfn>upgrade</dfn>
   :: A {{Request}} is said to be <strong>upgraded</strong> if it is rewritten
      to contain a URL with a {{URL/scheme}} of <code>https</code> or
      <code>wss</code>.
 
-  <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
-
   The Augmented Backus-Naur Form (ABNF) notation used in [[#delivery]] is
   specified in RFC5234. [[!ABNF]]
-
-  <!-- CSP -->
-  : <code><a>content-security-policy</a></code>
-  : <code><a>content-security-policy-report-only</a></code>
-  : <a lt="enforce">enforce a security policy</a>
-  : <a lt="monitor">monitor a security policy</a>
-  : <a>security policy</a>
-  : <a>send violation reports</a> algorithm
-  : <a>report a violation</a> algorithm
-  : <a>protected resource</a>
-  :: Defined in [[!CSP]]
-
-  <pre class="anchors">
-urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
-  type: dfn
-    text: content-security-policy; url: content_security_policy
-    text: content-security-policy-report-only; url: content_security_policy_report_only
-    text: protected resource
-    text: security policy
-    text: send violation reports
-    text: report a violation
-    url: enforce
-      text: enforce
-      text: enforced
-    url: monitor
-      text: monitor
-      text: monitored
-  </pre>
-
-  <!-- DOM -->
-  : {{Document}} interface
-  :: Defined in [[!DOM]]
-
-  <pre class="anchors">
-urlPrefix: http://www.w3.org/TR/dom/
-  type: interface
-    text: Document; url: interface-document
-  </pre>
-
-  <!-- FETCH -->
-  : {{Request}} interface
-  : {{Request}}'s {{Request/url}}, {{Request/client}}, {{Request/context}}, {{Request/header-list}}, and {{Request/context-frame-type}} attributes.
-  : <a>fetching</a>
-  : The <a lt="append">append <var>header</var> to a <var>header list</var></a> algorithm
-  :: Defined in [[!FETCH]]
-
-  <pre class="anchors">
-urlPrefix: https://fetch.spec.whatwg.org/
-  type: dfn
-    text: fetching
-    text: append; url: concept-header-list-append
-  type: interface
-    text: Request
-  type: attribute
-    text: url; for: Request; url: concept-request-url
-    text: client; for: Request; url: concept-request-client
-    text: context; for: Request; url: concept-request-context
-    text: context-frame-type; for: Request; url: concept-request-context-frame-type
-    text: header-list; for: Request; url: concept-request-header-list
-  </pre>
-
-  <!-- HTML5 -->
-  : <a>ancestor browsing context</a>
-  : <a>browsing context</a>
-  : The <a>creating a new <code>Document</code> object</a> algorithm
-  : <a>environment settings object</a>
-  : <a>incumbent settings object</a>
-  : An <a>environment settings object</a>'s <a>responsible document</a> and <a>responsible browsing context</a> properties
-  :: Defined in [[!HTML5]]
-
-  <pre class="anchors">
-type: dfn
-  urlPrefix: http://www.w3.org/TR/html5/
-    urlPrefix: browsers.html
-      text: ancestor browsing context
-      text: browsing context
-      text: creating a new document object; url: create-a-document-object
-      text: nested browsing context
-    urlPrefix: webappapis.html
-      text: environment settings object; url: settings-object
-      text: incumbent settings object
-      text: responsible document
-      text: responsible browsing context
-      text: relevant settings object for a script
-  </pre>
-
-  <!-- MIXED CONTENT -->
-  : <a><i lang="la">a priori</i> insecure origin</a>
-  : <a><i lang="la">a priori</i> insecure url</a>
-  : <a>embedding document</a>
-  : <a>potentially secure origin</a>
-  : <a>strict mode</a>
-  :: Defined in [[!MIX]]
-
-  <pre class="anchors">
-urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
-  type: dfn
-    text: a priori insecure url
-    text: embedding document
-    text: strict mode
-    url: a-priori-insecure-url
-      text: a priori insecure origin
-      text: a priori insecure
-    url: potentially-secure-origin
-      text: potentially secure origin
-      text: potentially secure
-  </pre>
-
-  <!-- URL -->
-  : {{URL}}'s {{URL/scheme}}, {{URL/host}}, {{URL/port}}, and {{URL/path}} properties.
-  :: Defined in [[!URL]]
-
-  <pre class="anchors">
-urlPrefix: https://url.spec.whatwg.org/
-  type: interface
-    text: URL; url: concept-url
-  type: attribute
-    text: host; for: URL; url: concept-url-host
-    text: path; for: URL; url: concept-url-path
-    text: port; for: URL; url: concept-url-port
-    text: scheme; for: URL; url: concept-url-scheme
-  </pre>
-
-  <!-- WORKERS -->
-  : {{Worker}} interface
-  :: Defined in [[!WORKERS]]
-
-  <pre class="anchors">
-urlPrefix: http://www.w3.org/TR/workers/
-  type: interface
-    text: Worker
-  </pre>
-
-  <!-- RFC6455 -->
-  : The <a>establish a WebSocket Connection</a> algorithm
-  : The <a>fail the WebSocket Connection</a> algorithm
-  :: Defined in [[!RFC6455]]
-
-  <pre class="anchors">
-urlPrefix: http://tools.ietf.org/html/rfc6455
-  type: dfn
-    text: establish a websocket connection; url: section-4.1
-    text: fail the websocket connection; url: section-7.1.7
-  </pre>
-
-  <!-- RFC7240 -->
-  : The <code><a>Prefer</a></code> HTTP request header
-  : The <code><a>return</a></code> preference
-  :: Defined in [[!RFC7240]]
-
-  <pre class="anchors">
-urlPrefix: https://tools.ietf.org/html/rfc7240
-  type: dfn
-    text: prefer; url: section-2
-    text: return; url: section-4.2
-  </pre>
-
-  <!-- BIBLIOGRAPHY -->
-  <pre class="biblio">
-{
-  "BBC-ARCHIVE": {
-    "authors": [ "Neil McIntosh" ],
-    "title": "Labelling BBC Online's archived websites",
-    "href": "http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab"
-  },
-  "CSP": {
-    "authors": [ "Mike West", "Dan Veditz" ],
-    "title": "Content Security Policy",
-    "href": "https://w3c.github.io/webappsec/specs/content-security-policy/",
-    "status": "WD",
-    "publisher": "W3C"
-  },
-  "NYT-HTTPS": {
-    "authors": [ "Eitan Konigsburg", "Rajiv Pant", "Elena Kvochko" ],
-    "title": "Embracing HTTPS",
-    "href": "http://open.blogs.nytimes.com/2014/11/13/embracing-https/"
-  },
-  "WEB-HTTPS": {
-    "authors": [ "Mark Nottingham" ],
-    "title": "Securing the Web",
-    "href": "http://www.w3.org/2001/tag/doc/web-https",
-    "status": "TAG Finding",
-    "publisher": "W3C"
-  }
-}
-  </pre>
-
 </section>
 
 <!-- Big Text: Delivery -->
@@ -542,7 +449,7 @@ urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
       <code>top-level</code> or <code>auxiliary</code>, then:
-     
+
       <ol>
         <li>
           If <var>request</var>'s {{Request/context}} is <code>form</code>,
