@@ -198,6 +198,18 @@ type: method
 spec: ES6; urlPrefix: http://people.mozilla.org/~jorendorff/es6-draft.html
   type: method
     text: IsCallable(); url: sec-iscallable
+spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+    text: append; url: concept-header-list-append
+  type: interface
+    text: Request
+  type: attribute
+    text: url; for: Request; url: concept-request-url
+    text: client; for: Request; url: concept-request-client
+    text: context; for: Request; url: concept-request-context
+    text: context-frame-type; for: Request; url: concept-request-context-frame-type
+    text: header-list; for: Request; url: concept-request-header-list
 spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
   type: dfn
     text: runs a worker; url: run-a-worker
@@ -1686,6 +1698,58 @@ spec: SHA2; urlPrefix: http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256
     reports in order to limit data leakage above and beyond what these
     algorithms specify. For example, a user agent might offer users the
     option of disabling reporting entirely.
+  </section>
+  <section>
+    <h3 id="should-block-request">
+      Should <var>request</var> be blocked by Content Security Policy?
+    </h3>
+
+    ISSUE: Work in progress.
+
+    Note: We intend that [[FETCH]] hook into this algorithm to determine
+    whether or not a {{Request}} should be blocked. It will be called just
+    before the similar hook defined in [[MIX]].
+
+    Given a {{Request}} <var>request</var>, a user agent determines whether
+    to proceed via the following algorithm. The algorithm returns
+    <code>allowed</code> if the {{Request}} should proceed, and
+    <code>blocked</code> otherwise:
+
+    <ol>
+      <li>
+        Let <var>context</var> be <var>request</var>'s {{Request/context}}.
+      </li>
+      <li>
+        Let <var>frame type</var> be <var>request</var>'s
+        {{Request/context-frame-type}}.
+      </li>
+      <li>
+        Let <var>policy set</var> be the set of Content Security Policies active
+        for <var>request</var>'s {{Request/client}}.
+
+        ISSUE: Bind policies to an environment settings object after parsing.
+      </li>
+      <li>
+        If <var>policy set</var> is the empty set, return <code>allowed</code>.
+      </li>
+      <!-- New Windows -->
+      <li>
+        If <var>frame type</var> is <code>auxiliary</code>, return
+        <code>allowed</code>.
+
+        ISSUE: Do we wish to restrict <code>window.open()</code>? 
+      </li>
+      <!-- Subresource Requests -->
+      <li>
+        If <var>frame type</var> is <code>none</code>, then:
+      </li>
+      <!-- IFrame Requests -->
+      <li>
+        If <var>frame type</var> is <code>nested</code>, then:
+
+      </li>
+      <!-- Top-level -->
+    </ol>
   </section>
 </section>
 <!--
