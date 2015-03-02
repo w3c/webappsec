@@ -211,17 +211,17 @@ risk of certain attack vectors.
 This metadata MUST be encoded in the same format as the `hash-source`
 in [section 4.2 of the Content Security Policy Level 2 specification][csp2-section42].
 
-For example, given a resource containing only the string "Hello, world.",
+For example, given a script resource containing only the string "alert('Hello, world.');",
 an author might choose [SHA-256][sha2] as a hash function.
-`+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=` is the base64-encoded
+`qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=` is the base64-encoded
 digest that results. This can be encoded as follows:
 
-    sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+    sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 {:.example.highlight}
 
-Or, if the author further wishes to specify the Content Type (`text/plain`):
+Or, if the author further wishes to specify the Content Type (`application/javascript`):
 
-    type:text/plain sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+    type:application/javascript sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 {:.example.highlight}
 
 <div class="note">
@@ -229,7 +229,7 @@ Digests may be generated using any number of utilities. [OpenSSL][], for
 example, is quite commonly available. The example in this section is the
 result of the following command line:
 
-    echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 -A
+    echo -n "alert('Hello, world.');" | openssl dgst -sha256 -binary | openssl enc -base64 -A
 
 [csp2-section42]: http://www.w3.org/TR/CSP11/#source-list-syntax
 [openssl]: http://www.openssl.org/
