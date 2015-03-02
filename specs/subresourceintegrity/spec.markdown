@@ -363,7 +363,7 @@ The following algorithm details these restrictions:
     in [[!RFC7234]], return `true`.
 6.  Return `false`.
 
-Step 2 returns `true` if the resource was a CORS-enabled request. If the
+Step 3 returns `true` if the resource was a CORS-enabled request. If the
 resource failed the CORS checks, it won't be available to us for integrity
 checking because it won't have loaded successfully.
 {:.note}
