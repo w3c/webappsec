@@ -45,7 +45,8 @@ This example can be communicated to a user agent by adding the hash to a
 `script` element, like so:
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"
-            integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=">
+            integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="
+            crossorigin="anonymous">
 
 {:.example.highlight}
 
@@ -85,7 +86,8 @@ and future versions of the specification are likely to expand this coverage.
     [integrity metadata][] to the `link` element included on her page:
 
         <link rel="stylesheet" href="https://site53.cdn.net/style.css"
-              integrity="sha256-SDfwewFAE...wefjijfE">
+              integrity="sha256-SDfwewFAE...wefjijfE"
+              crossorigin="anonymous">
     {:.example.highlight}
 
 *   An author wants to include JavaScript provided by a third-party
@@ -95,7 +97,8 @@ and future versions of the specification are likely to expand this coverage.
     adding it to the `script` element she includes on her page:
 
         <script src="https://analytics-r-us.com/v1.0/include.js"
-                integrity="sha256-SDfwewFAE...wefjijfE"></script>
+                integrity="sha256-SDfwewFAE...wefjijfE"
+                crossorigin="anonymous"></script>
     {:.example.highlight}
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
@@ -244,8 +247,8 @@ Authors may choose to specify both, for example:
 
     <script src="hello_world.js"
        integrity="sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-                  sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
-        "></script>
+                  sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg=="
+       crossorigin="anonymous"></script>
 
 In this case, the user agent will choose the strongest hash function in the
 list, and use that metadata to validate the resource (as described below in
@@ -433,7 +436,8 @@ functions. For example, a developer might write a `script` element such as:
 
     <script src="https://foobar.com/content-changes.js"
             integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=
-                       sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=">
+                       sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng="
+            crossorigin="anonymous"></script>
 
 which would allow the user agent to accept two different content payloads, one
 of which matches the first SHA256 hash value and the other matches the second
