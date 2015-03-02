@@ -15,7 +15,7 @@ Sites and applications on the web are rarely composed of resources from
 only a single origin. For example, authors pull scripts and styles from a
 wide variety of services and content delivery networks, and must trust
 that the delivered representation is, in fact, what they expected to
-load. If an attacker can trick a user into downloading content from
+load. If an attacker can trvick a user into downloading content from
 a hostile server (via DNS poisoning, or other such means), the author has
 no recourse. Likewise, an attacker who can replace the file on the CDN server
 has the ability to inject arbitrary content.
@@ -277,10 +277,11 @@ When a hash function is determined to be insecure, user agents MUST deprecate
 and eventually remove support for integrity validation using that hash
 function.
 
-Validation using unsupported hash functions always fails (see the "[Does
-resource match metadataList][match]" algorithm below). Authors are therefore
-encouraged to use strong hash functions, and to begin migrating to stronger
-hash functions as they become available.
+To allow authors to switch to stronger hash functions without being held back by older
+user agents, validation using unsupported hash functions acts like no integrity value 
+was provided (see the "[Does resource match metadataList][match]" algorithm below). 
+Authors  are encouraged to use strong hash functions, and to begin migrating to 
+stronger hash functions as they become available.
 </section><!-- /Framework::Cryptographic hash functions::Agility -->
 
 <section>
