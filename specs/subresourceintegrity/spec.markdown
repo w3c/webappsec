@@ -213,15 +213,15 @@ in [section 4.2 of the Content Security Policy Level 2 specification][csp2-secti
 
 For example, given a script resource containing only the string "alert('Hello, world.');",
 an author might choose [SHA-256][sha2] as a hash function.
-`znLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=` is the base64-encoded
+`qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=` is the base64-encoded
 digest that results. This can be encoded as follows:
 
-    sha256-znLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+    sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 {:.example.highlight}
 
 Or, if the author further wishes to specify the Content Type (`application/javascript`):
 
-    type:application/javascript sha256-znLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+    type:application/javascript sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 {:.example.highlight}
 
 <div class="note">
