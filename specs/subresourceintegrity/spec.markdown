@@ -15,7 +15,7 @@ Sites and applications on the web are rarely composed of resources from
 only a single origin. For example, authors pull scripts and styles from a
 wide variety of services and content delivery networks, and must trust
 that the delivered representation is, in fact, what they expected to
-load. If an attacker can trvick a user into downloading content from
+load. If an attacker can trick a user into downloading content from
 a hostile server (via DNS poisoning, or other such means), the author has
 no recourse. Likewise, an attacker who can replace the file on the CDN server
 has the ability to inject arbitrary content.
