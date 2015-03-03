@@ -670,8 +670,6 @@ Insert the following steps after step 5 of step 14 of HTML5's
 
 </section><!-- /Framework::HTML::Elements -->
 
-</section><!-- /Framework::HTML -->
-
 <section>
 ### Verification of CSS-loaded subresources
 
