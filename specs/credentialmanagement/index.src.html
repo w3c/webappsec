@@ -17,6 +17,7 @@ type: dfn
   urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: webappapis.html
       text: responsible document
+      text: responsible browsing context
       text: incumbent settings object
     urlPrefix: infrastructure.html
       text: resolve a url
@@ -36,8 +37,7 @@ type: dfn
     text: a priori insecure origin
     text: a priori insecure url
   urlPrefix: https://w3c.github.io/webappsec/specs/powerfulfeatures/
-    text: sufficiently secure context
-    text: is Document a sufficiently secure context?; url: document-sufficiently-secure
+    text: privileged context
   urlPrefix: https://fetch.spec.whatwg.org/
     text: extracting a MIME type; url: concept-header-extract-mime-type
   urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
@@ -444,14 +444,6 @@ type: constructor
       2 of the Mixed Content specification</a>. [[!MIX]]
     </dd>
 
-    <dt><a>sufficiently secure context</a></dt>
-    <dt><a>Is <code>Document</code> a sufficiently secure context?</a></dt>
-    <dd>
-      These terms are defined in 
-      <a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#terms">Section
-      2 of the Requirements for Powerful Features specification</a>. [[!POWER]]
-    </dd>
-
     <dt><dfn lt="JavaScript global environment|global environment">JavaScript global environment</dfn></dt>
     <dd>
       This term is defined in <a lt="JavaScript global environment" spec="HTML5">Section
@@ -735,9 +727,9 @@ type: constructor
   if no credential was available (either because the user refused to share a
   credential with this page, or because no credentials were available, period).
 
-  If called from an environment which is not a <a>sufficiently secure
-  context</a>, or from somewhere other than a <a>top-level browsing context</a>,
-  the <code>Promise</code> will be rejected with a <code>SecurityError</code>.
+  If called from an environment which is not a <a>privileged context</a>, or
+  from somewhere other than a <a>top-level browsing context</a>, the
+  <code>Promise</code> will be rejected with a <code>SecurityError</code>.
 
   <ol>
     <li>
@@ -758,12 +750,12 @@ type: constructor
       If <var>settings</var>' <a>responsible document</a> is not the <a>active
       document</a> in the <a>top-level browsing context</a>
       If <var>environment</var> is not a <a>top-level browsing context</a>,
+      then reject <var>promise</var> with a <code>SecurityError</code>
+      <strong>and</strong> terminate this algorithm.
     <li>
-      If the result of executing the <a>Is Document a sufficiently secure
-      context?</a> algorithm on <var>settings</var>' <a>responsible document</a>
-      is <code>Insecure</code> then reject <var>promise</var> with a
-      <code>SecurityError</code> <strong>and</strong> terminate this algorithm.
-    
+      If <var>settings</var> is not a <a>privileged context</a>, then reject
+      <var>promise</var> with a <code>SecurityError</code> <strong>and</strong>
+      terminate this algorithm.
     </li>
     <li>
       Let <var>origin</var> be the <a>origin</a> of the <var>environment</var>.
@@ -926,10 +918,10 @@ type: constructor
       which which this algorithm is executing.
     </li>
     <li>
-      If <var>environment</var> is not a <a>top-level browsing context</a>,
-      or <var>environment</var> is not a <a>sufficiently secure context</a>, then
-      reject <var>promise</var> with a <code>SecurityError</code>
-      <strong>and</strong> terminate this algorithm.
+      If <var>environment</var>'s <a>responsible browsing context</a> is not a
+      <a>top-level browsing context</a>, or <var>environment</var> is not a
+      <a>privileged context</a>, then reject <var>promise</var> with a
+      <code>SecurityError</code> <strong>and</strong> terminate this algorithm.
     </li>
     <li>
       Let <var>origin</var> be the <a>origin</a> of the <var>environment</var>.
@@ -1297,9 +1289,9 @@ type: constructor
   <h3 id="security-insecure-origins">Insecure Sites</h3>
 
   User agents MUST NOT expose credential information via the APIs defined here
-  to environments which are not <a>sufficiently secure contexts</a>. User agents
-  MAY implement autofill mechanisms which store user credentials and fill
-  sign-in forms on <a><i lang="la">a priori</i> insecure origins</a>, but those
+  to environments which are not <a>privileged contexts</a>. User agents MAY
+  implement autofill mechanisms which store user credentials and fill sign-in
+  forms on <a><i lang="la">a priori</i> insecure origins</a>, but those
   sites cannot be trusted to interact directly with the credential manager in
   any meaningful way.
 
