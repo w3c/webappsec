@@ -25,7 +25,7 @@
         editors:  [
             { name: "Frederik Braun", url: "mailto:fbraun@mozilla.com", company: "Mozilla", companyURL: "https://www.mozilla.org/" },
             { name: "Francois Marier", url: "mailto:francois@mozilla.com", company: "Mozilla", companyURL: "https://www.mozilla.org/" },
-            { name: "Devdatta Akhawe", url: "mailto:dev.akhawe@gmail.com", company: "UC Berkeley" },
+            { name: "Devdatta Akhawe", url: "mailto:dev.akhawe@gmail.com", company: "Dropbox, Inc.", companyURL: "https://www.dropbox.com/"},
             { name: "Joel Weinberger", url: "mailto:jww@google.com", company: "Google, Inc.", companyURL: "https://google.com/" },
         ],
 
@@ -201,11 +201,10 @@ for her globally-distributed users. She wishes to ensure, however, that
 the CDN’s servers deliver <em>only</em> the code she expects them to deliver. She
 can mitigate the risk that CDN compromise (or unexpectedly malicious
 behavior) would change her code in unfortunate ways by adding
-<a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>script</code> element included on her page:</p>
+<a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>link</code> element included on her page:</p>
 
-          <pre class="example highlight"><code>&lt;script src="https://site53.cdn.net/include.js"
-        integrity="type:application/javascript
-                   sha256-SDfwewFAE...wefjijfE"&gt;&lt;/script&gt;
+          <pre class="example highlight"><code>&lt;link rel="stylesheet" href="https://site53.cdn.net/style.css"
+      integrity="type:text/css sha256-SDfwewFAE...wefjijfE"&gt;
 </code></pre>
         </li>
         <li>
@@ -317,17 +316,17 @@ risk of certain attack vectors.</p>
     <p>This metadata MUST be encoded in the same format as the <code>hash-source</code>
 in <a href="http://www.w3.org/TR/CSP11/#source-list-syntax">section 4.2 of the Content Security Policy Level 2 specification</a>.</p>
 
-    <p>For example, given a resource containing only the string “Hello, world.”,
+    <p>For example, given a script resource containing only the string “alert(‘Hello, world.’);”,
 an author might choose <a href="#dfn-sha-2">SHA-256</a> as a hash function.
-<code>+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=</code> is the base64-encoded
+<code>qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=</code> is the base64-encoded
 digest that results. This can be encoded as follows:</p>
 
-    <pre class="example highlight"><code>sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+    <pre class="example highlight"><code>sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 </code></pre>
 
-    <p>Or, if the author further wishes to specify the Content Type (<code>text/plain</code>):</p>
+    <p>Or, if the author further wishes to specify the Content Type (<code>application/javascript</code>):</p>
 
-    <pre class="example highlight"><code>type:text/plain sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+    <pre class="example highlight"><code>type:application/javascript sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 </code></pre>
 
     <div class="note">
@@ -335,7 +334,7 @@ digest that results. This can be encoded as follows:</p>
 example, is quite commonly available. The example in this section is the
 result of the following command line:</p>
 
-      <pre><code>echo -n "Hello, world." | openssl dgst -sha256 -binary | openssl enc -base64 -A
+      <pre><code>echo -n "alert('Hello, world.');" | openssl dgst -sha256 -binary | openssl enc -base64 -A
 </code></pre>
 
     </div>
@@ -473,7 +472,7 @@ in [[!RFC7234]], return <code>true</code>.</li>
         <li>Return <code>false</code>.</li>
       </ol>
 
-      <p class="note">Step 2 returns <code>true</code> if the resource was a CORS-enabled request. If the
+      <p class="note">Step 3 returns <code>true</code> if the resource was a CORS-enabled request. If the
 resource failed the CORS checks, it won’t be available to us for integrity
 checking because it won’t have loaded successfully.</p>
 
@@ -500,7 +499,8 @@ steps, and proceed to the next token.</li>
 agent, add <var>token</var> to <var>result</var>.</li>
           </ol>
         </li>
-        <li>Return <var>result</var>.</li>
+        <li>Return <code>no metadata</code> if <var>result</var> is empty, otherwise return
+<var>result</var>.</li>
       </ol>
 
     </section>
@@ -820,23 +820,21 @@ abort these steps.</li>
   </section>
   <!-- /Framework::HTML::Elements -->
 
-</section>
-<!-- /Framework::HTML -->
+  <section>
+    <h3 id="verification-of-css-loaded-subresources">Verification of CSS-loaded subresources</h3>
 
-<section>
-  <h3 id="verification-of-css-loaded-subresources">Verification of CSS-loaded subresources</h3>
-
-  <p class="issue" data-number="13">Tab and Anne are poking at adding <code>fetch()</code> to some spec somewhere
+    <p class="issue" data-number="13">Tab and Anne are poking at adding <code>fetch()</code> to some spec somewhere
 which would allow CSS files to specify various arguments to the fetch
 algorithm while requesting resources. Detail on the proposal is at
 <a href="http://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html">http://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html</a>.
 Once that is specified, we can proceed defining an <code>integrity</code> argument
 that would allow integrity checks in CSS.</p>
 
-</section>
-<!-- /Framework::CSS -->
+  </section>
+  <!-- /Framework::CSS -->
 
-<p>&lt;/section&gt;<!-- /Framework --></p>
+</section>
+<!-- /Framework -->
 
 <section>
   <h2 id="proxies">Proxies</h2>
