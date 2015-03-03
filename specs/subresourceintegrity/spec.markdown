@@ -144,15 +144,6 @@ This section defines several terms used throughout the document.
 The term <dfn>digest</dfn> refers to the base64-encoded result of
 executing a cryptographic hash function on an arbitrary block of data.
 
-A <dfn>secure channel</dfn> is any communication mechanism that the user
-agent has defined as "secure" (typically limited to HTTP over Transport
-Layer Security (TLS) [[!RFC2818]]).
-
-An <dfn>insecure channel</dfn> is any communication mechanism other than
-those the user agent has defined as "secure".
-
-Clarification needed whether we want to talk about (in)secure channels or (un)authenticated origins. This is Github issue 71 (freddyb). {:.issue data-number="71"}
-
 The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]
 
