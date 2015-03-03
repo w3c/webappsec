@@ -14,15 +14,34 @@ Indent: 2
 </pre>
 
 <pre class="anchors">
-urlPrefix: http://www.w3.org/TR/dom/
+spec: DOM; urlPrefix: http://www.w3.org/TR/dom/
   type: attribute
     text: textContent; for: Node; url: dom-node-textcontent
   type: interface
     text: Document; url: interface-document
-urlPrefix: http://www.w3.org/TR/html5/
+spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+  type: interface
+    text: Request
+  type: attribute
+    text: url; for: Request; url: concept-request-url
+    text: origin; for: Request; url: concept-request-origin
+    text: client; for: Request; url: concept-request-client
+    text: context; for: Request; url: concept-request-context
+    text: context-frame-type; for: Request; url: concept-request-context-frame-type
+spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
   type: element-attr
     urlPrefix: document-metadata.html
       text: name; for: meta; url: attr-meta-name
+      text: content; for: meta; url: attr-meta-content
+  type: element
+    urlPrefix: embedded-content-0.html
+      text: iframe; url: the-iframe-element
+    urlPrefix: text-level-semantics.html
+      text: a; url: the-a-element
+    urlPrefix: document-metadata.html
+      text: meta; url: the-meta-element
   type: dfn
     urlPrefix: document-metadata.html
       text: pragma directives
@@ -51,6 +70,7 @@ urlPrefix: http://www.w3.org/TR/html5/
       text: sandboxing flag set
       text: top-level browsing context
     urlPrefix: infrastructure.html
+      text: ascii case-insensitive match; url: ascii-case-insensitive
       text: fragment; url: concept-url-fragment
       text: document base url
       text: plugin
@@ -67,15 +87,43 @@ urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: links.html
       text: icon; url: rel-icon
       text: link type stylesheet
+      text: noreferrer; url: link-type-noreferrer
     urlPrefix: scripting-1.html
       text: the script block's source
     urlPrefix: webappapis.html
       text: queue a task
       text: task source
       text: tasks; url: concept-task
+      text: settings object
       text: incumbent settings object
       text: relevant settings object for a script
       text: responsible document
+      text: responsible browsing context
+      text: API referrer source
+      text: document environment
+      text: worker environment
+spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+  type: dfn
+    text: a priori insecure origin
+spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
+  type: dfn
+    text: runs a worker; url: run-a-worker
+spec: URL; urlPrefix: http://www.w3.org/TR/url/
+  type: dfn
+    text: local scheme
+  type: interface
+    text: URL
+spec: WSC-UI; urlPrefix: http://www.w3.org/TR/2010/REC-wsc-ui-20100812/
+  type: dfn
+    text: TLS-protected; url: typesoftls
+spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
+  type: dfn
+    text: origin; url: section-3.2
+    text: ASCII serialization of an origin; url: section-6.2
+    text: the same; url: section-5
+spec: RFC7231; urlPrefix: https://tools.ietf.org/html/rfc7231
+  type: dfn
+    text: referer; url: section-5.5.2
 </pre>
 
 <!--
@@ -93,9 +141,9 @@ urlPrefix: http://www.w3.org/TR/html5/
   <em>This section is not normative.</em>
 
   Requests made from a document, and for navigations away from that document
-  are associated with a <a><code>Referer</code> header</a>. While the header
+  are associated with a <a><code>Referer</code></a> header. While the header
   can be suppressed for links with the <a><code>noreferrer</code></a> link
-  type, authors might wish to control the <a><code>Referer</code> header</a>
+  type, authors might wish to control the <a><code>Referer</code></a> header
   more directly for a number of reasons:
 
   <h3 id="intro-privacy">Privacy</h3>
@@ -139,153 +187,33 @@ urlPrefix: http://www.w3.org/TR/html5/
 <section>
   <h2 id="terms">Key Concepts and Terminology</h2>
 
-  <h3 id="terms-defined-here">Terms defined by this specification</h3>
   <dl>
     <dt>
       <dfn export local-lt="policy">referrer policy</dfn>
     </dt>
     <dd>
-      A <strong>referrer policy</strong> is a property of a <a>JavaScript
-      global environment</a> that defines the algorithm used to populate the
-      <a><code>Referer</code> header</a> when <a>fetching</a> subresources,
+      A <strong>referrer policy</strong> is a property of a <a>settings
+      object</a> that defines the algorithm used to populate the
+      <a><code>Referer</code></a> header when <a>fetching</a> subresources,
       prefetching, or performing navigations.
 
-      If no referrer policy is explicitly set for a <a>global environment</a>,
+      If no referrer policy is explicitly set for a <a>settings object</a>,
       then the value of the property is <code>null</code>. Otherwise, the value
       is whatever has been explicitly set, as explained in the
       <a section href="#set-referrer-policy"></a> algorithm.
     </dd>
-  </dl>
-
-  <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
-  <dl>
-    <dt><dfn local-lt="Referer|Referer header">Referer HTTP header field</dfn></dt>
-    <dd>
-      The <strong>"Referer" [sic] HTTP header field</strong> is sent along with
-      HTTP requests, and informs the server where the reference for the
-      requested resource was found. It is specified in
-      <a href="http://tools.ietf.org/html/rfc7231#section-5.5.2">Section 5.5.2</a>
-      of HTTP/1.1 -- Semantics and Content [[!RFC7231]]
-    </dd>
-
-    <dt><dfn>origin</dfn></dt>
-    <dd>
-      An origin defines the scope of authority or privilege under which a
-      resource operates. It is defined in detail in the Origin specification.
-      [[!RFC6454]]
-    </dd>
-
-    <dt><dfn>ASCII serialization of an origin</dfn></dt>
-    <dd>
-      This algorithm is defined in
-      <a href="http://tools.ietf.org/html/rfc6454#section-6.2">Section 6.2</a>
-      of the Origin specification. [[!RFC6454]]
-    </dd>
-
-    <dt><dfn>ASCII case-insensitive match</dfn></dt>
-    <dd>
-      Two strings are an <strong>ASCII case-insensitive match</strong> if they
-      match according to the <a>ASCII case-insensitive</a> algorithm defined in
-      [[!HTML5]];
-    </dd>
 
     <dt><dfn local-lt="same-origin">same-origin request</dfn></dt>
     <dd>
-      A <a>request</a> is a <strong>same-origin request</strong> if the
-      request's <code>origin</code> and the <a>origin</a> of request's
-      <code>url</code> are "the same", as defined by
-      <a href="http://tools.ietf.org/html/rfc6454#section-5">Section 5</a>
-      of the Origin specification. [[!RFC6454]]
+      A {{Request}} <var>request</var> is a <strong>same-origin request</strong>
+      if <var>request</var>'s {{Request/origin}} and the <a>origin</a> of
+      <var>request</var>'s {{Request/url}} are <a><code>the same</code></a>.
     </dd>
 
     <dt><dfn local-lt="cross-origin">cross-origin request</dfn></dt>
     <dd>
-      A <a>request</a> is a <strong>cross-origin request</strong> if it is
+      A {{Request}} is a <strong>cross-origin request</strong> if it is
       <em>not</em> <a>same-origin</a>.
-    </dd>
-
-    <dt><dfn>fetch</dfn></dt>
-    <dd>
-      "fetching" is the process by which a user agent requests resources, and
-      delivers responses. It is defined in detail in the Fetch living standard.
-      [[!FETCH]]
-    </dd>
-
-    <dt><dfn>request</dfn></dt>
-    <dt><dfn lt="request client|client">request client</dfn></dt>
-    <dt><dfn lt="request context|context">request context</dfn></dt>
-    <dd>
-      These terms are defined in
-      <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the
-      Fetch living standard. [[!FETCH]]
-    </dd>
-
-    <dt><dfn><em>a priori</em> insecure origin</dfn></dt>
-    <dd>
-      This term is defined in
-      <a href="http://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-origin">Section 2.1</a>
-      of the Mixed Content specification. [[!MIX]].
-    </dd>
-
-    <dt><dfn lt="JavaScript global environment|global environment">JavaScript global environment</dfn></dt>
-    <dd>
-      This term is defined in <a lt="JavaScript global environment" >Section
-      2.2.2</a> of the HTML5 specification. [[!HTML5]]
-    </dd>
-
-    <dt><dfn>global object</dfn></dt>
-    <dd>
-      This term is defined in the ECMAScript specification. [[!ECMA-262]]
-    </dd>
-
-    <dt><dfn>document environment</dfn></dt>
-    <dt><dfn>worker environment</dfn></dt>
-    <dd>
-      These terms are defined in
-      <a lt="document environment" >Section 6.1.3.1</a> of the
-      HTML5 specification. [[!!HTML5]]
-    </dd>
-
-    <dt><dfn>API referrer source</dfn></dt>
-    <dd>
-      This term is defined in
-      <a lt="API referrer source" >Section 8.1.3.1</a> of the
-      HTML5 specification. [[!HTML5]]
-    </dd>
-
-    <dt><dfn>Entry settings object</dfn></dt>
-    <dd>
-      This term is defined in
-      <a lt="entry settings object" >Section 8.1.3.3</a> of the
-      HTML5 specification. [[!HTML5]]
-    </dd>
-
-    <dt><dfn>TLS-protected</dfn></dt>
-    <dd>
-      This term is defined in
-      <a href="http://www.w3.org/TR/2010/REC-wsc-ui-20100812/#typesoftls">Section
-      5.2 of "Web Security Context: User Interface Guidelines"</a>. [[!WSC-UI]].
-    </dd>
-
-    <dt><dfn>relative scheme</dfn></dt>
-    <dd>
-      The set of <strong>relative schemes</strong> is defined in
-      <a href="http://url.spec.whatwg.org/#relative-scheme">Section 5 of the
-      URL specification</a>. [[!URL]]
-    </dd>
-
-    <dt><dfn>runs a worker</dfn> algorithm</dt>
-    <dd>
-      This algorithm is
-      <a href="http://www.w3.org/TR/workers/#run-a-worker">defined in the Web
-      Workers spec</a>. [[!WORKERS]]
-    </dd>
-
-    <dt><dfn>noreferrer</dfn> link type</dt>
-    <dd>
-      This link type is
-      <a href="http://www.w3.org/TR/html5/links.html#link-type-noreferrer">defined
-      in HTML</a>. [[!HTML5]]
     </dd>
   </dl>
 </section>
@@ -293,7 +221,7 @@ urlPrefix: http://www.w3.org/TR/html5/
 <section>
   <h2 id="referrer-policy-states">Referrer Policy States</h2>
 
-  Every <a>global environment</a> has a <a>referrer policy</a> which governs
+  Every <a>settings object</a> has a <a>referrer policy</a> which governs
   the referrer information sent along with requests made for subresources, and
   for navigations. The <a>policy</a> will be <code>null</code> if no policy has
   been set, otherwise it will be one of the following five values:
@@ -304,7 +232,7 @@ urlPrefix: http://www.w3.org/TR/html5/
   <a section href="#integration-with-fetch"></a> and
   <a section href="#algorithms"></a> sections:
 
-  Note: The referrer policy for a <a>global environment</a> provides a default
+  Note: The referrer policy for a <a>settings object</a> provides a default
   baseline policy for requests. This policy may be tightened for specific
   requests via mechanisms like the <code><a>noreferrer</a></code> link type.
 
@@ -312,25 +240,25 @@ urlPrefix: http://www.w3.org/TR/html5/
 
   The simplest policy is <dfn>No Referrer</dfn>, which specifies that no
   referrer information is to be sent along with requests made from a particular
-  <a>global environment</a> to any <a>origin</a>. The header will be omitted
+  <a>settings object</a> to any <a>origin</a>. The header will be omitted
   entirely.
 
   <div class="example">
     If a document at <code>https://example.com/page.html</code> sets a policy of
     <code>No Referrer</code>, then navigations to
     <code>https://example.com/</code> (or any other URL) would send no
-    <a><code>Referer</code> header</a>.
+    <a><code>Referer</code></a> header.
   </div>
 
   <h3 id="referrer-policy-state-no-referrer-when-downgrade">No Referrer When Downgrade</h3>
 
   The <dfn>No Referrer When Downgrade</dfn> policy sends a full URL along with
-  requests from <a>TLS-protected</a> <a>global environments</a> to a
-  non-<a><em>a priori</em> insecure origin</a>, and requests from <a>global
-  environments</a> which are <em>not</em> <a>TLS-protected</a> to any
+  requests from <a>TLS-protected</a> <a>settings object</a> to a
+  non-<a><em>a priori</em> insecure origin</a>, and requests from <a>settings
+  objects</a> which are <em>not</em> <a>TLS-protected</a> to any
   <a>origin</a>.
 
-  Requests from <a>TLS-protected</a> <a>global environments</a> to <a><em>a
+  Requests from <a>TLS-protected</a> <a>settings objects</a> to <a><em>a
   priori</em> insecure origins</a>, on the other hand, will contain no referrer
   information. A <code><a>Referer</a></code> HTTP header will not be sent.
 
@@ -344,7 +272,7 @@ urlPrefix: http://www.w3.org/TR/html5/
 
     Navigations from that same page to
     <code><strong>http</strong>://not.example.com/</code> would send no
-    <a><code>Referer</code> header</a>.
+    <a><code>Referer</code></a> header.
   </div>
 
   This is a user agent's default behavior, if no policy is otherwise specified.
@@ -353,10 +281,10 @@ urlPrefix: http://www.w3.org/TR/html5/
 
   The <dfn>Origin Only</dfn> policy specifies that only the
   <a lt="ASCII serialization of an origin">ASCII serialization</a> of the
-  <a>origin</a> of the <a>global environment</a> from which a request is
+  <a>origin</a> of the <a>settings object</a> from which a request is
   made is sent as referrer information when making both <a>same-origin
   requests</a> and <a>cross-origin requests</a> from a particular
-  <a>global environment</a>.
+  <a>settings object</a>.
 
   Note: The serialization of an origin looks like
   <code>https://example.com</code>. To ensure that a valid URL is sent in the
@@ -370,7 +298,7 @@ urlPrefix: http://www.w3.org/TR/html5/
   <div class="example">
     If a document at <code>https://example.com/page.html</code> sets a policy of
     <code>Origin Only</code>, then navigations to any <a>origin</a> would send a
-    <a><code>Referer</code> header</a> with a value of
+    <a><code>Referer</code></a> header with a value of
     <code>https://example.com/</code>, even to <a><em>a priori</em> insecure
     origins</a>.
   </div>
@@ -380,11 +308,11 @@ urlPrefix: http://www.w3.org/TR/html5/
   The <dfn>Origin When Cross-Origin</dfn> policy specifies that a full URL,
   <a href="#strip-url">stripped for use as a referrer</a>, is sent as referrer
   information when making <a>same-origin requests</a> from a particular
-  <a>global environment</a>, and only the
+  <a>settings object</a>, and only the
   <a lt="ASCII serialization of an origin">ASCII serialization</a> of the
-  <a>origin</a> of the <a>global environment</a> from which a request is
+  <a>origin</a> of the <a>settings object</a> from which a request is
   made is sent as referrer information when making <a>cross-origin requests</a>
-  from a particular <a>global environment</a>.
+  from a particular <a>settings object</a>.
 
   Note: For the <code>Origin When Cross-Origin</code> policy, we also consider
   protocol upgrades, e.g. requests from <code>http://example.com/</code> to
@@ -398,11 +326,11 @@ urlPrefix: http://www.w3.org/TR/html5/
     If a document at <code>https://example.com/page.html</code> sets a policy of
     <code>Origin When Cross-Origin</code>, then navigations to any
     <code>https://example.com/not-page.html</code> would send a
-    <a><code>Referer</code> header</a> with a value of
+    <a><code>Referer</code></a> header with a value of
     <code>https://example.com/page.html</code>.
 
     Navigations from that same page to <code>https://not.example.com/</code>
-    would send a <a><code>Referer</code> header</a> with a value of
+    would send a <a><code>Referer</code></a> header with a value of
     <code>https://example.com/</code>, even to <a><em>a priori</em> insecure
     origins</a>.
   </div>
@@ -412,7 +340,7 @@ urlPrefix: http://www.w3.org/TR/html5/
   The <dfn>Unsafe URL</dfn> policy specifies that a full URL,
   <a href="#strip-url">stripped for use as a referrer</a>, is sent along with
   both <a>cross-origin requests</a> and <a>same-origin requests</a> made from
-  a particular <a>global environment</a>.
+  a particular <a>settings object</a>.
 
   <div class="example">
     If a document at <code>https://example.com/sekrit.html</code> sets a policy
@@ -431,21 +359,21 @@ urlPrefix: http://www.w3.org/TR/html5/
 <section>
   <h2 id="referrer-policy-delivery">Referrer Policy Delivery</h2>
 
-  A <a>JavaScript global environment</a>'s <a>referrer policy</a> is delivered
-  in one of four ways:
+  A <a>settings object</a>'s <a>referrer policy</a> is deliveredin one of four
+  ways:
 
   <ul>
     <li>
       Via the <code>referrer</code> Content Security Policy directive (defined
       in [[#directive-referrer]]), delivered via the
       <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#content-security-policy-header-field"><code>Content-Security-Policy</code></a>
-      HTTP header. [[!CSP]]
+      HTTP header. [[!CSP2]]
     </li>
     <li>
       Via the <code>referrer</code> Content Security Policy directive (defined
       in [[#directive-referrer]]), delivered via a
       <a href="https://w3c.github.io/webappsec/specs/content-security-policy/#delivery-html-meta-element"><code>&lt;meta&gt;</code> element</a>
-      [[!CSP]]
+      [[!CSP2]]
     </li>
     <li>
       Via a <{meta}> element with a <{meta/name}> of <code>referrer</code>.
@@ -499,10 +427,10 @@ urlPrefix: http://www.w3.org/TR/html5/
     context to have an empty <code>Referer</code> [sic] header.
   </section>
 
-  <h3 id="referrer-policy-delivery-meta">Delivery via <a element>meta</a></h3>
+  <h3 id="referrer-policy-delivery-meta">Delivery via <{meta}></h3>
 
-  A referrer policy may be set when an HTML <code><a element>meta</a></code>
-  element with a name attribute that is an <a>ASCII case-insensitive match</a>
+  A referrer policy may be set when an HTML <{meta}> element with a
+  <{meta/name}> attribute that is an <a>ASCII case-insensitive match</a>
   for the string "<code>Referrer</code>" is inserted into a document, for
   example:
 
@@ -528,7 +456,7 @@ urlPrefix: http://www.w3.org/TR/html5/
 
   Add the following entry to the
   <a href="http://www.w3.org/TR/html5/document-metadata.html#pragma-directives">pragma directives</a>
-  for the <code><a element>meta</a></code> element:
+  for the <{meta}> element:
 
   <dl>
     <dt>
@@ -537,24 +465,24 @@ urlPrefix: http://www.w3.org/TR/html5/
     </dt>
     <dd>
       <ol>
-        <li>If the Document's <code><a element>head</a></code> element is
-        not an ancestor of the <code><a element>meta</a></code> element, abort
-        these steps.</li>
-
         <li>
-          If the <code><a element>meta</a></code> element lacks a
-          <code><a element-attr>content</a></code> attribute then abort these
-          steps.
+          If the Document's <{head}> element is not an ancestor of the <{meta}>
+          element, abort these steps.
         </li>
 
         <li>
-          Let <var>environment</var> be the <a>global environment</a> associated
-          with the Document.
+          If the <{meta}> element lacks a <{meta/content}> attribute then abort
+          these steps.
+        </li>
+
+        <li>
+          Let <var>environment</var> be the {{Document}}'s <a>incumbent settings
+          object</a>.
         </li>
 
         <li>
           Let <var>meta-value</var> be the value of the element's
-          <code><a element-attr>content</a></code> attribute, after
+          <{meta/content}> attribute, after
           <a lt="strip leading and trailing whitespace" >stripping
           leading and trailing whitespace</a>.
         </li>
@@ -569,7 +497,7 @@ urlPrefix: http://www.w3.org/TR/html5/
         </li>
 
         <li>
-          Execute the <a section href="#set-referrer-policy"></a> algorithm on
+          Execute the [[#set-referrer-policy]] algorithm on
           <var>environment</var> using <var>policy</var>, if <var>policy</var>
           is not <code>null</code>.
         </li>
@@ -628,8 +556,8 @@ urlPrefix: http://www.w3.org/TR/html5/
 
   <h3 id="referrer-policy-delivery-implicit">Implicit Delivery</h3>
 
-  A <a>global environment</a> inherits the <a>referrer policy</a> of another
-  environment in several circumstances:
+  A <a>settings object</a> inherits the <a>referrer policy</a> of another object
+  in several circumstances:
 
   <h4 id="referrer-policy-delivery-implicit-nested">
      Nested Browsing Contexts
@@ -637,17 +565,17 @@ urlPrefix: http://www.w3.org/TR/html5/
 
   Whenever a user agent creates a <a>nested browsing context</a> containing
   <a>an iframe srcdoc document</a> or a resource whose <a>origin</a>'s scheme
-  is not a <a>relative scheme</a> (for instance, a <code>blob</code> or
+  is a <a>local scheme</a> (for instance, a <code>blob</code> or
   <code>data</code> resource):
 
   <ol>
     <li>
       Let <var>environment</var> be the <a>nested browsing context</a>'s
-      <a>JavaScript global environment</a>.
+      <a>incumbent settings object</a>.
     </li>
     <li>
       Let <var>policy</var> be the <a>parent browsing context</a>'s
-      <a>JavaScript global environment</a>'s <a>referrer policy</a>.
+      <a>incumbent settings object</a>'s <a>referrer policy</a>.
     </li>
     <li>
       Execute the <a section href="#set-referrer-policy"></a> algorithm on
@@ -660,13 +588,13 @@ urlPrefix: http://www.w3.org/TR/html5/
     Workers
   </h4>
 
-  Whenever a user agent <a>runs a worker</a> for a script with URL url and url's
-  scheme is not a <a>relative scheme</a>:
+  Whenever a user agent <a>runs a worker</a> for a script with {{URL}}
+  <var>url</var> and <var>url</var>'s scheme is a <a>local scheme</a>:
 
   <ol>
     <li>
-      Let <var>environment</var> be the Worker's <a>JavaScript global
-      environment</a>.
+      Let <var>environment</var> be the Worker's <a>incumbent settings
+      object</a>.
     </li>
     <li>
       Let <var>policy</var> be <code>No Referrer When Downgrade</code>.
@@ -698,7 +626,7 @@ urlPrefix: http://www.w3.org/TR/html5/
     Set <var>environment</var>'s referrer policy to <var>policy</var>
   </h3>
 
-  If no referrer policy has been set for a <a>global environment</a>, then
+  If no referrer policy has been set for a <a>settings object</a>, then
   setting its value is straightforward. If a policy has previously been set,
   then we overwrite it with the new value.
 
@@ -721,10 +649,10 @@ urlPrefix: http://www.w3.org/TR/html5/
     Determine <var>request</var>'s Referrer
   </h3>
 
-  Given a <a>Request</a> <var>request</var>, we can determine the correct
+  Given a {{Request}} <var>request</var>, we can determine the correct
   referrer information to send by examining the <a>policy</a> associated with
-  its <code>client</code>'s <a>global environment</a>, as detailed in the
-  following steps, which returns either <code>no referrer</code> or a URL:
+  its {{Request/client}}, as detailed in the following steps, which return
+  either <code>no referrer</code> or a URL:
 
   Note: If Fetch is performing a navigation in response to a link of type
   <code><a>noreferrer</a></code>, then <var>request</var>'s
@@ -755,7 +683,7 @@ urlPrefix: http://www.w3.org/TR/html5/
             <li>
               Let <var>document</var> be the {{Document}} object of the
               <a>active document</a> of the <a>browsing context</a> of
-              <var>environment</var>'s <a>global object</a>.
+              <var>environment</var>'s <a>responsible browsing context</a>.
             </li>
           </ol>
         </li>
@@ -765,7 +693,7 @@ urlPrefix: http://www.w3.org/TR/html5/
           <ol>
             <li>
               Let <var>source</var> be the <a>API referrer source</a>
-              specified by the <a>entry settings object</a>.
+              specified by the <a>incumbent settings object</a>.
             </li>
             <li>
               If <var>source</var> is a URL, let <var>referrerSource</var>
@@ -874,8 +802,8 @@ urlPrefix: http://www.w3.org/TR/html5/
       If <var>url</var> is <code>null</code>, return <code>no referrer</code>.
     </li>
     <li>
-      If <var>url</var>'s <code>scheme</code> is <em>not</em> a <a>relative
-      scheme</a>, then return <code>no referrer</code>.
+      If <var>url</var>'s <code>scheme</code> is a <a>local scheme</a>, then
+      return <code>no referrer</code>.
     </li>
     <li>
       Set <var>url</var>'s <code>username</code> to the empty string.
