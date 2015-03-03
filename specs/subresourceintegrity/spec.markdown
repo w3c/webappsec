@@ -586,7 +586,7 @@ a [Content Security Policy][csp] which contains an `integrity-policy`
 directive, defined by the following ABNF grammar:
 
     directive-name  = "integrity-policy"
-    directive-value = 1#failure-mode [ "require-for-all" ]
+    directive-value = 1#failure-mode
     failure-mode    = ( "block" / "report" )
 
 A document's <dfn>integrity policy</dfn> is the value of the
@@ -600,11 +600,6 @@ to render or execute resources that fail an integrity check, <em>and</em> MUST
 If the document's integrity policy contains `report`, the user agent MAY render
 or execute resources that fail an integrity check, <em>but</em> MUST
 [report a violation][].
-
-If the document's integrity policy contains `require-for-all`, the user agent
-MUST treat the lack of [integrity metadata][] for an resource as automatic
-failure, refuse to fetch the resource, and [report a violation][].
-{:.issue data-number="7"}
 
 [csp]: http://w3.org/TR/CSP2
 [report a violation]: http://www.w3.org/TR/CSP2/#report-a-violation
