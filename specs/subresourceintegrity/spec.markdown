@@ -80,11 +80,6 @@ regardless of the URL from which they are loaded.
     the reporting functionality, allowing potentially corrupt resources
     to run on her site, but flagging violations for manual review.
 
-3.  The metadata provided for verification may enable improvements to
-    user agents' caching schemes: common resources such as JavaScript
-    libraries can be downloaded once, and only once, even if multiple
-    instances with distinct URLs are requested.
-
 </section><!-- /Introduction::Goals -->
 
 <section>
