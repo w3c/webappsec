@@ -313,14 +313,18 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <a>potentially secure</a> variants of the original request's URL.
 
   To support this instruction:
-  
+ 
+  <pre class="idl">
+    enum Yay { "yay", "boo" };
+  </pre>
+
   <ol>
     <li>
       <a>Environment settings objects</a> and <a>browsing contexts</a> are
-      given an <dfn>upgrade insecure requests flag</dfn> which has two potential
-      values <code>No Upgrade</code> and <code>Enforce Upgrade</code>. It is
-      set to <code>No Upgrade</code> unless otherwise specified. This flag is
-      checked in [[#upgrade-request]] in order to determine whether or not
+      given an <dfn>insecure requests policy</dfn> which has two potential
+      values <code>Do Not Upgrade</code> and <code>Upgrade</code>. It is
+      set to <code>Do Not Upgrade</code> unless otherwise specified. This policy
+      is checked in [[#upgrade-request]] in order to determine whether or not
       subresource requests and form submissions should be upgraded during
       <a>Fetching</a>.
     </li>
@@ -357,8 +361,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       settings object</a>.
     </li>
     <li>
-      Set <var>setting</var>'s <a>upgrade insecure requests flag</a> to
-      <code>Enforced Upgrade</code>.
+      Set <var>setting</var>'s <a>insecure requests policy</a> to
+      <code>Upgrade</code>.
     </li>
     <li>
       Let <var>tuple</var> be a tuple of the <a>protected resource</a>'s
@@ -449,10 +453,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <h3 id="nesting">Policy Inheritance</h3>
 
-  If a {{Document}}'s <a>incumbent settings object</a>'s <a>upgrade insecure
-  requests flag</a> is set to <code>Enforce Upgrade</code>, the user agent MUST
-  ensure that all <a>nested browsing contexts</a> inherit the setting in the
-  following ways:
+  If a {{Document}}'s <a>incumbent settings object</a>'s <a>insecure requests
+  policy</a> is set to <code>Upgrade</code>, the user agent MUST ensure that
+  all <a>nested browsing contexts</a> inherit the setting in the following ways:
 
   <ol>
     <li>
@@ -460,13 +463,13 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
      
       <ol>
         <li>
-          If <var>context</var>'s <a>embedding document</a>'s <a>upgrade
-          insecure requests flag</a> is <code>Enforce Upgrade</code>, then:
+          If <var>context</var>'s <a>embedding document</a>'s <a>insecure
+          requests policy</a> is <code>Upgrade</code>, then:
 
           <ol>
             <li>
-              Set <var>context</var>'s <a>upgrade insecure requests flag</a> to
-              <code>Enforce Upgrade</code>.
+              Set <var>context</var>'s <a>insecure requests policy</a> to
+              <code>Upgrade</code>.
             </li>
             <li>
               For each <var>value</var> in <var>context</var>'s <a>embedding
@@ -484,8 +487,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
      
       <ol>
         <li>
-          If <var>context</var>'s <a>upgrade insecure requests flag</a> is
-          <code>Enforce Upgrade</code>, then:
+          If <var>context</var>'s <a>insecure requests policy</a> is
+          <code>Upgrade</code>, then:
 
           <ol>
             <li>
@@ -493,8 +496,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
               settings object</a>.
             </li>
             <li>
-              Set <var>settings</var>' <a>upgrade insecure requests flag</a> to
-              <code>Enforce Upgrade</code>.
+              Set <var>settings</var>' <a>insecure requests policy</a> to
+              <code>Upgrade</code>.
             </li>
             <li>
               For each <var>value</var> in <var>context</var>'s <a>upgrade
@@ -616,7 +619,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       [[#should-upgrade-for-client]] upon <var>request</var>'s {{Request/client}}.
     </li>
     <li>
-      If <var>upgrade state</var> is <code>No Upgrade</code>, return without
+      If <var>upgrade state</var> is <code>Do Not Upgrade</code>, return without
       modifying <var>request</var>.
     </li>
     <li>
@@ -651,29 +654,29 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   Given an {{Request}}'s {{Request/client}} <var>client</var> (an <a>environment
   settings object</a>), this algorithm returns <code>Enforced Upgrade</code> if
   <a><i lang="la">a priori</i> insecure</a> requests associated with that client
-  should be upgraded, or <code>No Upgrade</code> otherwise. In short, this will
-  check the client and return the appropriate <a>upgrade insecure requests
-  flag</a> set on it or its <a>browsing context</a>.
+  should be upgraded, or <code>Do Not Upgrade</code> otherwise. In short, this
+  will check the client and return the appropriate <a>insecure requests
+  policy</a> set on it or its <a>browsing context</a>.
 
   <ol>
     <li>
       If <var>client</var> has a <a>responsible document</a>, return the value
-      of its <a>upgrade insecure requests flag</a>.
+      of its <a>insecure requests policy</a>.
 
-      Note: This catches {{Document}}s or {{Worker}}s whose flag is set directly
-      by the <code><a>upgrade-insecure-requests</a></code> directive, or which
-      have inherited the flag from an <a>embedding document</a>.
+      Note: This catches {{Document}}s or {{Worker}}s whose policy is set
+      directly by the <code><a>upgrade-insecure-requests</a></code> directive,
+      or which have inherited the policy from an <a>embedding document</a>.
     </li>
     <li>
       If <var>client</var> has a <a>responsible browsing context</a>, return the
-      value of its <a>upgrade insecure requests flag</a>.
+      value of its <a>insecure requests policy</a>.
 
       Note: This catches requests triggered from detached {{Request/client}}s.
       Not sure this is necessary, really, given the inheritance structure
       defined in [[#nesting]].
     </li>
     <li>
-      Return <code>No Upgrade</code>.
+      Return <code>Do Not Upgrade</code>.
     </li>
   </ol>
 </section>
@@ -713,8 +716,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
               object</a> for <var>client</var>'s <var>entry script</var>.
             </li>
             <li>
-              If <var>upgrade state</var> is <code>No Upgrade</code>, skip the
-              remaining substeps.
+              If <var>upgrade state</var> is <code>Do Not Upgrade</code>, skip
+              the remaining substeps.
             </li>
             <li>
               Set <var>secure</var> to <code>true</code>.
