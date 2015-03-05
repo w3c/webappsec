@@ -14,14 +14,17 @@ Abstract:
 Indent: 2
 </pre>
 <pre class="anchors">
-spec: CSP; urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
+spec: CSP2; urlPrefix: https://www.w3.org/TR/CSP2/
   type: dfn
-    text: content-security-policy; url: content_security_policy
-    text: content-security-policy-report-only; url: content_security_policy_report_only
+    text: content-security-policy
+    text: content-security-policy-report-only
+    text: default-src
+    text: report-uri
     text: protected resource
     text: security policy
     text: send violation reports
     text: report a violation
+    text: violation report; url: example-violation-report
     url: enforce
       text: enforce
       text: enforced
@@ -300,10 +303,15 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <a>upgrade insecure resource requests flag</a> to <code>Enforced
   Upgrade</code>.
 
-  When <a>monitoring</a> the <code>upgrade-insecure-requests</code> directive,
-  set the <a>protected resource</a>'s <a>incumbent settings object</a>'s
-  <a>upgrade insecure resource requests flag</a> to <code>Monitored
-  Upgrade</code>.
+  <a>Monitoring</a> the <code>upgrade-insecure-requests</code> directive has
+  no effect: the directive is, in effect, ignored when sent via a
+  <code><a>Content-Security-Policy-Report-Only</a></code> header.
+
+  Note: Authors can determine whether or not upgraded resources' original URLs
+  were insecure via <code><a>Content-Security-Policy-Report-Only</a></code>. For
+  example, <code><a>Content-Security-Policy-Report-Only</a>:
+  default-src https:; report-uri /endpoint</code>. See [[#reporting-upgrades]]
+  for additional detail.
 
   ISSUE(w3c/webappsec#184): In
   <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Feb/0042.html">a thread on public-webappsec@</a>,
@@ -312,25 +320,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   on a site, and (say) two of them provide images only, and don't support
   HTTPS at all, you can use the upgrade mechanism for scripts on the other
   N - 2 origins."
-
-  <div class="example">
-    For example, sending the following header with a document will ensure that
-    subresource requests are upgraded, and that reports are sent out for each
-    upgrade:
-
-    <pre>
-      <a>Content-Security-Policy</a>: <a>upgrade-insecure-requests</a>;
-                               report-uri /upgrade-endpoint
-    </pre>
-
-    Sending the following header will not upgrade requests, but will send
-    reports:
-
-    <pre>
-      <a>Content-Security-Policy-Report-Only</a>: <a>upgrade-insecure-requests</a>;
-                                           report-uri /upgrade-endpoint
-    </pre>
-  </div>
 
   <h3 id="feature-detect">Feature Detecting Clients Capable of Upgrading</h3>
 
@@ -412,6 +401,45 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       insecure resource requests flag</a> is <code>true</code>.
     </li>
   </ol>
+
+  <h3 id="reporting-upgrades">Reporting Upgrades</h3>
+
+  Upgrading insecure requests MUST not interfere with an authors' ability to
+  track down requests that would be insecure in a user agent that does not
+  support upgrades. To that end, upgrades MUST be performed <em>after</em>
+  evaluating <var>request</var> against all <a>monitored</a> security policies,
+  but <em>before</em> evaluating <var>request</var> against all <a>enforced</a>
+  policies.
+
+  <div class="example">
+    Within the context of a <a>protected resource</a> which contains the
+    insecure image <code>&lt;img src="http://example.com/image.png"&gt;</code>,
+    and delivers the following HTTP headers:
+
+    <pre>
+      <a>Content-Security-Policy</a>: <a>upgrade-insecure-requests</a>; <a>default-src</a> https:
+      <a>Content-Security-Policy-Report-Only</a>: <a>default-src</a> https:; <a>report-uri</a> /endpoint
+    </pre>
+
+    The user agent will fire off a {{Request}} <var>request</var> that:
+
+    <ol>
+      <li>
+        Violates the policy being <a>monitored</a>, thereby delivering a
+        <a>violation report</a> to <code>/endpoint</code>.
+      </li>
+      <li>
+        Is upgraded from <code>http://example.com/image.png</code> to
+        <code>http<strong>s</strong>://example.com/image.png</code>.
+      </li>
+      <li>
+        Does not violate the policy being <a>enforced</a>.
+      </li>
+    </ol>
+  </div>
+
+  Note: This will be significantly clarified once [[CSP2]] is rewritten in terms
+  of Fetch.
 </section>
 
 <!-- Big Text: Algorithms -->
@@ -488,13 +516,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       modifying <var>request</var>.
     </li>
     <li>
-      Execute [[#report-an-upgrade]] on <var>request</var>.
-    </li>
-    <li>
-      If <var>upgrade state</var> is <code>Monitored Upgrade</code>, return
-      without modifying <var>request</var>.
-    </li>
-    <li>
       If <var>request</var>'s {{Request/url}}'s {{URL/scheme}} is
       <code>http</code>, set <var>request</var>'s {{Request/url}}'s
       {{URL/scheme}} to <code>https</code>, and return.
@@ -526,11 +547,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   Given an {{Request}}'s {{Request/client}} <var>client</var> (an <a>environment
   settings object</a>), this algorithm returns <code>Enforced Upgrade</code> if
   <a><i lang="la">a priori</i> insecure</a> requests associated with that client
-  should be upgraded, <code>Monitored Upgrade</code> if requests should be
-  reported (via [[#report-an-upgrade]]) but not actually upgraded, and <code>No
-  Upgrade</code> otherwise. In short, this will check the client and return the
-  appropriate <a>upgrade insecure resource requests flag</a> set on it or its
-  <a>browsing context</a>.
+  should be upgraded, or <code>No Upgrade</code> otherwise. In short, this will
+  check the client and return the appropriate <a>upgrade insecure resource
+  requests flag</a> set on it or its <a>browsing context</a>.
 
   <ol>
     <li>
@@ -551,30 +570,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     </li>
     <li>
       Return <code>No Upgrade</code>.
-    </li>
-  </ol>
-
-  <h3 id="report-an-upgrade">
-    Report an upgrade for <var>request</var>
-  </h3>
-
-  When a {{Request}} is upgraded, a CSP violation is triggered with the intent
-  of informing authors that resources on their sites will fail to load in
-  user agents that do not support this upgrade mechanism.
-
-  Note: This violation report will be triggered for the {{Document}} or
-  {{Worker}} that triggers the request. This might or might not be the same
-  <a>protected resource</a> that set the
-  <code><a>upgrade-insecure-requests</a></code> directive, due to [[#nesting]].
-  See [[#violation-report-target]] for detail.
-
-  <ol>
-    <li>
-      <a>Report a violation</a> for <var>request</var>'s {{Request/client}}'s
-      <a>responsible document</a>, using
-      <code><a>upgrade-insecure-requests</a></code> as the
-      <code>violated-directive</code> and <code>effective-directive</code>,
-      and <var>request</var>'s {{Request/url}} as the <code>blocked-uri</code>.
     </li>
   </ol>
 </section>
@@ -616,13 +611,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
             <li>
               If <var>upgrade state</var> is <code>No Upgrade</code>, skip the
               remaining substeps.
-            </li>
-            <li>
-              Execute [[#report-an-upgrade]].
-            </li>
-            <li>
-              If <var>upgrade state</var> is <code>Monitored Upgrade</code>,
-              skip the remaining substeps.
             </li>
             <li>
               Set <var>secure</var> to <code>true</code>.
