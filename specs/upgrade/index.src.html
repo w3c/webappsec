@@ -247,6 +247,39 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     insecure requests will hit the network. Users will be safer, and Megacorp's
     administrators will be happier.
   </div>
+
+  <div class="example">
+    Megacorp, Inc. isn't quite ready to deliver Strict Transport Security
+    headers [[RFC6797]], but does want to keep users on secure pages when their
+    user agents support <code><a>upgrade-insecure-requests</a></code>. Happily,
+    this comes for free with <code><a>upgrade-insecure-requests</a></code>. That
+    is, they're already delivering pages with the following header:
+
+    <pre>
+      Content-Security-Policy: <a>upgrade-insecure-requests</a>
+    </pre>
+
+    This allows user agents to treat the following HTML code:
+
+    <pre>
+      &lt;a href="http://example.com/"&gt;Home&lt;/a&gt;
+    </pre>
+
+    as though it had been delivered as:
+
+    <pre>
+      &lt;a href="https://example.com/"&gt;Home&lt;/a&gt;
+    </pre>
+
+    Links to third-party sites will not be upgraded. That is, the following
+    HTML code: 
+
+    <pre>
+      &lt;a href="http://not-example.com/"&gt;Home&lt;/a&gt;
+    </pre>
+
+    won't be upgraded.
+  </div>
 </section>
 
 <!--
@@ -279,16 +312,34 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   instruct the user agent to transparently upgrade resource requests to
   <a>potentially secure</a> variants of the original request's URL.
 
-  To support this instruction, <a>environment settings objects</a> and
-  <a>browsing contexts</a> have an <dfn>upgrade insecure resource requests
-  flag</dfn> which is set to <code>No Upgrade</code> unless otherwise specified.
-  This flag is checked in [[#upgrade-request]] in order to determine whether or
-  not resource requests should be upgraded during <a>Fetching</a>.
+  To support this instruction:
+  
+  <ol>
+    <li>
+      <a>Environment settings objects</a> and <a>browsing contexts</a> are
+      given an <dfn>upgrade insecure requests flag</dfn> which has two potential
+      values <code>No Upgrade</code> and <code>Enforce Upgrade</code>. It is
+      set to <code>No Upgrade</code> unless otherwise specified. This flag is
+      checked in [[#upgrade-request]] in order to determine whether or not
+      subresource requests and form submissions should be upgraded during
+      <a>Fetching</a>.
+    </li>
+    <li>
+      <a>Environment settings objects</a> and <a>browsing contexts</a> are
+      given an <dfn>upgrade insecure navigations set</dfn> which contains a set
+      of ({{URL/host}}, {{URL/port}}) tuples to which navigations ought to be
+      upgraded. Its value is the empty set unless otherwise specified. This set
+      is checked in [[#upgrade-request]] in order to determine whether or not
+      navigational requests should be upgraded.
+    </li>
+  </ol>
 
-  <h3 id="delivery">Upgrade Policy Delivery</h3>
+  <h3 id="delivery">
+    The <code>upgrade-insecure-requests</code> Content Security Policy directive
+  </h3>
 
-  A server MAY instruct a user agent to upgrade insecure resource requests for
-  a particular <a>protected resource</a> by sending a
+  A server MAY instruct a user agent to upgrade insecure requests for a
+  particular <a>protected resource</a> by sending a
   <code>Content-Security-Policy</code> header [[!CSP]] that contains a
   <dfn>upgrade-insecure-requests</dfn> directive, defined via the following ABNF
   grammar:
@@ -298,10 +349,26 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     directive-value = ""
   </pre>
 
-  When <a>enforcing</a> the <code>upgrade-insecure-requests</code> directive,
-  set the <a>protected resource</a>'s <a>incumbent settings object</a>'s
-  <a>upgrade insecure resource requests flag</a> to <code>Enforced
-  Upgrade</code>.
+  When <a>enforcing</a> the <code>upgrade-insecure-requests</code> directive:
+
+  <ol>
+    <li>
+      Let <var>settings</var> be the <a>protected resource</a>'s <a>incumbent
+      settings object</a>.
+    </li>
+    <li>
+      Set <var>setting</var>'s <a>upgrade insecure requests flag</a> to
+      <code>Enforced Upgrade</code>.
+    </li>
+    <li>
+      Let <var>tuple</var> be a tuple of the <a>protected resource</a>'s
+      {{URL}}'s {{URL/host}} and {{URL/port}}.
+    </li>
+    <li>
+      Insert <var>tuple</var> into <var>settings</var>'s <a>upgrade insecure
+      navigations set</a>.
+    </li>
+  </ol>
 
   <a>Monitoring</a> the <code>upgrade-insecure-requests</code> directive has
   no effect: the directive is, in effect, ignored when sent via a
@@ -383,22 +450,60 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <h3 id="nesting">Policy Inheritance</h3>
 
   If a {{Document}}'s <a>incumbent settings object</a>'s <a>upgrade insecure
-  resource requests flag</a> is set to <code>true</code>, the user agent MUST
+  requests flag</a> is set to <code>Enforce Upgrade</code>, the user agent MUST
   ensure that all <a>nested browsing contexts</a> inherit the setting in the
   following ways:
 
   <ol>
     <li>
-      When a <a>nested browsing context</a> <var>context</var> is created, set
-      its <a>upgrade insecure resource requests flag</a> to <code>true</code> if
-      <var>context</var>'s <a>embedding document</a>'s <a>upgrade insecure
-      resource requests flag</a> is set to <code>true</code>.
+      When a <a>nested browsing context</a> <var>context</var> is created:
+     
+      <ol>
+        <li>
+          If <var>context</var>'s <a>embedding document</a>'s <a>upgrade
+          insecure requests flag</a> is <code>Enforce Upgrade</code>, then:
+
+          <ol>
+            <li>
+              Set <var>context</var>'s <a>upgrade insecure requests flag</a> to
+              <code>Enforce Upgrade</code>.
+            </li>
+            <li>
+              For each <var>value</var> in <var>context</var>'s <a>embedding
+              document</a>'s <a>upgrade insecure navigations set</a>, add
+              <var>value</var> to <var>context</var>'s <a>upgrade insecure
+              navigations set</a>.
+            </li>
+          </ol>
+        </li>
+      </ol>
     </li>
     <li>
-      When <a>creating a new <code>Document</code> object</a>, set its
-      <a>incumbent settings object</a>'s <a>upgrade insecure resource requests
-      flag</a> to <code>true</code> if its <a>browsing context</a>'s <a>upgrade
-      insecure resource requests flag</a> is <code>true</code>.
+      When <a>creating a new <code>Document</code> object</a>
+      <var>document</var> in a <a>browsing context</a> <var>context</var>:
+     
+      <ol>
+        <li>
+          If <var>context</var>'s <a>upgrade insecure requests flag</a> is
+          <code>Enforce Upgrade</code>, then:
+
+          <ol>
+            <li>
+              Let <var>settings</var> be <var>document</var>'s <a>incumbent
+              settings object</a>.
+            </li>
+            <li>
+              Set <var>settings</var>' <a>upgrade insecure requests flag</a> to
+              <code>Enforce Upgrade</code>.
+            </li>
+            <li>
+              For each <var>value</var> in <var>context</var>'s <a>upgrade
+              insecure navigations set</a>, add <var>value</var> to
+              <var>settings</var>'s <a>upgrade insecure navigations set</a>.
+            </li>
+          </ol>
+        </li>
+      </ol>
     </li>
   </ol>
 
@@ -486,21 +591,20 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
           <var>request</var>.
         </li>
         <li>
-          If <var>request</var>'s {{Request/url}}'s {{URL/host}} is the same
-          as <var>request</var>'s {{Request/client}}'s origin's {{URL/host}},
-          skip the remaining substeps, and continue upgrading
-          <var>request</var>.
+          Let <var>tuple</var> be a tuple of <var>request</var>'s
+          {{Request/url}}'s {{URL/host} and {{URL/port}}.
+        </li>
+        <li>
+          If <var>tuple</var> is contained in {{Request/client}}'s
+          <a>upgrade insecure navigations set</a>, then skip the remaining
+          substeps, and continue upgrading <var>request</var>.
 
-          Note: We allow only same-origin upgrades in order to ensure that
-          navigations between pages of a single site that has opted-into
-          the upgrade behavior remain on HTTPS, regardless of the hard-coded
-          values in &lt;a&gt; tags. Performing upgrades for navigations to
-          third-party resources brings a significantly higher potential for
-          breakage, so we're avoiding it for the moment.
-
-          ISSUE(w3c/webappsec#185): This isn't correct for nested documents. We need to pass the
-          policy-setting document's host down to ensure that we're only
-          attempting "first-party" upgrades.
+          Note: We only upgrade top-level navigational requests for hosts
+          that have explicitly opted-into the behavior for a particular
+          <a>protected resource</a>, as described in [[#examples]]. Performing
+          upgrades for navigations to third-party resources brings a
+          significantly higher potential for breakage, so we're avoiding it for
+          the moment.
         </li>
         <li>
           Return without further modifying <var>request</var>.
@@ -548,13 +652,13 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   settings object</a>), this algorithm returns <code>Enforced Upgrade</code> if
   <a><i lang="la">a priori</i> insecure</a> requests associated with that client
   should be upgraded, or <code>No Upgrade</code> otherwise. In short, this will
-  check the client and return the appropriate <a>upgrade insecure resource
-  requests flag</a> set on it or its <a>browsing context</a>.
+  check the client and return the appropriate <a>upgrade insecure requests
+  flag</a> set on it or its <a>browsing context</a>.
 
   <ol>
     <li>
       If <var>client</var> has a <a>responsible document</a>, return the value
-      of its <a>upgrade insecure resource requests flag</a>.
+      of its <a>upgrade insecure requests flag</a>.
 
       Note: This catches {{Document}}s or {{Worker}}s whose flag is set directly
       by the <code><a>upgrade-insecure-requests</a></code> directive, or which
@@ -562,7 +666,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     </li>
     <li>
       If <var>client</var> has a <a>responsible browsing context</a>, return the
-      value of its <a>upgrade insecure resource requests flag</a>.
+      value of its <a>upgrade insecure requests flag</a>.
 
       Note: This catches requests triggered from detached {{Request/client}}s.
       Not sure this is necessary, really, given the inheritance structure

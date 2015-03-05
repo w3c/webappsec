@@ -169,7 +169,9 @@ secure transport before fetching them.</p>
     <li><a href="#key-concepts"><span class="secno">2</span> <span class="content">Key Concepts and Terminology</span></a>
     <li><a href="#upgrading"><span class="secno">3</span> <span class="content">Upgrading Insecure Resource Requests</span></a>
      <ul class="toc">
-      <li><a href="#delivery"><span class="secno">3.1</span> <span class="content">Upgrade Policy Delivery</span></a>
+      <li><a href="#delivery"><span class="secno">3.1</span> <span class="content">
+    The <code>upgrade-insecure-requests</code> Content Security Policy directive
+  </span></a>
       <li><a href="#feature-detect"><span class="secno">3.2</span> <span class="content">Feature Detecting Clients Capable of Upgrading</span></a>
        <ul class="toc">
         <li><a href="#preference"><span class="secno">3.2.1</span> <span class="content">
@@ -387,6 +389,53 @@ secure transport before fetching them.</p>
      
   
     </div>
+
+  
+    <div class="example">
+    Megacorp, Inc. isn’t quite ready to deliver Strict Transport Security
+    headers <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>, but does want to keep users on secure pages when their
+    user agents support <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code>. Happily,
+    this comes for free with <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code>. That
+    is, they’re already delivering pages with the following header:
+
+    
+     <pre>Content-Security-Policy: <a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a>
+</pre>
+     
+
+
+     <p>This allows user agents to treat the following HTML code:</p>
+     
+
+    
+     <pre>&lt;a href="http://example.com/">Home&lt;/a>
+</pre>
+     
+
+
+     <p>as though it had been delivered as:</p>
+     
+
+    
+     <pre>&lt;a href="https://example.com/">Home&lt;/a>
+</pre>
+     
+
+
+     <p>Links to third-party sites will not be upgraded. That is, the following
+    HTML code:</p>
+     
+
+    
+     <pre>&lt;a href="http://not-example.com/">Home&lt;/a>
+</pre>
+     
+
+
+     <p>won’t be upgraded.</p>
+     
+  
+    </div>
 </section>
 
 
@@ -408,7 +457,9 @@ secure transport before fetching them.</p>
       
 </dl>
 
-    <p>The Augmented Backus-Naur Form (ABNF) notation used in <a href="#delivery">§3.1 Upgrade Policy Delivery</a> is
+    <p>The Augmented Backus-Naur Form (ABNF) notation used in <a href="#delivery">§3.1 
+    The upgrade-insecure-requests Content Security Policy directive
+  </a> is
   specified in RFC5234. <a data-link-type="biblio" href="#biblio-abnf">[ABNF]</a></p>
 </section>
 
@@ -425,20 +476,46 @@ secure transport before fetching them.</p>
   <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure</a> variants of the original request’s URL.</p>
 
 
-    <p>To support this instruction, <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#settings-object">environment settings objects</a> and
-  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> have an <dfn data-dfn-type="dfn" data-noexport="" id="upgrade-insecure-resource-requests-flag">upgrade insecure resource requests
-  flag<a class="self-link" href="#upgrade-insecure-resource-requests-flag"></a></dfn> which is set to <code>No Upgrade</code> unless otherwise specified.
-  This flag is checked in <a href="#upgrade-request">§4.1 
-    Upgrade request to a potentially secure URL, if appropriate
-  </a> in order to determine whether or
-  not resource requests should be upgraded during <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">Fetching</a>.</p>
+    <p>To support this instruction:</p>
 
   
-    <h3 class="heading settled" data-level="3.1" id="delivery"><span class="secno">3.1. </span><span class="content">Upgrade Policy Delivery</span><a class="self-link" href="#delivery"></a></h3>
+    <ol>
+    
+     <li>
+      <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#settings-object">Environment settings objects</a> and <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> are
+      given an <dfn data-dfn-type="dfn" data-noexport="" id="upgrade-insecure-requests-flag">upgrade insecure requests flag<a class="self-link" href="#upgrade-insecure-requests-flag"></a></dfn> which has two potential
+      values <code>No Upgrade</code> and <code>Enforce Upgrade</code>. It is
+      set to <code>No Upgrade</code> unless otherwise specified. This flag is
+      checked in <a href="#upgrade-request">§4.1 
+    Upgrade request to a potentially secure URL, if appropriate
+  </a> in order to determine whether or not
+      subresource requests and form submissions should be upgraded during
+      <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">Fetching</a>.
+    
+     
+    
+     <li>
+      <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#settings-object">Environment settings objects</a> and <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> are
+      given an <dfn data-dfn-type="dfn" data-noexport="" id="upgrade-insecure-navigations-set">upgrade insecure navigations set<a class="self-link" href="#upgrade-insecure-navigations-set"></a></dfn> which contains a set
+      of (<code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>, <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-port">port</a></code>) tuples to which navigations ought to be
+      upgraded. Its value is the empty set unless otherwise specified. This set
+      is checked in <a href="#upgrade-request">§4.1 
+    Upgrade request to a potentially secure URL, if appropriate
+  </a> in order to determine whether or not
+      navigational requests should be upgraded.
+    
+     
+  
+    </ol>
+
+  
+    <h3 class="heading settled" data-level="3.1" id="delivery"><span class="secno">3.1. </span><span class="content">
+    The <code>upgrade-insecure-requests</code> Content Security Policy directive
+  </span><a class="self-link" href="#delivery"></a></h3>
 
 
-    <p>A server MAY instruct a user agent to upgrade insecure resource requests for
-  a particular <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#protected-resource">protected resource</a> by sending a
+    <p>A server MAY instruct a user agent to upgrade insecure requests for a
+  particular <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#protected-resource">protected resource</a> by sending a
   <code>Content-Security-Policy</code> header <a data-link-type="biblio" href="#biblio-csp">[CSP]</a> that contains a
   <dfn data-dfn-type="dfn" data-noexport="" id="upgrade_insecure_requests">upgrade-insecure-requests<a class="self-link" href="#upgrade_insecure_requests"></a></dfn> directive, defined via the following ABNF
   grammar:</p>
@@ -449,10 +526,36 @@ directive-value = ""
 </pre>
 
 
-    <p>When <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#enforce">enforcing</a> the <code>upgrade-insecure-requests</code> directive,
-  set the <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#protected-resource">protected resource</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>’s
-  <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests flag</a> to <code>Enforced
-  Upgrade</code>.</p>
+    <p>When <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#enforce">enforcing</a> the <code>upgrade-insecure-requests</code> directive:</p>
+
+  
+    <ol>
+    
+     <li>
+      Let <var>settings</var> be the <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#protected-resource">protected resource</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent
+      settings object</a>.
+    
+     
+    
+     <li>
+      Set <var>setting</var>’s <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade insecure requests flag</a> to
+      <code>Enforced Upgrade</code>.
+    
+     
+    
+     <li>
+      Let <var>tuple</var> be a tuple of the <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#protected-resource">protected resource</a>’s
+      <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url">URL</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> and <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-port">port</a></code>.
+    
+     
+    
+     <li>
+      Insert <var>tuple</var> into <var>settings</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure
+      navigations set</a>.
+    
+     
+  
+    </ol>
 
 
     <p><a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#monitor">Monitoring</a> the <code>upgrade-insecure-requests</code> directive has
@@ -555,8 +658,8 @@ Location: https://example.com/
     <h3 class="heading settled" data-level="3.3" id="nesting"><span class="secno">3.3. </span><span class="content">Policy Inheritance</span><a class="self-link" href="#nesting"></a></h3>
 
 
-    <p>If a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>'s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure
-  resource requests flag</a> is set to <code>true</code>, the user agent MUST
+    <p>If a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>'s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>’s <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade insecure
+  requests flag</a> is set to <code>Enforce Upgrade</code>, the user agent MUST
   ensure that all <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing contexts</a> inherit the setting in the
   following ways:</p>
 
@@ -564,18 +667,82 @@ Location: https://example.com/
     <ol>
     
      <li>
-      When a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing context</a> <var>context</var> is created, set
-      its <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests flag</a> to <code>true</code> if
-      <var>context</var>’s <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#embedding-document">embedding document</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure
-      resource requests flag</a> is set to <code>true</code>.
+      When a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing context</a> <var>context</var> is created:
+
+      
+      <ol>
+        
+       <li>
+          If <var>context</var>’s <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#embedding-document">embedding document</a>’s <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade
+          insecure requests flag</a> is <code>Enforce Upgrade</code>, then:
+
+          
+        <ol>
+            
+         <li>
+              Set <var>context</var>’s <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade insecure requests flag</a> to
+              <code>Enforce Upgrade</code>.
+            
+         
+            
+         <li>
+              For each <var>value</var> in <var>context</var>’s <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#embedding-document">embedding
+              document</a>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure navigations set</a>, add
+              <var>value</var> to <var>context</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure
+              navigations set</a>.
+            
+         
+          
+        </ol>
+        
+        
+       
+      
+      </ol>
+      
     
      
     
      <li>
-      When <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#create-a-document-object">creating a new <code>Document</code> object</a>, set its
-      <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests
-      flag</a> to <code>true</code> if its <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a>’s <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade
-      insecure resource requests flag</a> is <code>true</code>.
+      When <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#create-a-document-object">creating a new <code>Document</code> object</a>
+      <var>document</var> in a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a> <var>context</var>:
+
+      
+      <ol>
+        
+       <li>
+          If <var>context</var>’s <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade insecure requests flag</a> is
+          <code>Enforce Upgrade</code>, then:
+
+          
+        <ol>
+            
+         <li>
+              Let <var>settings</var> be <var>document</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent
+              settings object</a>.
+            
+         
+            
+         <li>
+              Set <var>settings</var>' <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade insecure requests flag</a> to
+              <code>Enforce Upgrade</code>.
+            
+         
+            
+         <li>
+              For each <var>value</var> in <var>context</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade
+              insecure navigations set</a>, add <var>value</var> to
+              <var>settings</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure navigations set</a>.
+            
+         
+          
+        </ol>
+        
+        
+       
+      
+      </ol>
+      
     
      
   
@@ -698,24 +865,23 @@ Location: https://example.com/
        
         
        <li>
-          If <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> is the same
-          as <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>'s origin’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>,
-          skip the remaining substeps, and continue upgrading
-          <var>request</var>.
-
-
-        <p class="note" role="note">Note: We allow only same-origin upgrades in order to ensure that
-          navigations between pages of a single site that has opted-into
-          the upgrade behavior remain on HTTPS, regardless of the hard-coded
-          values in &lt;a> tags. Performing upgrades for navigations to
-          third-party resources brings a significantly higher potential for
-          breakage, so we’re avoiding it for the moment.</p>
+          Let <var>tuple</var> be a tuple of <var>request</var>’s
+          <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a></code>'s {{URL/host} and <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-port">port</a></code>.
         
+       
+        
+       <li>
+          If <var>tuple</var> is contained in <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>'s
+          <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure navigations set</a>, then skip the remaining
+          substeps, and continue upgrading <var>request</var>.
 
 
-        <p class="issue" id="issue-4c24842d"><a class="self-link" href="#issue-4c24842d"></a>This isn’t correct for nested documents. We need to pass the
-          policy-setting document’s host down to ensure that we’re only
-          attempting "first-party" upgrades. <a href="https://github.com/w3c/webappsec/issues/185">&lt;https://github.com/w3c/webappsec/issues/185></a></p>
+        <p class="note" role="note">Note: We only upgrade top-level navigational requests for hosts
+          that have explicitly opted-into the behavior for a particular
+          <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#protected-resource">protected resource</a>, as described in <a href="#examples">§1.2 Examples</a>. Performing
+          upgrades for navigations to third-party resources brings a
+          significantly higher potential for breakage, so we’re avoiding it for
+          the moment.</p>
         
         
        
@@ -786,15 +952,15 @@ Location: https://example.com/
   settings object</a>), this algorithm returns <code>Enforced Upgrade</code> if
   <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure</a> requests associated with that client
   should be upgraded, or <code>No Upgrade</code> otherwise. In short, this will
-  check the client and return the appropriate <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource
-  requests flag</a> set on it or its <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a>.</p>
+  check the client and return the appropriate <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade insecure requests
+  flag</a> set on it or its <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a>.</p>
 
   
     <ol>
     
      <li>
       If <var>client</var> has a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-document">responsible document</a>, return the value
-      of its <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests flag</a>.
+      of its <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade insecure requests flag</a>.
 
 
       <p class="note" role="note">Note: This catches <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>s or <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/workers/#worker">Worker</a></code>s whose flag is set directly
@@ -806,7 +972,7 @@ Location: https://example.com/
     
      <li>
       If <var>client</var> has a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-browsing-context">responsible browsing context</a>, return the
-      value of its <a data-link-type="dfn" href="#upgrade-insecure-resource-requests-flag">upgrade insecure resource requests flag</a>.
+      value of its <a data-link-type="dfn" href="#upgrade-insecure-requests-flag">upgrade insecure requests flag</a>.
 
 
       <p class="note" role="note">Note: This catches requests triggered from detached <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a></code>s.
@@ -1164,9 +1330,9 @@ Location: https://example.com/
    <li>return=secure-representation, <a href="#returnsecure_representation">3.2.1</a>
    <li>secure-representation, <a href="#secure_representation">3.2.1</a>
    <li>upgrade, <a href="#upgrade">2</a>
+   <li>upgrade insecure navigations set, <a href="#upgrade-insecure-navigations-set">3</a>
    <li>upgrade-insecure-requests, <a href="#upgrade_insecure_requests">3.1</a>
-   <li>upgrade insecure resource requests
-  flag, <a href="#upgrade-insecure-resource-requests-flag">3</a></ul>
+   <li>upgrade insecure requests flag, <a href="#upgrade-insecure-requests-flag">3</a></ul>
   <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="indexlist">
    <li><a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> defines the following terms:
@@ -1230,6 +1396,7 @@ Location: https://example.com/
     </ul>
    <li><a data-link-type="biblio" href="#biblio-url">[URL]</a> defines the following terms:
     <ul>
+     <li><a href="http://www.w3.org/TR/url/#concept-url">URL</a>
      <li><a href="http://www.w3.org/TR/url/#concept-url-host">host</a>
      <li><a href="http://www.w3.org/TR/url/#concept-url-path">path</a>
      <li><a href="http://www.w3.org/TR/url/#concept-url-port">port</a>
@@ -1285,8 +1452,5 @@ Location: https://example.com/
   on a site, and (say) two of them provide images only, and don’t support
   HTTPS at all, you can use the upgrade mechanism for scripts on the other
   N - 2 origins." <a href="https://github.com/w3c/webappsec/issues/184">&lt;https://github.com/w3c/webappsec/issues/184></a><a href="#issue-c64cf7d1"> ↵ </a></div>
-   <div class="issue">This should be called from Fetch, probably after the existing step #3.<a href="#issue-3615b173"> ↵ </a></div>
-   <div class="issue">This isn’t correct for nested documents. We need to pass the
-          policy-setting document’s host down to ensure that we’re only
-          attempting "first-party" upgrades. <a href="https://github.com/w3c/webappsec/issues/185">&lt;https://github.com/w3c/webappsec/issues/185></a><a href="#issue-4c24842d"> ↵ </a></div></div></body>
+   <div class="issue">This should be called from Fetch, probably after the existing step #3.<a href="#issue-3615b173"> ↵ </a></div></div></body>
 </html>
