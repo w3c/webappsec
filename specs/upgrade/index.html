@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Upgrade Insecure Requests</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-03-05">5 March 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-03-06">6 March 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -124,9 +124,9 @@ secure transport before fetching them.</p>
 
 </p>
    <p>
-	The (<a href="http://lists.w3.org/Archives/Public/public-webappsec/">archived</a>) public mailing list
+	The public mailing list
 	<a href="mailto:public-webappsec@w3.org?Subject=%5Bupgrade-insecure-requests%5D%20PUT%20SUBJECT%20HERE">public-webappsec@w3.org</a>
-	(see <a href="http://www.w3.org/Mail/Request">instructions</a>)
+	(<a href="mailto:public-webappsec-request@w3.org?Subject=subscribe">subscribe</a>, <a href="https://lists.w3.org/Archives/Public/public-webappsec/">archives</a>)
 	is preferred for discussion of this specification.
 	When sending e-mail,
 	please put the text “upgrade-insecure-requests” in the subject,
@@ -486,12 +486,12 @@ secure transport before fetching them.</p>
       given an <dfn data-dfn-type="dfn" data-noexport="" id="insecure-requests-policy" idl="">insecure requests policy<a class="self-link" href="#insecure-requests-policy"></a></dfn> which has two potential
       values <dfn class="css" data-dfn-for="insecure requests policy" data-dfn-type="value" data-export="" id="valdef-insecure-requests-policy-do-not-upgrade">Do Not Upgrade<a class="self-link" href="#valdef-insecure-requests-policy-do-not-upgrade"></a></dfn> and
       <dfn class="css" data-dfn-for="insecure requests policy" data-dfn-type="value" data-export="" id="valdef-insecure-requests-policy-upgrade">Upgrade<a class="self-link" href="#valdef-insecure-requests-policy-upgrade"></a></dfn>. It is
-      set to <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-do-not-upgrade">Do Not Upgrade</a> unless otherwise specified. This policy
-      is checked in <a href="#upgrade-request">§4.1 
+      set to <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-do-not-upgrade">Do Not Upgrade</a> unless
+      otherwise specified. This policy is checked in <a href="#upgrade-request">§4.1 
     Upgrade request to a potentially secure URL, if appropriate
-  </a> in order to determine whether or not
-      subresource requests and form submissions should be upgraded during
-      <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">Fetching</a>.
+  </a> in
+      order to determine whether or not subresource requests and form
+      submissions should be upgraded during <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">fetching</a>.
     
      
     
@@ -617,6 +617,11 @@ directive-value = ""
 
     <p>When a server encounters this preference in an HTTP request’s headers, it
   SHOULD redirect the user to a secure version of the resource being requested.</p>
+
+
+    <p class="note" role="note">Note: Receiving a <code><a data-link-type="dfn" href="#returnsecure_representation">return=secure-representation</a></code> preference
+  from a user agent is also an excellent signal to the server that the secure
+  response should include a Strict Transport Security header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.</p>
 
 
     <p>User agent implementation details are described in step #2 of the the
@@ -748,6 +753,61 @@ Location: https://example.com/
   
     </ol>
 
+
+    <p>Likewise, when spinning up a worker, the user agent MUST ensure that it
+  inherits the setting from the context that created it in the following ways:</p>
+
+  
+    <ol>
+    
+     <li>
+      When executing the <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/workers.html#set-up-a-worker-environment-settings-object">set up a worker environment settings object</a>
+      algorithm, perform the following steps after the current step #4:
+
+      
+      <ol start="5">
+        
+       <li>
+          If <var>inherited responsible browsing context</var>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure
+          requests policy</a> is <code>Upgrade</code>, then:
+
+          
+        <ol>
+            
+         <li>
+              Set <var>settings object</var>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure requests policy</a>
+              to <code>Upgrade</code>.
+            
+         
+            
+         <li>
+              For each <var>value</var> in <var>inherited responsible browsing
+              context</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure navigations set</a>, add
+              <var>value</var> to <var>settings object</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade
+              insecure navigations set</a>.
+            
+         
+          
+        </ol>
+        
+        
+       
+      
+      </ol>
+      
+
+
+      <p class="issue" id="issue-61dd79e9"><a class="self-link" href="#issue-61dd79e9"></a>Monkey patching. :(</p>
+      
+    
+     
+  
+    </ol>
+
+
+    <p class="issue" id="issue-9721e5e6"><a class="self-link" href="#issue-9721e5e6"></a>The WHATWG HTML spec is significantly clearer here than <a data-link-type="biblio" href="#biblio-workers">[WORKERS]</a>.
+  Hope that doesn’t cause problems when transitioning to CR.</p>
+
   
     <h3 class="heading settled" data-level="3.4" id="reporting-upgrades"><span class="secno">3.4. </span><span class="content">Reporting Upgrades</span><a class="self-link" href="#reporting-upgrades"></a></h3>
 
@@ -802,7 +862,7 @@ Location: https://example.com/
 
 
     <p class="note" role="note">Note: This will be significantly clarified once <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> is rewritten in terms
-  of Fetch.</p>
+  of <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>.</p>
 </section>
 
 
@@ -830,7 +890,8 @@ Location: https://example.com/
   data leakage via plaintext submissions.</p>
 
 
-    <p class="issue" id="issue-3615b173"><a class="self-link" href="#issue-3615b173"></a>This should be called from Fetch, probably after the existing step #3.</p>
+    <p class="issue" id="issue-4fdc9029"><a class="self-link" href="#issue-4fdc9029"></a>This should be called from <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>, probably after the existing step
+  #3.</p>
 
   
     <ol>
@@ -939,7 +1000,7 @@ Location: https://example.com/
     </ol>
 
 
-    <p class="note" role="note">Note: Due to Fetch’s recursive nature, this algorithm will upgrade
+    <p class="note" role="note">Note: Due to <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>'s recursive nature, this algorithm will upgrade
   insecurely-redirected requests as well as insecure initial requests.</p>
 
   
@@ -997,7 +1058,7 @@ Location: https://example.com/
     <h2 class="heading settled" data-level="5" id="websockets-integration"><span class="secno">5. </span><span class="content">Modifications to WebSockets</span><a class="self-link" href="#websockets-integration"></a></h2>
 
 
-    <p>WebSockets do not use the <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">Fetching</a> algorithm, so we need to handle
+    <p>WebSockets do not use the <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">fetching</a> algorithm, so we need to handle
   those requests separately.</p>
 
 
@@ -1366,6 +1427,10 @@ Location: https://example.com/
      <li><a href="https://fetch.spec.whatwg.org/#concept-request-header-list">header-list</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-request-url">url</a>
     </ul>
+   <li><a data-link-type="biblio" href="#biblio-html">[HTML]</a> defines the following terms:
+    <ul>
+     <li><a href="https://html.spec.whatwg.org/multipage/workers.html#set-up-a-worker-environment-settings-object">set up a worker environment settings object</a>
+    </ul>
    <li><a data-link-type="biblio" href="#biblio-html5">[HTML5]</a> defines the following terms:
     <ul>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a>
@@ -1419,6 +1484,8 @@ Location: https://example.com/
    <dd>Mike West; Adam Barth; Dan Veditz. <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">Content Security Policy Level 2</a>. CR. URL: <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">https://w3c.github.io/webappsec/specs/content-security-policy/</a>
    <dt id="biblio-fetch"><a class="self-link" href="#biblio-fetch"></a>[FETCH]
    <dd>Anne van Kesteren. <a href="https://fetch.spec.whatwg.org/">Fetch</a>. Living Standard. URL: <a href="https://fetch.spec.whatwg.org/">https://fetch.spec.whatwg.org/</a>
+   <dt id="biblio-html"><a class="self-link" href="#biblio-html"></a>[HTML]
+   <dd>Ian Hickson. <a href="https://html.spec.whatwg.org/">HTML</a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/">https://html.spec.whatwg.org/</a>
    <dt id="biblio-mix"><a class="self-link" href="#biblio-mix"></a>[MIX]
    <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">Mixed Content</a>. LCWD. URL: <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">https://w3c.github.io/webappsec/specs/mixedcontent/</a>
    <dt id="biblio-rfc6455"><a class="self-link" href="#biblio-rfc6455"></a>[RFC6455]
@@ -1454,5 +1521,9 @@ Location: https://example.com/
   on a site, and (say) two of them provide images only, and don’t support
   HTTPS at all, you can use the upgrade mechanism for scripts on the other
   N - 2 origins." <a href="https://github.com/w3c/webappsec/issues/184">&lt;https://github.com/w3c/webappsec/issues/184></a><a href="#issue-c64cf7d1"> ↵ </a></div>
-   <div class="issue">This should be called from Fetch, probably after the existing step #3.<a href="#issue-3615b173"> ↵ </a></div></div></body>
+   <div class="issue">Monkey patching. :(<a href="#issue-61dd79e9"> ↵ </a></div>
+   <div class="issue">The WHATWG HTML spec is significantly clearer here than <a data-link-type="biblio" href="#biblio-workers">[WORKERS]</a>.
+  Hope that doesn’t cause problems when transitioning to CR.<a href="#issue-9721e5e6"> ↵ </a></div>
+   <div class="issue">This should be called from <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>, probably after the existing step
+  #3.<a href="#issue-4fdc9029"> ↵ </a></div></div></body>
 </html>
