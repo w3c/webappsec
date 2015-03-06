@@ -412,11 +412,12 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   If a site requires the upgrade mechanism described in this document in order
   to provide users with a reasonable experience over secure transit, then
   authors need to determine whether or not it is safe to redirect a client to
-  the secure version of a site. Rather than relying on user-agent sniffing to
-  make this decision, user agents MUST advertise their capabilities when
-  making insecure navigational requests by sending an <code>HTTPS</code> HTTP
-  request header expressing the desire for a secure representation [[!RFC7240]]
-  as described in [[#preference]].
+  the secure version of a site, or set an HSTS header if the request is
+  already to a <a>potentially secure origin</a>. Rather than relying on
+  user-agent sniffing to make this decision, user agents MUST advertise their
+  capabilities when making navigational requests by sending a
+  <code>HTTPS</code> HTTP request header expressing the desire for a secure
+  representation [[!RFC7240]] as described in [[#preference]].
 
   <h4 id="preference">
     The <code>HTTPS</code> HTTP Request Header Field
@@ -449,10 +450,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <code>Strict-Transport-Security</code> header [[RFC6797]].
 
   User agent implementation details are described in step #2 of the the
-  [[#upgrade-request]] algorithm. Note in particular that to mitigate the risk
-  that this header will become a vestigial part of the platform, user agents
-  SHOULD omit the preference when making requests to <a>potentially secure
-  origins</a>.
+  [[#upgrade-request]] algorithm.
 
   <div class="example">
     A client that supports this document's upgrade mechanism requests
@@ -687,10 +685,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <ol>
     <li>
-      If <var>request</var>'s {{Request/url}} is <a>potentially secure</a>:
-      return without modifying <var>request</var>.
-    </li>
-    <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
       <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
       then <a>append</a> a header named <code>HTTPS</code> with a value
@@ -922,23 +916,34 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <ol>
     <li>
-      Redirect incoming traffic from HTTP to HTTPS by serving a
+      Determine if any pages on the origin are dependent on the
+      <code><a>upgrade-insecure-requests</a></code> mechanism. If so, requests
+      that contain a <a>Prefer</a>: <a>return=secure-representation</a> header are
+      considered <dfn export>safely upgradable requests</dfn>, while requests without
+      this header are not <a>safely upgradable requests</a>.  If no pages on the
+      origin depend on <code><a>upgrade-insecure-requests</a></code>, all
+      requests are <a>safely upgradable requests</a>.
+    <li>
+      Redirect incoming <a>safely upgradable requests<a> from HTTP to HTTPS by serving a
       <code>Location</code> header along with a <code>302</code> status code.
     </li>
     <li>
-      Respond to HTTPS requests with a <code>Strict-Transport-Security</code>
-      header with a reasonable <code>max-age</code>.
+      Respond to HTTPS <a>safely upgradable requests</a> with a
+      <code>Strict-Transport-Security</code> header with a reasonable
+      <code>max-age</code>.
     </li>
     <li>
-      Work with user agent vendors to add their sites to those user agent's
-      HSTS Preload Lists (for example, by visiting
-      <a href="https://hstspreload.appspot.com/">hstspreload.appspot.com</a>).
-    </li>
-    <li>
-      Opt-into either this document's
-      <code><a>upgrade-insecure-requests</a></code> mechanism, or into Mixed
-      Content's <a>strict mode</a> in order to ensure that insecure content is
-      never loaded.
+      If some pages on the origin require
+      <code><a>upgrade-insecure-requests</a></code> mechanism, then opt in to
+      it.
+
+      If no pages on the origin require
+      <code><a>upgrade-insecure-requests</a></code> to function securely, work
+      with user agent vendors to add their sites to those user agent's HSTS
+      Preload Lists (for example, by visiting <a
+      href="https://hstspreload.appspot.com/">hstspreload.appspot.com</a>) and
+      enable Mixed Content's <a>strict mode</a> in order to ensure that insecure
+      content is never loaded.
     </li>
   </ol>
 </section>
