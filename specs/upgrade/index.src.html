@@ -59,6 +59,12 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
       text: responsible document
       text: responsible browsing context
       text: relevant settings object for a script
+spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
+  urlPrefix: workers.html
+    type: dfn
+      text: set up a worker environment settings object
+    type: interface
+      text: SharedWorker
 spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
   type: dfn
     text: a priori insecure url
@@ -70,6 +76,9 @@ spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
     url: potentially-secure-origin
       text: potentially secure origin
       text: potentially secure
+spec: SERVICE-WORKERS; urlPrefix: https://slightlyoff.github.io/ServiceWorker/spec/service_worker/
+  type: interface
+    text: ServiceWorker; url: service-worker-interface 
 spec: URL; urlPrefix: http://www.w3.org/TR/url/
   type: interface
     text: URL; url: concept-url
@@ -511,6 +520,41 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     </li>
   </ol>
 
+  Likewise, when spinning up a worker, the user agent MUST ensure that it
+  inherits the setting from the context that created it in the following ways:
+
+  <ol>
+    <li>
+      When executing the <a>set up a worker environment settings object</a>
+      algorithm, perform the following steps after the current step #4:
+
+      <ol start="5">
+        <li>
+          If <var>inherited responsible browsing context</var>'s <a>insecure
+          requests policy</a> is <code>Upgrade</code>, then:
+
+          <ol>
+            <li>
+              Set <var>settings object</var>'s <a>insecure requests policy</a>
+              to <code>Upgrade</code>.
+            </li>
+            <li>
+              For each <var>value</var> in <var>inherited responsible browsing
+              context</var>'s <a>upgrade insecure navigations set</a>, add
+              <var>value</var> to <var>settings object</var>'s <a>upgrade
+              insecure navigations set</a>.
+            </li>
+          </ol>
+        </li>
+      </ol>
+
+      ISSUE: Monkey patching. :(
+    </li>
+  </ol>
+
+  ISSUE: The WHATWG HTML spec is significantly clearer here than [[WORKERS]].
+  Hope that doesn't cause problems when transitioning to CR.
+ 
   <h3 id="reporting-upgrades">Reporting Upgrades</h3>
 
   Upgrading insecure requests MUST not interfere with an authors' ability to
