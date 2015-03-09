@@ -249,6 +249,13 @@ are encouraged to optimize.</p>
     <p>The term <dfn>digest</dfn> refers to the base64-encoded result of
 executing a cryptographic hash function on an arbitrary block of data.</p>
 
+    <p>A <dfn>secure channel</dfn> is any communication mechanism that the user
+agent has defined as “secure” (typically limited to HTTP over Transport
+Layer Security (TLS) [[!RFC2818]]).</p>
+
+    <p>An <dfn>insecure channel</dfn> is any communication mechanism other than
+those the user agent has defined as “secure”.</p>
+
     <p>The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]</p>
 
@@ -421,6 +428,18 @@ result of explicit access granted to the loading origin via CORS. [[!CORS]]</p>
 globally unique identifiers for each file URI. This means that
 resources accessed over a <code>file</code> scheme URL are unlikely to be
 eligible for integrity checks.</p>
+
+      <p class="note">It is important to note here that being a privileged context (e.g. HTTPS) is not
+necessary for the use of integrity validation. Because resource integrity is
+only an application level security tool, and it does not change the security
+state of the user agent, a privileged context is unnecessary. However, if
+integrity is used in an unprivileged context (e.g. HTTP), users should be aware
+that the integrity provides <em>no security guarantees</em> at all. Even if the
+integrity is used in a privileged context, but on a resource that is not
+potentially secure, then privacy is at great risk. For these reasons, authors
+SHOULD deliver integrity meta to privileged contexts for resources on
+potentially secure origins. See <a href="#unprivileged-contexts-remain-unprivileged-1">Unprivileged contexts remain unprivileged</a>
+for more discussion.</p>
 
       <p>Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
@@ -844,14 +863,17 @@ in general.</p>
   <h2 id="security-considerations">Security Considerations</h2>
 
   <section>
-    <h3 id="insecure-channels-remain-insecure">Insecure channels remain insecure</h3>
+    <h3 id="unprivileged-contexts-remain-unprivileged">Unprivileged contexts remain unprivileged</h3>
 
-    <p><a href="#dfn-integrity-metadata">Integrity metadata</a> delivered over an insecure channel only protects an
+    <p><a href="#dfn-integrity-metadata">Integrity metadata</a> delivered to an [unprivileged context][] only protects an
 origin against a compromise of the server where an external resources is
 hosted. Network attackers can alter the digest in-flight (or remove it
 entirely (or do absolutely anything else to the document)), just as they
 could alter the resource the hash is meant to validate. Authors SHOULD
-deliver integrity metadata over secure channels. See also <a href="https://w3ctag.github.io/web-https/">securing the web</a>.</p>
+deliver integrity to [priveleged contexts][]. See also <a href="https://w3ctag.github.io/web-https/">securing the web</a>.
+<a href="#dfn-integrity-metadata">integrity metadata</a>: #dfn-integrity-metadata
+[privileged context]: #dfn-privileged-context
+[unprivileged context]: #dfn-unprivileged-context</p>
 
   </section>
   <!-- /Security::Insecure channels -->
