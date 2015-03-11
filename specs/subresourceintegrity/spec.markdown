@@ -142,16 +142,15 @@ executing a cryptographic hash function on an arbitrary block of data.
 The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]
 
-A <dfn>privileged context</dfn> is defined in [section 2 of the Privileged
-Contexts][privcontext] specification. An example of a Privileged Document is a
-Document loaded over HTTPS.
-
-An <dfn>unprivileged context</dfn> is defined in [section 2 of the Privileged
-Contexts][privcontext] specification. An example of an Unprivileged Document is
-a Document loaded over HTTP.
+The terms <dfn>privileged document</dfn>, <dfn>unprivileged document</dfn>, and
+<dfn>privileged context</dfn> are defined in [section 2 of the Privileged
+Contexts][privcontext] specification. An example of a privileged document is a
+document loaded over HTTPS. An example of an unprivileged document and an
+unprivileged context are a document loaded over HTTP.
 
 [privcontext]: https://w3c.github.io/webappsec/specs/powerfulfeatures/#terms
-[privileged context]: #dfn-privileged-context
+[privileged document]: #dfn-privileged-document
+[unprivileged document]: #dfn-unprivileged-document
 [unprivileged context]: #dfn-unprivileged-context
 
 A <dfn>potentially secure origin</dfn> is defined in [section 2 of the Mixed
@@ -337,15 +336,16 @@ resources accessed over a `file` scheme URL are unlikely to be
 eligible for integrity checks.
 {:.note}
 
-One should note that being a [privileged context][] (e.g. HTTPS) is not
-necessary for the use of integrity validation. Because resource integrity is
-only an application level security tool, and it does not change the security
-state of the user agent, a privileged context is unnecessary. However, if
-integrity is used in an [unprivileged context][] (e.g. HTTP), authors should be
-aware that the integrity provides <em>no security guarantees</em> at all. For
-these reasons, authors SHOULD deliver integrity metadata to privileged contexts
-for resources on a [potentially secure origin][]. See [Unprivileged contexts
-remain unprivileged][] for more discussion.
+One should note that being a [privileged document][] (e.g. a document delivered
+over HTTPS) is not necessary for the use of integrity validation. Because
+resource integrity is only an application level security tool, and it does not
+change the security state of the user agent, a privileged document is
+unnecessary. However, if integrity is used in an [unprivileged document][] (e.g.
+a document delivered over HTTP), authors should be aware that the integrity
+provides <em>no security guarantees at all</em>. For this reason, authors should
+only deliver integrity metadata on a [potentially secure origin][].  See
+[Unprivileged contexts remain unprivileged][] for more discussion.
+
 {:.note}
 
 [uri-origin]: http://tools.ietf.org/html/rfc6454#section-4
@@ -730,15 +730,18 @@ in general.
 <section>
 ### Unprivileged contexts remain unprivileged
 
-[Integrity metadata][] delivered to an [unprivileged context][] only protects an
-origin against a compromise of the server where an external resources is
-hosted. Network attackers can alter the digest in-flight (or remove it
-entirely (or do absolutely anything else to the document)), just as they
-could alter the resource the hash is meant to validate. Authors SHOULD
-deliver integrity to [privileged contexts][]. See also [securing the web][].
+[Integrity metadata][] delivered to an [unprivileged context], such as an
+[unprivileged document][], only protects an origin against a compromise of the
+server where an external resources is hosted. Network attackers can alter the
+digest in-flight (or remove it entirely, or do absolutely anything else to the
+document), just as they could alter the resource the hash is meant to validate.
+Thus, authors SHOULD deliver integrity metadata only to a [privileged
+document][]. See also [securing the web][].
 
 [Securing the Web]: https://w3ctag.github.io/web-https/
-[privileged contexts]: #dfn-privileged-context
+[privileged document]: #dfn-privileged-document
+[unprivileged document]: #dfn-privileged-document
+[unprivileged context]: #dfn-privileged-context
 
 </section><!-- /Security::Insecure channels -->
 
