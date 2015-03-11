@@ -154,6 +154,13 @@ a Document loaded over HTTP.
 [privileged context]: #dfn-privileged-context
 [unprivileged context]: #dfn-unprivileged-context
 
+A <dfn>potentially secure origin</dfn> is defined in [section 2 of the Mixed
+Content][mixedcontent] specification. An example of a potentially secure origin
+is an origin whose scheme component is <code>HTTPS</code>.
+
+[potentially secure origin]: #dfn-potentially-secure-origin
+[mixedcontent]: https://www.w3.org/TR/mixed-content/#potentially-secure-origin
+
 The <dfn>MIME type</dfn> of a resource is a technical hint about the use
 and format of that resource. [[!MIMETYPE]]
 
@@ -337,8 +344,9 @@ state of the user agent, a privileged context is unnecessary. However, if
 integrity is used in an [unprivileged context][] (e.g. HTTP), authors should be
 aware that the integrity provides <em>no security guarantees</em> at all. For
 these reasons, authors SHOULD deliver integrity metadata to privileged contexts
-for resources on potentially secure origins. See [Unprivileged contexts remain
-unprivileged][] for more discussion.  {:.note}
+for resources on a [potentially secure origin][]. See [Unprivileged contexts
+remain unprivileged][] for more discussion.
+{:.note}
 
 [uri-origin]: http://tools.ietf.org/html/rfc6454#section-4
 [Unprivileged contexts remain unprivileged]: #unprivileged-contexts-remain-unprivileged-1
