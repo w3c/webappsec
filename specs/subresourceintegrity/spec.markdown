@@ -334,13 +334,11 @@ One should note that being a [privileged context][] (e.g. HTTPS) is not
 necessary for the use of integrity validation. Because resource integrity is
 only an application level security tool, and it does not change the security
 state of the user agent, a privileged context is unnecessary. However, if
-integrity is used in an [unprivileged context][] (e.g. HTTP), users should be
-aware that the integrity provides <em>no security guarantees</em> at all. Even
-if the integrity is used in a privileged context, but on a resource that is not
-potentially secure, then privacy is at great risk. For these reasons, authors
-SHOULD deliver integrity meta to privileged contexts for resources on
-potentially secure origins. See [Unprivileged contexts remain unprivileged][]
-for more discussion.  {:.note}
+integrity is used in an [unprivileged context][] (e.g. HTTP), authors should be
+aware that the integrity provides <em>no security guarantees</em> at all. For
+these reasons, authors SHOULD deliver integrity metadata to privileged contexts
+for resources on potentially secure origins. See [Unprivileged contexts remain
+unprivileged][] for more discussion.  {:.note}
 
 [uri-origin]: http://tools.ietf.org/html/rfc6454#section-4
 [Unprivileged contexts remain unprivileged]: #unprivileged-contexts-remain-unprivileged-1
