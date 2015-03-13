@@ -41,7 +41,7 @@ mixedcontent/index.html: mixedcontent/index.src.html biblio.json
 	bikeshed -f spec ./mixedcontent/index.src.html
 
 mixedcontent/published/2015-02-CR.html: mixedcontent/index.src.html
-	bikeshed -f spec --md-status=CR --md-deadline=2015-07-01 ./mixedcontent/index.src.html ./mixedcontent/published/2015-02-CR.html
+	bikeshed -f spec --md-status=CR --md-date=2015-03-17 --md-deadline=2015-07-01 ./mixedcontent/index.src.html ./mixedcontent/published/2015-02-CR.html
 
 referrer-policy/index.html: referrer-policy/index.src.html biblio.json
 	bikeshed -f spec ./referrer-policy/index.src.html
