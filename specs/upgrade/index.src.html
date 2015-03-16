@@ -94,10 +94,16 @@ spec: RFC6455; urlPrefix: http://tools.ietf.org/html/rfc6455
   type: dfn
     text: establish a websocket connection; url: section-4.1
     text: fail the websocket connection; url: section-7.1.7
+spec: RFC7231; urlPrefix: https://tools.ietf.org/html/rfc7231
+  type: dfn
+    text: Vary; url: section-7.1.4
+spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
+  type: dfn
+    text: Cache-Control; url: section-5.2
+    text: no-store; url: section-5.2.2.3
 spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   type: dfn
-    text: prefer; url: section-2
-    text: return; url: section-4.2
+    text: Prefer; url: section-2
 </pre>
 
 <!-- BIBLIOGRAPHY -->
@@ -220,26 +226,24 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <div class="example">
     Megacorp, Inc. wishes to migrate <code>http://example.com/</code> to
-    <code>https://example.com</code>. They set up the server-side requirements
+    <code>https://example.com</code>. They set up their servers
     to make their own resources available over HTTPS, and work with partners in
-    order to make third-party widgets available as well.
+    order to make third-party widgets available securely as well.
 
-    They quickly realize, however, that the majority of their long-tail content
-    is locked up in a database tied to an old content management system that
-    they've been avoiding for years ("If it ain't broke..."). They'll need to
-    spend quite a bit of time either migrating the content to their new system,
-    or modifying it in-place in the old system. Either way, it ends up being a
-    substantial amount of work, and though they put top programmers on the task,
-    it clearly won't be done any time soon.
+    They quickly realize, however, that the majority of their content is locked
+    up in a database tied to an old content management system, and it contains
+    hardcoded links to insecure resources (e.g., http:// URLs to images and
+    other content). Unfortunately, it's a substantial amount of work to update
+    it.
 
-    As a stopgap measure, Megacorp injects the following header into every
-    response that goes out through their servers:
+    As a stopgap measure, Megacorp injects the following header field into every
+    HTML response that goes out from their servers:
 
     <pre>
       Content-Security-Policy: <a>upgrade-insecure-requests</a>
     </pre>
 
-    This automatically upgrades all insecure resource requests for their pages
+    This automatically upgrades all insecure resource requests from their pages
     to secure variants, allowing a user agent to treat the following HTML code:
 
     <pre>
@@ -259,10 +263,10 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <div class="example">
     Megacorp, Inc. isn't quite ready to deliver Strict Transport Security
-    headers [[RFC6797]], but does want to keep users on secure pages when their
-    user agents support <code><a>upgrade-insecure-requests</a></code>. Happily,
-    this comes for free with <code><a>upgrade-insecure-requests</a></code>. That
-    is, they're already delivering pages with the following header:
+    headers [[RFC6797]], but does want to keep users on secure pages when
+    possible. Happily, this comes for free with
+    <code><a>upgrade-insecure-requests</a></code>. That is, they're already
+    delivering pages with the following header:
 
     <pre>
       Content-Security-Policy: <a>upgrade-insecure-requests</a>
@@ -419,28 +423,28 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   representation [[!RFC7240]] as described in [[#preference]].
 
   <h4 id="preference">
-    The <code>return=secure-representation</code> Preference
+    The <code>tls</code> Preference
   </h4>
 
-  The "<code><dfn export>return=secure-representation</dfn></code>" preference
+  The <dfn export local-lt="tls"><code>tls</code> preference</dfn></code>
   indicates that the client prefers that the server redirect from an insecure
   resource representation to a secure one, and that it can successfully handle
   the <code><a>upgrade-insecure-requests</a></code> directive in order to make
   that redirection as seamless as possible.
 
-  This new preference changes the <code><a>return</a></code> ABNF defined in
-  <a lt="return">RFC7240 Section 4.2</a> to the following:
+  This preference is represented by the following ANBF:
 
   <pre>
-    return = "return" BWS "=" BWS ( "<dfn>secure-representation</dfn>" / "representation" / "minimal" )
+    https = "https"
   </pre>
 
   When a server encounters this preference in an HTTP request's headers, it
-  SHOULD redirect the user to a secure version of the resource being requested.
+  SHOULD redirect the user to a <a>potentially secure</a> representation of the
+  resource being requested.
 
-  Note: Receiving a <code><a>return=secure-representation</a></code> preference
-  from a user agent is also an excellent signal to the server that the secure
-  response should include a Strict Transport Security header [[RFC6797]].
+  Note: Receiving an <a><code>tls</code> preference</a> from a user agent is
+  also an excellent signal to the server that the secure response could include
+  a Strict Transport Security header [[RFC6797]].
 
   User agent implementation details are described in step #2 of the the
   [[#upgrade-request]] algorithm.
@@ -452,9 +456,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <pre>
       GET / HTTP/1.1
       Host: example.com
-      Connection: keep-alive
-      ...
-      <a>Prefer</a>: <a>return=secure-representation</a>
+      <a>Prefer</a>: <a>tls</a>
     </pre>
 
     The server parses the preference, notices that the user's client can deal
@@ -464,6 +466,19 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <pre>
       HTTP/1.1 302 Moved Temporarily
       Location: https://example.com/
+      <a>Vary</a>: <a>Prefer</a>
+    </pre>
+
+    <a><code>Prefer</code></a> is listed in the <a><code>Vary</code></a> header,
+    as the redirect response might otherwise be served by caches to clients that
+    don't support the upgrade mechanism defined here. The same effect could be
+    achieved by making this redirect response uncachable via the
+    <a><code>Cache-Control</code></a> header:
+
+    <pre>
+      HTTP/1.1 302 Moved Temporarily
+      Location: https://example.com/
+      <a>Cache-Control</a>: <a>no-store</a>
     </pre>
   </div>
 
@@ -611,10 +626,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   Given a {{Request}} <var>request</var>, this algorithm will rewrite its
   {{Request/url}} if the {{Request/client}} from which the request originates
-  has opted-in to upgrades. It will also inject a
-  <code><a>return=secure-representation</a></code> preference for insecure
-  navigational requests in order to improve a server's ability to feature-detect
-  a client's upgrade capabilities.
+  has opted-in to upgrades. It will also inject an <a><code>tls</code>
+  preference</a> for insecure navigational requests in order to improve a
+  server's ability to feature-detect a client's upgrade capabilities.
 
   We will not upgrade cross-origin navigational requests, with the exception of
   form submissions. Form submissions will be upgraded to mitigate the risk of
@@ -628,8 +642,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       If <var>request</var>'s {{Request/context-frame-type}} is
       <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
       then <a>append</a> a header named <code>Prefer</code> with a value
-      of <code><a>return=secure-representation</a></code> to
-      <var>request</var>'s {{Request/header-list}}.
+      of <code><a>tls</a></code> to <var>request</var>'s
+      {{Request/header-list}}.
     </li>
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
@@ -885,32 +899,21 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 <section>
   <h2 id="iana-considerations">IANA Considerations</h2>
 
-  The "HTTP Preferences" registry should be updated with the following
-  alteration to the existing registration for the <code><a>return</a></code>
-  preference [[!RFC7240]]:
+  The following registration should be added to the "HTTP Preferences" registry
+  [[!RFC7240]]:
 
   :  Preference
-  :: return
-
-  :  Value
-  :: One of "<code>minimal</code>", "<code>representation</code>", or
-     "<code><a>secure-representation</a></code>".
+  :: https
 
   :  Description
-  :: When the value is "<code>minimal</code>", it indicates that the client
-     prefers that the server return a minimal response to a request.  When the
-     value is "<code>representation</code>", it indicates that the client
-     prefers that the server include a representation of the current state of
-     the resource in response to a request. When the value is
-     "<code>secure-representation</code>" it indicates that the client prefers
-     to be redirected to a secure version of the resource (and that the client
-     supports the <a>upgrade-insecure-requests</a> mechanism).
+  :: This preference indicates that the client prefers that the server return
+     a redirect response to a <a>potentially secure</a> representation of the
+     resource being requested (and that the client supports the
+     <a>upgrade-insecure-requests</a> mechanism.
 
   :  Reference
-  :: <a lt="return">Section 4.2 of RFC7240</a> defines the
-     "<code>minimal</code>" and "<code>representation</code>" values. This
-     specification (see [[#preference]]) defines the
-     <code><a>secure-representation</a></code> value.
+  :: [this specification], [[#preference]].
+
 
 </section>
 

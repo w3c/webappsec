@@ -9,36 +9,37 @@ Web Application Security Working Group
 ## Specifications
 
 * Content Security Policy
-    * Editor's draft:
-        * <https://w3c.github.io/webappsec/specs/content-security-policy/>
+    * Editor's draft: <https://w3c.github.io/webappsec/specs/content-security-policy/>
         * Source: <https://github.com/w3c/webappsec/tree/master/specs/content-security-policy/>
-    * Level 1:
-        * Candidate Recommendation: <http://w3.org/TR/CSP>
-    * Level 2:
-        * Last Call Working Draft: <http://w3.org/TR/CSP2>
-        * Editors' Draft: <https://w3c.github.io/webappsec/specs/CSP2/>
+    * Level 1, Note: <http://w3.org/TR/CSP>
+    * Level 2, Candidate Recommendation: <http://w3.org/TR/CSP2>
 
 * Credential Management:
     * Editor's draft: <https://w3c.github.io/webappsec/specs/credentialmanagement/>
         * Source: <https://github.com/w3c/webappsec/tree/master/specs/credentialmanagement/>
     * Use Cases: <https://w3c.github.io/webappsec/usecases/credentialmanagement/>
 
-* Mixed Content (**LAST CALL**):
+* Mixed Content:
     * Editor's Draft: <https://w3c.github.io/webappsec/specs/mixedcontent/>
-    * Last Call Working Draft: <http://w3.org/TR/mixed-content>
-    * Source: <https://github.com/w3c/webappsec/tree/master/specs/mixedcontent>
+        * Source: <https://github.com/w3c/webappsec/tree/master/specs/mixedcontent>
+    * Candidate Recommendation: <http://www.w3.org/TR/mixed-content/>
+
+* Privileged Contexts
+    * Editor's Draft: <https://w3c.github.io/webappsec/specs/powerfulfeatures/>
+        * Source: <https://github.com/w3c/webappsec/blob/master/specs/powerfulfeatures>
+    * Working Draft: <http://www.w3.org/TR/powerful-features/>
 
 * Referrer Policy
     * Editor's Draft: <https://w3c.github.io/webappsec/specs/referrer-policy/>
+        * Source: <https://github.com/w3c/webappsec/tree/master/specs/referrer-policy>
     * Working Draft: <http://w3.org/TR/referrer-policy>
-    * Source: <https://github.com/w3c/webappsec/tree/master/specs/referrer-policy>
 
 * Subresource Integrity
     * Editor's Draft: <https://w3c.github.io/webappsec/specs/subresourceintegrity/>
+        * Source: <https://github.com/w3c/webappsec/tree/master/specs/subresourceintegrity>
     * Working Draft: <http://w3.org/TR/SRI>
-    * Source: <https://github.com/w3c/webappsec/tree/master/specs/subresourceintegrity>
 
-* Powerful Features
-    * Editor's Draft: <https://w3c.github.io/webappsec/specs/powerfulfeatures/>
-    * Working Draft: <http://www.w3.org/TR/powerful-features/>
-    * Source: <https://github.com/w3c/webappsec/blob/master/specs/powerfulfeatures>
+* Upgrade Insecure Requests
+    * Editor's Draft: <https://w3c.github.io/webappsec/specs/upgrade/>
+        * Source: <https://github.com/w3c/webappsec/blob/master/specs/upgrade>
+    * Working Draft: <http://www.w3.org/TR/upgrade-insecure-requests/>
