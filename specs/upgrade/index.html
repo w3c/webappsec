@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Upgrade Insecure Requests</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-03-16">16 March 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-03-17">17 March 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -177,6 +177,9 @@ secure transport before fetching them.</p>
         <li><a href="#preference"><span class="secno">3.2.1</span> <span class="content">
     The <code>tls</code> Preference
   </span></a>
+        <li><a href="#upgraded-header-field"><span class="secno">3.2.2</span> <span class="content">
+    The <code>Upgraded</code> HTTP Request Header Field
+  </span></a>
        </ul>
       <li><a href="#nesting"><span class="secno">3.3</span> <span class="content">Policy Inheritance</span></a>
       <li><a href="#reporting-upgrades"><span class="secno">3.4</span> <span class="content">Reporting Upgrades</span></a>
@@ -202,6 +205,11 @@ secure transport before fetching them.</p>
       <li><a href="#relation-to-hsts"><span class="secno">7.2</span> <span class="content">Relation to HSTS</span></a>
      </ul>
     <li><a href="#iana-considerations"><span class="secno">8</span> <span class="content">IANA Considerations</span></a>
+     <ul class="toc">
+      <li><a href="#iana-upgraded"><span class="secno">8.1</span> <span class="content">
+      Upgraded
+    </span></a>
+     </ul>
     <li><a href="#acknowledgements"><span class="secno">9</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content">Conformance</span></a>
      <ul class="toc">
@@ -609,7 +617,7 @@ directive-value = ""
     <p>This preference is represented by the following ANBF:</p>
 
   
-    <pre>https = "https"
+    <pre>tls = "tls"
 </pre>
 
 
@@ -668,6 +676,61 @@ Location: https://example.com/
      <pre>HTTP/1.1 302 Moved Temporarily
 Location: https://example.com/
 <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-5.2">Cache-Control</a>: <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-5.2.2.3">no-store</a>
+</pre>
+     
+  
+    </div>
+
+  
+    <h4 class="heading settled" data-level="3.2.2" id="upgraded-header-field"><span class="secno">3.2.2. </span><span class="content">
+    The <code>Upgraded</code> HTTP Request Header Field
+  </span><a class="self-link" href="#upgraded-header-field"></a></h4>
+
+
+    <p>The <dfn data-dfn-type="dfn" data-export="" id="upgraded"><code>Upgraded</code><a class="self-link" href="#upgraded"></a></dfn> HTTP request header field
+  indicates that the client’s request is the result of a successful upgrade
+  from an <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure URL</a>. This signal is
+  transmitted according to the following ABNF:</p>
+
+  
+    <pre>"Upgraded:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> "1" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
+</pre>
+
+
+    <p>User agent implementation details are described in step #8 of the
+  <a href="#upgrade-request">§4.1 
+    Upgrade request to a potentially secure URL, if appropriate
+  </a> algorithm.</p>
+
+
+    <p class="note" role="note">Note: Receiving an <code><a data-link-type="dfn" href="#upgraded">Upgraded</a></code> header along with a request
+  is an excellent signal to the server that the response could safely include
+  a Strict Transport Security header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.</p>
+
+  
+    <div class="example" id="example-f0845b8d"><a class="self-link" href="#example-f0845b8d"></a>
+    A client that supports this document’s upgrade mechanism requests
+    <code>https://example.com/</code>, which sends the
+    <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive along with a
+    response containing the following HTML:
+
+    
+     <pre>&lt;img src="http://example.com/logo.png">
+</pre>
+     
+
+
+     <p>The user agent will <a data-link-type="dfn" href="#upgrade">upgrade</a> the request generated for that image,
+    and will signal to the server that the request was indeed upgraded by
+    adding an <code><a data-link-type="dfn" href="#upgraded">Upgraded</a></code> header with a value of
+    <code>1</code>:</p>
+     
+
+    
+     <pre>GET /logo.png HTTP/1.1
+Host: example.com
+...
+<a data-link-type="dfn" href="#upgraded">Upgraded</a>: 1
 </pre>
      
   
@@ -1009,6 +1072,12 @@ Location: https://example.com/
       
     
      
+    
+     <li>
+      <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-list-append">Append</a> a header named <code><a data-link-type="dfn" href="#upgraded">Upgraded</a></code> with a value
+      of <code>1</code> to <var>request</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-header-list">header-list</a></code>.
+    
+     
   
     </ol>
 
@@ -1075,7 +1144,7 @@ Location: https://example.com/
   those requests separately.</p>
 
 
-    <p>The <a data-link-type="dfn" href="http://tools.ietf.org/html/rfc6455#section-4.1">establish a WebSocket connection</a> algorithm <a data-link-type="biblio" href="#biblio-rfc6455">[RFC6455]</a> is modified
+    <p>The <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6455#section-4.1">establish a WebSocket connection</a> algorithm <a data-link-type="biblio" href="#biblio-rfc6455">[RFC6455]</a> is modified
   as follows:</p>
 
   
@@ -1294,22 +1363,74 @@ Location: https://example.com/
     The tls Preference
   </a>.</p>
       
-
 </dl>
-</section>
 
+    <p>The permanent message header field registry should be updated
+  with the following registrations: <a data-link-type="biblio" href="#biblio-rfc3864">[RFC3864]</a></p>
 
-   <section>
   
-    <h2 class="heading settled" data-level="9" id="acknowledgements"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+    <section>
+    
+     <h3 class="heading settled" data-level="8.1" id="iana-upgraded"><span class="secno">8.1. </span><span class="content">
+      Upgraded
+    </span><a class="self-link" href="#iana-upgraded"></a></h3>
+     
+
+    
+     <dl>
+      
+      <dt>Header field name
+      
+      
+      <dd>Upgraded
+      
+
+      
+      <dt>Applicable protocol
+      
+      
+      <dd>http
+      
+
+      
+      <dt>Status
+      
+      
+      <dd>standard
+      
+
+      
+      <dt>Author/Change controller
+      
+      
+      <dd>W3C
+      
+
+      
+      <dt>Specification document
+      
+      
+      <dd>This specification (See <code><a data-link-type="dfn" href="#upgraded">Upgraded</a></code>
+      Header Field)
+      
+    
+     </dl>
+     
+  
+    </section>
 
 
-    <p>Anne van Kesteren helped ensure that the initial draft of this document was
+    <section>
+  
+     <h2 class="heading settled" data-level="9" id="acknowledgements"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+
+
+     <p>Anne van Kesteren helped ensure that the initial draft of this document was
   sane. Peter Eckersley and Daniel Kahn Gillmor clarified the problem space, and
   helped point out the impact.</p>
 </section>
 
-</main>
+</section></main>
 
   <h2 class="no-ref no-num heading settled" id="conformance"><span class="content">Conformance</span><a class="self-link" href="#conformance"></a></h2>
 
@@ -1391,6 +1512,7 @@ Location: https://example.com/
    <li>tls preference, <a href="#tls-preference">3.2.1</a>
    <li>Upgrade, <a href="#valdef-insecure-requests-policy-upgrade">3</a>
    <li>upgrade, <a href="#upgrade">2</a>
+   <li>Upgraded, <a href="#upgraded">3.2.2</a>
    <li>upgrade insecure navigations set, <a href="#upgrade-insecure-navigations-set">3</a>
    <li>upgrade-insecure-requests, <a href="#upgrade_insecure_requests">3.1</a></ul>
   <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
@@ -1449,9 +1571,13 @@ Location: https://example.com/
      <li><a href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure origin</a>
      <li><a href="https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode">strict mode</a>
     </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc5234">[RFC5234]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">wsp</a>
+    </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc6455">[RFC6455]</a> defines the following terms:
     <ul>
-     <li><a href="http://tools.ietf.org/html/rfc6455#section-4.1">establish a websocket connection</a>
+     <li><a href="https://tools.ietf.org/html/rfc6455#section-4.1">establish a websocket connection</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc7231">[RFC7231]</a> defines the following terms:
     <ul>
@@ -1493,6 +1619,8 @@ Location: https://example.com/
    <dd>Ian Hickson. <a href="https://html.spec.whatwg.org/">HTML</a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/">https://html.spec.whatwg.org/</a>
    <dt id="biblio-mix"><a class="self-link" href="#biblio-mix"></a>[MIX]
    <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">Mixed Content</a>. LCWD. URL: <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">https://w3c.github.io/webappsec/specs/mixedcontent/</a>
+   <dt id="biblio-rfc3864"><a class="self-link" href="#biblio-rfc3864"></a>[RFC3864]
+   <dd>Graham Klyne; Mark Nottingham; Jeffrey C. Mogul. <a href="http://www.ietf.org/rfc/rfc3864.txt">Registration Procedures for Message Header Fields</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc3864.txt">http://www.ietf.org/rfc/rfc3864.txt</a>
    <dt id="biblio-rfc6455"><a class="self-link" href="#biblio-rfc6455"></a>[RFC6455]
    <dd>Ian Fette; Alexey Melnikov. <a href="http://www.ietf.org/rfc/rfc6455.txt">The WebSocket Protocol</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6455.txt">http://www.ietf.org/rfc/rfc6455.txt</a>
    <dt id="biblio-rfc7231"><a class="self-link" href="#biblio-rfc7231"></a>[RFC7231]
@@ -1505,6 +1633,8 @@ Location: https://example.com/
    <dd>Robin Berjon; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
    <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a>
+   <dt id="biblio-rfc5234"><a class="self-link" href="#biblio-rfc5234"></a>[RFC5234]
+   <dd>D. Crocker, Ed.; P. Overell. <a href="http://www.ietf.org/rfc/rfc5234.txt">Augmented BNF for Syntax Specifications: ABNF</a>. January 2008. Internet Standard. URL: <a href="http://www.ietf.org/rfc/rfc5234.txt">http://www.ietf.org/rfc/rfc5234.txt</a>
    <dt id="biblio-rfc7234"><a class="self-link" href="#biblio-rfc7234"></a>[RFC7234]
    <dd>R. Fielding, Ed.; M. Nottingham, Ed.; J. Reschke, Ed.. <a href="http://www.ietf.org/rfc/rfc7234.txt">Hypertext Transfer Protocol (HTTP/1.1): Caching</a>. June 2014. Proposed Standard. URL: <a href="http://www.ietf.org/rfc/rfc7234.txt">http://www.ietf.org/rfc/rfc7234.txt</a>
    <dt id="biblio-rfc7240"><a class="self-link" href="#biblio-rfc7240"></a>[RFC7240]

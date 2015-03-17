@@ -90,7 +90,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
   type: interface
     text: Worker
-spec: RFC6455; urlPrefix: http://tools.ietf.org/html/rfc6455
+spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
+  type: dfn
+    text: BIT; url: appendix-B.1
+    text: WSP; url: appendix-B.1
+spec: RFC6455; urlPrefix: https://tools.ietf.org/html/rfc6455
   type: dfn
     text: establish a websocket connection; url: section-4.1
     text: fail the websocket connection; url: section-7.1.7
@@ -427,7 +431,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   This preference is represented by the following ANBF:
 
   <pre>
-    https = "https"
+    tls = "tls"
   </pre>
 
   When a server encounters this preference in an HTTP request's headers, it
@@ -474,6 +478,49 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       HTTP/1.1 302 Moved Temporarily
       Location: https://example.com/
       <a>Cache-Control</a>: <a>no-store</a>
+    </pre>
+  </div>
+
+  <h4 id="upgraded-header-field">
+    The <code>Upgraded</code> HTTP Request Header Field
+  </h4>
+
+  The <dfn export><code>Upgraded</code></dfn> HTTP request header field
+  indicates that the client's request is the result of a successful upgrade
+  from an <a><i lang="la">a priori</i> insecure URL</a>. This signal is
+  transmitted according to the following ABNF:
+
+  <pre>
+    "Upgraded:" *<a>WSP</a> "1" *<a>WSP</a>
+  </pre>
+
+  User agent implementation details are described in step #8 of the
+  [[#upgrade-request]] algorithm.
+
+  Note: Receiving an <code><a>Upgraded</a></code> header along with a request
+  is an excellent signal to the server that the response could safely include
+  a Strict Transport Security header [[RFC6797]].
+
+  <div class="example">
+    A client that supports this document's upgrade mechanism requests
+    <code>https://example.com/</code>, which sends the
+    <code><a>upgrade-insecure-requests</a></code> directive along with a
+    response containing the following HTML:
+
+    <pre>
+      &lt;img src="http://example.com/logo.png"&gt;
+    </pre>
+
+    The user agent will <a>upgrade</a> the request generated for that image,
+    and will signal to the server that the request was indeed upgraded by
+    adding an <code><a>Upgraded</a></code> header with a value of
+    <code>1</code>:
+
+    <pre>
+      GET /logo.png HTTP/1.1
+      Host: example.com
+      ...
+      <a>Upgraded</a>: 1
     </pre>
   </div>
 
@@ -704,6 +751,10 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <a href="https://tools.ietf.org/html/rfc6797#appendix-A">Appendix
       A</a>).
     </li>
+    <li>
+      <a>Append</a> a header named <code><a>Upgraded</a></code> with a value
+      of <code>1</code> to <var>request</var>'s {{Request/header-list}}.
+    </li>
   </ol>
 
   Note: Due to [[FETCH]]'s recursive nature, this algorithm will upgrade
@@ -905,8 +956,32 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   :  Reference
   :: [this specification], [[#preference]].
 
+  The permanent message header field registry should be updated
+  with the following registrations: [[!RFC3864]]
 
-</section>
+  <section>
+    <h3 id="iana-upgraded">
+      Upgraded
+    </h3>
+
+    <dl>
+      <dt>Header field name</dt>
+      <dd>Upgraded</dd>
+
+      <dt>Applicable protocol</dt>
+      <dd>http</dd>
+
+      <dt>Status</dt>
+      <dd>standard</dd>
+
+      <dt>Author/Change controller</dt>
+      <dd>W3C</dd>
+
+      <dt>Specification document</dt>
+      <dd>This specification (See <code><a>Upgraded</a></code>
+      Header Field)</dd>
+    </dl>
+  </section>
 
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>
