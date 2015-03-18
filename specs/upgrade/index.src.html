@@ -414,33 +414,39 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   authors need to determine whether or not it is safe to redirect a client to
   the secure version of a site. Rather than relying on user-agent sniffing to
   make this decision, user agents MUST advertise their capabilities when
-  making insecure navigational requests by sending a <code>Prefer</code> HTTP
+  making insecure navigational requests by sending an <code>HTTPS</code> HTTP
   request header expressing the desire for a secure representation [[!RFC7240]]
   as described in [[#preference]].
 
   <h4 id="preference">
-    The <code>tls</code> Preference
+    The <code>HTTPS</code> HTTP Request Header Field
   </h4>
 
-  The <dfn export local-lt="tls"><code>tls</code> preference</dfn></code>
-  indicates that the client prefers that the server redirect from an insecure
+  The <dfn export local-lt="HTTPS"><code>HTTPS</code> HTTP request header
+  field</dfn> that the client prefers that the server redirect from an insecure
   resource representation to a secure one, and that it can successfully handle
   the <code><a>upgrade-insecure-requests</a></code> directive in order to make
   that redirection as seamless as possible.
 
+  Note: Though the <code>HTTPS</code> header expresses a preference, sending
+  it via the existing <code><a>Prefer</a></code> header is problematic, as we
+  expect the response from the server to use it as part of the cache key.
+  <code>Vary: Prefer</code> is too broad, as discussed in
+  <https://github.com/w3c/webappsec/issues/216>.
+
   This preference is represented by the following ANBF:
 
   <pre>
-    tls = "tls"
+    "HTTPS:" *<a>WSP</a> "1" *<a>WSP</a>
   </pre>
 
   When a server encounters this preference in an HTTP request's headers, it
   SHOULD redirect the user to a <a>potentially secure</a> representation of the
   resource being requested.
 
-  Note: Receiving an <a><code>tls</code> preference</a> from a user agent is
-  also an excellent signal to the server that the secure response could include
-  a Strict Transport Security header [[RFC6797]].
+  Note: Receiving an <code><a>HTTPS</a></code> header from a user agent is also
+  an excellent signal to the server that the secure response could include a
+  <code>Strict-Transport-Security</code> header [[RFC6797]].
 
   User agent implementation details are described in step #2 of the the
   [[#upgrade-request]] algorithm. Note in particular that to mitigate the risk
@@ -455,7 +461,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <pre>
       GET / HTTP/1.1
       Host: example.com
-      <a>Prefer</a>: <a>tls</a>
+      <a>HTTPS</a>: 1
     </pre>
 
     The server parses the preference, notices that the user's client can deal
@@ -465,12 +471,12 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <pre>
       HTTP/1.1 302 Moved Temporarily
       Location: https://example.com/
-      <a>Vary</a>: <a>Prefer</a>
+      <a>Vary</a>: <a>HTTPS</a>
     </pre>
 
-    <a><code>Prefer</code></a> is listed in the <a><code>Vary</code></a> header,
+    <a><code>HTTPS</code></a> is listed in the <a><code>Vary</code></a> header,
     as the redirect response might otherwise be served by caches to clients that
-    don't support the upgrade mechanism defined here. The same effect could be
+    don't support the upgrade mechanism defined here. A similar effect could be
     achieved by making this redirect response uncachable via the
     <a><code>Cache-Control</code></a> header:
 
@@ -485,9 +491,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     The <code>Upgraded</code> HTTP Request Header Field
   </h4>
 
-  The <dfn export><code>Upgraded</code></dfn> HTTP request header field
-  indicates that the client's request is the result of a successful upgrade
-  from an <a><i lang="la">a priori</i> insecure URL</a>. This signal is
+  The <dfn export local-lt="Upgraded"><code>Upgraded</code> HTTP request header
+  field</dfn> indicates that the client's request is the result of a successful
+  upgrade from an <a><i lang="la">a priori</i> insecure URL</a>. This signal is
   transmitted according to the following ABNF:
 
   <pre>
@@ -499,7 +505,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   Note: Receiving an <code><a>Upgraded</a></code> header along with a request
   is an excellent signal to the server that the response could safely include
-  a Strict Transport Security header [[RFC6797]].
+  a <code>Strict-Transport-Security</code> header [[RFC6797]].
 
   <div class="example">
     A client that supports this document's upgrade mechanism requests
@@ -668,9 +674,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   Given a {{Request}} <var>request</var>, this algorithm will rewrite its
   {{Request/url}} if the {{Request/client}} from which the request originates
-  has opted-in to upgrades. It will also inject an <a><code>tls</code>
-  preference</a> for insecure navigational requests in order to improve a
-  server's ability to feature-detect a client's upgrade capabilities.
+  has opted-in to upgrades. It will also inject an <code><a>HTTPS</a></code>
+  header for insecure navigational requests in order to improve a server's
+  ability to feature-detect a client's upgrade capabilities.
 
   We will not upgrade cross-origin navigational requests, with the exception of
   form submissions. Form submissions will be upgraded to mitigate the risk of
@@ -687,9 +693,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
       <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
-      then <a>append</a> a header named <code>Prefer</code> with a value
-      of <code><a>tls</a></code> to <var>request</var>'s
-      {{Request/header-list}}.
+      then <a>append</a> a header named <code>HTTPS</code> with a value
+      of <code>1</code> to <var>request</var>'s {{Request/header-list}}.
     </li>
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
@@ -941,47 +946,50 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 <section>
   <h2 id="iana-considerations">IANA Considerations</h2>
 
-  The following registration should be added to the "HTTP Preferences" registry
-  [[!RFC7240]]:
-
-  :  Preference
-  :: https
-
-  :  Description
-  :: This preference indicates that the client prefers that the server return
-     a redirect response to a <a>potentially secure</a> representation of the
-     resource being requested (and that the client supports the
-     <a>upgrade-insecure-requests</a> mechanism.
-
-  :  Reference
-  :: [this specification], [[#preference]].
-
   The permanent message header field registry should be updated
   with the following registrations: [[!RFC3864]]
 
-  <section>
-    <h3 id="iana-upgraded">
-      Upgraded
-    </h3>
+  <h3 id="iana-https">
+    HTTPS
+  </h3>
 
-    <dl>
-      <dt>Header field name</dt>
-      <dd>Upgraded</dd>
+  <dl>
+    <dt>Header field name</dt>
+    <dd>HTTPS</dd>
 
-      <dt>Applicable protocol</dt>
-      <dd>http</dd>
+    <dt>Applicable protocol</dt>
+    <dd>http</dd>
 
-      <dt>Status</dt>
-      <dd>standard</dd>
+    <dt>Status</dt>
+    <dd>standard</dd>
 
-      <dt>Author/Change controller</dt>
-      <dd>W3C</dd>
+    <dt>Author/Change controller</dt>
+    <dd>W3C</dd>
 
-      <dt>Specification document</dt>
-      <dd>This specification (See <code><a>Upgraded</a></code>
-      Header Field)</dd>
-    </dl>
-  </section>
+    <dt>Specification document</dt>
+    <dd>This specification (See [[#preference]])</dd>
+  </dl>
+  <h3 id="iana-upgraded">
+    Upgraded
+  </h3>
+
+  <dl>
+    <dt>Header field name</dt>
+    <dd>Upgraded</dd>
+
+    <dt>Applicable protocol</dt>
+    <dd>http</dd>
+
+    <dt>Status</dt>
+    <dd>standard</dd>
+
+    <dt>Author/Change controller</dt>
+    <dd>W3C</dd>
+
+    <dt>Specification document</dt>
+    <dd>This specification (See <code><a>Upgraded</a></code>
+    Header Field)</dd>
+  </dl>
 
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>
