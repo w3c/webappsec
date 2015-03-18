@@ -620,360 +620,336 @@ directive-value = ""
     <p class="note" role="note">Note: Though the <code>HTTPS</code> header expresses a preference, sending
   it via the existing <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7240#section-2">Prefer</a></code> header is problematic, as we
   expect the response from the server to use it as part of the cache key.
-  <code>Vary: Prefer</code> is too broad, as discussed in</p>
-  
-    <httpsU0003A U0003216="" github.com="" issues="" w3c="" webappsec="">.
+  <code>Vary: Prefer</code> is too broad, as discussed in
+  <a href="https://github.com/w3c/webappsec/issues/216">w3/webappsec#216</a>.</p>
 
 
-     <p>This preference is represented by the following ANBF:</p>
-     
+    <p>This preference is represented by the following ANBF:</p>
 
   
-     <pre>"HTTPS:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> "1" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
+    <pre>"HTTPS:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> "1" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
 </pre>
-     
 
 
-     <p>When a server encounters this preference in an HTTP request’s headers, it
+    <p>When a server encounters this preference in an HTTP request’s headers, it
   SHOULD redirect the user to a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure</a> representation of the
   resource being requested.</p>
-     
 
 
-     <p class="note" role="note">Note: Receiving an <code><a data-link-type="dfn" href="#https-http-request-header-field">HTTPS</a></code> header from a user agent is also
+    <p class="note" role="note">Note: Receiving an <code><a data-link-type="dfn" href="#https-http-request-header-field">HTTPS</a></code> header from a user agent is also
   an excellent signal to the server that the secure response could include a
   <code>Strict-Transport-Security</code> header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.</p>
-     
 
 
-     <p>User agent implementation details are described in step #2 of the the
+    <p>User agent implementation details are described in step #2 of the the
   <a href="#upgrade-request">§4.1 
     Upgrade request to a potentially secure URL, if appropriate
   </a> algorithm. Note in particular that to mitigate the risk
   that this header will become a vestigial part of the platform, user agents
   SHOULD omit the preference when making requests to <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#potentially-secure-origin">potentially secure
   origins</a>.</p>
-     
 
   
-     <div class="example" id="example-691ae072"><a class="self-link" href="#example-691ae072"></a>
+    <div class="example" id="example-691ae072"><a class="self-link" href="#example-691ae072"></a>
     A client that supports this document’s upgrade mechanism requests
     <code>http://example.com/</code> as follows:
 
     
-      <pre>GET / HTTP/1.1
+     <pre>GET / HTTP/1.1
 Host: example.com
 <a data-link-type="dfn" href="#https-http-request-header-field">HTTPS</a>: 1
 </pre>
-      
+     
 
 
-      <p>The server parses the preference, notices that the user’s client can deal
+     <p>The server parses the preference, notices that the user’s client can deal
     well with upgrade requests, and therefore responds to the request by
     redirecting the user to a secure version of the resource she’s requesting:</p>
-      
+     
 
     
-      <pre>HTTP/1.1 302 Moved Temporarily
+     <pre>HTTP/1.1 302 Moved Temporarily
 Location: https://example.com/
 <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-7.1.4">Vary</a>: <a data-link-type="dfn" href="#https-http-request-header-field">HTTPS</a>
 </pre>
-      
+     
 
 
-      <p><a data-link-type="dfn" href="#https-http-request-header-field"><code>HTTPS</code></a> is listed in the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-7.1.4"><code>Vary</code></a> header,
+     <p><a data-link-type="dfn" href="#https-http-request-header-field"><code>HTTPS</code></a> is listed in the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-7.1.4"><code>Vary</code></a> header,
     as the redirect response might otherwise be served by caches to clients that
     don’t support the upgrade mechanism defined here. A similar effect could be
     achieved by making this redirect response uncachable via the
     <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-5.2"><code>Cache-Control</code></a> header:</p>
-      
+     
 
     
-      <pre>HTTP/1.1 302 Moved Temporarily
+     <pre>HTTP/1.1 302 Moved Temporarily
 Location: https://example.com/
 <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-5.2">Cache-Control</a>: <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-5.2.2.3">no-store</a>
 </pre>
-      
-  
-     </div>
      
+  
+    </div>
 
   
-     <h4 class="heading settled" data-level="3.2.2" id="upgraded-header-field"><span class="secno">3.2.2. </span><span class="content">
+    <h4 class="heading settled" data-level="3.2.2" id="upgraded-header-field"><span class="secno">3.2.2. </span><span class="content">
     The <code>Upgraded</code> HTTP Request Header Field
   </span><a class="self-link" href="#upgraded-header-field"></a></h4>
-     
 
 
-     <p>The <dfn data-dfn-type="dfn" data-export="" data-local-lt="Upgraded" id="upgraded-http-request-header-field"><code>Upgraded</code> HTTP request header
+    <p>The <dfn data-dfn-type="dfn" data-export="" data-local-lt="Upgraded" id="upgraded-http-request-header-field"><code>Upgraded</code> HTTP request header
   field<a class="self-link" href="#upgraded-http-request-header-field"></a></dfn> indicates that the client’s request is the result of a successful
   upgrade from an <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure URL</a>. This signal is
   transmitted according to the following ABNF:</p>
-     
 
   
-     <pre>"Upgraded:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> "1" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
+    <pre>"Upgraded:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> "1" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
 </pre>
-     
 
 
-     <p>User agent implementation details are described in step #8 of the
+    <p>User agent implementation details are described in step #8 of the
   <a href="#upgrade-request">§4.1 
     Upgrade request to a potentially secure URL, if appropriate
   </a> algorithm.</p>
-     
 
 
-     <p class="note" role="note">Note: Receiving an <code><a data-link-type="dfn" href="#upgraded-http-request-header-field">Upgraded</a></code> header along with a request
+    <p class="note" role="note">Note: Receiving an <code><a data-link-type="dfn" href="#upgraded-http-request-header-field">Upgraded</a></code> header along with a request
   is an excellent signal to the server that the response could safely include
   a <code>Strict-Transport-Security</code> header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.</p>
-     
 
   
-     <div class="example" id="example-f0845b8d"><a class="self-link" href="#example-f0845b8d"></a>
+    <div class="example" id="example-f0845b8d"><a class="self-link" href="#example-f0845b8d"></a>
     A client that supports this document’s upgrade mechanism requests
     <code>https://example.com/</code>, which sends the
     <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive along with a
     response containing the following HTML:
 
     
-      <pre>&lt;img src="http://example.com/logo.png">
+     <pre>&lt;img src="http://example.com/logo.png">
 </pre>
-      
+     
 
 
-      <p>The user agent will <a data-link-type="dfn" href="#upgrade">upgrade</a> the request generated for that image,
+     <p>The user agent will <a data-link-type="dfn" href="#upgrade">upgrade</a> the request generated for that image,
     and will signal to the server that the request was indeed upgraded by
     adding an <code><a data-link-type="dfn" href="#upgraded-http-request-header-field">Upgraded</a></code> header with a value of
     <code>1</code>:</p>
-      
+     
 
     
-      <pre>GET /logo.png HTTP/1.1
+     <pre>GET /logo.png HTTP/1.1
 Host: example.com
 ...
 <a data-link-type="dfn" href="#upgraded-http-request-header-field">Upgraded</a>: 1
 </pre>
-      
-  
-     </div>
      
+  
+    </div>
 
   
-     <h3 class="heading settled" data-level="3.3" id="nesting"><span class="secno">3.3. </span><span class="content">Policy Inheritance</span><a class="self-link" href="#nesting"></a></h3>
-     
+    <h3 class="heading settled" data-level="3.3" id="nesting"><span class="secno">3.3. </span><span class="content">Policy Inheritance</span><a class="self-link" href="#nesting"></a></h3>
 
 
-     <p>If a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>'s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure requests
+    <p>If a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/dom/#interface-document">Document</a></code>'s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure requests
   policy</a> is set to <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-upgrade">Upgrade</a>, the user agent MUST ensure that
   all <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing contexts</a> inherit the setting in the following ways:</p>
-     
 
   
-     <ol>
+    <ol>
     
-      <li>
+     <li>
       When a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing context</a> <var>context</var> is created:
 
       
-       <ol>
+      <ol>
         
-        <li>
+       <li>
           If <var>context</var>’s <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#embedding-document">embedding document</a>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure
           requests policy</a> is <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-upgrade">Upgrade</a>, then:
 
           
-         <ol>
+        <ol>
             
-          <li>
+         <li>
               Set <var>context</var>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure requests policy</a> to
               <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-upgrade">Upgrade</a>.
             
-          
+         
             
-          <li>
+         <li>
               For each <var>value</var> in <var>context</var>’s <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#embedding-document">embedding
               document</a>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure navigations set</a>, add
               <var>value</var> to <var>context</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure
               navigations set</a>.
             
-          
-          
-         </ol>
          
+          
+        </ol>
         
         
-      
-       </ol>
        
-    
+      
+      </ol>
       
     
-      <li>
+     
+    
+     <li>
       When <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#create-a-document-object">creating a new <code>Document</code> object</a>
       <var>document</var> in a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a> <var>context</var>:
 
       
-       <ol>
+      <ol>
         
-        <li>
+       <li>
           If <var>context</var>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure requests policy</a> is
           <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-upgrade">Upgrade</a>, then:
 
           
-         <ol>
+        <ol>
             
-          <li>
+         <li>
               Let <var>settings</var> be <var>document</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent
               settings object</a>.
             
-          
+         
             
-          <li>
+         <li>
               Set <var>settings</var>' <a data-link-type="dfn" href="#insecure-requests-policy">insecure requests policy</a> to
               <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-upgrade">Upgrade</a>.
             
-          
+         
             
-          <li>
+         <li>
               For each <var>value</var> in <var>context</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade
               insecure navigations set</a>, add <var>value</var> to
               <var>settings</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure navigations set</a>.
             
-          
-          
-         </ol>
          
+          
+        </ol>
         
         
-      
-       </ol>
        
-    
       
-  
-     </ol>
-     
-
-
-     <p>Likewise, when spinning up a worker, the user agent MUST ensure that it
-  inherits the setting from the context that created it in the following ways:</p>
-     
-
-  
-     <ol>
+      </ol>
+      
     
-      <li>
+     
+  
+    </ol>
+
+
+    <p>Likewise, when spinning up a worker, the user agent MUST ensure that it
+  inherits the setting from the context that created it in the following ways:</p>
+
+  
+    <ol>
+    
+     <li>
       When executing the <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/workers.html#set-up-a-worker-environment-settings-object">set up a worker environment settings object</a>
       algorithm, perform the following steps after the current step #4:
 
       
-       <ol start="5">
+      <ol start="5">
         
-        <li>
+       <li>
           If <var>inherited responsible browsing context</var>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure
           requests policy</a> is <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-upgrade">Upgrade</a>, then:
 
           
-         <ol>
+        <ol>
             
-          <li>
+         <li>
               Set <var>settings object</var>’s <a data-link-type="dfn" href="#insecure-requests-policy">insecure requests policy</a>
               to <a class="css" data-link-type="value" href="#valdef-insecure-requests-policy-upgrade">Upgrade</a>.
             
-          
+         
             
-          <li>
+         <li>
               For each <var>value</var> in <var>inherited responsible browsing
               context</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade insecure navigations set</a>, add
               <var>value</var> to <var>settings object</var>’s <a data-link-type="dfn" href="#upgrade-insecure-navigations-set">upgrade
               insecure navigations set</a>.
             
-          
-          
-         </ol>
          
+          
+        </ol>
         
         
+       
       
-       </ol>
-       
+      </ol>
+      
 
 
-       <p class="issue" id="issue-61dd79e9"><a class="self-link" href="#issue-61dd79e9"></a>Monkey patching. :(</p>
-       
+      <p class="issue" id="issue-61dd79e9"><a class="self-link" href="#issue-61dd79e9"></a>Monkey patching. :(</p>
+      
     
-      
-  
-     </ol>
      
+  
+    </ol>
 
 
-     <p class="issue" id="issue-9721e5e6"><a class="self-link" href="#issue-9721e5e6"></a>The WHATWG HTML spec is significantly clearer here than <a data-link-type="biblio" href="#biblio-workers">[WORKERS]</a>.
+    <p class="issue" id="issue-9721e5e6"><a class="self-link" href="#issue-9721e5e6"></a>The WHATWG HTML spec is significantly clearer here than <a data-link-type="biblio" href="#biblio-workers">[WORKERS]</a>.
   Hope that doesn’t cause problems when transitioning to CR.</p>
-     
 
   
-     <h3 class="heading settled" data-level="3.4" id="reporting-upgrades"><span class="secno">3.4. </span><span class="content">Reporting Upgrades</span><a class="self-link" href="#reporting-upgrades"></a></h3>
-     
+    <h3 class="heading settled" data-level="3.4" id="reporting-upgrades"><span class="secno">3.4. </span><span class="content">Reporting Upgrades</span><a class="self-link" href="#reporting-upgrades"></a></h3>
 
 
-     <p>Upgrading insecure requests MUST not interfere with an authors' ability to
+    <p>Upgrading insecure requests MUST not interfere with an authors' ability to
   track down requests that would be insecure in a user agent that does not
   support upgrades. To that end, upgrades MUST be performed <em>after</em>
   evaluating <var>request</var> against all <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#monitor">monitored</a> security policies,
   but <em>before</em> evaluating <var>request</var> against all <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#enforce">enforced</a>
   policies.</p>
-     
 
   
-     <div class="example" id="example-74f1f10f"><a class="self-link" href="#example-74f1f10f"></a>
+    <div class="example" id="example-74f1f10f"><a class="self-link" href="#example-74f1f10f"></a>
     Within the context of a <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#protected-resource">protected resource</a> which contains the
     insecure image <code>&lt;img src="http://example.com/image.png"></code>,
     and delivers the following HTTP headers:
 
     
-      <pre><a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#content_security_policy">Content-Security-Policy</a>: <a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a>; <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#default_src">default-src</a> https:
+     <pre><a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#content_security_policy">Content-Security-Policy</a>: <a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a>; <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#default_src">default-src</a> https:
 <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#content_security_policy_report_only">Content-Security-Policy-Report-Only</a>: <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#default_src">default-src</a> https:; <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#report_uri">report-uri</a> /endpoint
 </pre>
-      
+     
 
 
-      <p>The user agent will fire off a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> <var>request</var> that:</p>
-      
+     <p>The user agent will fire off a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> <var>request</var> that:</p>
+     
 
     
-      <ol>
+     <ol>
       
-       <li>
+      <li>
         Violates the policy being <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#monitor">monitored</a>, thereby delivering a
         <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#example-violation-report">violation report</a> to <code>/endpoint</code>.
       
-       
       
-       <li>
+      
+      <li>
         Is upgraded from <code>http://example.com/image.png</code> to
         <code>http<strong>s</strong>://example.com/image.png</code>.
       
-       
       
-       <li>
+      
+      <li>
         Does not violate the policy being <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#enforce">enforced</a>.
       
-       
-    
-      </ol>
       
+    
+     </ol>
+     
   
-     </div>
-     
+    </div>
 
 
-     <p class="note" role="note">Note: This will be significantly clarified once <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> is rewritten in terms
+    <p class="note" role="note">Note: This will be significantly clarified once <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> is rewritten in terms
   of <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>.</p>
-     
-
-    </httpsU0003A></section>
+</section>
 
 
 
