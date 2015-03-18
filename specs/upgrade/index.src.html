@@ -98,6 +98,9 @@ spec: RFC6455; urlPrefix: https://tools.ietf.org/html/rfc6455
   type: dfn
     text: establish a websocket connection; url: section-4.1
     text: fail the websocket connection; url: section-7.1.7
+spec: RFC6797; urlPrefix: https://tools.ietf.org/html/rfc6797
+  type: dfn
+    text: Strict-Transport-Security; url: section-6.1
 spec: RFC7231; urlPrefix: https://tools.ietf.org/html/rfc7231
   type: dfn
     text: Vary; url: section-7.1.4
@@ -446,7 +449,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   Note: Receiving an <code><a>HTTPS</a></code> header from a user agent is also
   an excellent signal to the server that the secure response could include a
-  <code>Strict-Transport-Security</code> header [[RFC6797]].
+  <code><a>Strict-Transport-Security</a></code> header [[RFC6797]].
 
   User agent implementation details are described in step #2 of the the
   [[#upgrade-request]] algorithm. Note in particular that to mitigate the risk
@@ -505,7 +508,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   Note: Receiving an <code><a>Upgraded</a></code> header along with a request
   is an excellent signal to the server that the response could safely include
-  a <code>Strict-Transport-Security</code> header [[RFC6797]].
+  a <code><a>Strict-Transport-Security</a></code> header [[RFC6797]].
 
   <div class="example">
     A client that supports this document's upgrade mechanism requests
@@ -867,10 +870,11 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <h3 id="hsts">Interaction with HSTS</h3>
 
   The <code><a>upgrade-insecure-requests</a></code> directive does not replace
-  the <code>Strict-Transport-Security</code> HTTP response header [[RFC6797]].
-  Authors who serve their site over secure transport SHOULD send that header
-  with an appropriate <code>max-age</code> in order to ensure that users are
-  not subject to SSL stripping attacks by maliciously active network attackers.
+  the <code><a>Strict-Transport-Security</a></code> HTTP response header
+  [[RFC6797]]. Authors who serve their site over secure transport SHOULD send
+  that header with an appropriate <code>max-age</code> in order to ensure that
+  users are not subject to SSL stripping attacks by maliciously active network
+  attackers.
 
   <h3 id="violation-report-target">CSP Violation Reports</h3>
 
@@ -917,28 +921,71 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   It only ensures that resources requested from an origin will never hit the
   network insecurely.
 
-  Therefore, we recommend that authors who wish to ensure that their users have
-  a secure experience do the following:
+  We are intentionally keeping these concepts distinct, as authors may choose
+  to activate one or the other behavior, but ought not be forced to bind them
+  together.
+
+  <h3 id="recommendations">Recommendations</h3>
+
+  We recommend that authors who wish to ensure that user agents which support
+  <a>upgrade-insecure-requests</a> are as secure as possible do the following:
 
   <ol>
     <li>
-      Redirect incoming traffic from HTTP to HTTPS by serving a
+      Redirect incoming traffic from HTTP to HTTPS when a
+      <code><a>HTTPS</a></code> header is present by serving a
       <code>Location</code> header along with a <code>302</code> status code.
+
+      <div class="example">
+        In Nginx, this kind of redirection might look like this:
+
+        <pre>
+            server {
+              if ($http_https = "1") {
+                add_header Vary HTTPS;
+                return 301 https://$host$request_uri;
+              }
+            }
+        </pre>
+
+        This is, of course, greatly simplified; your configuration will likely
+        be significantly more complex. 
+      </div>
     </li>
     <li>
-      Respond to HTTPS requests with a <code>Strict-Transport-Security</code>
-      header with a reasonable <code>max-age</code>.
+      Respond to HTTPS requests with a
+      <code><a>upgrade-insecure-requests</a></code> directive, and to upgraded
+      HTTPS requests with a <code><a>Strict-Transport-Security</a></code> header
+      with a reasonable <code>max-age</code>.
+
+      <div class="example">
+        In Nginx, this kind of redirection might look like this (note the use of
+        <code>map</code>, as setting headers inside <code>if</code> without
+        returning immediately is, well, iffy):
+
+        <pre>
+            server {
+              ...
+
+              map $http_upgraded $sts {
+                "1" "max-age=10886400; includeSubdomains"
+              }
+  
+              add_header Strict-Transport-Security $sts;
+              add_header Content-Security-Policy upgrade-insecure-requests;
+
+              ...
+            }
+        </pre>
+
+        This is, of course, greatly simplified; your configuration will likely
+        be significantly more complex. 
+      </div>
     </li>
     <li>
       Work with user agent vendors to add their sites to those user agent's
       HSTS Preload Lists (for example, by visiting
       <a href="https://hstspreload.appspot.com/">hstspreload.appspot.com</a>).
-    </li>
-    <li>
-      Opt-into either this document's
-      <code><a>upgrade-insecure-requests</a></code> mechanism, or into Mixed
-      Content's <a>strict mode</a> in order to ensure that insecure content is
-      never loaded.
     </li>
   </ol>
 </section>
