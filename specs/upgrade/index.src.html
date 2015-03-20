@@ -67,15 +67,16 @@ spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
       text: SharedWorker
 spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
   type: dfn
-    text: a priori insecure url
     text: embedding document
     text: strict mode
     text: block-all-mixed-content
     url: a-priori-insecure-url
       text: a priori insecure origin
+      text: a priori insecure url
       text: a priori insecure
     url: potentially-secure-origin
       text: potentially secure origin
+      text: potentially secure url
       text: potentially secure
 spec: SERVICE-WORKERS; urlPrefix: https://slightlyoff.github.io/ServiceWorker/spec/service_worker/
   type: interface
@@ -105,6 +106,11 @@ spec: RFC6455; urlPrefix: https://tools.ietf.org/html/rfc6455
 spec: RFC6797; urlPrefix: https://tools.ietf.org/html/rfc6797
   type: dfn
     text: Strict-Transport-Security; url: section-6.1
+    text: congruent match; url: section-8.2
+    text: superdomain match; url: section-8.2
+    text: includeSubDomains; url: section-6.1.2
+    text: Known HSTS Host Domain Name Matching; url: section-8.2
+    text: Known HSTS Host; url: section-8.1.1
 spec: RFC7231; urlPrefix: https://tools.ietf.org/html/rfc7231
   type: dfn
     text: Vary; url: section-7.1.4
@@ -323,12 +329,14 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   :: A {{Request}} is said to be <strong>upgraded</strong> if it is rewritten
      to contain a URL with a {{URL/scheme}} of <code>https</code> or
      <code>wss</code>.
+
   :  <dfn export local-lt="safely upgradable">safely upgradable requests</dfn>
   ::  A {{Request}} is said to be <strong>safely upgradable</strong> if the
       <a>resource representation</a> which will be returned does not depend on
       the <code><a>upgrade-insecure-requests</a></code> mechanism described in
       this document, or if the {{Request}}'s {{Request/header-list}} contains an
       <code><a>HTTPS</a></code> header field with a value of <code>1</code>.
+
   :  <dfn export local-lt="HSTS-safe">HSTS-safe origin</dfn>
   ::  An <a>origin</a> is said to be <strong>HSTS-safe</strong> if no
       <a>resource representations</a> it returns depend on the
@@ -340,6 +348,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <code><a>Strict-Transport-Security</a></code> for all user agents,
       without risking broken pages for user agents which do not support
       <code><a>upgrade-insecure-requests</a></code>.
+
   :  <dfn export local-lt="conditionally HSTS-safe">conditionally HSTS-safe origin</dfn>
   ::  An <a>origin</a> is said to be <strong>conditionally HSTS-safe</strong>
       if one or more <a>resource representations</a> it returns depend on the
@@ -350,6 +359,19 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <a>Conditionally HSTS-safe origins</a> can safely opt-into
       <code><a>Strict-Transport-Security</a></code> only for user agents which
       support <code><a>upgrade-insecure-requests</a></code>.
+
+  :  <dfn export>preloadable HSTS host</dfn>
+  ::  A {{URL/host}} <var>host</var> is a <strong>preloadable HSTS
+      host</strong> if, when performing <a>Known HSTS Host Domain Name
+      Matching</a>, <var>host</var> is a <a>superdomain match</a> for a
+      <a>Known HSTS Host</a> which asserts both the <a>includeSubDomains</a>
+      directive and the <code>preload</code> directive, or <var>host</var>
+      is a <a>congruent match</a>for a <a>Known HSTS Host</a> which asserts
+      the <code>preload</code> directive.
+
+      Note: This is a long way of saying "any host the user agent has pinned
+      with a <code><a>Strict-Transport-Security</a></code> header that contained
+      a <code>preload</code> directive".
   
   The Augmented Backus-Naur Form (ABNF) notation used in [[#delivery]] is
   specified in RFC5234. [[!ABNF]]
@@ -444,24 +466,18 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <h3 id="feature-detect">Feature Detecting Clients Capable of Upgrading</h3>
 
-  If a site requires the upgrade mechanism described in this document in order
-  to provide users with a reasonable experience over secure transit, then
-  authors need to determine whether or not it is safe to redirect a client to
-  the secure version of a site, or set an HSTS header if the request is
-  already to a <a>potentially secure origin</a>. Rather than relying on
-  user-agent sniffing to make this decision, user agents MUST advertise their
-  capabilities when making navigational requests by sending a
-  <code>HTTPS</code> HTTP request header expressing the desire for a secure
-  representation [[!RFC7240]] as described in [[#preference]], unless they
-  have an HSTS state with a "mixed-safe" directive active for the request's origin.
-
-  If a client has an "mixed-safe" HSTS state set for a given origin, the only
-  reason to send the <code><a>HTTPS</a></code> header is to trigger
-  retransmission of the HSTS header to extend its <code>max-age</code>.
-  Accordingly, clients SHOULD send the <code><a>HTTPS</a></code> header if the
-  <code>max-age</code> for an origin's HSTS directive is three-quarters
-  expired, and/or send <code><a>HTTPS</a></code> with some small probability on
-  each request.
+  Sites which require the upgrade mechanism laid out in this document in order
+  to provide users with a reasonable experience over secure transit need some
+  way to determine whether or not a particular {{Request}} can safely be
+  redirected from HTTP to HTTPS (and vice-versa). Moreover, <a>conditionally
+  HSTS-safe origins</a> can only opt-into
+  <code><a>Strict-Transport-Security</a></code> for supported user agents, and
+  doing otherwise could have negative consequences for the site's users.
+ 
+  Rather than relying on user-agent sniffing to make this decision, user agents
+  can advertise their upgrade capability when making navigational requests by
+  including an <code><a>HTTPS</a></code> HTTP request header as described in
+  [[#preference]].
 
   <h4 id="preference">
     The <code>HTTPS</code> HTTP Request Header Field
@@ -473,28 +489,63 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   the <code><a>upgrade-insecure-requests</a></code> directive in order to make
   that redirection as seamless as possible.
 
-  Note: Though the <code>HTTPS</code> header expresses a preference, sending
-  it via the existing <code><a>Prefer</a></code> header is problematic, as we
-  expect the response from the server to use it as part of the cache key.
-  <code>Vary: Prefer</code> is too broad, as discussed in
-  <a href="https://github.com/w3c/webappsec/issues/216">w3/webappsec#216</a>.
-
   This preference is represented by the following ANBF:
 
   <pre>
     "HTTPS:" *<a>WSP</a> "1" *<a>WSP</a>
   </pre>
 
+  Note: Though the <code>HTTPS</code> header expresses a preference, sending
+  it via the existing <code><a>Prefer</a></code> header is problematic, as we
+  expect the response from the server to use it as part of the cache key.
+  <code>Vary: Prefer</code> is too broad, as discussed in
+  <a href="https://github.com/w3c/webappsec/issues/216">w3/webappsec#216</a>.
+
+  User agent conformance details are described in step #1 of the the
+  [[#upgrade-request]] algorithm. That step represents the following
+  requirements:
+
+  <ol>
+    <li>
+      User agents MUST send an <code><a>HTTPS</a></code> header along with
+      {{Request}}s for <a><i lang="la">a priori</i> insecure URLs</a>.
+
+      Note: Servers can use this signal to upgrade HTTP requests to HTTPS for
+      pages that require <code><a>upgrade-insecure-requests</a></code> support.
+    </li>
+    <li>
+      User agents MUST send an <code><a>HTTPS</a></code> header along with
+      {{Request}}s for <a>potentially secure URLs</a> whose {{Request/url}}'s
+      {{URL/host}} is <em>not</em> a <a>preloadable HSTS host</a>.
+
+      Note: Servers can use the absence of this signal to downgrade HTTPS
+      requests to HTTP for pages that require
+      <code><a>upgrade-insecure-requests</a></code> support.
+    </li>
+    <li>
+      User agents SHOULD periodically send an <code><a>HTTPS</a></code> header
+      along with {{Request}}s for <a>potentially secure URLs</a> whose
+      {{Request/url}}'s {{URL/host}} <em>is</em> a <a>preloadable HSTS host</a>.
+      For example, user agents could send an <code><a>HTTPS</a></code> header
+      only when the asserted <code>max-age</code> is a few days from expiration,
+      or only for a small percentage of requests.
+
+      Note: <a>preloadable HSTS hosts</a> have asserted that they are
+      <a>HSTS-safe</a>, and therefore don't need a downgrade signal. They will
+      need to refresh HSTS status before the asserted <code>max-age</code>
+      expires, and the <code><a>HTTPS</a></code> serves as a fine signal that
+      HSTS could be refreshed.
+    </li>
+  </ol>
+
   When a server encounters this preference in an HTTP request's headers, it
   SHOULD redirect the user to a <a>potentially secure</a> representation of the
   resource being requested.
-
-  Note: Receiving an <code><a>HTTPS</a></code> header from a user agent is also
-  an excellent signal to the server that the secure response could include a
-  <code><a>Strict-Transport-Security</a></code> header [[RFC6797]].
-
-  User agent implementation details are described in step #2 of the the
-  [[#upgrade-request]] algorithm.
+ 
+  When a server encounters this preference in an HTTPS request's headers,
+  it SHOULD include a <code><a>Strict-Transport-Security</a></code> header in
+  the response if the request's {{URL/host}} is <a>HSTS-safe</a> or
+  <a>conditionally HSTS-safe</a> [[RFC6797]].
 
   <div class="example">
     A client that supports this document's upgrade mechanism requests
@@ -542,7 +593,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     "Upgraded:" *<a>WSP</a> "1" *<a>WSP</a>
   </pre>
 
-  User agent implementation details are described in step #8 of the
+  User agent implementation details are described in step #7 of the
   [[#upgrade-request]] algorithm.
 
   Note: Receiving an <code><a>Upgraded</a></code> header along with a request
@@ -731,8 +782,23 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
       <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
-      then <a>append</a> a header named <code>HTTPS</code> with a value
-      of <code>1</code> to <var>request</var>'s {{Request/header-list}}.
+      <a>append</a> a header named <code>HTTPS</code> with a value of
+      <code>1</code> to <var>request</var>'s {{Request/header-list}} if
+      any of the following criteria are met:
+
+      <ol>
+        <li>
+          <var>request</var>'s {{Request/url}} is <a><i lang="la">a priori</i>
+          insecure</a>
+        </li>
+        <li>
+          <var>request</var>'s {{Request/url}}'s {{URL/host}} is <em>not</em> a
+          <a>preloadable HSTS host</a>
+        </li>
+      </ol>
+
+      Note: User agents can choose to append the <code><a>HTTPS</a></code>
+      header for other requests, as discussed in [[#preference]].
     </li>
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
@@ -1013,7 +1079,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       If the origin is <a>HSTS-safe</a>, then protect
       against SSL-stripping man-in-the-middle attacks by sending a
       <code><a>Strict-Transport-Security</a></code> header with the
-      <code>mixed-safe</code> directive, and ensure that insecure content is
+      <code>preload</code> directive, and ensure that insecure content is
       never loaded by enabling Mixed Content's <a>strict mode</a>.
       
       <div class="example">
