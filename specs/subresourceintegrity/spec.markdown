@@ -562,7 +562,7 @@ The value of the attribute MUST be either the empty string, or at least one
 valid metadata as described by the following ABNF grammar:
 
     integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) 1*WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
-    option-expression  = option-name ":" option-value
+    option-expression  = option-name "=" option-value
     option-name        = 1*option-name-char
     option-name-char   = ALPHA / DIGIT / "-"
     option-value       = *option-value-char
