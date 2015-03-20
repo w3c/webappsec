@@ -142,6 +142,24 @@ executing a cryptographic hash function on an arbitrary block of data.
 The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]
 
+The terms <dfn>privileged document</dfn>, <dfn>unprivileged document</dfn>, and
+<dfn>privileged context</dfn> are defined in [section 2 of the Privileged
+Contexts][privcontext] specification. An example of a privileged document is a
+document loaded over HTTPS. An example of an unprivileged document and an
+unprivileged context are a document loaded over HTTP.
+
+[privcontext]: https://w3c.github.io/webappsec/specs/powerfulfeatures/#terms
+[privileged document]: #dfn-privileged-document
+[unprivileged document]: #dfn-unprivileged-document
+[unprivileged context]: #dfn-unprivileged-context
+
+A <dfn>potentially secure origin</dfn> is defined in [section 2 of the Mixed
+Content][mixedcontent] specification. An example of a potentially secure origin
+is an origin whose scheme component is <code>HTTPS</code>.
+
+[potentially secure origin]: #dfn-potentially-secure-origin
+[mixedcontent]: https://www.w3.org/TR/mixed-content/#potentially-secure-origin
+
 The <dfn>MIME type</dfn> of a resource is a technical hint about the use
 and format of that resource. [[!MIMETYPE]]
 
@@ -318,7 +336,21 @@ resources accessed over a `file` scheme URL are unlikely to be
 eligible for integrity checks.
 {:.note}
 
+One should note that being a [privileged document][] (e.g. a document delivered
+over HTTPS) is not necessary for the use of integrity validation. Because
+resource integrity is only an application level security tool, and it does not
+change the security state of the user agent, a privileged document is
+unnecessary. However, if integrity is used in an [unprivileged document][] (e.g.
+a document delivered over HTTP), authors should be aware that the integrity
+provides <em>no security guarantees at all</em>. For this reason, authors should
+only deliver integrity metadata on a [potentially secure origin][].  See
+[Unprivileged contexts remain unprivileged][] for more discussion.
+
+{:.note}
+
 [uri-origin]: http://tools.ietf.org/html/rfc6454#section-4
+[Unprivileged contexts remain unprivileged]: #unprivileged-contexts-remain-unprivileged-1
+
 
 Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
@@ -660,7 +692,7 @@ Insert the following steps after step 5 of step 14 of HTML5's
 Tab and Anne are poking at adding `fetch()` to some spec somewhere
 which would allow CSS files to specify various arguments to the fetch
 algorithm while requesting resources. Detail on the proposal is at
-<http://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html>.
+<https://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html>.
 Once that is specified, we can proceed defining an `integrity` argument
 that would allow integrity checks in CSS.
 {:.issue data-number="13"}
@@ -698,16 +730,21 @@ in general.
 ## Security Considerations
 
 <section>
-### Insecure channels remain insecure
+### Unprivileged contexts remain unprivileged
 
-[Integrity metadata][] delivered over an insecure channel only protects an
-origin against a compromise of the server where an external resources is
-hosted. Network attackers can alter the digest in-flight (or remove it
-entirely (or do absolutely anything else to the document)), just as they
-could alter the resource the hash is meant to validate. Authors SHOULD
-deliver integrity metadata over secure channels. See also [securing the web][].
+[Integrity metadata][] delivered to an [unprivileged context], such as an
+[unprivileged document][], only protects an origin against a compromise of the
+server where an external resources is hosted. Network attackers can alter the
+digest in-flight (or remove it entirely, or do absolutely anything else to the
+document), just as they could alter the resource the hash is meant to validate.
+Thus, authors SHOULD deliver integrity metadata only to a [privileged
+document][]. See also [securing the web][].
 
 [Securing the Web]: https://w3ctag.github.io/web-https/
+[privileged document]: #dfn-privileged-document
+[unprivileged document]: #dfn-privileged-document
+[unprivileged context]: #dfn-privileged-context
+
 </section><!-- /Security::Insecure channels -->
 
 <section>
