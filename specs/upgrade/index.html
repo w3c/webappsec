@@ -203,6 +203,7 @@ secure transport before fetching them.</p>
      <ul class="toc">
       <li><a href="#legacy-clients"><span class="secno">7.1</span> <span class="content">Legacy Clients</span></a>
       <li><a href="#relation-to-hsts"><span class="secno">7.2</span> <span class="content">Relation to HSTS</span></a>
+      <li><a href="#recommendations"><span class="secno">7.3</span> <span class="content">Recommendations</span></a>
      </ul>
     <li><a href="#iana-considerations"><span class="secno">8</span> <span class="content">IANA Considerations</span></a>
      <ul class="toc">
@@ -638,7 +639,7 @@ directive-value = ""
 
     <p class="note" role="note">Note: Receiving an <code><a data-link-type="dfn" href="#https-http-request-header-field">HTTPS</a></code> header from a user agent is also
   an excellent signal to the server that the secure response could include a
-  <code>Strict-Transport-Security</code> header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.</p>
+  <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-6.1">Strict-Transport-Security</a></code> header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.</p>
 
 
     <p>User agent implementation details are described in step #2 of the the
@@ -715,7 +716,7 @@ Location: https://example.com/
 
     <p class="note" role="note">Note: Receiving an <code><a data-link-type="dfn" href="#upgraded-http-request-header-field">Upgraded</a></code> header along with a request
   is an excellent signal to the server that the response could safely include
-  a <code>Strict-Transport-Security</code> header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.</p>
+  a <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-6.1">Strict-Transport-Security</a></code> header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.</p>
 
   
     <div class="example" id="example-f0845b8d"><a class="self-link" href="#example-f0845b8d"></a>
@@ -1234,10 +1235,11 @@ Host: example.com
 
 
     <p>The <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive does not replace
-  the <code>Strict-Transport-Security</code> HTTP response header <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>.
-  Authors who serve their site over secure transport SHOULD send that header
-  with an appropriate <code>max-age</code> in order to ensure that users are
-  not subject to SSL stripping attacks by maliciously active network attackers.</p>
+  the <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-6.1">Strict-Transport-Security</a></code> HTTP response header
+  <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>. Authors who serve their site over secure transport SHOULD send
+  that header with an appropriate <code>max-age</code> in order to ensure that
+  users are not subject to SSL stripping attacks by maliciously active network
+  attackers.</p>
 
   
     <h3 class="heading settled" data-level="6.2" id="violation-report-target"><span class="secno">6.2. </span><span class="content">CSP Violation Reports</span><a class="self-link" href="#violation-report-target"></a></h3>
@@ -1295,21 +1297,84 @@ Host: example.com
   network insecurely.</p>
 
 
-    <p>Therefore, we recommend that authors who wish to ensure that their users have
-  a secure experience do the following:</p>
+    <p>We are intentionally keeping these concepts distinct, as authors may choose
+  to activate one or the other behavior, but ought not be forced to bind them
+  together.</p>
+
+  
+    <h3 class="heading settled" data-level="7.3" id="recommendations"><span class="secno">7.3. </span><span class="content">Recommendations</span><a class="self-link" href="#recommendations"></a></h3>
+
+
+    <p>We recommend that authors who wish to ensure that user agents which support
+  <a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a> are as secure as possible do the following:</p>
 
   
     <ol>
     
      <li>
-      Redirect incoming traffic from HTTP to HTTPS by serving a
+      Redirect incoming traffic from HTTP to HTTPS when a
+      <code><a data-link-type="dfn" href="#https-http-request-header-field">HTTPS</a></code> header is present by serving a
       <code>Location</code> header along with a <code>302</code> status code.
+
+      
+      <div class="example" id="example-46e89c47"><a class="self-link" href="#example-46e89c47"></a>
+        In Nginx, this kind of redirection might look like this:
+
+        
+       <pre>server {
+  if ($http_https = "1") {
+    add_header Vary HTTPS;
+    return 301 https://$host$request_uri;
+  }
+}
+</pre>
+       
+
+
+       <p>This is, of course, greatly simplified; your configuration will likely
+        be significantly more complex.</p>
+       
+      
+      </div>
+      
     
      
     
      <li>
-      Respond to HTTPS requests with a <code>Strict-Transport-Security</code>
-      header with a reasonable <code>max-age</code>.
+      Respond to HTTPS requests with a
+      <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive, and to upgraded
+      HTTPS requests with a <code><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-6.1">Strict-Transport-Security</a></code> header
+      with a reasonable <code>max-age</code>.
+
+      
+      <div class="example" id="example-f862cd01"><a class="self-link" href="#example-f862cd01"></a>
+        In Nginx, this kind of redirection might look like this (note the use of
+        <code>map</code>, as setting headers inside <code>if</code> without
+        returning immediately is, well, iffy):
+
+        
+       <pre>server {
+  ...
+
+  map $http_upgraded $sts {
+    "1" "max-age=10886400; includeSubdomains"
+  }
+  
+  add_header Strict-Transport-Security $sts;
+  add_header Content-Security-Policy upgrade-insecure-requests;
+
+  ...
+}
+</pre>
+       
+
+
+       <p>This is, of course, greatly simplified; your configuration will likely
+        be significantly more complex.</p>
+       
+      
+      </div>
+      
     
      
     
@@ -1317,14 +1382,6 @@ Host: example.com
       Work with user agent vendors to add their sites to those user agent’s
       HSTS Preload Lists (for example, by visiting
       <a href="https://hstspreload.appspot.com/">hstspreload.appspot.com</a>).
-    
-     
-    
-     <li>
-      Opt-into either this document’s
-      <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> mechanism, or into Mixed
-      Content’s <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode">strict mode</a> in order to ensure that insecure content is
-      never loaded.
     
      
   
@@ -1593,6 +1650,10 @@ Host: example.com
     <ul>
      <li><a href="https://tools.ietf.org/html/rfc6455#section-4.1">establish a websocket connection</a>
     </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc6797#section-6.1">strict-transport-security</a>
+    </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc7231">[RFC7231]</a> defines the following terms:
     <ul>
      <li><a href="https://tools.ietf.org/html/rfc7231#section-7.1.4">vary</a>
@@ -1637,6 +1698,8 @@ Host: example.com
    <dd>Graham Klyne; Mark Nottingham; Jeffrey C. Mogul. <a href="http://www.ietf.org/rfc/rfc3864.txt">Registration Procedures for Message Header Fields</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc3864.txt">http://www.ietf.org/rfc/rfc3864.txt</a>
    <dt id="biblio-rfc6455"><a class="self-link" href="#biblio-rfc6455"></a>[RFC6455]
    <dd>Ian Fette; Alexey Melnikov. <a href="http://www.ietf.org/rfc/rfc6455.txt">The WebSocket Protocol</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6455.txt">http://www.ietf.org/rfc/rfc6455.txt</a>
+   <dt id="biblio-rfc6797"><a class="self-link" href="#biblio-rfc6797"></a>[RFC6797]
+   <dd>Jeff Hodges; Collin Jackson; Adam Barth. <a href="http://www.ietf.org/rfc/rfc6797.txt">HTTP Strict Transport Security (HSTS)</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6797.txt">http://www.ietf.org/rfc/rfc6797.txt</a>
    <dt id="biblio-rfc7231"><a class="self-link" href="#biblio-rfc7231"></a>[RFC7231]
    <dd>Roy T. Fielding; Julian F. Reschke. <a href="http://www.ietf.org/rfc/rfc7231.txt">HTTP/1.1 Semantics and Content</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc7231.txt">http://www.ietf.org/rfc/rfc7231.txt</a>
    <dt id="biblio-url"><a class="self-link" href="#biblio-url"></a>[URL]
@@ -1661,8 +1724,6 @@ Host: example.com
    <dd>Neil McIntosh. <a href="http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab">Labelling BBC Online's archived websites</a>. URL: <a href="http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab">http://www.bbc.co.uk/blogs/internet/entries/f7126d19-2afa-3231-9c4e-0f7198c468ab</a>
    <dt id="biblio-nyt-https"><a class="self-link" href="#biblio-nyt-https"></a>[NYT-HTTPS]
    <dd>Eitan Konigsburg; Rajiv Pant; Elena Kvochko. <a href="http://open.blogs.nytimes.com/2014/11/13/embracing-https/">Embracing HTTPS</a>. URL: <a href="http://open.blogs.nytimes.com/2014/11/13/embracing-https/">http://open.blogs.nytimes.com/2014/11/13/embracing-https/</a>
-   <dt id="biblio-rfc6797"><a class="self-link" href="#biblio-rfc6797"></a>[RFC6797]
-   <dd>Jeff Hodges; Collin Jackson; Adam Barth. <a href="http://www.ietf.org/rfc/rfc6797.txt">HTTP Strict Transport Security (HSTS)</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6797.txt">http://www.ietf.org/rfc/rfc6797.txt</a>
    <dt id="biblio-web-https"><a class="self-link" href="#biblio-web-https"></a>[WEB-HTTPS]
    <dd>Mark Nottingham. <a href="http://www.w3.org/2001/tag/doc/web-https">Securing the Web</a>. TAG Finding. URL: <a href="http://www.w3.org/2001/tag/doc/web-https">http://www.w3.org/2001/tag/doc/web-https</a></dl>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>

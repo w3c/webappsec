@@ -529,10 +529,12 @@ The `integrity` attribute represents [integrity metadata][] for an element.
 The value of the attribute MUST be either the empty string, or at least one
 valid metadata as described by the following ABNF grammar:
 
-    integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) *WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
-    option-expression  =  option-name ":" [ option-value ]
-    option-name        = ALPHA / DIGIT / "-"
-    option-value       = ALPHA / DIGIT / "-" / "+" / "." / "/"
+    integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) 1*WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
+    option-expression  = option-name ":" option-value
+    option-name        = 1*option-name-char
+    option-name-char   = ALPHA / DIGIT / "-"
+    option-value       = *option-value-char
+    option-value-char  = ALPHA / DIGIT / "-" / "+" / "." / "/"
     hash-algo          = <hash-algo production from [Content Security Policy Level 2, section 4.2]>
     base64-value       = <base64-value production from [Content Security Policy Level 2, section 4.2]>
     hash-expression    = hash-algo "-" base64-value
