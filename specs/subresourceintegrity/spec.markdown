@@ -292,8 +292,9 @@ stronger hash functions as they become available.
 #### Priority
 
 User agents MUST provide a mechanism of determining the relative priority of
-two hash functions. That is, <dfn>getPrioritizedHashFunction(a, b)</dfn> MUST
-return the hash function the user agent considers the most collision-resistant.
+two hash functions. That is, if a user agent implemented a function like
+<dfn>getPrioritizedHashFunction(a, b)</dfn> it would return the hash function
+the user agent considers the most collision-resistant.
 For example, `getPrioritizedHashFunction('SHA-256', 'SHA-512')` would return
 `SHA-512`.
 
