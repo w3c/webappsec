@@ -55,12 +55,6 @@ from integrity validation. The scheme specified here applies to all HTML
 elements which trigger fetches, as well as to fetches triggered from CSS
 and JavaScript.
 
-Moreover, integrity metadata may also be useful for purposes other than
-validation. User agents may decide to use the integrity metadata as an
-identifier in a local cache, for instance, meaning that common resources
-(for example, JavaScript libraries) could be cached and retrieved once,
-regardless of the URL from which they are loaded.
-
 [HSTS]: http://tools.ietf.org/html/rfc6797
 [pinned public keys]: http://tools.ietf.org/html/draft-ietf-websec-key-pinning
 
