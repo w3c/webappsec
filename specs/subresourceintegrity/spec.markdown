@@ -252,7 +252,7 @@ resource's [integrity metadata][], and MAY support additional hash functions.
 Multiple sets of [integrity metadata][] may be associated with a single
 resource in order to provide agility in the face of future discoveries.
 For example, the "Hello, world." resource described above may be described
-either of the following `ni` URLs:
+either of the following hash expressions:
 
     sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
     sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
@@ -390,7 +390,7 @@ checking because it won't have loaded successfully.
 #### Parse <var>metadata</var>.
 
 This algorithm accepts a string, and returns either `no metadata`, or a set of
-valid "named information" (`ni`) URLs whose hash functions are understood by
+valid hash expressions whose hash functions are understood by
 the user agent.
 
 1.  If <var>metadata</var> is the empty string, return `no metadata`.
