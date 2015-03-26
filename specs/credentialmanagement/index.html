@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Credential Management</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-03-03">3 March 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-03-26">26 March 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -180,10 +180,6 @@
        </ul>
      </ul>
     <li><a href="#terms"><span class="secno">2</span> <span class="content">Key Concepts and Terminology</span></a>
-     <ul class="toc">
-      <li><a href="#terms-defined-here"><span class="secno">2.1</span> <span class="content">Terms defined by this specification</span></a>
-      <li><a href="#terms-defined-by-reference"><span class="secno">2.2</span> <span class="content">Terms defined by reference</span></a>
-     </ul>
     <li><a href="#interfaces"><span class="secno">3</span> <span class="content">Interfaces</span></a>
      <ul class="toc">
       <li><a href="#interfaces-credential-types"><span class="secno">3.1</span> <span class="content">Credential Types</span></a>
@@ -211,7 +207,10 @@
       <li><a href="#save-credential"><span class="secno">4.3</span> <span class="content">
     Save <var>credential</var>
   </span></a>
-      <li><a href="#require-user-mediation-for-origin"><span class="secno">4.4</span> <span class="content">
+      <li><a href="#send-localcredential"><span class="secno">4.4</span> <span class="content">
+    Send <var>localCredential</var> to <var>url</var>.
+  </span></a>
+      <li><a href="#require-user-mediation-for-origin"><span class="secno">4.5</span> <span class="content">
     Require user mediation for <var>origin</var>
   </span></a>
      </ul>
@@ -249,6 +248,7 @@
     <li><a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
      <ul class="toc">
       <li><a href="#index-defined-here"><span class="secno"></span> <span class="content">Terms defined by this specification</span></a>
+      <li><a href="#index-defined-elsewhere"><span class="secno"></span> <span class="content">Terms defined by reference</span></a>
      </ul>
     <li><a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ul class="toc">
@@ -304,7 +304,8 @@
 
 
     <p>These use cases are explored in more detail in <a href="#use-cases">§1.1 Use Cases</a> and in
-  <a href="../usecases/">Credential Management: Use Cases and Requirements</a>;
+  <a href="https://w3c.github.io/webappsec/usecases/credentialmanagement/">
+  Credential Management: Use Cases and Requirements</a>;
   this specification attempts to address many of the requirements that document
   outlines by defining a Credential Manager API which a website can use to
   request <a data-link-type="dfn" href="#credentials">credentials</a> for a user, and to notify the user agent that the
@@ -337,7 +338,7 @@
     or not a site cooperates, which is excellent for users. On the other, the
     password managers' behaviors are a fragile and proprietary hodgepodge of
     heuristics meant to detect and fill sign-in forms, password change forms,
-    and etc.</p>
+    etc.</p>
      
 
 
@@ -409,7 +410,7 @@
      
 
     
-     <div class="example">
+     <div class="example" id="example-ed803682"><a class="self-link" href="#example-ed803682"></a>
       
       <pre>if (!navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>) {
   // Sadness! Return early.
@@ -426,23 +427,14 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
         return;
       }
 
-      var xhr = new <a data-link-type="functionish" href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest">XMLHttpRequest()</a>;
-      xhr.open("POST", "https://example.com/loginEndpoint");
-      xhr.onreadystatechange = function () {
-        if (this.readyState != this.DONE)
-          return;
-
-        var loginSucceeded = // Process response: if login succeeded, yay! If not, boo!;
-        if (loginSucceeded) {
+      credential.<a class="idl-code" data-link-type="method" href="#dom-localcredential-send">send</a>("https://example.com/loginEndpoint")
+        .then(function (response) {
           navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-notifysignedin">notifySignedIn</a>(credential);
           // Notify the user that signin succeeded! Do amazing, signed-in things!
-        } else {
+        }).catch(function (response) {
           navigator.credentials.<a data-link-type="idl" href="#dom-credentialscontainer-notifyfailedsignin">notifyFailedSignIn</a>(credential);
           // Notify the user that signin failed, and fall back to the usual experience.
-        }
-      };
-
-      xhr.send(credential.<a class="idl-code" data-link-type="attribute" href="#dom-localcredential-formdata">formData</a>);
+        });
     });
 </pre>
       
@@ -461,7 +453,7 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
      
 
     
-     <div class="example">
+     <div class="example" id="example-b289fc2f"><a class="self-link" href="#example-b289fc2f"></a>
       
       <pre>if (!navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>) {
   // Sadness! Return early.
@@ -485,10 +477,9 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
           // Do something specific for each supported federation.
         }
       } else {
-        var xhr = new <a data-link-type="functionish" href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest">XMLHttpRequest()</a>;
-        xhr.open("POST", "https://example.com/loginEndpoint");
-        xhr.onreadystatechange = // Success handler from first example.
-        xhr.send(credential.<a class="idl-code" data-link-type="attribute" href="#dom-localcredential-formdata">formData</a>);
+        credential.<a class="idl-code" data-link-type="method" href="#dom-localcredential-send">send</a>("https://example.com/loginEndpoint")
+          .then(function (response) { ... })
+          .catch(function (response) { ... });
       }
     });
 </pre>
@@ -512,7 +503,7 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
      
 
     
-     <div class="example">
+     <div class="example" id="example-510cb3f7"><a class="self-link" href="#example-510cb3f7"></a>
       After navigation, the website won’t (shouldn’t) have access to the
       password, but can rely on the user agent to have retained a pending
       credential:
@@ -527,7 +518,7 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
      
 
     
-     <div class="example">
+     <div class="example" id="example-638cc7ea"><a class="self-link" href="#example-638cc7ea"></a>
       If we haven’t navigated (perhaps sign-in happened via <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-xmlhttprequest">XMLHttpRequest</a></code>),
       then we can explain exactly which credentials were used:
 
@@ -544,7 +535,7 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
      
 
     
-     <div class="example">
+     <div class="example" id="example-3f429504"><a class="self-link" href="#example-3f429504"></a>
       If we’re using a <a data-link-type="dfn" href="#federated-identity-provider">federated identity provider</a>:
 
       
@@ -644,8 +635,6 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
     <h2 class="heading settled" data-level="2" id="terms"><span class="secno">2. </span><span class="content">Key Concepts and Terminology</span><a class="self-link" href="#terms"></a></h2>
 
   
-    <h3 class="heading settled" data-level="2.1" id="terms-defined-here"><span class="secno">2.1. </span><span class="content">Terms defined by this specification</span><a class="self-link" href="#terms-defined-here"></a></h3>
-  
     <dl>
     
      <dt>
@@ -719,112 +708,6 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
      
   
     </dl>
-
-  
-    <h3 class="heading settled" data-level="2.2" id="terms-defined-by-reference"><span class="secno">2.2. </span><span class="content">Terms defined by reference</span><a class="self-link" href="#terms-defined-by-reference"></a></h3>
-  
-    <dl>
-    
-     <dt><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>
-     
-    
-     <dd>
-      An origin defines the scope of authority or privilege under which a
-      resource operates. It is defined in detail in the Origin specification.
-      <a data-link-type="biblio" href="#biblio-rfc6454">[RFC6454]</a>
-    
-     
-
-    
-     <dt><a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-6.2">ASCII serialization of an origin</a>
-     
-    
-     <dd>
-      This algorithm is defined in
-      <a href="https://tools.ietf.org/html/rfc6454#section-6.2">Section 6.2</a>
-      of the Origin specification. <a data-link-type="biblio" href="#biblio-rfc6454">[RFC6454]</a>
-    
-     
-
-    
-     <dt><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-origin"><i lang="la">a priori</i> insecure origin</a>
-     
-    
-     <dt><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i> insecure url</a>
-     
-    
-     <dd>
-      These terms are defined in 
-      <a href="https://w3c.github.io/webappsec/specs/mixedcontent/#terms">Section
-      2 of the Mixed Content specification</a>. <a data-link-type="biblio" href="#biblio-mix">[MIX]</a>
-    
-     
-
-    
-     <dt><dfn data-dfn-type="dfn" data-lt="JavaScript global environment|global environment" data-noexport="" id="javascript-global-environment">JavaScript global environment<a class="self-link" href="#javascript-global-environment"></a></dfn>
-     
-    
-     <dd>
-      This term is defined in <a data-link-type="dfn" href="#javascript-global-environment">Section
-      2.2.2</a> of the HTML5 specification. <a data-link-type="biblio" href="#biblio-html5">[HTML5]</a>
-    
-     
-
-    
-     <dt><dfn data-dfn-type="dfn" data-noexport="" id="fetch">fetch<a class="self-link" href="#fetch"></a></dfn>
-     
-    
-     <dd>
-      "fetching" is the process by which a user agent requests resources, and
-      delivers responses. It is defined in detail in the Fetch living standard.
-      <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>
-    
-     
-
-    
-     <dt><dfn data-dfn-type="dfn" data-noexport="" id="request">request<a class="self-link" href="#request"></a></dfn>
-     
-    
-     <dd>
-      These terms are defined in
-      <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the
-      Fetch living standard. <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>
-    
-     
-
-    
-     <dt><dfn data-dfn-type="dfn" data-noexport="" id="response">response<a class="self-link" href="#response"></a></dfn>
-     
-    
-     <dt><dfn data-dfn-type="dfn" data-noexport="" id="network-error">network error<a class="self-link" href="#network-error"></a></dfn>
-     
-    
-     <dd>
-      These terms are defined in detail in
-      <a href="http://fetch.spec.whatwg.org/#responses">Section 2.3</a> of the
-      Fetch living standard. <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>
-    
-     
-
-    
-     <dt><dfn data-dfn-type="dfn" data-noexport="" id="registerable-domain">registerable domain<a class="self-link" href="#registerable-domain"></a></dfn>
-     
-    
-     <dt><dfn data-dfn-type="dfn" data-noexport="" id="public-suffix">public suffix<a class="self-link" href="#public-suffix"></a></dfn>
-     
-    
-     <dd>
-      An <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>’s <strong>public suffix</strong> is defined via the
-      <a href="https://publicsuffix.org/">Public Suffix List</a>, and represents
-      the portion of the domain that is controlled by a public or private
-      registry (e.g. the public suffix of <code>https://www.example.com/</code>
-      is ".com"). The <strong>registerable domain</strong> is the public suffix
-      plus one additional label: the registerable domain of
-      <code>https://www.example.com/</code> is "example.com". <a data-link-type="biblio" href="#biblio-psl">[PSL]</a>
-    
-     
-  
-    </dl>
 </section>
 
 
@@ -891,8 +774,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
 
     <p>All <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects have internal slots named
-  <code><dfn class="idl-code" data-dfn-for="credential" data-dfn-type="attribute" data-export="" id="dom-credential-origin">[[origin]]<a class="self-link" href="#dom-credential-origin"></a></dfn></code> and
-  <code><dfn class="idl-code" data-dfn-for="credential" data-dfn-type="attribute" data-export="" id="dom-credential-requiresusermediation">[[requiresUserMediation]]<a class="self-link" href="#dom-credential-requiresusermediation"></a></dfn></code>
+  <code><dfn class="idl-code" data-dfn-for="Credential" data-dfn-type="attribute" data-export="" id="dom-credential-origin">[[origin]]<a class="self-link" href="#dom-credential-origin"></a></dfn></code> and
+  <code><dfn class="idl-code" data-dfn-for="Credential" data-dfn-type="attribute" data-export="" id="dom-credential-requiresusermediation">[[requiresUserMediation]]<a class="self-link" href="#dom-credential-requiresusermediation"></a></dfn></code>
   which store the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> for which the credential was saved, and whether
   the credential may be exposed to a website without user mediation. These
   properties are not directly exposed to the web.</p>
@@ -902,27 +785,32 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
   
     <pre class="idl">[<dfn class="idl-code" data-dfn-for="LocalCredential" data-dfn-type="constructor" data-export="" data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<constructor>" data-lt="LocalCredential(id, password, name, avatarURL)" id="dom-localcredential-localcredentialid-password-name-avatarurl">Constructor<a class="self-link" href="#dom-localcredential-localcredentialid-password-name-avatarurl"></a></dfn>(DOMString <dfn class="idl-code" data-dfn-for="LocalCredential/LocalCredential(id, password, name, avatarURL)" data-dfn-type="argument" data-export="" data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<method>/id<argument>" id="dom-localcredential-localcredentialid-password-name-avatarurl-id">id<a class="self-link" href="#dom-localcredential-localcredentialid-password-name-avatarurl-id"></a></dfn>, DOMString <dfn class="idl-code" data-dfn-for="LocalCredential/LocalCredential(id, password, name, avatarURL)" data-dfn-type="argument" data-export="" data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<method>/password<argument>" id="dom-localcredential-localcredentialid-password-name-avatarurl-password">password<a class="self-link" href="#dom-localcredential-localcredentialid-password-name-avatarurl-password"></a></dfn>, optional DOMString <dfn class="idl-code" data-dfn-for="LocalCredential/LocalCredential(id, password, name, avatarURL)" data-dfn-type="argument" data-export="" data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<method>/name<argument>" id="dom-localcredential-localcredentialid-password-name-avatarurl-name">name<a class="self-link" href="#dom-localcredential-localcredentialid-password-name-avatarurl-name"></a></dfn>, optional DOMString <dfn class="idl-code" data-dfn-for="LocalCredential/LocalCredential(id, password, name, avatarURL)" data-dfn-type="argument" data-export="" data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<method>/avatarURL<argument>" id="dom-localcredential-localcredentialid-password-name-avatarurl-avatarurl">avatarURL<a class="self-link" href="#dom-localcredential-localcredentialid-password-name-avatarurl-avatarurl"></a></dfn>)]
 interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-global-name="" id="localcredential">LocalCredential<a class="self-link" href="#localcredential"></a></dfn> : <a data-link-type="idl-name" href="#credential">Credential</a> {
-  readonly attribute <a data-link-type="idl-name" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a> <a class="idl-code" data-global-name="LocalCredential<interface>/formData<attribute>" data-link-type="attribute" data-readonly="" data-type="FormData " href="#dom-localcredential-formdata">formData</a>;
+  Promise&lt;<a data-link-type="idl-name" href="https://fetch.spec.whatwg.org/#response">Response</a>> <dfn class="idl-code" data-dfn-for="LocalCredential" data-dfn-type="method" data-export="" data-global-name="LocalCredential<interface>/submit(url)<method>" data-lt="submit(url)" id="dom-localcredential-submiturl">submit<a class="self-link" href="#dom-localcredential-submiturl"></a></dfn>(DOMString <dfn class="idl-code" data-dfn-for="LocalCredential/submit" data-dfn-type="argument" data-export="" data-global-name="LocalCredential/submit/url<argument>" id="dom-localcredential-submit-url">url<a class="self-link" href="#dom-localcredential-submit-url"></a></dfn>);
 };
 </pre>
   
     <dl>
     
-     <dt><dfn class="idl-code" data-dfn-for="LocalCredential" data-dfn-type="attribute" data-export="" id="dom-localcredential-formdata">formData<a class="self-link" href="#dom-localcredential-formdata"></a></dfn>, <span> of type <a data-link-type="idl-name" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a>, readonly</span>
+     <dt><dfn class="idl-code" data-dfn-for="LocalCredential" data-dfn-type="method" data-export="" id="dom-localcredential-send">send()<a class="self-link" href="#dom-localcredential-send"></a></dfn>
      
     
-     <dd>An <a href="http://mikewest.github.io/credentialmanagement/writeonly/#opaque-formdata">opaque FormData object</a>,
-    containing two entries: one named <code>username</code>, the other named
-    <code>password</code>.
+     <dd>
+      This method can be used to transmit the username and password information
+      represented by this object to a same-origin endpoint in order to sign a
+      user into a website. The user agent MUST execute the algorithm described
+      in <a href="#send-localcredential">§4.4 
+    Send localCredential to url.
+  </a> when this method is executed.
+    
      
   
     </dl>
 
 
-    <p>All <code class="idl"><a data-link-type="idl" href="#localcredential">LocalCredential</a></code> objects have an internal slot named <code><dfn data-dfn-type="dfn" data-noexport="" id="password">[[password]]<a class="self-link" href="#password"></a></dfn></code>
+    <p>All <code class="idl"><a data-link-type="idl" href="#localcredential">LocalCredential</a></code> objects have an internal slot named
+  <code><dfn class="idl-code" data-dfn-for="LocalCredential" data-dfn-type="attribute" data-export="" id="dom-localcredential-password">[[password]]<a class="self-link" href="#dom-localcredential-password"></a></dfn></code>
   which stores the credential’s password. This property is not directly exposed
-  to the web, but used to construct the <a class="idl-code" data-link-type="attribute" href="#dom-localcredential-formdata">formData</a> property that
-  is exposed to the web.</p>
+  to the web, but used to construct the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> generated during <code class="idl"><a data-link-type="idl" href="#dom-localcredential-send">send()</a></code>.</p>
 
   
     <h4 class="heading settled" data-level="3.1.3" id="interfaces-credential-types-federatedcredential"><span class="secno">3.1.3. </span><span class="content"><code>FederatedCredential</code></span><a class="self-link" href="#interfaces-credential-types-federatedcredential"></a></h4>
@@ -969,12 +857,12 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     <h3 class="heading settled" data-level="3.2" id="interfaces-credential-manager"><span class="secno">3.2. </span><span class="content">Credential Manager</span><a class="self-link" href="#interfaces-credential-manager"></a></h3>
 
 
-    <p>The credential manager hangs off of the <code class="idl"><a data-link-type="idl" href="https://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a></code> object, and exposes
+    <p>The credential manager hangs off of the <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a></code> object, and exposes
   methods to request credentials, and to notify the user agent when interesting
   events occur: successful sign in, failed sign in, and sign out.</p>
 
   
-    <pre class="idl">partial interface <a class="idl-code" data-link-type="interface" href="https://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a> {
+    <pre class="idl">partial interface <a class="idl-code" data-link-type="interface" href="http://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a> {
   readonly attribute <a data-link-type="idl-name" href="#credentialscontainer">CredentialsContainer</a> <dfn class="idl-code" data-dfn-for="Navigator" data-dfn-type="attribute" data-export="" data-global-name="Navigator<interface>/credentials<attribute>" data-readonly="" data-type="CredentialsContainer " id="dom-navigator-credentials">credentials<a class="self-link" href="#dom-navigator-credentials"></a></dfn>;
 };
 
@@ -1030,10 +918,10 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      <dd>
       Notify the credential manager that the user is signing out. The user
       agent MUST execute the algorithm defined in
-      <a href="#require-user-mediation-for-origin">§4.4 
+      <a href="#require-user-mediation-for-origin">§4.5 
     Require user mediation for origin
   </a> with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the
-      <a data-link-type="dfn" href="#javascript-global-environment">JavaScript global environment</a> in which this method is called.
+      <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a> in which this method is called.
     
      
     
@@ -1148,7 +1036,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
 
     <p>If called from an environment which is not a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#privileged-context">privileged context</a>, or
-  from somewhere other than a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top_level-browsing-context">top-level browsing context</a>, the
+  from somewhere other than a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>, the
   <code>Promise</code> will be rejected with a <code>SecurityError</code>.</p>
 
   
@@ -1170,23 +1058,30 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      
     
      <li>
-      If <var>settings</var> does not have a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-document">responsible document</a>, then
-      reject <var>promise</var> with a <code>SecurityError</code>
-      <strong>and</strong> terminate this algorithm.
-    
-     
-    
-     <li>
-      If <var>settings</var>' <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-document">responsible document</a> is not the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active
-      document</a> in the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top_level-browsing-context">top-level browsing context</a>
-      If <var>environment</var> is not a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top_level-browsing-context">top-level browsing context</a>,
-      then reject <var>promise</var> with a <code>SecurityError</code>
-      <strong>and</strong> terminate this algorithm.
-    
-     <li>
-      If <var>settings</var> is not a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#privileged-context">privileged context</a>, then reject
-      <var>promise</var> with a <code>SecurityError</code> <strong>and</strong>
-      terminate this algorithm.
+      Reject <var>promise</var> with a <code>SecurityError</code>
+      <strong>and</strong> terminate this algorithm, if any of the following
+      conditions are met:
+      
+      <ul>
+        
+       <li>
+          <var>settings</var> does not have a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-document">responsible document</a>
+        
+       
+        
+       <li>
+          <var>settings</var>' <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-document">responsible document</a> is not the
+          <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a> in the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>
+        
+       
+        
+       <li>
+          <var>settings</var> is not a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#privileged-context">privileged context</a>
+        
+       
+      
+      </ul>
+      
     
      
     
@@ -1200,7 +1095,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       defined in <a href="#request-credential-without-mediation">§4.2 
     Request a Credential for origin with
     options without user mediation
-  </a>.
+  </a> with
+      <var>origin</var> and <var>options</var> as arguments.
     
      
     
@@ -1257,47 +1153,6 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
         <ol>
             
          <li>
-              Let <var>data</var> be a new <a class="idl-code" data-link-type="interface" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a>
-              object.
-            
-         
-            
-         <li>
-              Let <var>username entry</var> be the result of
-              <a href="https://xhr.spec.whatwg.org/#create-an-entry">creating
-              an entry</a> named "username" with a value of
-              <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-credential-id">id</a></code> attribute.
-            
-         
-            
-         <li>
-              Let <var>password entry</var> be the result of
-              <a href="https://xhr.spec.whatwg.org/#create-an-entry">creating
-              an entry</a> named "password" with a value of
-              <var>credential</var>’s <code><a data-link-type="dfn" href="#password">[[password]]</a></code> slot.
-            
-         
-            
-         <li>
-              Append <var>username entry</var> and <var>password entry</var>
-              to <var>data</var>.
-            
-         
-            
-         <li>
-              Set <var>data</var>’s
-              <a href="http://mikewest.github.io/credentialmanagement/writeonly/#opaque-flag">opaque
-              flag</a> to <code>true</code>.
-            
-         
-            
-         <li>
-              Set <var>credential</var>’s <a class="idl-code" data-link-type="attribute" href="#dom-localcredential-formdata">formData</a> attribute to
-              <var>data</var>.
-            
-         
-            
-         <li>
               Resolve <var>promise</var> with <var>credential</var> and
               terminate this algorithm.
             
@@ -1315,7 +1170,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     
      <li>
       No <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> is available: terminate this algorithm by resolving
-      <var>promise</var>.
+      <var>promise</var> with with <code>undefined</code>.
     
      
   
@@ -1353,7 +1208,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       <code class="idl"><a data-link-type="idl" href="#dom-credential-requiresusermediation">[[requiresUserMediation]]</a></code> slot is <code>false</code>.
 
 
-      <p class="note" role="note">Note: This is an exact match, not a <a data-link-type="dfn" href="#registerable-domain">registerable domain</a> match.
+      <p class="note" role="note">Note: This is an exact match, not a <a data-link-type="dfn" href="https://publicsuffix.org/list/#">registerable domain</a> match.
       See <a href="#security-cross-origin-leakage">§6.1 Cross-origin Credential Leakage</a> for details as to why.</p>
       
     
@@ -1423,14 +1278,13 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      
     
      <li>
-      Let <var>environment</var> be the <a data-link-type="dfn" href="#javascript-global-environment">JavaScript global environment</a> in
-      which which this algorithm is executing.
+      Let <var>environment</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>.
     
      
     
      <li>
       If <var>environment</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-browsing-context">responsible browsing context</a> is not a
-      <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top_level-browsing-context">top-level browsing context</a>, or <var>environment</var> is not a
+      <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>, or <var>environment</var> is not a
       <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#privileged-context">privileged context</a>, then reject <var>promise</var> with a
       <code>SecurityError</code> <strong>and</strong> terminate this algorithm.
     
@@ -1506,9 +1360,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
           <ol>
                 
            <li>
-                  Set <var>storedCredential</var>’s
-                  <code><a data-link-type="dfn" href="#password">[[password]]</a></code> to the value of
-                  <var>credential</var>’s <code><a data-link-type="dfn" href="#password">[[password]]</a></code>
+                  Set <var>storedCredential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-localcredential-password">[[password]]</a></code> to the
+                  value of <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-localcredential-password">[[password]]</a></code>
                   slot.
                 
            
@@ -1554,8 +1407,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
          
             
          <li>
-              Resolve <var>promise</var> and execute the remaining steps
-              asynchronously.
+              Resolve <var>promise</var>.
             
          
           
@@ -1599,8 +1451,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
          
             
          <li>
-              Resolve <var>promise</var> and execute the remaining steps
-              asynchronously.
+              Resolve <var>promise</var>.
             
          
           
@@ -1617,7 +1468,105 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     </ol>
 
   
-    <h3 class="heading settled" data-level="4.4" id="require-user-mediation-for-origin"><span class="secno">4.4. </span><span class="content">
+    <h3 class="heading settled" data-level="4.4" id="send-localcredential"><span class="secno">4.4. </span><span class="content">
+    Send <var>localCredential</var> to <var>url</var>.
+  </span><a class="self-link" href="#send-localcredential"></a></h3>
+
+
+    <p>Given an endpoint URL (<var>url</var>) this method will <code>POST</code>
+  the credential information from a <code class="idl"><a data-link-type="idl" href="#localcredential">LocalCredential</a></code> (<var>credential</var>)
+  to <var>url</var>. In order to mitigate the risk of data leakage,
+  <var>url</var> MUST be same-origin with <var>credential</var>’s
+  internal <code class="idl"><a data-link-type="idl" href="#dom-credential-origin">[[origin]]</a></code> slot.</p>
+
+  
+    <ol>
+    
+     <li>
+      Let <var>endpoint</var> be the result of running <var>url</var> through
+      the <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-parser">URL parser</a>.
+    
+     
+    
+     <li>
+      Return a promise rejected with a <code>TypeError</code> if
+      <var>endpoint</var> is not a valid <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#url">URL</a></code>.
+    
+     
+    
+     <li>
+      Let <var>environment</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>.
+    
+     
+    
+     <li>
+      Return a promise rejected with a <code>SecurityError</code>
+      <strong>and</strong> terminate this algorithm if any of the following
+      conditions are true:
+
+      
+      <ol>
+        
+       <li>
+          <var>endpoint</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-origin">origin</a></code> is <em>not</em> the same as this
+          <code class="idl"><a data-link-type="idl" href="#localcredential">LocalCredential</a></code>'s <code class="idl"><a data-link-type="idl" href="#dom-credential-origin">[[origin]]</a></code> slot
+        
+       
+        
+       <li>
+          <var>environment</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-browsing-context">responsible browsing context</a> is not a
+          <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>
+        
+       
+        
+       <li>
+          <var>environment</var> is not a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#privileged-context">privileged context</a>
+        
+       
+        
+       <li>
+          <var>environment</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is not the same as
+          <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-credential-origin">[[origin]]</a></code> slot
+        
+       
+      
+      </ol>
+      
+    
+     
+    
+     <li>
+      Let <var>init</var> be a new <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#requestinit">RequestInit</a></code> object whose
+      <code>credentials</code> member is set to <code>same-origin</code>,
+      <code>mode</code> member is set to <code>POST</code>, and
+      <code>body</code> member is a new <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> object.
+    
+     
+    
+     <li>
+      Execute <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-formdata-append">append()</a></code> on <var>init</var>’s <code>body</code>
+      member, with a <code>name</code> of "<code>username</code>", and a
+      <code>value</code> of <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-localcredential-password">[[password]]</a></code> slot.
+    
+     
+    
+     <li>
+      Execute <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-formdata-append">append()</a></code> on <var>init</var>’s <code>body</code>
+      member, with a <code>name</code> of "<code>password</code>", and a
+      <code>value</code> of <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-localcredential-password">[[password]]</a></code> slot.
+    
+     
+    
+     <li>
+      Return the promise that results from executing <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-fetch">fetch()</a></code> on
+      <var>url</var> and <var>init</var>.
+    
+     
+  
+    </ol>
+
+  
+    <h3 class="heading settled" data-level="4.5" id="require-user-mediation-for-origin"><span class="secno">4.5. </span><span class="content">
     Require user mediation for <var>origin</var>
   </span><a class="self-link" href="#require-user-mediation-for-origin"></a></h3>
 
@@ -1759,7 +1708,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       If a user clears her browsing data for an origin (cookies, localStorage,
       and so on), the user agent MUST require user mediation for that origin
       by executing the algorithm defined in
-      <a href="#require-user-mediation-for-origin">§4.4 
+      <a href="#require-user-mediation-for-origin">§4.5 
     Require user mediation for origin
   </a>.
     
@@ -1851,7 +1800,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     
      <li>
       MAY use the Public Suffix List <a data-link-type="biblio" href="#biblio-psl">[PSL]</a> to determine the effective scope
-      of a credential by comparing the <a data-link-type="dfn" href="#registerable-domain">registerable domains</a> of the
+      of a credential by comparing the <a data-link-type="dfn" href="https://publicsuffix.org/list/#">registerable domains</a> of the
       credential’s <code>[[origin]]</code> with the origin in which
       <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> is called. That is: credentials saved on
       <code>https://admin.example.com/</code> and
@@ -1874,7 +1823,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
 
     <p>Additionally, authors SHOULD mitigate the risk of leakage by setting a
-  reasonable Content Security Policy <a data-link-type="biblio" href="#biblio-csp">[CSP]</a> which restricts the origins to
+  reasonable Content Security Policy <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> which restricts the origins to
   which <code class="idl"><a class="idl-code" data-link-type="interface" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> objects can be sent. In particular, authors should
   ensure that the following directives are set, explicitly or implicitly, in
   their pages' policies:</p>
@@ -1910,16 +1859,15 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
     <p>If framed pages have access to the APIs defined here, it might be possible
   to confuse a user into granting access to credentials for an origin other
-  than the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top_level-browsing-context">top-level browsing context</a>, which is the only security origin
+  than the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>, which is the only security origin
   which users can reasonably be expected to understand.</p>
 
 
-    <p>Therefore, <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">Nested browsing contexts</a> and other <a data-link-type="dfn" href="#javascript-global-environment">JavaScript global
-  environments</a> like Workers <a data-link-type="biblio" href="#biblio-workers">[WORKERS]</a> cannot receive or store
-  <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects; the user agent MUST reject promises generated by
-  calls to <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> and <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-notifysignedin">notifySignedIn()</a></code> with a
-  <code>SecurityError</code> when called from a context which is not a
-  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top_level-browsing-context">top-level browsing context</a>.</p>
+    <p>Therefore, <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">Nested browsing contexts</a> and other environments like like
+  Workers <a data-link-type="biblio" href="#biblio-workers">[WORKERS]</a> cannot receive or store <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects; the user
+  agent MUST reject promises generated by calls to <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-request">request()</a></code> and
+  <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-notifysignedin">notifySignedIn()</a></code> with a <code>SecurityError</code> when called from a
+  context which is not a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>.</p>
 
 
     <p>See the algorithms defined in <a href="#request-credential">§4.1 
@@ -2069,7 +2017,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     like this:
 
     </p>
-  <div class="example">
+  <div class="example" id="example-f839f6c8"><a class="self-link" href="#example-f839f6c8"></a>
         
    <p>This is an example of an informative example.</p>
    
@@ -2129,32 +2077,28 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
    <li>credential chooser, <a href="#credential-chooser">5.3</a>
    <li>CredentialRequestOptions, <a href="#dictdef-credentialrequestoptions">3.3</a>
    <li>credentials, <a href="#dom-navigator-credentials">3.2</a>
-   <li>Credentials, <a href="#credentials">2.1</a>
+   <li>Credentials, <a href="#credentials">2</a>
    <li>CredentialsContainer, <a href="#credentialscontainer">3.2</a>
-   <li>Credential Store, <a href="#credential-store">2.1</a>
+   <li>Credential Store, <a href="#credential-store">2</a>
    <li>failedCredential, <a href="#dom-credentialscontainer-notifyfailedsignin-failedcredential">3.2</a>
    <li>FederatedCredential, <a href="#federatedcredential">3.1.3</a>
    <li>FederatedCredential(id, federation, name, avatarURL), <a href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl">3.1.3</a>
    <li>federated credentials, <a href="#federated-credentials">3.1</a>
-   <li>Federated Identity Provider, <a href="#federated-identity-provider">2.1</a>
+   <li>Federated Identity Provider, <a href="#federated-identity-provider">2</a>
    <li>federation
     <ul>
      <li>argument for FederatedCredential/FederatedCredential(id, federation, name, avatarURL), <a href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl-federation">3.1.3</a>
      <li>attribute for FederatedCredential, <a href="#dom-federatedcredential-federation">3.1.3</a>
     </ul>
    <li>federations, <a href="#dom-credentialrequestoptions-federations">3.3</a>
-   <li>fetch, <a href="#fetch">2.2</a>
-   <li>formData, <a href="#dom-localcredential-formdata">3.1.2</a>
-   <li>global environment, <a href="#javascript-global-environment">2.2</a>
    <li>id
     <ul>
      <li>attribute for Credential, <a href="#dom-credential-id">3.1.1</a>
      <li>argument for LocalCredential/LocalCredential(id, password, name, avatarURL), <a href="#dom-localcredential-localcredentialid-password-name-avatarurl-id">3.1.2</a>
      <li>argument for FederatedCredential/FederatedCredential(id, federation, name, avatarURL), <a href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl-id">3.1.3</a>
     </ul>
-   <li>identity provider, <a href="#federated-identity-provider">2.1</a>
-   <li>IDP, <a href="#federated-identity-provider">2.1</a>
-   <li>JavaScript global environment, <a href="#javascript-global-environment">2.2</a>
+   <li>identity provider, <a href="#federated-identity-provider">2</a>
+   <li>IDP, <a href="#federated-identity-provider">2</a>
    <li>LocalCredential, <a href="#localcredential">3.1.2</a>
    <li>LocalCredential(id, password, name, avatarURL), <a href="#dom-localcredential-localcredentialid-password-name-avatarurl">3.1.2</a>
    <li>local credentials, <a href="#local-credentials">3.1</a>
@@ -2164,46 +2108,122 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      <li>argument for LocalCredential/LocalCredential(id, password, name, avatarURL), <a href="#dom-localcredential-localcredentialid-password-name-avatarurl-name">3.1.2</a>
      <li>argument for FederatedCredential/FederatedCredential(id, federation, name, avatarURL), <a href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl-name">3.1.3</a>
     </ul>
-   <li>network error, <a href="#network-error">2.2</a>
    <li>notifyFailedSignIn(), <a href="#dom-credentialscontainer-notifyfailedsignin">3.2</a>
    <li>notifySignedIn(), <a href="#dom-credentialscontainer-notifysignedin">3.2</a>
    <li>notifySignedOut(), <a href="#dom-credentialscontainer-notifysignedout">3.2</a>
    <li>options, <a href="#dom-credentialscontainer-request-options">3.2</a>
    <li>[[origin]], <a href="#dom-credential-origin">3.1.1</a>
-   <li>[[password]], <a href="#password">3.1.2</a>
+   <li>[[password]], <a href="#dom-localcredential-password">3.1.2</a>
    <li>password, <a href="#dom-localcredential-localcredentialid-password-name-avatarurl-password">3.1.2</a>
    <li>pending
     <ul>
-     <li>definition of, <a href="#pending-credential">2.1</a>
+     <li>definition of, <a href="#pending-credential">2</a>
      <li>attribute for CredentialsContainer, <a href="#dom-credentialscontainer-pending">3.2</a>
     </ul>
-   <li>Pending Credential, <a href="#pending-credential">2.1</a>
+   <li>Pending Credential, <a href="#pending-credential">2</a>
    <li>PendingCredential, <a href="#pendingcredential">3.1.4</a>
-   <li>public suffix, <a href="#public-suffix">2.2</a>
-   <li>registerable domain, <a href="#registerable-domain">2.2</a>
    <li>request(), <a href="#dom-credentialscontainer-request">3.2</a>
-   <li>request, <a href="#request">2.2</a>
    <li>[[requiresUserMediation]], <a href="#dom-credential-requiresusermediation">3.1.1</a>
-   <li>response, <a href="#response">2.2</a>
+   <li>send(), <a href="#dom-localcredential-send">3.1.2</a>
+   <li>submit(url), <a href="#dom-localcredential-submiturl">3.1.2</a>
    <li>successfulCredential, <a href="#dom-credentialscontainer-notifysignedin-successfulcredential">3.2</a>
-   <li>suppressUI, <a href="#dom-credentialrequestoptions-suppressui">3.3</a></ul>
+   <li>suppressUI, <a href="#dom-credentialrequestoptions-suppressui">3.3</a>
+   <li>url, <a href="#dom-localcredential-submit-url">3.1.2</a></ul>
+  <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
+  <ul class="indexlist">
+   <li><a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> defines the following terms:
+    <ul>
+     <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-connect-src">connect-src</a>
+     <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-form-action">form-action</a>
+     <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-frame-src">frame-src</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
+    <ul>
+     <li><a href="https://fetch.spec.whatwg.org/#request">Request</a>
+     <li><a href="https://fetch.spec.whatwg.org/#requestinit">RequestInit</a>
+     <li><a href="https://fetch.spec.whatwg.org/#response">Response</a>
+     <li><a href="https://fetch.spec.whatwg.org/#dom-fetch">fetch()</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-html5">[HTML5]</a> defines the following terms:
+    <ul>
+     <li><a href="http://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#allowed-to-show-a-popup">allowed to show a popup</a>
+     <li><a href="http://www.w3.org/TR/html5/forms.html#attr-form-autocomplete">autocomplete</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a>
+     <li><a href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing context</a>
+     <li><a href="http://www.w3.org/TR/html5/webappapis.html#responsible-browsing-context">responsible browsing context</a>
+     <li><a href="http://www.w3.org/TR/html5/webappapis.html#responsible-document">responsible document</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-mix">[MIX]</a> defines the following terms:
+    <ul>
+     <li><a href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-origin">a priori insecure origin</a>
+     <li><a href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url">a priori insecure url</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-power">[POWER]</a> defines the following terms:
+    <ul>
+     <li><a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#privileged-context">privileged context</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-psl">[PSL]</a> defines the following terms:
+    <ul>
+     <li><a href="https://publicsuffix.org/list/#">registerable domain</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc6454">[RFC6454]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc6454#section-6.2">ascii serialization</a>
+     <li><a href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-url">[URL]</a> defines the following terms:
+    <ul>
+     <li><a href="http://www.w3.org/TR/url/#url">URL</a>
+     <li><a href="http://www.w3.org/TR/url/#concept-url-origin">origin</a>
+     <li><a href="http://www.w3.org/TR/url/#concept-url-parser">url parser</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-webmessaging">[WEBMESSAGING]</a> defines the following terms:
+    <ul>
+     <li><a href="http://www.w3.org/TR/webmessaging/#dom-window-postmessage">postMessage()</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-webidl">[WebIDL]</a> defines the following terms:
+    <ul>
+     <li><a href="https://heycam.github.io/webidl/#idl-DOMString">DOMString</a>
+     <li><a href="https://heycam.github.io/webidl/#idl-boolean">boolean</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-xhr">[XHR]</a> defines the following terms:
+    <ul>
+     <li><a href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a>
+     <li><a href="https://xhr.spec.whatwg.org/#interface-xmlhttprequest">XMLHttpRequest</a>
+     <li><a href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest">XMLHttpRequest()</a>
+     <li><a href="https://xhr.spec.whatwg.org/#dom-formdata-append">append()</a>
+    </ul></ul>
   <h2 class="no-num heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
   <dl>
-   <dt id="biblio-csp"><a class="self-link" href="#biblio-csp"></a>[CSP]
-   <dd>Brandon Sterne; Adam Barth. <a href="http://www.w3.org/TR/CSP/">Content Security Policy 1.0</a>. 15 November 2012. CR. URL: <a href="http://www.w3.org/TR/CSP/">http://www.w3.org/TR/CSP/</a>
+   <dt id="biblio-csp2"><a class="self-link" href="#biblio-csp2"></a>[CSP2]
+   <dd>Mike West; Adam Barth; Dan Veditz. <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">Content Security Policy Level 2</a>. CR. URL: <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">https://w3c.github.io/webappsec/specs/content-security-policy/</a>
    <dt id="biblio-fetch"><a class="self-link" href="#biblio-fetch"></a>[FETCH]
    <dd>Anne van Kesteren. <a href="https://fetch.spec.whatwg.org/">Fetch</a>. Living Standard. URL: <a href="https://fetch.spec.whatwg.org/">https://fetch.spec.whatwg.org/</a>
    <dt id="biblio-mix"><a class="self-link" href="#biblio-mix"></a>[MIX]
-   <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">Mixed Content</a>. ED. URL: <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">https://w3c.github.io/webappsec/specs/mixedcontent/</a>
+   <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">Mixed Content</a>. LCWD. URL: <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">https://w3c.github.io/webappsec/specs/mixedcontent/</a>
+   <dt id="biblio-power"><a class="self-link" href="#biblio-power"></a>[POWER]
+   <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/">Requirements for Powerful Features</a>. ED. URL: <a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/">https://w3c.github.io/webappsec/specs/powerfulfeatures/</a>
    <dt id="biblio-psl"><a class="self-link" href="#biblio-psl"></a>[PSL]
    <dd>Mozilla Foundation. <a href="https://publicsuffix.org/">Public Suffix List</a>. URL: <a href="https://publicsuffix.org/">https://publicsuffix.org/</a>
    <dt id="biblio-rfc6454"><a class="self-link" href="#biblio-rfc6454"></a>[RFC6454]
    <dd>Adam Barth. <a href="http://www.ietf.org/rfc/rfc6454.txt">The Web Origin Concept</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6454.txt">http://www.ietf.org/rfc/rfc6454.txt</a>
+   <dt id="biblio-url"><a class="self-link" href="#biblio-url"></a>[URL]
+   <dd>Anne van Kesteren. <a href="https://url.spec.whatwg.org/">URL</a>. Living Standard. URL: <a href="https://url.spec.whatwg.org/">https://url.spec.whatwg.org/</a>
+   <dt id="biblio-webidl"><a class="self-link" href="#biblio-webidl"></a>[WebIDL]
+   <dd>Cameron McCormack. <a href="http://www.w3.org/TR/WebIDL/">Web IDL</a>. 19 April 2012. CR. URL: <a href="http://www.w3.org/TR/WebIDL/">http://www.w3.org/TR/WebIDL/</a>
+   <dt id="biblio-xhr"><a class="self-link" href="#biblio-xhr"></a>[XHR]
+   <dd>Anne van Kesteren. <a href="https://xhr.spec.whatwg.org/">XMLHttpRequest</a>. Living Standard . URL: <a href="https://xhr.spec.whatwg.org/">https://xhr.spec.whatwg.org/</a>
    <dt id="biblio-html5"><a class="self-link" href="#biblio-html5"></a>[HTML5]
    <dd>Robin Berjon; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
-   <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a></dl>
+   <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a>
+   <dt id="biblio-webmessaging"><a class="self-link" href="#biblio-webmessaging"></a>[WEBMESSAGING]
+   <dd>Ian Hickson. <a href="http://www.w3.org/TR/webmessaging/">HTML5 Web Messaging</a>. 1 May 2012. CR. URL: <a href="http://www.w3.org/TR/webmessaging/">http://www.w3.org/TR/webmessaging/</a></dl>
   <h3 class="no-num heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
    <dt id="biblio-browserid"><a class="self-link" href="#biblio-browserid"></a>[BROWSERID]
@@ -2216,8 +2236,6 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
    <dd>Jason Denizac; Robin Berjon; Anne van Kesteren. <a href="https://github.com/jden/web-login">web-login</a>. URL: <a href="https://github.com/jden/web-login">https://github.com/jden/web-login</a>
    <dt id="biblio-xmlhttprequest"><a class="self-link" href="#biblio-xmlhttprequest"></a>[XMLHttpRequest]
    <dd>Anne van Kesteren; et al. <a href="http://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest Level 1</a>. 30 January 2014. WD. URL: <a href="http://www.w3.org/TR/XMLHttpRequest/">http://www.w3.org/TR/XMLHttpRequest/</a>
-   <dt id="biblio-webmessaging"><a class="self-link" href="#biblio-webmessaging"></a>[WEBMESSAGING]
-   <dd>Ian Hickson. <a href="http://www.w3.org/TR/webmessaging/">HTML5 Web Messaging</a>. 1 May 2012. CR. URL: <a href="http://www.w3.org/TR/webmessaging/">http://www.w3.org/TR/webmessaging/</a>
    <dt id="biblio-workers"><a class="self-link" href="#biblio-workers"></a>[WORKERS]
    <dd>Ian Hickson. <a href="http://www.w3.org/TR/workers/">Web Workers</a>. 1 May 2012. CR. URL: <a href="http://www.w3.org/TR/workers/">http://www.w3.org/TR/workers/</a></dl>
   <h2 class="no-num heading settled" id="idl-index"><span class="content">IDL Index</span><a class="self-link" href="#idl-index"></a></h2>
@@ -2230,7 +2248,7 @@ interface <a data-global-name="" href="#credential">Credential</a> {
 
 [<a data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<constructor>" href="#dom-localcredential-localcredentialid-password-name-avatarurl">Constructor</a>(DOMString <a data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<method>/id<argument>" href="#dom-localcredential-localcredentialid-password-name-avatarurl-id">id</a>, DOMString <a data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<method>/password<argument>" href="#dom-localcredential-localcredentialid-password-name-avatarurl-password">password</a>, optional DOMString <a data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<method>/name<argument>" href="#dom-localcredential-localcredentialid-password-name-avatarurl-name">name</a>, optional DOMString <a data-global-name="LocalCredential<interface>/LocalCredential(id, password, name, avatarURL)<method>/avatarURL<argument>" href="#dom-localcredential-localcredentialid-password-name-avatarurl-avatarurl">avatarURL</a>)]
 interface <a data-global-name="" href="#localcredential">LocalCredential</a> : <a data-link-type="idl-name" href="#credential">Credential</a> {
-  readonly attribute <a data-link-type="idl-name" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a> <a class="idl-code" data-global-name="LocalCredential<interface>/formData<attribute>" data-link-type="attribute" data-readonly="" data-type="FormData " href="#dom-localcredential-formdata">formData</a>;
+  Promise&lt;<a data-link-type="idl-name" href="https://fetch.spec.whatwg.org/#response">Response</a>> <a data-global-name="LocalCredential<interface>/submit(url)<method>" href="#dom-localcredential-submiturl">submit</a>(DOMString <a data-global-name="LocalCredential/submit/url<argument>" href="#dom-localcredential-submit-url">url</a>);
 };
 
 [<a data-global-name="FederatedCredential<interface>/FederatedCredential(id, federation, name, avatarURL)<constructor>" href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl">Constructor</a>(DOMString <a data-global-name="FederatedCredential<interface>/FederatedCredential(id, federation, name, avatarURL)<method>/id<argument>" href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl-id">id</a>, DOMString <a data-global-name="FederatedCredential<interface>/FederatedCredential(id, federation, name, avatarURL)<method>/federation<argument>" href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl-federation">federation</a>, optional DOMString <a data-global-name="FederatedCredential<interface>/FederatedCredential(id, federation, name, avatarURL)<method>/name<argument>" href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl-name">name</a>, optional DOMString <a data-global-name="FederatedCredential<interface>/FederatedCredential(id, federation, name, avatarURL)<method>/avatarURL<argument>" href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl-avatarurl">avatarURL</a>)]
@@ -2242,7 +2260,7 @@ interface <a data-global-name="" href="#federatedcredential">FederatedCredential
 interface <a data-global-name="" href="#pendingcredential">PendingCredential</a> : <a data-link-type="idl-name" href="#credential">Credential</a> {
 };
 
-partial interface <a class="idl-code" data-link-type="interface" href="https://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a> {
+partial interface <a class="idl-code" data-link-type="interface" href="http://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a> {
   readonly attribute <a data-link-type="idl-name" href="#credentialscontainer">CredentialsContainer</a> <a data-global-name="Navigator<interface>/credentials<attribute>" data-readonly="" data-type="CredentialsContainer " href="#dom-navigator-credentials">credentials</a>;
 };
 

@@ -13,8 +13,8 @@ Indent: 2
 </pre>
 
 <pre class="anchors">
-type: dfn
-  urlPrefix: http://www.w3.org/TR/html5/
+spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
+  type: dfn
     urlPrefix: webappapis.html
       text: responsible document
       text: responsible browsing context
@@ -29,40 +29,69 @@ type: dfn
       text: top-level browsing context; url: top-level-browsing-context
       text: nested browsing context
       text: active document
-  urlPrefix: https://tools.ietf.org/html/rfc6454
+  type: element-attr 
+    urlPrefix: forms.html
+      text: autocomplete; for: form; url: attr-form-autocomplete
+  type: interface
+    urlPrefix: webappapis.html
+      text: Navigator
+spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
+  type: dfn
     text: origin; url: section-3.2
     text: ASCII serialization of an origin; url: section-6.2
     text: ASCII serialization; url: section-6.2
-  urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+spec: PSL; urlPrefix: https://publicsuffix.org/list/
+  type: dfn
+    text: registerable domain; url: #
+    text: public suffix; url: #
+spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+  type: dfn
     text: a priori insecure origin
     text: a priori insecure url
-  urlPrefix: https://w3c.github.io/webappsec/specs/powerfulfeatures/
+spec: POWER; urlPrefix: https://w3c.github.io/webappsec/specs/powerfulfeatures/
+  type: dfn
     text: privileged context
-  urlPrefix: https://fetch.spec.whatwg.org/
+spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+    text: response; url: concept-response
+    text: request; url: concept-request
+    text: network error; url: concept-network-error
     text: extracting a MIME type; url: concept-header-extract-mime-type
-  urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
+  type: interface
+    text: RequestInit
+    text: RequestInfo
+    text: Response
+    text: Request
+  type: method
+    text: fetch(); url: dom-fetch
+spec: CSP2; urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
+  type: dfn
     text: form-action; url: directive-form-action
     text: connect-src; url: directive-connect-src
     text: frame-src; url: directive-frame-src
-type: element-attr 
-  urlPrefix: http://www.w3.org/TR/html5/
-    urlPrefix: forms.html
-      text: autocomplete; for: form; url: attr-form-autocomplete
-type: interface
-  urlPrefix: https://www.w3.org/TR/html5/webappapis.html
-    text: Navigator
-  urlPrefix: https://xhr.spec.whatwg.org/
+spec: XHR; urlPrefix: https://xhr.spec.whatwg.org/
+  type: interface
     text: XMLHttpRequest; url: interface-xmlhttprequest
     text: FormData; url: interface-formdata
-  urlPrefix: https://heycam.github.io/webidl/
+  type: method
+    text: append(); for: FormData; url: dom-formdata-append
+  type: constructor
+    text: XMLHttpRequest(); for: XMLHttpRequest; url: dom-xmlhttprequest
+spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
+  type: interface
     text: DOMString; url: idl-DOMString
     text: boolean; url: idl-boolean
-type: method
-  urlPrefix: http://www.w3.org/TR/webmessaging/
+spec: WEBMESSAGING; urlPrefix: http://www.w3.org/TR/webmessaging/
+  type: method
     text: postMessage(); for: window; url: dom-window-postmessage
-type: constructor
-  urlPrefix: https://xhr.spec.whatwg.org/
-    text: XMLHttpRequest(); for: XMLHttpRequest; url: dom-xmlhttprequest
+spec: URL; urlPrefix: http://www.w3.org/TR/url/
+  type: dfn
+    text: URL parser; url: concept-url-parser
+  type: interface
+    text: URL
+  type: attribute
+    text: origin; for: URL; url: concept-url-origin
 </pre>
 
 
@@ -200,23 +229,14 @@ type: constructor
                 return;
               }
 
-              var xhr = new <a>XMLHttpRequest()</a>;
-              xhr.open("POST", "https://example.com/loginEndpoint");
-              xhr.onreadystatechange = function () {
-                if (this.readyState != this.DONE)
-                  return;
-
-                var loginSucceeded = // Process response: if login succeeded, yay! If not, boo!;
-                if (loginSucceeded) {
+              credential.<a method lt="send()">send</a>("https://example.com/loginEndpoint")
+                .then(function (response) {
                   navigator.<a attribute>credentials</a>.<a idl lt="notifySignedIn()">notifySignedIn</a>(credential);
                   // Notify the user that signin succeeded! Do amazing, signed-in things!
-                } else {
+                }).catch(function (response) {
                   navigator.credentials.<a idl lt="notifyFailedSignIn()">notifyFailedSignIn</a>(credential);
                   // Notify the user that signin failed, and fall back to the usual experience.
-                }
-              };
-
-              xhr.send(credential.<a attribute>formData</a>);
+                });
             });
       </pre>
     </div>
@@ -251,10 +271,9 @@ type: constructor
                   // Do something specific for each supported federation.
                 }
               } else {
-                var xhr = new <a>XMLHttpRequest()</a>;
-                xhr.open("POST", "https://example.com/loginEndpoint");
-                xhr.onreadystatechange = // Success handler from first example.
-                xhr.send(credential.<a attribute>formData</a>);
+                credential.<a method lt="send()">send</a>("https://example.com/loginEndpoint")
+                  .then(function (response) { ... })
+                  .catch(function (response) { ... });
               }
             });
       </pre>
@@ -367,7 +386,6 @@ type: constructor
 <section>
   <h2 id="terms">Key Concepts and Terminology</h2>
 
-  <h3 id="terms-defined-here">Terms defined by this specification</h3>
   <dl>
     <dt>
       <dfn export>Credentials</dfn>
@@ -418,71 +436,6 @@ type: constructor
       website trusts to correctly authenticate a user, and which provides an
       API for that purpose. OAuth2 [[RFC6749]] is an example of such an API,
       used by a number of providers.
-    </dd>
-  </dl>
-
-  <h3 id="terms-defined-by-reference">Terms defined by reference</h3>
-  <dl>
-    <dt><a>origin</a></dt>
-    <dd>
-      An origin defines the scope of authority or privilege under which a
-      resource operates. It is defined in detail in the Origin specification.
-      [[!RFC6454]]
-    </dd>
-
-    <dt><a>ASCII serialization of an origin</a></dt>
-    <dd>
-      This algorithm is defined in
-      <a href="https://tools.ietf.org/html/rfc6454#section-6.2">Section 6.2</a>
-      of the Origin specification. [[!RFC6454]]
-    </dd>
-
-    <dt><a><i lang="la">a priori</i> insecure origin</a></dt>
-    <dt><a><i lang="la">a priori</i> insecure url</a></dt>
-    <dd>
-      These terms are defined in 
-      <a href="https://w3c.github.io/webappsec/specs/mixedcontent/#terms">Section
-      2 of the Mixed Content specification</a>. [[!MIX]]
-    </dd>
-
-    <dt><dfn lt="JavaScript global environment|global environment">JavaScript global environment</dfn></dt>
-    <dd>
-      This term is defined in <a lt="JavaScript global environment" spec="HTML5">Section
-      2.2.2</a> of the HTML5 specification. [[!HTML5]]
-    </dd>
-
-    <dt><dfn>fetch</dfn></dt>
-    <dd>
-      "fetching" is the process by which a user agent requests resources, and
-      delivers responses. It is defined in detail in the Fetch living standard.
-      [[!FETCH]]
-    </dd>
-
-    <dt><dfn>request</dfn></dt>
-    <dd>
-      These terms are defined in
-      <a href="http://fetch.spec.whatwg.org/#requests">Section 2.2</a> of the
-      Fetch living standard. [[!FETCH]]
-    </dd>
-
-    <dt><dfn>response</dfn></dt>
-    <dt><dfn>network error</dfn></dt>
-    <dd>
-      These terms are defined in detail in
-      <a href="http://fetch.spec.whatwg.org/#responses">Section 2.3</a> of the
-      Fetch living standard. [[!FETCH]]
-    </dd>
-
-    <dt><dfn>registerable domain</dfn></dt>
-    <dt><dfn>public suffix</dfn></dt>
-    <dd>
-      An <a>origin</a>'s <strong>public suffix</strong> is defined via the
-      <a href="https://publicsuffix.org/">Public Suffix List</a>, and represents
-      the portion of the domain that is controlled by a public or private
-      registry (e.g. the public suffix of <code>https://www.example.com/</code>
-      is ".com"). The <strong>registerable domain</strong> is the public suffix
-      plus one additional label: the registerable domain of
-      <code>https://www.example.com/</code> is "example.com". [[!PSL]]
     </dd>
   </dl>
 </section>
@@ -537,8 +490,8 @@ type: constructor
   </dl>
 
   All {{Credential}} objects have internal slots named
-  <code><dfn attribute for="credential">[[origin]]</dfn></code> and
-  <code><dfn attribute for="credential">[[requiresUserMediation]]</dfn></code>
+  <code><dfn attribute for="Credential">[[origin]]</dfn></code> and
+  <code><dfn attribute for="Credential">[[requiresUserMediation]]</dfn></code>
   which store the <a>origin</a> for which the credential was saved, and whether
   the credential may be exposed to a website without user mediation. These
   properties are not directly exposed to the web.
@@ -547,20 +500,23 @@ type: constructor
   <pre class="idl">
     [Constructor(DOMString id, DOMString password, optional DOMString name, optional DOMString avatarURL)]
     interface LocalCredential : Credential {
-      readonly attribute FormData formData;
+      Promise&lt;Response&gt; submit(DOMString url);
     };
   </pre>
   <dl dfn-for="LocalCredential">
-    <dt><dfn attribute>formData</dfn></dt>
-    <dd>An <a href="http://mikewest.github.io/credentialmanagement/writeonly/#opaque-formdata">opaque FormData object</a>,
-    containing two entries: one named <code>username</code>, the other named
-    <code>password</code>.</dd>
+    <dt><dfn method>send()</dfn></dt>
+    <dd>
+      This method can be used to transmit the username and password information
+      represented by this object to a same-origin endpoint in order to sign a
+      user into a website. The user agent MUST execute the algorithm described
+      in [[#send-localcredential]] when this method is executed.
+    </dd>
   </dl>
 
-  All {{LocalCredential}} objects have an internal slot named <code><dfn>[[password]]</dfn></code>
+  All {{LocalCredential}} objects have an internal slot named
+  <code><dfn attribute for="LocalCredential">[[password]]</dfn></code>
   which stores the credential's password. This property is not directly exposed
-  to the web, but used to construct the <a attribute>formData</a> property that
-  is exposed to the web.
+  to the web, but used to construct the {{Request}} generated during {{LocalCredential/send()}}.
 
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
@@ -638,7 +594,7 @@ type: constructor
       Notify the credential manager that the user is signing out. The user
       agent MUST execute the algorithm defined in
       [[#require-user-mediation-for-origin]] with the <a>origin</a> of the
-      <a>JavaScript global environment</a> in which this method is called.
+      <a>incumbent settings object</a> in which this method is called.
     </dd>
     <dt><dfn attribute>pending</dfn></dt>
     <dd>
@@ -804,35 +760,6 @@ type: constructor
          
           <ol>
             <li>
-              Let <var>data</var> be a new <a interface>FormData</a>
-              object.
-            </li>
-            <li>
-              Let <var>username entry</var> be the result of
-              <a href="https://xhr.spec.whatwg.org/#create-an-entry">creating
-              an entry</a> named "username" with a value of
-              <var>credential</var>'s {{Credential/id}} attribute.
-            </li>
-            <li>
-              Let <var>password entry</var> be the result of
-              <a href="https://xhr.spec.whatwg.org/#create-an-entry">creating
-              an entry</a> named "password" with a value of
-              <var>credential</var>'s <code><a>[[password]]</a></code> slot.
-            </li>
-            <li>
-              Append <var>username entry</var> and <var>password entry</var>
-              to <var>data</var>.
-            </li>
-            <li>
-              Set <var>data</var>'s
-              <a href="http://mikewest.github.io/credentialmanagement/writeonly/#opaque-flag">opaque
-              flag</a> to <code>true</code>.
-            </li>
-            <li>
-              Set <var>credential</var>'s <a attribute>formData</a> attribute to
-              <var>data</var>.
-            </li>
-            <li>
               Resolve <var>promise</var> with <var>credential</var> and
               terminate this algorithm.
             </li>
@@ -917,8 +844,7 @@ type: constructor
       Return <var>promise</var>, and execute the remaining steps asynchronously.
     </li>
     <li>
-      Let <var>environment</var> be the <a>JavaScript global environment</a> in
-      which which this algorithm is executing.
+      Let <var>environment</var> be the <a>incumbent settings object</a>.
     </li>
     <li>
       If <var>environment</var>'s <a>responsible browsing context</a> is not a
@@ -973,9 +899,8 @@ type: constructor
 
               <ol>
                 <li>
-                  Set <var>storedCredential</var>'s
-                  <code><a>[[password]]</a></code> to the value of
-                  <var>credential</var>'s <code><a>[[password]]</a></code>
+                  Set <var>storedCredential</var>'s {{[[password]]}} to the
+                  value of <var>credential</var>'s {{[[password]]}}
                   slot.
                 </li>
                 <li>
@@ -1036,6 +961,73 @@ type: constructor
           </ol>
         </li>
       </ol>
+    </li>
+  </ol>
+
+  <h3 id="send-localcredential">
+    Send <var>localCredential</var> to <var>url</var>.
+  </h3>
+
+  Given an endpoint URL (<var>url</var>) this method will <code>POST</code>
+  the credential information from a {{LocalCredential}} (<var>credential</var>)
+  to <var>url</var>. In order to mitigate the risk of data leakage,
+  <var>url</var> MUST be same-origin with <var>credential</var>'s
+  internal {{[[origin]]}} slot.
+
+  <ol>
+    <li>
+      Let <var>endpoint</var> be the result of running <var>url</var> through
+      the <a>URL parser</a>.
+    </li>
+    <li>
+      Return a promise rejected with a <code>TypeError</code> if
+      <var>endpoint</var> is not a valid {{URL}}.
+    </li>
+    <li>
+      Let <var>environment</var> be the <a>incumbent settings object</a>.
+    </li>
+    <li>
+      Return a promise rejected with a <code>SecurityError</code>
+      <strong>and</strong> terminate this algorithm if any of the following
+      conditions are true:
+
+      <ol>
+        <li>
+          <var>endpoint</var>'s {{URL/origin}} is <em>not</em> the same as this
+          {{LocalCredential}}'s {{[[origin]]}} slot
+        </li>
+        <li>
+          <var>environment</var>'s <a>responsible browsing context</a> is not a
+          <a>top-level browsing context</a>
+        </li>
+        <li>
+          <var>environment</var> is not a <a>privileged context</a>
+        </li>
+        <li>
+          <var>environment</var>'s <a>origin</a> is not the same as
+          <var>credential</var>'s {{[[origin]]}} slot
+        </li>
+      </ol>
+    </li>
+    <li>
+      Let <var>init</var> be a new {{RequestInit}} object whose
+      <code>credentials</code> member is set to <code>same-origin</code>,
+      <code>mode</code> member is set to <code>POST</code>, and
+      <code>body</code> member is a new {{FormData}} object.
+    </li>
+    <li>
+      Execute {{FormData/append()}} on <var>init</var>'s <code>body</code>
+      member, with a <code>name</code> of "<code>username</code>", and a
+      <code>value</code> of <var>credential</var>'s {{[[password]]}} slot.
+    </li>
+    <li>
+      Execute {{FormData/append()}} on <var>init</var>'s <code>body</code>
+      member, with a <code>name</code> of "<code>password</code>", and a
+      <code>value</code> of <var>credential</var>'s {{[[password]]}} slot.
+    </li>
+    <li>
+      Return the promise that results from executing {{fetch()}} on
+      <var>url</var> and <var>init</var>.
     </li>
   </ol>
 
@@ -1246,7 +1238,7 @@ type: constructor
   </ol>
 
   Additionally, authors SHOULD mitigate the risk of leakage by setting a
-  reasonable Content Security Policy [[!CSP]] which restricts the origins to
+  reasonable Content Security Policy [[!CSP2]] which restricts the origins to
   which {{FormData!!interface}} objects can be sent. In particular, authors should
   ensure that the following directives are set, explicitly or implicitly, in
   their pages' policies:
@@ -1275,12 +1267,11 @@ type: constructor
   than the <a>top-level browsing context</a>, which is the only security origin
   which users can reasonably be expected to understand.
 
-  Therefore, <a>Nested browsing contexts</a> and other <a>JavaScript global
-  environments</a> like Workers [[WORKERS]] cannot receive or store
-  {{Credential}} objects; the user agent MUST reject promises generated by
-  calls to {{request()}} and {{notifySignedIn()}} with a
-  <code>SecurityError</code> when called from a context which is not a
-  <a>top-level browsing context</a>.
+  Therefore, <a>Nested browsing contexts</a> and other environments like like
+  Workers [[WORKERS]] cannot receive or store {{Credential}} objects; the user
+  agent MUST reject promises generated by calls to {{request()}} and
+  {{notifySignedIn()}} with a <code>SecurityError</code> when called from a
+  context which is not a <a>top-level browsing context</a>.
 
   See the algorithms defined in [[#request-credential]] and [[#save-credential]]
   for details.
