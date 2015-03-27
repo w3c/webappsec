@@ -212,6 +212,9 @@
       <li><a href="#require-user-mediation-for-origin"><span class="secno">4.5</span> <span class="content">
     Require user mediation for <var>origin</var>
   </span></a>
+      <li><a href="#is-match"><span class="secno">4.6</span> <span class="content">
+    Does <var>origin A</var> match <var>origin B</var>?
+  </span></a>
      </ul>
     <li><a href="#user-mediation"><span class="secno">5</span> <span class="content">User Mediation</span></a>
      <ul class="toc">
@@ -1474,8 +1477,20 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       <ol>
         
        <li>
-          <var>endpoint</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-origin">origin</a></code> is <em>not</em> the same as this
-          <code class="idl"><a data-link-type="idl" href="#localcredential">LocalCredential</a></code>'s <code class="idl"><a data-link-type="idl" href="#dom-credential-origin">[[origin]]</a></code> slot
+          <a href="#is-match">§4.6 
+    Does origin A match origin B?
+  </a> returns <code>No Match</code> when executed upon
+          <var>endpoint</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-origin">origin</a></code> and <var>credential</var>’s
+          <code class="idl"><a data-link-type="idl" href="#dom-credential-origin">[[origin]]</a></code> slot
+        
+       
+        
+       <li>
+          <a href="#is-match">§4.6 
+    Does origin A match origin B?
+  </a> returns <code>No Match</code> when executed upon
+          <var>environment</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> and <var>credential</var>’s
+          <code class="idl"><a data-link-type="idl" href="#dom-credential-origin">[[origin]]</a></code> slot
         
        
         
@@ -1489,14 +1504,16 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
           <var>environment</var> is not a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#privileged-context">privileged context</a>
         
        
-        
-       <li>
-          <var>environment</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is not the same as
-          <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-credential-origin">[[origin]]</a></code> slot
-        
-       
       
       </ol>
+      
+
+
+      <p class="note" role="note">Note: We reject the promise here if <code class="idl"><a data-link-type="idl" href="#dom-localcredential-send">send()</a></code> is called on an origin that
+      isn’t at least a <a data-link-type="dfn" href="https://publicsuffix.org/list/#">registerable domain</a>-match with the credential’s
+      origin, and in a context that meets the same requirement. That is,
+      <code>https://admin.nytimes.com/</code> could submit credentials to
+      <code>https://myaccount.example.com/</code>.</p>
       
     
      
@@ -1557,6 +1574,35 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       
       </ol>
       
+    
+     
+  
+    </ol>
+
+  
+    <h3 class="heading settled" data-level="4.6" id="is-match"><span class="secno">4.6. </span><span class="content">
+    Does <var>origin A</var> match <var>origin B</var>?
+  </span><a class="self-link" href="#is-match"></a></h3>
+
+  
+    <ol>
+    
+     <li>
+      If <var>origin A</var> is <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-5">the same</a> as <var>origin B</var>, return
+      <code>Exact Match</code>.
+    
+     
+    
+     <li>
+      If <var>origin A</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a></code> is <var>origin B</var>’s
+      <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a></code>, and <var>origin A</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>'s <a data-link-type="dfn" href="https://publicsuffix.org/list/#">registerable
+      domain</a> is <var>origin B</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>'s <a data-link-type="dfn" href="https://publicsuffix.org/list/#">registerable
+      domain</a>, then return <code>Fuzzy Match</code>.
+    
+     
+    
+     <li>
+      Return <code>No Match</code>
     
      
   
@@ -2142,11 +2188,14 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     <ul>
      <li><a href="https://tools.ietf.org/html/rfc6454#section-6.2">ascii serialization</a>
      <li><a href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>
+     <li><a href="https://tools.ietf.org/html/rfc6454#section-5">the same</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-url">[URL]</a> defines the following terms:
     <ul>
      <li><a href="http://www.w3.org/TR/url/#url">URL</a>
+     <li><a href="http://www.w3.org/TR/url/#concept-url-host">host</a>
      <li><a href="http://www.w3.org/TR/url/#concept-url-origin">origin</a>
+     <li><a href="http://www.w3.org/TR/url/#concept-url-scheme">scheme</a>
      <li><a href="http://www.w3.org/TR/url/#concept-url-parser">url parser</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-webmessaging">[WEBMESSAGING]</a> defines the following terms:

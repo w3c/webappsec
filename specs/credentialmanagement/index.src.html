@@ -40,6 +40,7 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
       text: Navigator
 spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
   type: dfn
+    text: the same; url: section-5
     text: origin; url: section-3.2
     text: ASCII serialization of an origin; url: section-6.2
     text: ASCII serialization; url: section-6.2
@@ -95,6 +96,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     text: URL
   type: attribute
     text: origin; for: URL; url: concept-url-origin
+    text: scheme; for: URL; url: concept-url-scheme
+    text: host; for: URL; url: concept-url-host
+    text: port; for: URL; url: concept-url-port
 </pre>
 
 
@@ -973,8 +977,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
       <ol>
         <li>
-          <var>endpoint</var>'s {{URL/origin}} is <em>not</em> the same as this
-          {{LocalCredential}}'s {{[[origin]]}} slot
+          [[#is-match]] returns <code>No Match</code> when executed upon
+          <var>endpoint</var>'s {{URL/origin}} and <var>credential</var>'s
+          {{[[origin]]}} slot
+        </li>
+        <li>
+          [[#is-match]] returns <code>No Match</code> when executed upon
+          <var>environment</var>'s <a>origin</a> and <var>credential</var>'s
+          {{[[origin]]}} slot
         </li>
         <li>
           <var>environment</var>'s <a>responsible browsing context</a> is not a
@@ -983,11 +993,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         <li>
           <var>environment</var> is not a <a>privileged context</a>
         </li>
-        <li>
-          <var>environment</var>'s <a>origin</a> is not the same as
-          <var>credential</var>'s {{[[origin]]}} slot
-        </li>
       </ol>
+
+      Note: We reject the promise here if {{send()}} is called on an origin that
+      isn't at least a <a>registerable domain</a>-match with the credential's
+      origin, and in a context that meets the same requirement. That is,
+      <code>https://admin.nytimes.com/</code> could submit credentials to
+      <code>https://myaccount.example.com/</code>.
     </li>
     <li>
       Let <var>init</var> be a new {{RequestInit}} object whose
@@ -1028,6 +1040,26 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
           <code>true</code>.
       </ol>
+    </li>
+  </ol>
+
+  <h3 id="is-match">
+    Does <var>origin A</var> match <var>origin B</var>?
+  </h3>
+
+  <ol>
+    <li>
+      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
+      <code>Exact Match</code>.
+    </li>
+    <li>
+      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
+      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
+      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
+      domain</a>, then return <code>Fuzzy Match</code>.
+    </li>
+    <li>
+      Return <code>No Match</code>
     </li>
   </ol>
 </section>
