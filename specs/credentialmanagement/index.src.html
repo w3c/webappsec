@@ -538,7 +538,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
   </pre>
   <dl dfn-for="CredentialsContainer">
-    <dt><dfn method>request()</dfn></dt>
+    <dt><dfn method>get()</dfn></dt>
     <dd>
       Request a credential from the credential manager. The user agent MUST
       execute the algorithm defined in [[#request-credential]] with
@@ -571,11 +571,22 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <pre class="idl">
     dictionary CredentialRequestOptions {
-      boolean suppressUI = false;
+      boolean acceptPasswords = true;
       sequence&lt;DOMString&gt; federations;
+      boolean suppressUI = false;
     };
   </pre>
   <dl dfn-for="CredentialRequestOptions">
+    <dt><dfn dict-member>acceptPasswords</dfn></dt>
+    <dd>
+      If <code>true</code>, the user agent will return {{LocalCredential}}
+      objects in response to a request.
+    </dd>
+    <dt><dfn dict-member>federations</dfn></dt>
+    <dd>
+      An array of federation identifiers. For details regarding valid formats
+      see [[#identifying-federations]]
+    </dd>
     <dt><dfn dict-member>suppressUI</dfn></dt>
     <dd>
       If <code>true</code>, the user agent will only attempt to provide a
@@ -585,12 +596,37 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <code>undefined</code>. For processing details, see the algorithm defined
       in [[#request-credential]].
     </dd>
-    <dt><dfn dict-member>federations</dfn></dt>
-    <dd>
-      An array of federation identifiers. For details regarding valid formats
-      see [[#identifying-federations]]
-    </dd>
   </dl>
+
+  <div class="example">
+    Suppose <code>https://example.com/</code> only supports federated sign-in
+    via <code>https://identity.example.com/</code>. It could request credentials
+    via the following call:
+
+    <pre>
+      navigator.<a idl>credentials</a>.<a idl lt="request()">request</a>({
+        "<a idl>acceptPasswords</a>": false,
+        "<a idl>federations</a>": [ "https://identity.example.com/" ]
+      }).then(function (credential) {
+        // ...
+      });
+    </pre>
+
+    If it wanted to ensure that the user agent didn't bother the user with
+    questions, it could ask to suppress UI for the request (and, therefore,
+    to receive {{Credential}}s if and only if the user had chosen to
+    automatically sign into the origin):
+
+    <pre>
+      navigator.<a idl>credentials</a>.<a idl lt="request()">request</a>({
+        "<a idl>acceptPasswords</a>": false,
+        "<a idl>federations</a>": [ "https://identity.example.com/" ],
+        "<a idl>suppressUI</a>": true
+      }).then(function (credential) {
+        // ...
+      });
+    </pre>
+  </div>
 
   <h4 id="identifying-federations">Identifying Federations</h4>
 
