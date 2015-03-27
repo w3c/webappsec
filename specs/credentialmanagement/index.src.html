@@ -139,7 +139,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   this specification attempts to address many of the requirements that document
   outlines by defining a Credential Manager API which a website can use to
   request <a>credentials</a> for a user, and to notify the user agent that the
-  user successfully signed in, failed to sign in, or signed out.
+  user successfully signed in or signed out.
 
   Note: The API defined here is intentionally small and simple: it does not
   intend to provide authentication in and of itself, but is limited to providing
@@ -233,9 +233,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 .then(function (response) {
                   navigator.<a attribute>credentials</a>.<a idl lt="notifySignedIn()">notifySignedIn</a>(credential);
                   // Notify the user that signin succeeded! Do amazing, signed-in things!
-                }).catch(function (response) {
-                  navigator.credentials.<a idl lt="notifyFailedSignIn()">notifyFailedSignIn</a>(credential);
-                  // Notify the user that signin failed, and fall back to the usual experience.
                 });
             });
       </pre>
@@ -511,7 +508,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   The credential manager hangs off of the {{Navigator}} object, and exposes
   methods to request credentials, and to notify the user agent when interesting
-  events occur: successful sign in, failed sign in, and sign out.
+  events occur: successful sign in and sign out.
 
   <pre class="idl">
     partial interface Navigator {
@@ -521,7 +518,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     interface CredentialsContainer {
       Promise&lt;Credential?&gt; request(optional CredentialRequestOptions options);
       Promise&lt;any&gt; notifySignedIn(optional Credential successfulCredential);
-      Promise&lt;any&gt; notifyFailedSignIn(optional Credential failedCredential);
       Promise&lt;any&gt; notifySignedOut();
     };
   </pre>
@@ -537,12 +533,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Notify the credential manager that the user has successfully signed-in
       using a credential. The user agent MUST execute the algorithm defined
       in [[#save-credential]] with <var>credential</var> as an argument.
-    </dd>
-    <dt><dfn method>notifyFailedSignIn()</dfn></dt>
-    <dd>
-      Notify the credential manager that the user has failed to sign-in
-      using a credential. The user agent MUST execute the algorithm defined
-      in #TODO with <var>credential</var> as an argument.
     </dd>
     <dt><dfn method>notifySignedOut()</dfn></dt>
     <dd>
