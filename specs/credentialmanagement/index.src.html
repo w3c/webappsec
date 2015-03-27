@@ -80,7 +80,7 @@ spec: XHR; urlPrefix: https://xhr.spec.whatwg.org/
   type: method
     text: append(); for: FormData; url: dom-formdata-append
   type: constructor
-    text: XMLHttpRequest(); for: XMLHttpRequest; url: dom-xmlhttprequest
+    text: XMLHttpget(); for: XMLHttpRequest; url: dom-xmlhttprequest
 spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
   type: interface
     text: DOMString; url: idl-DOMString
@@ -222,7 +222,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           return;
         }
 
-        navigator.<a attribute>credentials</a>.<a idl>request()</a>.then(
+        navigator.<a attribute>credentials</a>.<a idl>get()</a>.then(
             function(credential) {
               if (!credential) {
                 // The user either doesn't have credentials for this site, or
@@ -254,7 +254,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           return;
         }
 
-        navigator.<a attribute>credentials</a>.<a idl lt="request()">request</a>({
+        navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
           "<a idl for="CredentialRequestOptions">federations</a>": [ "https://federation.com" ]
         }).then(
             function(credential) {
@@ -532,7 +532,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     interface CredentialsContainer {
-      Promise&lt;Credential?&gt; request(optional CredentialRequestOptions options);
+      Promise&lt;Credential?&gt; get(optional CredentialRequestOptions options);
       Promise&lt;any&gt; notifySignedIn(optional Credential successfulCredential);
       Promise&lt;any&gt; notifySignedOut();
     };
@@ -567,7 +567,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   The functionality is currently wrapped up in [[#save-credential]], but could
   be trivially pushed out into a separate API if that makes things more clear.
 
-  <h3 id="interfaces-request-options">Request Options</h3>
+  <h3 id="interfaces-request-options">get Options</h3>
 
   <pre class="idl">
     dictionary CredentialRequestOptions {
@@ -604,7 +604,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     via the following call:
 
     <pre>
-      navigator.<a idl>credentials</a>.<a idl lt="request()">request</a>({
+      navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
         "<a idl>acceptPasswords</a>": false,
         "<a idl>federations</a>": [ "https://identity.example.com/" ]
       }).then(function (credential) {
@@ -618,7 +618,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     automatically sign into the origin):
 
     <pre>
-      navigator.<a idl>credentials</a>.<a idl lt="request()">request</a>({
+      navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
         "<a idl>acceptPasswords</a>": false,
         "<a idl>federations</a>": [ "https://identity.example.com/" ],
         "<a idl>suppressUI</a>": true
@@ -731,7 +731,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           Note: This requirement only applies if we would show UI to the user.
           If she's elected to allow credentials to be provided without user
           mediation, and we can do so, then we don't require a user gesture
-          for {{request()}}. Otherwise, we do, due to the considerations in
+          for {{get()}}. Otherwise, we do, due to the considerations in
           [[#privacy-considerations]].
         </li>
         <li>
@@ -1124,7 +1124,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="user-mediated-selection">Credential Selection</h3>
 
-  When responding to a call to {{request()}} on an origin without credentials
+  When responding to a call to {{get()}} on an origin without credentials
   that are available without user mediation, user agents MUST ask the user for
   permission to share credential information. This SHOULD take the form of a
   <dfn local-lt="chooser">credential chooser</dfn> which presents the user
@@ -1192,19 +1192,19 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       MUST NOT share credentials between origins whose scheme components are
       not the same. That is: credentials saved on
       <code>https://example.com/</code> will never be available to
-      <code>http://example.com/</code> via {{request()}}
+      <code>http://example.com/</code> via {{get()}}
     </li>
     <li>
       MAY use the Public Suffix List [[!PSL]] to determine the effective scope
       of a credential by comparing the <a>registerable domains</a> of the
       credential's <code>[[origin]]</code> with the origin in which
-      {{request()}} is called. That is: credentials saved on
+      {{get()}} is called. That is: credentials saved on
       <code>https://admin.example.com/</code> and
       <code>https://example.com/</code> MAY be offered to users when
-      {{request()}} is called from <code>https://www.example.com/</code>
+      {{get()}} is called from <code>https://www.example.com/</code>
     </li>
     <li>
-      MUST NOT offer credentials to an origin in response to {{request()}}
+      MUST NOT offer credentials to an origin in response to {{get()}}
       without user mediation if the credential's origin is not an exact match
       for the calling origin. That is, {{Credential}} objects for
       <code>https://example.com</code> would not be returned directly to
@@ -1222,7 +1222,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <ol>
     <li>
       <code><a>connect-src</a></code> restricts the origins to which
-      {{FormData!!interface}} objects may be sent via {{XMLHttpRequest()}} and
+      {{FormData!!interface}} objects may be sent via {{XMLHttpget()}} and
       {{fetch()}.
     </li>
     <li>
@@ -1245,7 +1245,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   Therefore, <a>Nested browsing contexts</a> and other environments like like
   Workers [[WORKERS]] cannot receive or store {{Credential}} objects; the user
-  agent MUST reject promises generated by calls to {{request()}} and
+  agent MUST reject promises generated by calls to {{get()}} and
   {{notifySignedIn()}} with a <code>SecurityError</code> when called from a
   context which is not a <a>top-level browsing context</a>.
 
@@ -1280,16 +1280,16 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="privacy-timing-attacks">Timing Attacks</h3>
 
-  If the user has no credentials for an origin, a call to {{request()}} will
+  If the user has no credentials for an origin, a call to {{get()}} will
   resolve very quickly indeed. A malicious website could distinguish between
   a user with no credentials and a user with credentials who chooses not to
   share them.
 
   This could allow a malicious website to determine if a user has credentials
   saved for particular federated identity providers by repeatedly calling
-  {{request()}} with a single item in the
+  {{get()}} with a single item in the
   {{CredentialRequestOptions/federations}} array. The risk is mitigated by the
-  fact that a user-mediated {{request()}} is tied to a user gesture, and the
+  fact that a user-mediated {{get()}} is tied to a user gesture, and the
   user would, sooner or later, be prompted to provide credentials to the site,
   which would certainly raise her suspicions as to its behavior.
 
