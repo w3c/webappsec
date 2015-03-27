@@ -288,26 +288,17 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     website to tell the credential manager that sign-in succeeded.
 
     <div class="example">
-      After navigation, the website won't (shouldn't) have access to the
-      password, but can rely on the user agent to have retained a pending
-      credential:
+      If a user is signed in by calling {{send()}} on a {{LocalCredential}}
+      object, then we can check the response to determine whether the user
+      was signed in successfully, and notify the user agent accordingly:
 
       <pre>
-        if (navigator.<a attribute>credentials</a>)
-          navigator.<a attribute>credentials</a>.<a idl lt="notifySignedIn()">notifySignedIn</a>(navigator.<a attribute>credentials</a>.<a idl>pending</a>);
-      </pre>
-    </div>
-
-    <div class="example">
-      If we haven't navigated (perhaps sign-in happened via {{XMLHttpRequest}}),
-      then we can explain exactly which credentials were used:
-
-      <pre>
-        if (navigator.<a attribute>credentials</a>) {
-          navigator.<a attribute>credentials</a>.<a idl lt="notifySignedIn()">notifySignedIn</a>(
-            new <a idl>LocalCredential</a>("username", "hunter1")
-          );
-        }
+        // Given `credential`:
+        credential.send("https://example.com/sign-in/")
+          .then(function (response) {
+            if (response.status == 200)
+              navigator.<a attribute>credentials</a>.<a idl lt="notifySignedIn()">notifySignedIn</a>(credential);
+          });
       </pre>
     </div>
 
@@ -407,23 +398,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
       The implementation is vendor-specific, and the interface provided is not
       exposed to the web.
-    </dd>
-
-    <dt>
-      <dfn export local-lt="pending">Pending Credential</dfn>
-    </dt>
-    <dd>
-      A <strong>pending credential</strong> is a {{Credential}} object created
-      automatically by the user agent when it believes that a user has
-      signed-into, signed-up for, or changed credential on a website. For
-      example, a pending credential may be created as a result of a successful
-      form submission which contained a text field and a password field.
-
-      Pending credentials are created in a vendor-specific way, using
-      vendor-specific heuristics. They are retained for a <a>browsing
-      context</a>, and MAY be retained across navigations, even cross-origin
-      navigations (consider <code>accounts.example.com</code> redirecting to
-      <code>webmail.example.com</code> upon successful sign-in).
     </dd>
 
     <dt>
@@ -533,23 +507,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  <h4 id="interfaces-credential-types-pendingcredential"><code>PendingCredential</code></h4>
-
-  A {{PendingCredential}} has no properties, and acts as a placeholder for the
-  vendor-specific process of transiently holding onto credentials after a form
-  submission causes navigation. If such a credential has been stored, then
-  <code>navigator.credentials.pending</code> will be a {{PendingCredential}}
-  object. If not, it will be <code>undefined</code>. The {{PendingCredential}}
-  may be passed to {{notifySignedIn()}} or {{notifyFailedSignIn()}} in order
-  to clearly express the site's intentions to the user agent. See
-  [[#examples-post-signin]] for an example.
-
-  <pre class="idl">
-    [NoInterfaceObject]
-    interface PendingCredential : Credential {
-    };
-  </pre>
-
   <h3 id="interfaces-credential-manager">Credential Manager</h3>
 
   The credential manager hangs off of the {{Navigator}} object, and exposes
@@ -566,8 +523,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Promise&lt;any&gt; notifySignedIn(optional Credential successfulCredential);
       Promise&lt;any&gt; notifyFailedSignIn(optional Credential failedCredential);
       Promise&lt;any&gt; notifySignedOut();
-
-      readonly attribute PendingCredential? pending;
     };
   </pre>
   <dl dfn-for="CredentialsContainer">
@@ -595,13 +550,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       agent MUST execute the algorithm defined in
       [[#require-user-mediation-for-origin]] with the <a>origin</a> of the
       <a>incumbent settings object</a> in which this method is called.
-    </dd>
-    <dt><dfn attribute>pending</dfn></dt>
-    <dd>
-      If the user agent has a <a>pending credential</a> for the current page,
-      this attribute will hold a {{PendingCredential}} object which may be
-      passed to {{notifySignedIn()}} or {{notifyFailedSignIn()}}. If not, this
-      attribute will be <code>undefined</code>.
     </dd>
   </dl>
 
@@ -854,20 +802,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
     <li>
       Let <var>origin</var> be the <a>origin</a> of the <var>environment</var>.
-    </li>
-    <li>
-      If <var>credential</var> is a {{PendingCredential}}:
-
-      <ol>
-        <li>
-          If the user agent has stored a <a>pending credential</a>, then set
-          <var>credential</var> to that {{Credential}}.
-        </li>
-        <li>
-          Otherwise, reject <var>Promise</var> with
-          <code>InvalidStateError</code> and terminate this algorithm.
-        </li>
-      </ol>
     </li>
     <li>
       Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
