@@ -72,7 +72,7 @@ spec: CSP2; urlPrefix: https://w3c.github.io/webappsec/specs/content-security-po
   type: dfn
     text: form-action; url: directive-form-action
     text: connect-src; url: directive-connect-src
-    text: frame-src; url: directive-frame-src
+    text: child-src; url: directive-child-src
 spec: XHR; urlPrefix: https://xhr.spec.whatwg.org/
   type: interface
     text: XMLHttpRequest; url: interface-xmlhttprequest
@@ -1217,24 +1217,30 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
+  {{LocalCredential}}s further mitigate the risk of data leakage by never
+  exposing the {{[[password]]}} slot directly to a page's JavaScript, but
+  instead performing asynchronous submission via {{LocalCredential/send()}},
+  which verifies that the endpoint is a valid one for the credential before
+  submission.
+
   Additionally, authors SHOULD mitigate the risk of leakage by setting a
   reasonable Content Security Policy [[!CSP2]] which restricts the origins to
-  which {{FormData!!interface}} objects can be sent. In particular, authors should
-  ensure that the following directives are set, explicitly or implicitly, in
+  which data can be sent. In particular, authors should ensure that the
+  following directives are set, explicitly or implicitly, in
   their pages' policies:
  
   <ol>
     <li>
-      <code><a>connect-src</a></code> restricts the origins to which
-      {{FormData!!interface}} objects may be sent via {{XMLHttpget()}} and
-      {{fetch()}.
+      <code><a>connect-src</a></code> further restricts the origins to which
+      {{LocalCredential/send()}} may submit data (which mitigates the risk of
+      redirect-based attacks.
+
+      ISSUE: If and when <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=28343">bug 28323</a>
+      is resolved, we might have another defense in depth for this kind of
+      attack.
     </li>
     <li>
-      <code><a>form-action</a></code> restricts the origins to which
-      {{FormData!!interface}} objects may be sent via form submissions.
-    </li>
-    <li>
-      <code><a>frame-src</a></code> restricts the nested browsing
+      <code><a>child-src</a></code> restricts the nested browsing
       contexts which may be embedded in a page, making it more difficult to
       inject a malicious {{postMessage()}} target. [[WEBMESSAGING]]
     </li>
@@ -1300,12 +1306,15 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="privacy-chooser-leakage">Chooser Leakage</h3>
 
-  If a user agent displayes images supplied by a website or federation (for
+  If a user agent displays images supplied by a website or federation (for
   example, if a {{Credential}}'s {{Credential/avatarURL}} is displayed),
   requests for these images MUST NOT be directly tied to instantiating the
   chooser in order to avoid leaking chooser usage. One option would be to fetch
   the images in the background when saving or updating a {{Credential}}, and to
   cache them for the lifetime of the {{Credential}}.
+
+  Further, these images MUST be fetched with the <code>credentials</code> flag
+  set to "<code>omit</code>".
 </section>
 
 <!--

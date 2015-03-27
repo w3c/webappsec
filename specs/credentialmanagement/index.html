@@ -1788,30 +1788,37 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     </ol>
 
 
+    <p><code class="idl"><a data-link-type="idl" href="#localcredential">LocalCredential</a></code>s further mitigate the risk of data leakage by never
+  exposing the <code class="idl"><a data-link-type="idl" href="#dom-localcredential-password">[[password]]</a></code> slot directly to a page’s JavaScript, but
+  instead performing asynchronous submission via <code class="idl"><a data-link-type="idl" href="#dom-localcredential-send">send()</a></code>,
+  which verifies that the endpoint is a valid one for the credential before
+  submission.</p>
+
+
     <p>Additionally, authors SHOULD mitigate the risk of leakage by setting a
   reasonable Content Security Policy <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> which restricts the origins to
-  which <code class="idl"><a class="idl-code" data-link-type="interface" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> objects can be sent. In particular, authors should
-  ensure that the following directives are set, explicitly or implicitly, in
+  which data can be sent. In particular, authors should ensure that the
+  following directives are set, explicitly or implicitly, in
   their pages' policies:</p>
 
   
     <ol>
     
      <li>
-      <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-connect-src">connect-src</a></code> restricts the origins to which
-      <code class="idl"><a class="idl-code" data-link-type="interface" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> objects may be sent via <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest">XMLHttpget()</a></code> and
-      {{fetch()}.
+      <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-connect-src">connect-src</a></code> further restricts the origins to which
+      <code class="idl"><a data-link-type="idl" href="#dom-localcredential-send">send()</a></code> may submit data (which mitigates the risk of
+      redirect-based attacks.
+
+
+      <p class="issue" id="issue-04a251c1"><a class="self-link" href="#issue-04a251c1"></a>If and when <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=28343">bug 28323</a>
+      is resolved, we might have another defense in depth for this kind of
+      attack.</p>
+      
     
      
     
      <li>
-      <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-form-action">form-action</a></code> restricts the origins to which
-      <code class="idl"><a class="idl-code" data-link-type="interface" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> objects may be sent via form submissions.
-    
-     
-    
-     <li>
-      <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-frame-src">frame-src</a></code> restricts the nested browsing
+      <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-child-src">child-src</a></code> restricts the nested browsing
       contexts which may be embedded in a page, making it more difficult to
       inject a malicious <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/webmessaging/#dom-window-postmessage">postMessage()</a></code> target. <a data-link-type="biblio" href="#biblio-webmessaging">[WEBMESSAGING]</a>
     
@@ -1899,12 +1906,16 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     <h3 class="heading settled" data-level="7.2" id="privacy-chooser-leakage"><span class="secno">7.2. </span><span class="content">Chooser Leakage</span><a class="self-link" href="#privacy-chooser-leakage"></a></h3>
 
 
-    <p>If a user agent displayes images supplied by a website or federation (for
+    <p>If a user agent displays images supplied by a website or federation (for
   example, if a <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code>'s <code class="idl"><a data-link-type="idl" href="#dom-credential-avatarurl">avatarURL</a></code> is displayed),
   requests for these images MUST NOT be directly tied to instantiating the
   chooser in order to avoid leaking chooser usage. One option would be to fetch
   the images in the background when saving or updating a <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code>, and to
   cache them for the lifetime of the <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code>.</p>
+
+
+    <p>Further, these images MUST be fetched with the <code>credentials</code> flag
+  set to "<code>omit</code>".</p>
 </section>
 
 
@@ -2091,9 +2102,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
   <ul class="indexlist">
    <li><a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> defines the following terms:
     <ul>
+     <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-child-src">child-src</a>
      <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-connect-src">connect-src</a>
-     <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-form-action">form-action</a>
-     <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-frame-src">frame-src</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
     <ul>
@@ -2152,7 +2162,6 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     <ul>
      <li><a href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a>
      <li><a href="https://xhr.spec.whatwg.org/#interface-xmlhttprequest">XMLHttpRequest</a>
-     <li><a href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest">XMLHttpget()</a>
      <li><a href="https://xhr.spec.whatwg.org/#dom-formdata-append">append()</a>
     </ul></ul>
   <h2 class="no-num heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
@@ -2248,6 +2257,9 @@ dictionary <a data-global-name="" href="#dictdef-credentialrequestoptions">Crede
     Save credential
   </a>, but could
   be trivially pushed out into a separate API if that makes things more clear.<a href="#issue-6dc34f78"> ↵ </a></div>
+   <div class="issue">If and when <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=28343">bug 28323</a>
+      is resolved, we might have another defense in depth for this kind of
+      attack.<a href="#issue-04a251c1"> ↵ </a></div>
    <div class="issue">Is this a meaningful restriction for Service Workers? Probably not.<a href="#issue-bc2c9b42"> ↵ </a></div>
    <div class="issue">Add some thoughts here about when and how the API should be used,
   especially with regard to <code class="idl"><a data-link-type="idl" href="#dom-credentialrequestoptions-suppressui">suppressUI</a></code>.<a href="#issue-0848699b"> ↵ </a></div></div></body>
