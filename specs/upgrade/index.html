@@ -173,6 +173,9 @@ secure transport before fetching them.</p>
       <li><a href="#delivery"><span class="secno">3.1</span> <span class="content">
     The <code>upgrade-insecure-requests</code> Content Security Policy directive
   </span></a>
+       <ul class="toc">
+        <li><a href="#mix"><span class="secno">3.1.1</span> <span class="content">Relation to "Mixed Content"</span></a>
+       </ul>
       <li><a href="#feature-detect"><span class="secno">3.2</span> <span class="content">Feature Detecting Clients Capable of Upgrading</span></a>
        <ul class="toc">
         <li><a href="#preference"><span class="secno">3.2.1</span> <span class="content">
@@ -787,11 +790,9 @@ directive-value = ""
 
 
     <p><a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#monitor">Monitoring</a> the <code>upgrade-insecure-requests</code> directive has
-  no effect: the directive is, in effect, ignored when sent via a
-  <code><a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#content_security_policy_report_only">Content-Security-Policy-Report-Only</a></code> header.</p>
-
-
-    <p class="note" role="note">Note: Authors can determine whether or not upgraded resources' original URLs
+  no effect: the directive is ignored when sent via a
+  <code><a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#content_security_policy_report_only">Content-Security-Policy-Report-Only</a></code> header. Authors can
+  determine whether or not upgraded resources' original URLs
   were insecure via <code><a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#content_security_policy_report_only">Content-Security-Policy-Report-Only</a></code>. For
   example, <code><a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#content_security_policy_report_only">Content-Security-Policy-Report-Only</a>:
   default-src https:; report-uri /endpoint</code>. See <a href="#reporting-upgrades">§3.4 Reporting Upgrades</a>
@@ -805,6 +806,29 @@ directive-value = ""
   on a site, and (say) two of them provide images only, and don’t support
   HTTPS at all, you can use the upgrade mechanism for scripts on the other
   N - 2 origins." <a href="https://github.com/w3c/webappsec/issues/184">&lt;https://github.com/w3c/webappsec/issues/184></a></p>
+
+  
+    <h4 class="heading settled" data-level="3.1.1" id="mix"><span class="secno">3.1.1. </span><span class="content">Relation to "Mixed Content"</span><a class="self-link" href="#mix"></a></h4>
+
+
+    <p>The <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive results in
+  requests being rewritten at the top of the <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">Fetching</a> algorithm
+  <a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a>, as specified in <a href="#upgrade-request">§4.1 
+    Upgrade request to a potentially secure URL, if appropriate
+  </a>. It’s important to note that
+  the rewrite happens <em>before</em> either Mixed Content <a data-link-type="biblio" href="#biblio-mix">[MIX]</a> or Content
+  Security Policy checks take effect <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a>.</p>
+
+
+    <p>This ordering means that upgraded requests <em>will not</em> be flagged as
+  mixed content. Moreover, it means that
+  <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code>’s effect takes place before
+  the <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#block_all_mixed_content">block-all-mixed-content</a></code> directive would have a chance
+  to block the request. If the former is set, the latter is effectively a no-op.</p>
+
+
+    <p>We recommend that authors set one directive or the other, as outlined in
+  <a href="#recommendations">§1.3 Recommendations</a>.</p>
 
   
     <h3 class="heading settled" data-level="3.2" id="feature-detect"><span class="secno">3.2. </span><span class="content">Feature Detecting Clients Capable of Upgrading</span><a class="self-link" href="#feature-detect"></a></h3>
@@ -833,10 +857,10 @@ directive-value = ""
 
 
     <p>The <dfn data-dfn-type="dfn" data-export="" data-local-lt="HTTPS" id="https-http-request-header-field"><code>HTTPS</code> HTTP request header
-  field<a class="self-link" href="#https-http-request-header-field"></a></dfn> that the client prefers that the server redirect from an insecure
-  resource representation to a secure one, and that it can successfully handle
-  the <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive in order to make
-  that redirection as seamless as possible.</p>
+  field<a class="self-link" href="#https-http-request-header-field"></a></dfn> sends a signal to the server expressing the client’s preference
+  for an encrypted and authenticated response, and that it can successfully
+  handle the <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> directive in order
+  to make that preference as seamless as possible to provide.</p>
 
 
     <p>This preference is represented by the following ANBF:</p>
