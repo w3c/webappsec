@@ -833,7 +833,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-global-name="" id="credentialscontainer">CredentialsContainer<a class="self-link" href="#credentialscontainer"></a></dfn> {
   Promise&lt;<a data-link-type="idl-name" href="#credential">Credential</a>?> <a class="idl-code" data-global-name="CredentialsContainer<interface>/get(options)<method>/get()<method>" data-link-type="method" href="#dom-credentialscontainer-get">get</a>(optional <a data-link-type="idl-name" href="#dictdef-credentialrequestoptions">CredentialRequestOptions</a> <dfn class="idl-code" data-dfn-for="CredentialsContainer/get" data-dfn-type="argument" data-export="" data-global-name="CredentialsContainer/get/options<argument>" id="dom-credentialscontainer-get-options">options<a class="self-link" href="#dom-credentialscontainer-get-options"></a></dfn>);
   Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/store(credential)<method>/store()<method>" data-link-type="method" href="#dom-credentialscontainer-store">store</a>(optional <a data-link-type="idl-name" href="#credential">Credential</a> <dfn class="idl-code" data-dfn-for="CredentialsContainer/store" data-dfn-type="argument" data-export="" data-global-name="CredentialsContainer/store/credential<argument>" id="dom-credentialscontainer-store-credential">credential<a class="self-link" href="#dom-credentialscontainer-store-credential"></a></dfn>);
-  Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/notifySignedOut()<method>" data-link-type="method" href="#dom-credentialscontainer-notifysignedout">notifySignedOut</a>();
+  Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/requireUserMediation()<method>" data-link-type="method" href="#dom-credentialscontainer-requireusermediation">requireUserMediation</a>();
 };
 </pre>
   
@@ -869,16 +869,23 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     
      
     
-     <dt><dfn class="idl-code" data-dfn-for="CredentialsContainer" data-dfn-type="method" data-export="" id="dom-credentialscontainer-notifysignedout">notifySignedOut()<a class="self-link" href="#dom-credentialscontainer-notifysignedout"></a></dfn>
+     <dt><dfn class="idl-code" data-dfn-for="CredentialsContainer" data-dfn-type="method" data-export="" id="dom-credentialscontainer-requireusermediation">requireUserMediation()<a class="self-link" href="#dom-credentialscontainer-requireusermediation"></a></dfn>
      
     
      <dd>
-      Notify the credential manager that the user is signing out. The user
-      agent MUST execute the algorithm defined in
-      <a href="#require-user-mediation-for-origin">§4.5 
+      Ask the credential manager to require user mediation before returning
+      credentials for the origin in which the method is called. This might be
+      called after a user signs out of a website, for instance, in order to
+      ensure that she isn’t automatically signed back in next time she visits.
+
+
+      <p>When <code class="idl"><a data-link-type="idl" href="#dom-credentialscontainer-requireusermediation">requireUserMediation()</a></code> is called, the user agent MUST execute the
+      algorithm defined in <a href="#require-user-mediation-for-origin">§4.5 
     Require user mediation for origin
-  </a> with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the
-      <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a> in which this method is called.
+  </a> with the
+      <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a> in which this method
+      is called.</p>
+      
     
      
   
@@ -2135,12 +2142,12 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      <li>argument for LocalCredential/LocalCredential(id, password, name, avatarURL), <a href="#dom-localcredential-localcredentialid-password-name-avatarurl-name">3.1.2</a>
      <li>argument for FederatedCredential/FederatedCredential(id, federation, name, avatarURL), <a href="#dom-federatedcredential-federatedcredentialid-federation-name-avatarurl-name">3.1.3</a>
     </ul>
-   <li>notifySignedOut(), <a href="#dom-credentialscontainer-notifysignedout">3.2</a>
    <li>options, <a href="#dom-credentialscontainer-get-options">3.2</a>
    <li>[[origin]], <a href="#dom-credential-origin">3.1.1</a>
    <li>[[password]], <a href="#dom-localcredential-password">3.1.2</a>
    <li>password, <a href="#dom-localcredential-localcredentialid-password-name-avatarurl-password">3.1.2</a>
    <li>[[requiresUserMediation]], <a href="#dom-credential-requiresusermediation">3.1.1</a>
+   <li>requireUserMediation(), <a href="#dom-credentialscontainer-requireusermediation">3.2</a>
    <li>send(url), <a href="#dom-localcredential-sendurl">3.1.2</a>
    <li>store(), <a href="#dom-credentialscontainer-store">3.2</a>
    <li>suppressUI, <a href="#dom-credentialrequestoptions-suppressui">3.3</a>
@@ -2282,7 +2289,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="http://ww
 interface <a data-global-name="" href="#credentialscontainer">CredentialsContainer</a> {
   Promise&lt;<a data-link-type="idl-name" href="#credential">Credential</a>?> <a class="idl-code" data-global-name="CredentialsContainer<interface>/get(options)<method>/get()<method>" data-link-type="method" href="#dom-credentialscontainer-get">get</a>(optional <a data-link-type="idl-name" href="#dictdef-credentialrequestoptions">CredentialRequestOptions</a> <a data-global-name="CredentialsContainer/get/options<argument>" href="#dom-credentialscontainer-get-options">options</a>);
   Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/store(credential)<method>/store()<method>" data-link-type="method" href="#dom-credentialscontainer-store">store</a>(optional <a data-link-type="idl-name" href="#credential">Credential</a> <a data-global-name="CredentialsContainer/store/credential<argument>" href="#dom-credentialscontainer-store-credential">credential</a>);
-  Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/notifySignedOut()<method>" data-link-type="method" href="#dom-credentialscontainer-notifysignedout">notifySignedOut</a>();
+  Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/requireUserMediation()<method>" data-link-type="method" href="#dom-credentialscontainer-requireusermediation">requireUserMediation</a>();
 };
 
 dictionary <a data-global-name="" href="#dictdef-credentialrequestoptions">CredentialRequestOptions</a> {
