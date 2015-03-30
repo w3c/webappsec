@@ -557,10 +557,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   </ol>
 
   <a>Monitoring</a> the <code>upgrade-insecure-requests</code> directive has
-  no effect: the directive is, in effect, ignored when sent via a
-  <code><a>Content-Security-Policy-Report-Only</a></code> header.
-
-  Note: Authors can determine whether or not upgraded resources' original URLs
+  no effect: the directive is ignored when sent via a
+  <code><a>Content-Security-Policy-Report-Only</a></code> header. Authors can
+  determine whether or not upgraded resources' original URLs
   were insecure via <code><a>Content-Security-Policy-Report-Only</a></code>. For
   example, <code><a>Content-Security-Policy-Report-Only</a>:
   default-src https:; report-uri /endpoint</code>. See [[#reporting-upgrades]]
@@ -573,6 +572,23 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   on a site, and (say) two of them provide images only, and don't support
   HTTPS at all, you can use the upgrade mechanism for scripts on the other
   N - 2 origins."
+
+  <h4 id="mix">Relation to "Mixed Content"</h4>
+
+  The <code><a>upgrade-insecure-requests</a></code> directive results in
+  requests being rewritten at the top of the <a>Fetching</a> algorithm
+  [[!FETCH]], as specified in [[#upgrade-request]]. It's important to note that
+  the rewrite happens <em>before</em> either Mixed Content [[MIX]] or Content
+  Security Policy checks take effect [[CSP2]].
+
+  This ordering means that upgraded requests <em>will not</em> be flagged as
+  mixed content. Moreover, it means that
+  <code><a>upgrade-insecure-requests</a></code>'s effect takes place before
+  the <code><a>block-all-mixed-content</a></code> directive would have a chance
+  to block the request. If the former is set, the latter is effectively a no-op.
+
+  We recommend that authors set one directive or the other, as outlined in
+  [[#recommendations]].
 
   <h3 id="feature-detect">Feature Detecting Clients Capable of Upgrading</h3>
 
