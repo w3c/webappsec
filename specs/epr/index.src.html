@@ -220,7 +220,40 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
 <!-- Big Text: Delivery -->
 <section>
-  <h2 id="delivery">Delivery</h2>
+  <h2 id="framework">Framework</h2>
+
+  In a nutshell:
+
+  <ol>
+    <li>
+      UA requests a resource from <code>example.com</code> for the very
+      first time.
+    </li>
+    <li>
+      <code>example.com</code> responds with a document that has an
+      <code><a>EPR</a></code> header, which tells the UA that it should
+      regulate some entry points.
+
+      Somewhere in Fetch after we have the headers, we'll call out to
+      [[#process-epr-header]] to take whatever actions we need to take
+      here. This means we'll grab an <a>EPR manifest</a> file, and ... do
+      something hand-wavey described in
+      <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Jan/0106.html">https://lists.w3.org/Archives/Public/public-webappsec/2015Jan/0106.html</a>.
+
+      ISSUE: What's the expected behavior if we don't yet have a manifest, or
+      if the manifest fails to parse, or etc?
+    </li>
+    <li>
+      Subsequent navigations and resource requests from <code>example.com</code>
+      will run through [[#process-request]] to determine whether they <a>match</a>
+      the ruleset defined in the <a>EPR manifest</a> we processed above. If they
+      don't match a ruleset, we'll cancel the request (maybe?). If they do match a
+      ruleset, but violate the data constraints, we'll cancel the request (maybe?).
+    </li>
+    <li>
+      That's it! (Maybe?)
+    </li>
+  </ol>
 
   <h3 id="epr-header">The <code>EPR</code> HTTP Response Header Field</h3>
 
@@ -235,7 +268,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   User agent conformance details upon receipt of such a header are explained in
   [[#process-epr-header]].
 
-  <h3 id="manifest">Manifest</h3>
+  <h3 id="manifest">Entry Point Manifests</h3>
 
   An <dfn>EPR manifest</dfn> is a JSON file containing entry point regulation
   policy data for an <a>origin</a>.

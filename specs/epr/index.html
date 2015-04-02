@@ -167,10 +167,10 @@ the ways in which resources may be fetched from an origin.</p>
       <li><a href="#examples"><span class="secno">1.2</span> <span class="content">Examples</span></a>
      </ul>
     <li><a href="#key-concepts"><span class="secno">2</span> <span class="content">Key Concepts and Terminology</span></a>
-    <li><a href="#delivery"><span class="secno">3</span> <span class="content">Delivery</span></a>
+    <li><a href="#framework"><span class="secno">3</span> <span class="content">Framework</span></a>
      <ul class="toc">
       <li><a href="#epr-header"><span class="secno">3.1</span> <span class="content">The <code>EPR</code> HTTP Response Header Field</span></a>
-      <li><a href="#manifest"><span class="secno">3.2</span> <span class="content">Manifest</span></a>
+      <li><a href="#manifest"><span class="secno">3.2</span> <span class="content">Entry Point Manifests</span></a>
        <ul class="toc">
         <li><a href="#manifest-rulesets"><span class="secno">3.2.1</span> <span class="content">Rulesets</span></a>
        </ul>
@@ -271,7 +271,59 @@ the ways in which resources may be fetched from an origin.</p>
 
    <section>
   
-    <h2 class="heading settled" data-level="3" id="delivery"><span class="secno">3. </span><span class="content">Delivery</span><a class="self-link" href="#delivery"></a></h2>
+    <h2 class="heading settled" data-level="3" id="framework"><span class="secno">3. </span><span class="content">Framework</span><a class="self-link" href="#framework"></a></h2>
+
+
+    <p>In a nutshell:</p>
+
+  
+    <ol>
+    
+     <li>
+      UA requests a resource from <code>example.com</code> for the very
+      first time.
+    
+     
+    
+     <li>
+      <code>example.com</code> responds with a document that has an
+      <code><a data-link-type="dfn" href="#epr-http-response-header-field">EPR</a></code> header, which tells the UA that it should
+      regulate some entry points.
+
+
+      <p>Somewhere in Fetch after we have the headers, we’ll call out to
+      <a href="#process-epr-header">§4.2 
+    Process response’s EPR header
+  </a> to take whatever actions we need to take
+      here. This means we’ll grab an <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a> file, and ... do
+      something hand-wavey described in
+      <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Jan/0106.html">https://lists.w3.org/Archives/Public/public-webappsec/2015Jan/0106.html</a>.</p>
+      
+
+
+      <p class="issue" id="issue-46ab8560"><a class="self-link" href="#issue-46ab8560"></a>What’s the expected behavior if we don’t yet have a manifest, or
+      if the manifest fails to parse, or etc?</p>
+      
+    
+     
+    
+     <li>
+      Subsequent navigations and resource requests from <code>example.com</code>
+      will run through <a href="#process-request">§4.1 
+    Process request
+  </a> to determine whether they <a data-link-type="dfn" href="#match">match</a>
+      the ruleset defined in the <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a> we processed above. If they
+      don’t match a ruleset, we’ll cancel the request (maybe?). If they do match a
+      ruleset, but violate the data constraints, we’ll cancel the request (maybe?).
+    
+     
+    
+     <li>
+      That’s it! (Maybe?)
+    
+     
+  
+    </ol>
 
   
     <h3 class="heading settled" data-level="3.1" id="epr-header"><span class="secno">3.1. </span><span class="content">The <code>EPR</code> HTTP Response Header Field</span><a class="self-link" href="#epr-header"></a></h3>
@@ -292,7 +344,7 @@ the ways in which resources may be fetched from an origin.</p>
   </a>.</p>
 
   
-    <h3 class="heading settled" data-level="3.2" id="manifest"><span class="secno">3.2. </span><span class="content">Manifest</span><a class="self-link" href="#manifest"></a></h3>
+    <h3 class="heading settled" data-level="3.2" id="manifest"><span class="secno">3.2. </span><span class="content">Entry Point Manifests</span><a class="self-link" href="#manifest"></a></h3>
 
 
     <p>An <dfn data-dfn-type="dfn" data-noexport="" id="epr-manifest">EPR manifest<a class="self-link" href="#epr-manifest"></a></dfn> is a JSON file containing entry point regulation
@@ -893,7 +945,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <dt>Specification document
      
     
-     <dd>This specification (See <a href="#manifest">§3.2 Manifest</a>)
+     <dd>This specification (See <a href="#manifest">§3.2 Entry Point Manifests</a>)
      
   
     </dl>
@@ -1101,6 +1153,8 @@ dictionary <a data-global-name="" href="#dictdef-eprrule">EPRRule</a> {
 </pre>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
+   <div class="issue">What’s the expected behavior if we don’t yet have a manifest, or
+      if the manifest fails to parse, or etc?<a href="#issue-46ab8560"> ↵ </a></div>
    <div class="issue">Why is this distinct from <a data-link-type="biblio" href="#biblio-manifest">[MANIFEST]</a>? I think we could do pretty
   much everything by adding an <code>erp_rules</code> attribute. Since we’ve
   already accepted the asynchronocity, duplicating the manifest doesn’t seem
