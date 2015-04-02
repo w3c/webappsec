@@ -1,0 +1,600 @@
+<h1>Entry Point Regulation</h1>
+<pre class="metadata">
+Status: ED
+Group: WebAppSec
+ED: https://w3c.github.io/webappsec/specs/epr/
+Shortname: EPR
+Level: 1
+Editor: David Ross, Google Inc., drx@google.com
+Editor: Mike West 56384, Google Inc., mkwst@google.com
+Abstract:
+  This document allows authors to mitigate the risk of certain kinds of
+  cross-site scripting (XSS) and cross-site request forgery (XSRF) attacks
+  by defining a mechanism which an author can use to assert restrictions upon
+  the ways in which resources may be fetched from an origin.
+Indent: 2
+</pre>
+<pre class="anchors">
+spec: CSP2; urlPrefix: https://www.w3.org/TR/CSP2/
+  type: dfn
+    text: content-security-policy
+    text: content-security-policy-report-only
+    text: default-src
+    text: report-uri
+    text: protected resource
+    text: security policy
+    text: send violation reports
+    text: report a violation
+    text: violation report; url: example-violation-report
+    url: enforce
+      text: enforce
+      text: enforced
+    url: monitor
+      text: monitor
+      text: monitored
+spec: DOM; urlPrefix: http://www.w3.org/TR/dom/
+  type: interface
+    text: Document; url: interface-document
+spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+    text: process response
+    text: append; url: concept-header-list-append
+    text: response; url: concept-response
+    text: request; url: concept-request
+    text: header; url: concept-header
+    text: url; for: request; url: concept-request-url
+    text: mode; for: request; url: concept-request-mode
+    text: body; for: request; url: concept-request-body
+    text: client; for: request; url: concept-request-client
+    text: credentials; for: request; url: concept-request-client
+    text: context; for: request; url: concept-request-context
+    text: method; for: request; url: concept-request-method
+    text: context frame type; for: request; url: concept-request-context-frame-type
+    text: header list; for: request; url: concept-request-header-list
+    text: url; for: response; url: concept-response-url
+    text: header list; for: response; url: concept-response-header-list
+spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
+  type: dfn
+    urlPrefix: infrastructure.html
+      text: ascii case-insensitive match; url: ascii-case-insensitive
+    urlPrefix: browsers.html
+      text: ancestor browsing context
+      text: browsing context
+      text: creating a new document object; url: create-a-document-object
+      text: nested browsing context
+    urlPrefix: webappapis.html
+      text: environment settings object; url: settings-object
+      text: incumbent settings object
+      text: responsible document
+      text: responsible browsing context
+      text: relevant settings object for a script
+spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
+  urlPrefix: workers.html
+    type: dfn
+      text: set up a worker environment settings object
+    type: interface
+      text: SharedWorker
+spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+  type: dfn
+    text: embedding document
+    text: strict mode
+    text: block-all-mixed-content
+    url: a-priori-insecure-url
+      text: a priori insecure origin
+      text: a priori insecure url
+      text: a priori insecure
+    url: potentially-secure-origin
+      text: potentially secure origin
+      text: potentially secure url
+      text: potentially secure
+spec: SERVICE-WORKERS; urlPrefix: https://slightlyoff.github.io/ServiceWorker/spec/service_worker/
+  type: interface
+    text: ServiceWorker; url: service-worker-interface
+spec: URL; urlPrefix: http://www.w3.org/TR/url/
+  type: dfn
+    text: URL parser; url: concept-url-parser
+    text: base URL; url: concept-base-url
+    text: path; for: URL; url: concept-url-path
+    text: query; for: URL; url: concept-url-query
+    text: fragment; for: URL; url: concept-url-fragment
+    text: percent decode
+  type: interface
+    text: URL; url: concept-url
+  type: attribute
+    text: host; for: URL; url: concept-url-host
+    text: path; for: URL; url: concept-url-path
+    text: port; for: URL; url: concept-url-port
+    text: scheme; for: URL; url: concept-url-scheme
+spec: WEBIDL2; urlPrefix: https://heycam.github.io/webidl/
+  type: interface
+    text: USVString; url: idl-USVString
+    text: boolean; url: idl-boolean
+spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
+  type: interface
+    text: Worker
+spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
+  type: dfn
+    text: BIT; url: appendix-B.1
+    text: WSP; url: appendix-B.1
+spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
+  type: dfn
+    text: origin; url: section-3.2
+spec: RFC6455; urlPrefix: https://tools.ietf.org/html/rfc6455
+  type: dfn
+    text: establish a websocket connection; url: section-4.1
+    text: fail the websocket connection; url: section-7.1.7
+spec: RFC6797; urlPrefix: https://tools.ietf.org/html/rfc6797
+  type: dfn
+    text: Strict-Transport-Security; url: section-6.1
+    text: congruent match; url: section-8.2
+    text: superdomain match; url: section-8.2
+    text: includeSubDomains; url: section-6.1.2
+    text: Known HSTS Host Domain Name Matching; url: section-8.2
+    text: Known HSTS Host; url: section-8.1.1
+spec: RFC7231; urlPrefix: https://tools.ietf.org/html/rfc7231
+  type: dfn
+    text: Vary; url: section-7.1.4
+    text: resource representation; url: section-3
+spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
+  type: dfn
+    text: Cache-Control; url: section-5.2
+    text: no-store; url: section-5.2.2.3
+spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
+  type: dfn
+    text: Prefer; url: section-2
+</pre>
+
+<!-- BIBLIOGRAPHY -->
+<pre class="biblio">
+{
+  "ISOLATION": {
+    "authors": [ "Eric Y. Chen", "Jason Bau", "Charles Reis", "Adam Barth", "Collin Jackson" ],
+    "title": "App Isolation: Get the Security of Multiple Browsers with Just One",
+    "href": "http://www.collinjackson.com/research/papers/appisolation.pdf",
+    "publisher": "ACM"
+  },
+  "URL": {
+    "authors": [ "Anne van Kesteren", "Sam Ruby" ],
+    "title": "URL",
+    "href": "http://www.w3.org/TR/url",
+    "status": "WD",
+    "publisher": "W3C"
+  },
+  "WEBIDL2": {
+    "authors": [ "Cameron McCormack", "Boris Zbarsky" ],
+    "title": "Web IDL (Second Edition)",
+    "href": "https://heycam.github.io/webidl/",
+    "status": "ED",
+    "publisher": "W3C"
+  }
+}
+</pre>
+
+<!--
+████ ██    ██ ████████ ████████   ███████
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████
+-->
+<section>
+  <h2 id="intro">Introduction</h2>
+
+  <em>This section is not normative.</em>
+
+  EPR provides a browser-enforced mechanism for validating an entry point
+  policy supplied with a web application.  External references and navigations
+  to non-entry points can then be restricted based on this policy.
+
+  Entry point regulation may be considered an implementation of concepts
+  introduced by Charlie Reis et al. in [[ISOLATION]].
+
+  <h3 id="goals">Goals</h3>
+
+  TBD.
+
+  <h3 id="examples">Examples</h3>
+
+  TBD.
+</section>
+
+<!--
+████████  ████████ ████████ ████ ██    ██ ████ ████████ ████  ███████  ██    ██  ██████
+██     ██ ██       ██        ██  ███   ██  ██     ██     ██  ██     ██ ███   ██ ██    ██
+██     ██ ██       ██        ██  ████  ██  ██     ██     ██  ██     ██ ████  ██ ██
+██     ██ ██████   ██████    ██  ██ ██ ██  ██     ██     ██  ██     ██ ██ ██ ██  ██████
+██     ██ ██       ██        ██  ██  ████  ██     ██     ██  ██     ██ ██  ████       ██
+██     ██ ██       ██        ██  ██   ███  ██     ██     ██  ██     ██ ██   ███ ██    ██
+████████  ████████ ██       ████ ██    ██ ████    ██    ████  ███████  ██    ██  ██████
+-->
+<section>
+  <h2 id="key-concepts">Key Concepts and Terminology</h2>
+
+  The Augmented Backus-Naur Form (ABNF) notation is specified in RFC5234
+  [[!ABNF]].
+</section>
+
+<!-- Big Text: Delivery -->
+<section>
+  <h2 id="delivery">Delivery</h2>
+
+  <h3 id="epr-header">The <code>EPR</code> HTTP Response Header Field</h3>
+
+  Servers may request the protections outlined in this document by sending an
+  <dfn local-lt="EPR"><code>EPR</code> HTTP response header field</dfn> along
+  with a response. This request is represented by the following ABNF:
+
+  <pre>
+    "EPR:" *<a>WSP</a> "1" *<a>WSP</a>
+  </pre>
+
+  User agent conformance details upon receipt of such a header are explained in
+  [[#process-epr-header]].
+
+  <h3 id="manifest">Manifest</h3>
+
+  An <dfn>EPR manifest</dfn> is a JSON file containing entry point regulation
+  policy data for an <a>origin</a>.
+
+  Servers which opt-in to EPR protections via the <code><a>EPR</a></code> header
+  MUST make a manifest file available at
+  "<code>/.well-known/epr-manifest.json</code>".
+
+  ISSUE: Why is this distinct from [[!MANIFEST]]? I think we could do pretty
+  much everything by adding an <code>erp_rules</code> attribute. Since we've
+  already accepted the asynchronocity, duplicating the manifest doesn't seem
+  prudent.
+
+  <div class="example">
+    <pre>
+      {
+        "site": "https://example.com/",
+        "maxAge": 31536000,
+        "reportUrl": "https://example.com/reporting-endpoint",
+        "defaultNavBehavior": "block",
+        "defaultResBehavior": "block",
+        "rules": [
+          {
+            "path": "/",
+            "types": [ "navigation" ],
+            "allowData": false
+          },
+          {
+            "regex": "^/\\d+$",
+            "types": [ "navigation" ],
+            "allowData": false
+          },
+          ...
+          {
+            "path": "/image",
+            "types": [ "image" ],
+            "allowData": true
+          },
+        ]
+      }
+    </pre>
+
+    ISSUE: The example manifest defines <code>site</code>. Do we really need
+    that, given that we know the manifest's URL?
+
+    ISSUE: The example manifest defines <code>maxAge</code>. Do we need that,
+    or can we rely on cache headers?
+
+    ISSUE: The example manifest defines <code>reportUrl</code>. What does this
+    report? What do the reports look like? Do we need it at all?
+
+    ISSUE: The example manifest defines <code>defaultNavBehavior</code>. What
+    does this do?
+
+    ISSUE: The example manifest defines <code>defaultResBehavior</code>. What
+    does this do?
+  </div>
+
+  <h4 id="manifest-rulesets">Rulesets</h4>
+
+  EPR manifests define a set of <dfn>rules</dfn> for a site, governing a user
+  agent's <a>fetching</a> behavior for <a>requests</a> made to that site's
+  <a>origin</a>. Each rule is scoped to a specific subset of an origin's
+  URLs via a path prefix or a regular expression, and contains a set of
+  behaviors which MUST be applied to <a>requests</a> which match the rule's
+  scope (as defined in [[#matching]]).
+
+  The following IDL defines rules' syntax:
+
+  <pre class="idl">
+    enum RequestContext {
+        "audio", "beacon", "cspreport", "download", "embed", "eventsource",
+        "favicon", "fetch", "font", "form", "frame", "hyperlink", "iframe",
+        "image", "imageset", "import", "internal", "location", "manifest",
+        "metarefresh", "object", "ping", "plugin", "prefetch", "script",
+        "serviceworker", "sharedworker", "subresource", "style", "track",
+        "video", "worker", "xmlhttprequest", "xslt"
+    };
+
+    enum RequestFrameType {
+      "auxiliary", "nested", "none", "top-level"
+    };
+
+    dictionary EPRRule {
+      USVString? path;
+      USVString? regex;
+      sequence&lt;RequestContext&gt; contexts;
+      sequence&lt;RequestFrameType&gt; frameTypes;
+      boolean allowData;
+    };
+  </pre>
+  <dl dfn-for="EPRRule">
+    <dt><dfn dict-member>path</dfn></dt>
+    <dd>
+      A path prefix defining a <a>rule</a>'s scope. See [[#matching]] for user
+      agent conformance requirements.
+
+      ISSUE: When do we <a>percent decode</a>?
+    </dd>
+    <dt><dfn dict-member>regex</dfn></dt>
+    <dd>
+      A regular expression, defining a <a>rule</a>'s scope. See [[#matching]]
+      for user agent conformance requirements.
+    </dd>
+    <dt><dfn dict-member>contexts</dfn></dt>
+    <dd>
+      A set of <a for="request">contexts</a> to which this rule applies. See
+      [[#matching]] for user agent conformance requirements.
+    </dd>
+    <dt><dfn dict-member>frameTypes</dfn></dt>
+    <dd>
+      A set of <a for="request">context frame types</a> to which this rule
+      applies. See [[#matching]] for user agent conformance requirements.
+    </dd>
+    <dt><dfn dict-member>allowData</dfn></dt>
+    <dd>
+      If <code>true</code>, then matching <a>requests</a>'
+      <a for="request">URL</a>s are allowed to contain non-empty
+      <a for="URL">query</a> and <a for="URL">fragment</a> properties,
+      and <a>requests</a>' <a for="request">body</a> may be non-null.
+
+      See [[#process-request]] for user agent conformance requirements.
+    </dd>
+  </dl>
+</section>
+
+<!-- Big Text: Algorithms -->
+<section>
+  <h2 id="algorithms">Processing Algorithms</h2>
+
+  <h3 id="process-request">
+    Process <var>request</var>
+  </h3>
+
+  <ol>
+    <li>
+      Let <var>rules</var> be the <a>rules</a> which a user agent has stored
+      for <var>request</var>'s <a for="request">URL</a>'s <a>origin</a>.
+    </li>
+    <li>
+      For each <var>rule</var> in <var>rules</var>, if <var>request</var>
+      <a>matches</a> <var>rule</var>:
+
+      <ol>
+        <li>TODO</li>
+      </ol>
+    </li>
+  </ol>
+
+  <h3 id="process-epr-header">
+    Process <var>response</var>'s <code>EPR</code> header
+  </h3>
+
+  Given a <a>response</a> (<var>response</var>), this algorithm parses its
+  <a for="response">header list</a> to extract an <code><a>EPR</a></code>
+  header field. If such a field is present, the user agent MUST fetch and
+  process an <a>EPR manifest</a> from <var>response</var>'s <a>origin</a>.
+
+  To <a>process response</a> <var>response</var>, execute the following steps:
+
+  <ol>
+    <li>
+      ISSUE: Do we process a header for any response? Only responses to
+      top-level requests?
+    </li>
+    <li>
+      If <var>response</var>'s <a for="response">URL</a> is <a><i lang="la">a
+      priori</i> insecure</a>, abort these steps.
+    </li>
+    <li>
+      If <var>response</var>'s <a for="response">header list</a> contains a
+      <a>header</a> named <code><a>EPR</a></code>, then:
+
+      <ol>
+        <li>
+          Let <var>manifest URL</var> be the result of executing the <a>URL
+          parser</a> on "<code>/.well-known/epr-manifest.json</code>", with
+          a <a>base URL</a> of <var>response</var>'s <a for="response">URL</a>.
+        </li>
+        <li>
+          Let <var>request</var> be a <a>request</a> whose
+          <a for="request">method</a> is <code>GET</code>,
+          <a for="request">URL</a> is <var>manifest URL</var>,
+          <a for="request">context frame type</a> is <code>none</code>,
+          <a for="request">context</a> is <code>manifest</code>, and
+          <a for="request">credentials</a> is <code>omit</code>.
+
+          ISSUE: Is there a use case for delivering different manifests to
+          different users? I'd hope not.
+        </li>
+        <li>
+          <a>Fetch</a> <var>request</var>.
+        </li>
+        <li>
+          To <a>process response</a> for the <a>response</a> <var>manifest
+          response</var>:
+
+          <ol>
+            <li>
+              TODO.
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+  <h3 id="matching">
+    Does <var>request</var> match <var>rule</var>?
+  </h3>
+
+  A <a>request</a> (<var>request</var>) is said to <dfn>match</dfn> a
+  <a>rule</a> (<var>rule</var>) if the following algorithm returns
+  <code>Matches</code>:
+
+  <ol>
+    <li>
+      If <var>request</var>'s <a for="request">context</a> is not in
+      <var>rule</var>'s {{EPRRule/contexts}} list, return <code>Does Not
+      Match</code>.
+    </li>
+    <li>
+      If <var>request</var>'s <a for="request">context frame type</a> is not in
+      <var>rule</var>'s {{EPRRule/frameTypes}} list, return <code>Does Not
+      Match</code>.
+    </li>
+    <li>
+      If <var>rule</var> has a {{EPRRule/path}} property whose value is
+      neither <code>null</code> nor <code>undefined</code>:
+
+      <ol>
+        <li>
+          Let <var>rule path</var> be <var>rule</var>'s {{EPRRule/path}}.
+        </li>
+        <li>
+          Let <var>exact match</var> be <code>false</code> if the final
+          character of <var>rule path</var> is the U+002F SOLIDUS character
+          (<code>/</code>), and <code>true</code> otherwise.
+        </li>
+        <li>
+          Let <var>rule path list</var> be the result of splitting <var>rule
+          path</var> on the U+002F SOLIDUS character (<code>/</code>).
+        </li>
+        <li>
+          If <var>rule path list</var>'s length is greater than <var>url
+          path list</var>'s length, return <code>Does Not Match</code>.
+        </li>
+        <li>
+          For each <var>entry</var> in <var>rule path list</var>:
+
+          <ol>
+            <li>
+              <a>Percent decode</a> <var>entry</var>.
+            </li>
+            <li>
+              <a>Percent decode</a> the first item in <var>url path list</var>.
+            </li>
+            <li>
+              If <var>entry</var> is not an <a>ASCII case-insensitive
+              match</a> for the first item in <var>url path list</var>, return
+              <code>Does Not Match</code>
+            </li>
+            <li>
+              Pop the first item in <var>url path list</var> off the list.
+            </li>
+          </ol>
+        </li>
+        <li>
+          If <var>exact match</var> is <code>true</code>, and <var>url path
+          list</var> is not empty, return <code>Does Not Match</code>
+        </li>
+      </ol>
+    </li>
+    <li>
+      If <var>rule</var> has a {{EPRRule/regex}} property whose value is
+      neither <code>null</code> nor <code>undefined</code>:
+
+      <ol>
+        <li>
+          Let <var>rule regex</var> be <var>rule</var>'s {{EPRRule/regex}}.
+        </li>
+        <li>
+          Let <var>url path</var> be the empty string, and for each
+          <var>component</var> in <var>request</var>'s
+          <a for="request">URL</a>'s <a for="URL">path</a>:
+
+          <ol>
+            <li>
+              Append the U+002F SOLIDUS character (<code>/</code>) to
+              <var>url path</var>.
+            </li>
+            <li>
+              Append <var>component</var> to <var>url path</var>.
+            </li>
+          </ol>
+        </li>
+        <li>
+          If <var>url path</var> does not <em>regex match</em> (TODO) <var>rule
+          regex</var>, return <code>Does Not Match</code>.
+
+          ISSUE: Need to have spec language for this. There's surely a regex
+          spec somewhere, right?
+        </li>
+      </ol>
+    </li>
+    <li>
+      Return <code>Matches</code>.
+    </li>
+  </ol>
+</section>
+
+<!-- Big text: IANA -->
+<section>
+  <h2 id="iana-considerations">IANA Considerations</h2>
+
+  <h3 id="iana-https">
+    The <code>EPR</code> HTTP Request Header Field
+  </h3>
+  The permanent message header field registry should be updated with the
+  following registration [[!RFC3864]]:
+
+  <dl>
+    <dt>Header field name</dt>
+    <dd>EPR</dd>
+
+    <dt>Applicable protocol</dt>
+    <dd>http</dd>
+
+    <dt>Status</dt>
+    <dd>standard</dd>
+
+    <dt>Author/Change controller</dt>
+    <dd>W3C</dd>
+
+    <dt>Specification document</dt>
+    <dd>This specification (See [[#epr-header]])</dd>
+  </dl>
+
+  <h3 id="iana-well-known">
+    The Well-Known EPR Manifest URI
+  </h3>
+
+  The well-known URI registry should be updated with the following
+  registration [[!RFC5785]]:
+
+  <dl>
+    <dt>URI Suffix</dt>
+    <dd>epr-manifest.json</dd>
+
+    <dt>Change controller</dt>
+    <dd>W3C</dd>
+
+    <dt>Specification document</dt>
+    <dd>This specification (See [[#manifest]])</dd>
+  </dl>
+</section>
+
+<!-- Big text: Thanks -->
+<section>
+  <h2 id="acknowledgements">Acknowledgements</h2>
+
+  Awesome people are awesome.
+</section>
