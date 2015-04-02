@@ -571,6 +571,15 @@ value must be a valid [MIME type][].
 
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
+<div class="note">
+It should be noted that this syntax does not allow for [content negotiation][] if
+the developer specifies a MIME type. A change to the syntax to allow this may be
+considered in a future version of the spec, but for now, if a developer wants to
+use content negotiation, they will have to omit an `option-expression`.
+
+[content negotiation]: https://www.igvita.com/2013/05/01/deploying-webp-via-accept-content-negotiation/
+</div>
+
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
 </section><!-- /Framework::HTML::integrity -->
 
