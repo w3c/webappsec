@@ -54,6 +54,7 @@ spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
     text: header list; for: request; url: concept-request-header-list
     text: url; for: response; url: concept-response-url
     text: header list; for: response; url: concept-response-header-list
+    text: network error; url: concept-network-error
 spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
   type: dfn
     urlPrefix: infrastructure.html
@@ -331,8 +332,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <dd>
       A path prefix defining a <a>rule</a>'s scope. See [[#matching]] for user
       agent conformance requirements.
-
-      ISSUE: When do we <a>percent decode</a>?
     </dd>
     <dt><dfn dict-member>regex</dfn></dt>
     <dd>
@@ -375,12 +374,47 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       for <var>request</var>'s <a for="request">URL</a>'s <a>origin</a>.
     </li>
     <li>
+      If <var>rules</var> is the empty set, abort these steps.
+    </li>
+    <li>
+      Let <var>matched</var> be <code>false</code>.
+    </li>
+    <li>
       For each <var>rule</var> in <var>rules</var>, if <var>request</var>
       <a>matches</a> <var>rule</var>:
 
       <ol>
-        <li>TODO</li>
+        <li>
+          Set <var>matched</var> to <code>true</code>.
+        </li>
+        <li>
+          If <var>rule</var>'s {{EPRRule/allowData}} is <code>true</code>, then
+          abort <var>request</var>, and return a <a>network error</a> if any of
+          the following statements are true:
+
+          <ol>
+            <li>
+              <var>request</var>'s <a for="request">URL</a>'s
+              <a for="URL">fragment</a> property is not <code>null</code>.
+            </li>
+            <li>
+              <var>request</var>'s <a for="request">URL</a>'s
+              <a for="URL">query</a> property is not <code>null</code>.
+            </li>
+            <li>
+              <var>request</var>'s <a for="request">body</a> property is not
+              <code>null</code>.
+            </li>
+          </ol>
+
+          ISSUE: Could we simply strip these values rather than cancelling the
+          request?
+        </li>
       </ol>
+    </li>
+    <li>
+      If <var>matched</var> is <var>false</var>, abort <var>request</var>, and
+      return a <a>network error</a>.
     </li>
   </ol>
 
