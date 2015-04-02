@@ -45,7 +45,7 @@ This example can be communicated to a user agent by adding the hash to a
 `script` element, like so:
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"
-            integrity="type:application/javascript
+            integrity="type=application/javascript
                        sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=">
 
 {:.example.highlight}
@@ -90,7 +90,7 @@ and JavaScript.
     [integrity metadata][] to the `link` element included on her page:
 
         <link rel="stylesheet" href="https://site53.cdn.net/style.css"
-              integrity="type:text/css sha256-SDfwewFAE...wefjijfE">
+              integrity="type=text/css sha256-SDfwewFAE...wefjijfE">
     {:.example.highlight}
 
 *   An author wants to include JavaScript provided by a third-party
@@ -100,7 +100,7 @@ and JavaScript.
     adding it to the `script` element she includes on her page:
 
         <script src="https://analytics-r-us.com/v1.0/include.js"
-                integrity="type:application/javascript
+                integrity="type=application/javascript
                            sha256-SDfwewFAE...wefjijfE"></script>
     {:.example.highlight}
 
@@ -219,7 +219,7 @@ digest that results. This can be encoded as follows:
 
 Or, if the author further wishes to specify the Content Type (`application/javascript`):
 
-    type:application/javascript sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+    type=application/javascript sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 {:.example.highlight}
 
 <div class="note">
@@ -261,7 +261,7 @@ either of the following hash expressions:
 Authors may choose to specify both, for example:
 
     <script src="hello_world.js"
-       integrity="type:application/javascript
+       integrity="type=application/javascript
           sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
           sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
         "></script>
@@ -557,7 +557,7 @@ The value of the attribute MUST be either the empty string, or at least one
 valid metadata as described by the following ABNF grammar:
 
     integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) 1*WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
-    option-expression  = option-name ":" option-value
+    option-expression  = option-name "=" option-value
     option-name        = 1*option-name-char
     option-name-char   = ALPHA / DIGIT / "-"
     option-value       = *option-value-char
