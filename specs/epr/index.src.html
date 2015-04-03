@@ -168,6 +168,11 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     "href": "https://heycam.github.io/webidl/",
     "status": "ED",
     "publisher": "W3C"
+  },
+  "MANIFEST": {
+    "href": "https://w3c.github.io/manifest/",
+    "title": "Manifest for a web application",
+    "publisher": "W3C"
   }
 }
 </pre>
@@ -215,7 +220,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <h2 id="key-concepts">Key Concepts and Terminology</h2>
 
   The Augmented Backus-Naur Form (ABNF) notation is specified in RFC5234
-  [[!ABNF]].
+  <!-- [[!ABNF]]. -->
 </section>
 
 <!-- Big Text: Delivery -->
@@ -236,22 +241,39 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
       Somewhere in Fetch after we have the headers, we'll call out to
       [[#process-epr-header]] to take whatever actions we need to take
-      here. This means we'll grab an <a>EPR manifest</a> file, and ... do
-      something hand-wavey described in
-      <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Jan/0106.html">https://lists.w3.org/Archives/Public/public-webappsec/2015Jan/0106.html</a>.
-
-      ISSUE: What's the expected behavior if we don't yet have a manifest, or
-      if the manifest fails to parse, or etc?
+      here. This means we'll grab an <a>EPR manifest</a> file, and
+      store it persistently for use in regulating future requests.
+      As the manifest won't yet be available until it is downloaded
+      asynchronously, a default policy ([[#no-data-policy]]) will 
+      apply.  The default policy will also apply if the downloaded
+      manifest fails to parse.
     </li>
     <li>
       Subsequent navigations and resource requests from <code>example.com</code>
       will run through [[#process-request]] to determine whether they <a>match</a>
-      the ruleset defined in the <a>EPR manifest</a> we processed above. If they
-      don't match a ruleset, we'll cancel the request (maybe?). If they do match a
-      ruleset, but violate the data constraints, we'll cancel the request (maybe?).
+      the ruleset defined in the <a>EPR manifest</a> we processed above.       
+      If they don't match a ruleset, a default action will apply.  If no default
+      is specified in the manifest, a hardcoded default policy will apply.  A
+      different default policy may be specified for navigations vs. resource 
+      loads.
+      Hardcoded default policy for both navigations (defaultNavBehavior) and 
+      requests (defaultResBehavior) specifies that GET requests are allowed, with
+      path information but no querystring or hash data.  Requests using all other 
+      verbs are dropped.  The intent of this default policy is to prevent
+      reflected and DOM-based XSS.  Other available default policy options that
+      may be specified for defaultNavBehavior or defaultResBehavior:
+      <ul>
+        <li>Block all requests</li>
+        <li>Navigate to a specified URL</li>
+        <li>defaultResBehavior only: Allow the request but drop cookies
+        (This is only a safe option for resource request policy because even
+        non-authenticated XSS is problematic)
+        </li>
+      </ul>
+      ISSUE: A lot of the above is now redundant with the defaultAction section below.
     </li>
     <li>
-      That's it! (Maybe?)
+      That's it!
     </li>
   </ol>
 
@@ -274,57 +296,40 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   policy data for an <a>origin</a>.
 
   Servers which opt-in to EPR protections via the <code><a>EPR</a></code> header
-  MUST make a manifest file available at
-  "<code>/.well-known/epr-manifest.json</code>".
-
-  ISSUE: Why is this distinct from [[!MANIFEST]]? I think we could do pretty
-  much everything by adding an <code>erp_rules</code> attribute. Since we've
-  already accepted the asynchronocity, duplicating the manifest doesn't seem
-  prudent.
+  MUST make a manifest file available via [[MANIFEST]].  EPR rules are included
+  in a manifest via the <code>epr_manifest</code> attribute.
 
   <div class="example">
     <pre>
+    "epr_manifest": 
       {
-        "site": "https://example.com/",
-        "maxAge": 31536000,
         "reportUrl": "https://example.com/reporting-endpoint",
-        "defaultNavBehavior": "block",
-        "defaultResBehavior": "block",
+        "reportOnly": false,
+        "defaultNavBehavior": "onlyGETwithPath",
+        "defaultResBehavior": "onlyGETwithPath",
         "rules": [
           {
             "path": "/",
-            "types": [ "navigation" ],
+            "contexts": [ "navigation" ],
             "allowData": false
           },
           {
             "regex": "^/\\d+$",
-            "types": [ "navigation" ],
+            "contexts": [ "navigation" ],
             "allowData": false
           },
           ...
           {
             "path": "/image",
-            "types": [ "image" ],
+            "contexts": [ "image" ],
             "allowData": true
           },
         ]
       }
     </pre>
 
-    ISSUE: The example manifest defines <code>site</code>. Do we really need
-    that, given that we know the manifest's URL?
-
-    ISSUE: The example manifest defines <code>maxAge</code>. Do we need that,
-    or can we rely on cache headers?
-
-    ISSUE: The example manifest defines <code>reportUrl</code>. What does this
-    report? What do the reports look like? Do we need it at all?
-
-    ISSUE: The example manifest defines <code>defaultNavBehavior</code>. What
-    does this do?
-
-    ISSUE: The example manifest defines <code>defaultResBehavior</code>. What
-    does this do?
+    TODO: Define reportUrl, reportOnly.  (defaultNavBehavior & defaultResBehavior
+    were described previously, but maybe need to be described here as well.)
   </div>
 
   <h4 id="manifest-rulesets">Rulesets</h4>
@@ -335,6 +340,12 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   URLs via a path prefix or a regular expression, and contains a set of
   behaviors which MUST be applied to <a>requests</a> which match the rule's
   scope (as defined in [[#matching]]).
+
+  DR: This implies there is something akin to defaultResBehavior and
+  defaultNavBehavior that defines the behavior on a per-rule basis.  Today
+  the prototype does not allow for this.  I would prefer not to make this
+  configurable on a per-rule basis for simplicity's sake.  But if there's
+  a use case we could add it.
 
   The following IDL defines rules' syntax:
 
@@ -381,6 +392,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       A set of <a for="request">context frame types</a> to which this rule
       applies. See [[#matching]] for user agent conformance requirements.
     </dd>
+    DR: This adds a little bit of complexity.  I would happy to leave it
+    out as I don't necessarily see a use case for specifying the frame type.
     <dt><dfn dict-member>allowData</dfn></dt>
     <dd>
       If <code>true</code>, then matching <a>requests</a>'
@@ -409,6 +422,10 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       If <var>rules</var> is the empty set, abort these steps.
     </li>
+    ISSUE: In theory there can be a manifest with no rules.  In that case EPR
+    is enforced for the origin (defaultResBehavior and defaultNavBehavior)
+    even when there are no rules.  So I think we need to describe some higher
+    level container than just "rules".
     <li>
       Let <var>matched</var> be <code>false</code>.
     </li>
@@ -422,8 +439,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
         </li>
         <li>
           If <var>rule</var>'s {{EPRRule/allowData}} is <code>true</code>, then
-          abort <var>request</var>, and return a <a>network error</a> if any of
-          the following statements are true:
+          perform the [[#defaultAction]] if any of the following statements 
+          are true:
 
           <ol>
             <li>
@@ -439,17 +456,41 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
               <code>null</code>.
             </li>
           </ol>
-
-          ISSUE: Could we simply strip these values rather than cancelling the
-          request?
         </li>
       </ol>
     </li>
     <li>
-      If <var>matched</var> is <var>false</var>, abort <var>request</var>, and
-      return a <a>network error</a>.
+      If <var>matched</var> is <var>false</var>, perform the [[#defaultAction]].
     </li>
   </ol>
+
+  <h3 id="defaultAction">
+    defaultAction
+  </h3>
+  
+  The defaultAction is defined by the defaultResBehavior or defaultNavBehavior
+  from the EPR manifest.  If this is not defined in the manifest itself then
+  a hardcoded defaultAction of onlyGETwithPath is applied.
+  
+  The available defaultActions are:
+  
+  <ul>
+    <li>onlyGETwithPath: GET requests are allowed, with
+      path information but no querystring or hash data.  Requests using all other 
+      verbs are dropped.  The intent of this default policy is to prevent
+      reflected and DOM-based XSS.</li>
+    <li>block: Block all requests</li>
+    <li>redirect: Navigate to a specified URL</li>
+    <li>dropCookies: Allow the request but drop cookies (only allowed for
+    defaultResBehavior.  This is only a safe option for resource request policy
+    because even non-authenticated XSS is problematic)</li>    
+  </ul>
+
+  <h3 id="no-data-policy">
+    NO DATA
+  </h3>
+  
+  TODO: Fill in with detail from https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html
 
   <h3 id="process-epr-header">
     Process <var>response</var>'s <code>EPR</code> header
@@ -458,7 +499,14 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   Given a <a>response</a> (<var>response</var>), this algorithm parses its
   <a for="response">header list</a> to extract an <code><a>EPR</a></code>
   header field. If such a field is present, the user agent MUST fetch and
-  process an <a>EPR manifest</a> from <var>response</var>'s <a>origin</a>.
+  process an <a>EPR manifest</a> from <var>response</var>'s <a>origin</a>
+  unless:
+  <ul>
+  <li>The request was for a manifest file.  (So as not to go into an
+  infinite loop.)</li>
+  <li>A manifest for this origin is already cached at the user agent.</li>
+  <li>There is already a pending manifest request for the origin.</li>
+  </ul>
 
   To <a>process response</a> <var>response</var>, execute the following steps:
 
@@ -466,6 +514,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       ISSUE: Do we process a header for any response? Only responses to
       top-level requests?
+      DR: Any response (except for under the conditions mentioned above).
+      We want EPR to "start happening" even if it's a resource request from
+      a third party site.
     </li>
     <li>
       If <var>response</var>'s <a for="response">URL</a> is <a><i lang="la">a
@@ -477,9 +528,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
       <ol>
         <li>
-          Let <var>manifest URL</var> be the result of executing the <a>URL
-          parser</a> on "<code>/.well-known/epr-manifest.json</code>", with
-          a <a>base URL</a> of <var>response</var>'s <a for="response">URL</a>.
+          Let <var>manifest URL</var> be the manifest URL provided by 
+          [[MANIFEST]].
         </li>
         <li>
           Let <var>request</var> be a <a>request</a> whose
@@ -488,9 +538,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
           <a for="request">context frame type</a> is <code>none</code>,
           <a for="request">context</a> is <code>manifest</code>, and
           <a for="request">credentials</a> is <code>omit</code>.
-
-          ISSUE: Is there a use case for delivering different manifests to
-          different users? I'd hope not.
         </li>
         <li>
           <a>Fetch</a> <var>request</var>.
@@ -501,7 +548,10 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
           <ol>
             <li>
-              TODO.
+              TODO.  Need to discuss storage & caching.  Also it should be 
+              possible for the user to manually clear stored manifests
+              when they clear their browser history.
+              the
             </li>
           </ol>
         </li>
@@ -528,6 +578,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <var>rule</var>'s {{EPRRule/frameTypes}} list, return <code>Does Not
       Match</code>.
     </li>
+    ISSUE: Remove frame type?
     <li>
       If <var>rule</var> has a {{EPRRule/path}} property whose value is
       neither <code>null</code> nor <code>undefined</code>:
@@ -604,6 +655,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
           ISSUE: Need to have spec language for this. There's surely a regex
           spec somewhere, right?
+          DR: Can we just reference the ECMAScript spec?
         </li>
       </ol>
     </li>
@@ -639,25 +691,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <dt>Specification document</dt>
     <dd>This specification (See [[#epr-header]])</dd>
   </dl>
-
-  <h3 id="iana-well-known">
-    The Well-Known EPR Manifest URI
-  </h3>
-
-  The well-known URI registry should be updated with the following
-  registration [[!RFC5785]]:
-
-  <dl>
-    <dt>URI Suffix</dt>
-    <dd>epr-manifest.json</dd>
-
-    <dt>Change controller</dt>
-    <dd>W3C</dd>
-
-    <dt>Specification document</dt>
-    <dd>This specification (See [[#manifest]])</dd>
-  </dl>
-</section>
 
 <!-- Big text: Thanks -->
 <section>
