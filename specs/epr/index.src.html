@@ -170,9 +170,11 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     "publisher": "W3C"
   },
   "MANIFEST": {
+    "authors": [ "Marcos Caceres", "Kenneth Rohde Christiansen", "Mounir Lamouri", "Anssi Kostiainen" ],
     "href": "https://w3c.github.io/manifest/",
     "title": "Manifest for a web application",
-    "publisher": "W3C"
+    "publisher": "W3C",
+    "status": "WD"
   }
 }
 </pre>
@@ -219,8 +221,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 <section>
   <h2 id="key-concepts">Key Concepts and Terminology</h2>
 
-  The Augmented Backus-Naur Form (ABNF) notation is specified in RFC5234
-  <!-- [[!ABNF]]. -->
+  The Augmented Backus-Naur Form (ABNF) notation is specified in [[!RFC5234]].
 </section>
 
 <!-- Big Text: Delivery -->
@@ -244,24 +245,27 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       here. This means we'll grab an <a>EPR manifest</a> file, and
       store it persistently for use in regulating future requests.
       As the manifest won't yet be available until it is downloaded
-      asynchronously, a default policy ([[#no-data-policy]]) will 
+      asynchronously, a default policy ([[#no-data-policy]]) will
       apply.  The default policy will also apply if the downloaded
       manifest fails to parse.
     </li>
     <li>
       Subsequent navigations and resource requests from <code>example.com</code>
       will run through [[#process-request]] to determine whether they <a>match</a>
-      the ruleset defined in the <a>EPR manifest</a> we processed above.       
-      If they don't match a ruleset, a default action will apply.  If no default
-      is specified in the manifest, a hardcoded default policy will apply.  A
-      different default policy may be specified for navigations vs. resource 
+      the ruleset defined in the <a>EPR manifest</a> we processed above.
+
+      If they don't match a ruleset, a default action will apply. If no default
+      is specified in the manifest, a hardcoded default policy will apply. A
+      different default policy may be specified for navigations vs. resource
       loads.
-      Hardcoded default policy for both navigations (defaultNavBehavior) and 
+
+      Hardcoded default policy for both navigations (defaultNavBehavior) and
       requests (defaultResBehavior) specifies that GET requests are allowed, with
-      path information but no querystring or hash data.  Requests using all other 
+      path information but no querystring or hash data. Requests using all other
       verbs are dropped.  The intent of this default policy is to prevent
       reflected and DOM-based XSS.  Other available default policy options that
       may be specified for defaultNavBehavior or defaultResBehavior:
+
       <ul>
         <li>Block all requests</li>
         <li>Navigate to a specified URL</li>
@@ -332,7 +336,58 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     were described previously, but maybe need to be described here as well.)
   </div>
 
-  <h4 id="manifest-rulesets">Rulesets</h4>
+  <h4 id="manifest-epr">The <code>EPR</code> manifest member</h4>
+
+  The policy data that makes up the <a>EPR manifest</a> is delivered via an
+  <dfn dict-member for="EPR Manifest"><code>EPR</code></dfn> member of an
+  application manifest [[!MANIFEST]]. This member's value is an dictionary
+  adhering to the following IDL:
+
+  <pre class="idl">
+    enum EPRBehavior {
+      "allow",
+      "block",
+      "allowStrippedGET"
+    };
+
+    dictionary EPRPolicy {
+      USVString? reportURL;
+      boolean reportOnly = false;
+      EPRBehavior navigationBehavior = "allowStrippedGET";
+      EPRBehavior subresourceBehavior = "allowStrippedGET";
+      sequence&lt;EPRRule&gt; rules;
+    };
+  </pre>
+  <dl dfn-for="EPRPolicy">
+    <dt><dfn dict-member>reportURL</dfn></dt>
+    <dd>
+      A URL to which violation reports will be sent. See TODO for user agent
+      conformance requirements.
+    </dd>
+    <dt><dfn dict-member>reportOnly</dfn></dt>
+    <dd>
+      ISSUE: Do we need this? It seems like this could be modeled as an
+      <code>allow</code> behavior instead?
+    </dd>
+    <dt><dfn dict-member>navigationBehavior</dfn></dt>
+    <dd>
+      If a navigational request doesn't <a>match</a> {{EPRPolicy/rules}}, this
+      property defines the action the user agent will take. Detailed conformance
+      requirements can be found in [[#process-request]].
+    </dd>
+    <dt><dfn dict-member>subresourceBehavior</dfn></dt>
+    <dd>
+      If a non-navigational request doesn't <a>match</a> {{EPRPolicy/rules}}, this
+      property defines the action the user agent will take. Detailed conformance
+      requirements can be found in [[#process-request]].
+    </dd>
+    <dt><dfn dict-member>rules</dfn></dt>
+    <dd>
+      The ruleset which should be applied. Details are in [[#manifest-ruleset]].
+    </dd>
+  </dl>
+
+  <h4 id="manifest-ruleset">Ruleset</h4>
 
   EPR manifests define a set of <dfn>rules</dfn> for a site, governing a user
   agent's <a>fetching</a> behavior for <a>requests</a> made to that site's
