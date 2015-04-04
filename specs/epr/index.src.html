@@ -47,7 +47,7 @@ spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
     text: mode; for: request; url: concept-request-mode
     text: body; for: request; url: concept-request-body
     text: client; for: request; url: concept-request-client
-    text: credentials; for: request; url: concept-request-client
+    text: credentials mode; for: request; url: concept-request-credentials-mode
     text: context; for: request; url: concept-request-context
     text: method; for: request; url: concept-request-method
     text: context frame type; for: request; url: concept-request-context-frame-type
@@ -499,7 +499,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <dt><dfn>allowUnauthenticated</dfn></dt>
     <dd>
       Drop cookies and other authentication properties of the request by
-      setting it's <a for="request">credentials</a> flag to
+      setting it's <a for="request">credentials mode</a> to
       "<code>omit</code>".
     </dd>
     <dt><dfn>allowStrippedGET</dfn></dt>
@@ -526,9 +526,13 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <ol>
     <li>
-      Let <var>rules</var> be the <a>rules</a> which a user agent has stored
-      for <var>request</var>'s <a for="request">URL</a>'s <a>origin</a>.
-
+      Let <var>policy</var> be the policy which a user agent has stored for
+      <var>request</var>'s <a for="request">URL</a>'s <a>origin</a>.
+    </li>
+    <li>
+      Let <var>rules</var> be the set of <a>rules</a> contained in <var>policy</var>'s
+      {{EPRPolicy/rules}} property.
+      
       Note: <var>rules</var> may be the empty set if no rules are specified. In
       this case, the behavior specified in the policy's
       {{EPRPolicy/navigationBehavior}} or {{EPRPolicy/subresourceBehavior}} will
@@ -555,7 +559,65 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <var>request</var>.
     </li>
     <li>
-      TODO. 
+      Otherwise, let <var>behavior</var> be the value of <var>policy</var>'s
+      {{EPRPolicy/navigationalBehavior}} if <var>request</var> is a
+      <a>navigational request</a>, and {{EPRPolicy/subresourceBehavior}} otherwise.
+      
+      ISSUE: Do we need a <code>connectionBehavior</code> property?
+    </li>
+    <li>
+      Execute the steps associated with the value of <var>behavior</var> in the
+      list below:
+      
+      <dl>
+        <dt><a>allow</a></dt>
+        <dd>
+          <ol>
+            <li>
+              Return without modifying the request.
+            </li>
+          </ol>
+        </dd>
+        <dt><a>block</a></dt>
+        <dd>
+          <ol>
+            <li>
+              Cancel the request, and return a <a>network error</a>.
+            </li>
+          </ol>
+        </dd>
+        <dt><a>redirect</a></dt>
+        <dd>
+          ISSUE: No idea how this works. One URL for all failures? One URL per rule?
+        </dd>
+        <dt><a>allowUnauthenticated</a></dt>
+        <dd>
+          <ol>
+            <li>
+              Set <var>request</var>'s <a for="request">credentials mode</a> property
+              to <code>omit</code>.
+            </li>
+            <li>
+              Set <var>request</var>'s <a for="request">URL</a>'s <a for="URL">username</a>
+              to the empty string, and <a for="URL">password</a> to <code>null</code>.
+            </li>
+          </ol>
+        </dd>
+        <dt><a>allowStrippedGET</a></dt>
+        <dd>
+          <ol>
+            <li>
+              If <var>request</var>'s <a for="request">method</a> is not
+              <code>GET</code>, cancel the request, and return a <a>network
+              error</a>.
+            </li>
+            <li>
+              Set <var>request</var>'s <a for="request">fragment</a> and
+              <a for="request">query</a> parameters to <code>null</code>.
+            </li>
+          </ol>
+        </dd>
+      </dl>
     </li>
   </ol>
 
@@ -610,7 +672,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
           <a for="request">URL</a> is <var>manifest URL</var>,
           <a for="request">context frame type</a> is <code>none</code>,
           <a for="request">context</a> is <code>manifest</code>, and
-          <a for="request">credentials</a> is <code>omit</code>.
+          <a for="request">credentials mode</a> is <code>omit</code>.
         </li>
         <li>
           <a>Fetch</a> <var>request</var>.
