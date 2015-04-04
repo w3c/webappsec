@@ -265,6 +265,29 @@ the ways in which resources may be fetched from an origin.</p>
     <h2 class="heading settled" data-level="2" id="key-concepts"><span class="secno">2. </span><span class="content">Key Concepts and Terminology</span><a class="self-link" href="#key-concepts"></a></h2>
 
 
+    <p>A <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is a <dfn data-dfn-type="dfn" data-noexport="" id="navigational-request">navigational request<a class="self-link" href="#navigational-request"></a></dfn> if its
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a> is one of "<code>top-level</code>",
+  "<code>auxiliary</code>", or "<code>nested</code>". Navigational requests
+  load a resource into a context where code can be executed, meaning that they
+  place an origin at risk of both XSS and XSRF attack.</p>
+
+
+    <p>A <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is a <dfn data-dfn-type="dfn" data-noexport="" id="subresource-request">subresource request<a class="self-link" href="#subresource-request"></a></dfn> if it is not a
+  <a data-link-type="dfn" href="#connection-request">connection request</a>, and its <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a>
+  is "<code>none</code>". Subresource requests cannot execute code directly,
+  so the XSS risk is minimal, but they do present the risk of XSRF attack.</p>
+
+
+    <p>A <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is a <dfn data-dfn-type="dfn" data-noexport="" id="connection-request">connection request<a class="self-link" href="#connection-request"></a></dfn> if its
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a> is one of "<code>beacon</code>",
+  "<code>cspreport</code>", "<code>eventsource</code>", "<code>fetch</code>",
+  "<code>ping</code>", or "<code>xmlhttprequest</code>". These connection
+  types are distinguished from subresource requests only because of their
+  flexibility (<code>POST</code> vs <code>GET</code>, etc). The risks are
+  similar, but authors may wish to set different rules for these kinds of
+  requests than they would for other subresource requests.</p>
+
+
     <p>The Augmented Backus-Naur Form (ABNF) notation is specified in <a data-link-type="biblio" href="#biblio-rfc5234">[RFC5234]</a>.</p>
 </section>
 
@@ -397,24 +420,23 @@ the ways in which resources may be fetched from an origin.</p>
   ...,
   "<a class="idl-code" data-link-type="dict-member" href="#dom-epr-manifest-epr">epr</a>": {
     "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-reporturl">reportURL</a>": "https://example.com/reporting-endpoint",
-    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-reportonly">reportOnly</a>": false,
-    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a>": "allowStrippedGET",
-    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a>": "allowStrippedGET",
+    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a>": "<a data-link-type="dfn" href="#allowstrippedget">allowStrippedGET</a>",
+    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a>": "<a data-link-type="dfn" href="#allowstrippedget">allowStrippedGET</a>",
     "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-rules">rules</a>": [
       {
         "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-path">path</a>": "/",
-        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-frametypes">frameTypes</a>": [ "top-level", "auxiliary", "nested" ],
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-types">types</a>": [ "navigational" ],
         "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-allowdata">allowData</a>": false
       },
       {
         "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-regex">regex</a>": "^/\\d+$",
-        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-frametypes">frameTypes</a>": [ "top-level", "auxiliary", "nested" ],
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-types">types</a>": [ "navigational" ],
         "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-allowdata">allowData</a>": false
       },
       ...
       {
         "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-path">path</a>": "/image",
-        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-contexts">contexts</a>": [ "image", "imageset" ],
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-types">types</a>": [ "subresource" ],
         "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-allowdata">allowData</a>": true
       },
     ]
@@ -436,6 +458,7 @@ the ways in which resources may be fetched from an origin.</p>
 
   
     <pre class="idl">enum <dfn class="idl-code" data-dfn-type="enum" data-export="" data-global-name="" id="enumdef-eprbehavior">EPRBehavior<a class="self-link" href="#enumdef-eprbehavior"></a></dfn> {
+  "allow",
   "block",
   "redirect",
   "allowUnauthenticated",
@@ -444,7 +467,6 @@ the ways in which resources may be fetched from an origin.</p>
 
 dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-global-name="" id="dictdef-eprpolicy">EPRPolicy<a class="self-link" href="#dictdef-eprpolicy"></a></dfn> {
   USVString? <a class="idl-code" data-global-name="EPRPolicy<dictionary>/reportURL<dict-member>" data-link-type="dict-member" data-type="USVString? " href="#dom-eprpolicy-reporturl">reportURL</a>;
-  boolean <a class="idl-code" data-default="false" data-global-name="EPRPolicy<dictionary>/reportOnly<dict-member>" data-link-type="dict-member" data-type="boolean " href="#dom-eprpolicy-reportonly">reportOnly</a> = false;
   <a data-link-type="idl-name" href="#enumdef-eprbehavior">EPRBehavior</a> <a class="idl-code" data-default="&quot;allowStrippedGET&quot;" data-global-name="EPRPolicy<dictionary>/navigationBehavior<dict-member>" data-link-type="dict-member" data-type="EPRBehavior " href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a> = "allowStrippedGET";
   <a data-link-type="idl-name" href="#enumdef-eprbehavior">EPRBehavior</a> <a class="idl-code" data-default="&quot;allowStrippedGET&quot;" data-global-name="EPRPolicy<dictionary>/subresourceBehavior<dict-member>" data-link-type="dict-member" data-type="EPRBehavior " href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a> = "allowStrippedGET";
   sequence&lt;<a data-link-type="idl-name" href="#dictdef-eprrule">EPRRule</a>> <a class="idl-code" data-global-name="EPRPolicy<dictionary>/rules<dict-member>" data-link-type="dict-member" data-type="sequence<EPRRule> " href="#dom-eprpolicy-rules">rules</a>;
@@ -459,15 +481,16 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <dd>
       A URL to which violation reports will be sent. See TODO for user agent
       conformance requirements.
-    
-     
-    
-     <dt><dfn class="idl-code" data-dfn-for="EPRPolicy" data-dfn-type="dict-member" data-export="" id="dom-eprpolicy-reportonly">reportOnly<a class="self-link" href="#dom-eprpolicy-reportonly"></a></dfn>, <span> of type <a data-link-type="idl-name" href="https://heycam.github.io/webidl/#idl-boolean">boolean</a>, defaulting to <code>false</code></span>
-     
-    
-     <dd>
-      <code>true</code> if the policy should be enforced, <code>false</code> if
-      it should only generate violation reports (TODO).
+
+
+      <p class="note" role="note">Note: Authors may use the <a data-link-type="dfn" href="#allow">allow</a> behavior to simulate a
+      "report only" mode that does not actually modify incoming <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a>
+      but does send reports back to the report URL.</p>
+      
+
+
+      <p class="issue" id="issue-b412787b"><a class="self-link" href="#issue-b412787b"></a>We need to define violation reports. Steal something from CSP.</p>
+      
     
      
     
@@ -507,10 +530,6 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   
     </dl>
 
-
-    <p class="issue" id="issue-db701dab"><a class="self-link" href="#issue-db701dab"></a>Do we need <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-reportonly">reportOnly</a></code>? It seems like this could be
-  modeled as an <code>allow</code> behavior instead?</p>
-
   
     <h4 class="heading settled" data-level="3.2.2" id="manifest-ruleset"><span class="secno">3.2.2. </span><span class="content">Ruleset</span><a class="self-link" href="#manifest-ruleset"></a></h4>
 
@@ -535,24 +554,14 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <p>The following IDL defines rules' syntax:</p>
 
   
-    <pre class="idl">enum <dfn class="idl-code" data-dfn-type="enum" data-export="" data-global-name="" id="enumdef-requestcontext">RequestContext<a class="self-link" href="#enumdef-requestcontext"></a></dfn> {
-    "audio", "beacon", "cspreport", "download", "embed", "eventsource",
-    "favicon", "fetch", "font", "form", "frame", "hyperlink", "iframe",
-    "image", "imageset", "import", "internal", "location", "manifest",
-    "metarefresh", "object", "ping", "plugin", "prefetch", "script",
-    "serviceworker", "sharedworker", "subresource", "style", "track",
-    "video", "worker", "xmlhttprequest", "xslt"
-};
-
-enum <dfn class="idl-code" data-dfn-type="enum" data-export="" data-global-name="" id="enumdef-requestframetype">RequestFrameType<a class="self-link" href="#enumdef-requestframetype"></a></dfn> {
-  "auxiliary", "nested", "none", "top-level"
+    <pre class="idl">enum <dfn class="idl-code" data-dfn-type="enum" data-export="" data-global-name="" id="enumdef-eprrequesttype">EPRRequestType<a class="self-link" href="#enumdef-eprrequesttype"></a></dfn> {
+  "connection", "navigational", "subresource"
 };
 
 dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-global-name="" id="dictdef-eprrule">EPRRule<a class="self-link" href="#dictdef-eprrule"></a></dfn> {
   USVString? <a class="idl-code" data-global-name="EPRRule<dictionary>/path<dict-member>" data-link-type="dict-member" data-type="USVString? " href="#dom-eprrule-path">path</a>;
   USVString? <a class="idl-code" data-global-name="EPRRule<dictionary>/regex<dict-member>" data-link-type="dict-member" data-type="USVString? " href="#dom-eprrule-regex">regex</a>;
-  sequence&lt;<a data-link-type="idl-name" href="#enumdef-requestcontext">RequestContext</a>> <a class="idl-code" data-global-name="EPRRule<dictionary>/contexts<dict-member>" data-link-type="dict-member" data-type="sequence<RequestContext> " href="#dom-eprrule-contexts">contexts</a>;
-  sequence&lt;<a data-link-type="idl-name" href="#enumdef-requestframetype">RequestFrameType</a>> <a class="idl-code" data-global-name="EPRRule<dictionary>/frameTypes<dict-member>" data-link-type="dict-member" data-type="sequence<RequestFrameType> " href="#dom-eprrule-frametypes">frameTypes</a>;
+  sequence&lt;<a data-link-type="idl-name" href="#enumdef-eprrequesttype">EPRRequestType</a>> <a class="idl-code" data-global-name="EPRRule<dictionary>/types<dict-member>" data-link-type="dict-member" data-type="sequence<EPRRequestType> " href="#dom-eprrule-types">types</a>;
   boolean <a class="idl-code" data-global-name="EPRRule<dictionary>/allowData<dict-member>" data-link-type="dict-member" data-type="boolean " href="#dom-eprrule-allowdata">allowData</a>;
 };
 </pre>
@@ -581,29 +590,19 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     
      
     
-     <dt><dfn class="idl-code" data-dfn-for="EPRRule" data-dfn-type="dict-member" data-export="" id="dom-eprrule-contexts">contexts<a class="self-link" href="#dom-eprrule-contexts"></a></dfn>, <span> of type sequence&lt;<a data-link-type="idl-name" href="#enumdef-requestcontext">RequestContext</a>></span>
+     <dt><dfn class="idl-code" data-dfn-for="EPRRule" data-dfn-type="dict-member" data-export="" id="dom-eprrule-types">types<a class="self-link" href="#dom-eprrule-types"></a></dfn>, <span> of type sequence&lt;<a data-link-type="idl-name" href="#enumdef-eprrequesttype">EPRRequestType</a>></span>
      
     
      <dd>
-      A set of <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">contexts</a> to which this rule applies. See
+      A set of request types to which this rule applies: the values MUST be one
+      or more of "<code>navigational</code>" (which encompasses <a data-link-type="dfn" href="#navigational-request">navigational
+      requests</a>), "<code>subresource</code>" (<a data-link-type="dfn" href="#subresource-request">subresource requests</a>),
+      or "<code>connection</code>" (<a data-link-type="dfn" href="#connection-request">connection requests</a>). See
       <a href="#matching">§4.4 
     Does request match rule?
   </a> for user agent conformance requirements.
     
      
-    
-     <dt><dfn class="idl-code" data-dfn-for="EPRRule" data-dfn-type="dict-member" data-export="" id="dom-eprrule-frametypes">frameTypes<a class="self-link" href="#dom-eprrule-frametypes"></a></dfn>, <span> of type sequence&lt;<a data-link-type="idl-name" href="#enumdef-requestframetype">RequestFrameType</a>></span>
-     
-    
-     <dd>
-      A set of <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame types</a> to which this rule
-      applies. See <a href="#matching">§4.4 
-    Does request match rule?
-  </a> for user agent conformance requirements.
-    
-     
-    DR: This adds a little bit of complexity.  I would happy to leave it
-    out as I don’t necessarily see a use case for specifying the frame type.
     
      <dt><dfn class="idl-code" data-dfn-for="EPRRule" data-dfn-type="dict-member" data-export="" id="dom-eprrule-allowdata">allowData<a class="self-link" href="#dom-eprrule-allowdata"></a></dfn>, <span> of type <a data-link-type="idl-name" href="https://heycam.github.io/webidl/#idl-boolean">boolean</a></span>
      
@@ -639,6 +638,16 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
 
   
     <dl>
+    
+     <dt><dfn data-dfn-type="dfn" data-noexport="" id="allow">allow<a class="self-link" href="#allow"></a></dfn>
+     
+    
+     <dd>
+      Allow the request without modification. This behavior may be used to
+      put the user agent in a "report only" mode, where violations are reported
+      (as described in TODO), but requests proceed without modification.
+    
+     
     
      <dt><dfn data-dfn-type="dfn" data-noexport="" id="block">block<a class="self-link" href="#block"></a></dfn>
      
@@ -710,17 +719,15 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <li>
       Let <var>rules</var> be the <a data-link-type="dfn" href="#rules">rules</a> which a user agent has stored
       for <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>.
+
+
+      <p class="note" role="note">Note: <var>rules</var> may be the empty set if no rules are specified. In
+      this case, the behavior specified in the policy’s
+      <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a></code> or <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a></code> will
+      be applied to all incoming requests.</p>
+      
     
      
-    
-     <li>
-      If <var>rules</var> is the empty set, abort these steps.
-    
-     
-    ISSUE: In theory there can be a manifest with no rules.  In that case EPR
-    is enforced for the origin (defaultResBehavior and defaultNavBehavior)
-    even when there are no rules.  So I think we need to describe some higher
-    level container than just "rules".
     
      <li>
       Let <var>matched</var> be <code>false</code>.
@@ -740,33 +747,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
        
         
        <li>
-          If <var>rule</var>’s <code class="idl"><a data-link-type="idl" href="#dom-eprrule-allowdata">allowData</a></code> is <code>false</code>, then
-          perform the <a href="#manifest-behaviors">§3.2.3 Behaviors</a> if any of the following statements
-          are true:
-
-          
-        <ol>
-            
-         <li>
-              <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s
-              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a> property is not <code>null</code>.
-            
-         
-            
-         <li>
-              <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s
-              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> property is not <code>null</code>.
-            
-         
-            
-         <li>
-              <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-body">body</a> property is not
-              <code>null</code>.
-            
-         
-          
-        </ol>
-        
+          Skip the remaining <a data-link-type="dfn" href="#rules">rules</a> in <var>rules</var>.
         
        
       
@@ -776,7 +757,13 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <li>
-      If <var>matched</var> is <var>false</var>, perform the <a href="#manifest-behaviors">§3.2.3 Behaviors</a>.
+      If <var>matched</var> is <var>true</var>, return without modifying
+      <var>request</var>.
+    
+     
+    
+     <li>
+      TODO. 
     
      
   
@@ -906,19 +893,25 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <ol>
     
      <li>
-      If <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a> is not in
-      <var>rule</var>’s <code class="idl"><a data-link-type="idl" href="#dom-eprrule-contexts">contexts</a></code> list, return <code>Does Not
-      Match</code>.
+      If <var>request</var> is a <a data-link-type="dfn" href="#connection-request">connection request</a>, and
+      "<code>connection</code>" is not contained in <var>rule</var>’s
+      <code class="idl"><a data-link-type="idl" href="#dom-eprrule-types">types</a></code> list, return <code>Does Not Match</code>.
     
      
     
      <li>
-      If <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a> is not in
-      <var>rule</var>’s <code class="idl"><a data-link-type="idl" href="#dom-eprrule-frametypes">frameTypes</a></code> list, return <code>Does Not
-      Match</code>.
+      If <var>request</var> is a <a data-link-type="dfn" href="#navigational-request">navigational request</a>, and
+      "<code>navigational</code>" is not contained in <var>rule</var>’s
+      <code class="idl"><a data-link-type="idl" href="#dom-eprrule-types">types</a></code> list, return <code>Does Not Match</code>.
     
      
-    ISSUE: Remove frame type?
+    
+     <li>
+      If <var>request</var> is a <a data-link-type="dfn" href="#subresource-request">subresource request</a>, and
+      "<code>subresource</code>" is not contained in <var>rule</var>’s
+      <code class="idl"><a data-link-type="idl" href="#dom-eprrule-types">types</a></code> list, return <code>Does Not Match</code>.
+    
+     
     
      <li>
       If <var>rule</var> has a <code class="idl"><a data-link-type="idl" href="#dom-eprrule-path">path</a></code> property whose value is
@@ -1040,6 +1033,37 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
           spec somewhere, right?
           DR: Can we just reference the ECMAScript spec?</p>
         
+        
+       
+      
+      </ol>
+      
+    
+     
+    
+     <li>
+      If <var>rule</var>’s <code class="idl"><a data-link-type="idl" href="#dom-eprrule-allowdata">allowData</a></code> is <code>false</code>, then
+      return <code>Does Not Match</code> if any of the following statements
+      are true:
+
+      
+      <ol>
+        
+       <li>
+          <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s
+          <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a> property is not <code>null</code>.
+        
+       
+        
+       <li>
+          <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s
+          <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> property is not <code>null</code>.
+        
+       
+        
+       <li>
+          <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-body">body</a> property is not
+          <code>null</code>.
         
        
       
@@ -1191,36 +1215,37 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
   <h3 class="no-num heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="indexlist">
+   <li>allow, <a href="#allow">3.2.3</a>
    <li>allowData, <a href="#dom-eprrule-allowdata">3.2.2</a>
    <li>allowStrippedGET, <a href="#allowstrippedget">3.2.3</a>
    <li>allowUnauthenticated, <a href="#allowunauthenticated">3.2.3</a>
    <li>block, <a href="#block">3.2.3</a>
    <li>conformant server, <a href="#conformant-server">Unnumbered section</a>
    <li>conformant user agent, <a href="#conformant-user-agent">Unnumbered section</a>
-   <li>contexts, <a href="#dom-eprrule-contexts">3.2.2</a>
+   <li>connection request, <a href="#connection-request">2</a>
    <li>EPR, <a href="#epr-http-response-header-field">3.1</a>
    <li>epr, <a href="#dom-epr-manifest-epr">3.2.1</a>
    <li>EPRBehavior, <a href="#enumdef-eprbehavior">3.2.1</a>
    <li>EPR HTTP response header field, <a href="#epr-http-response-header-field">3.1</a>
    <li>EPR manifest, <a href="#epr-manifest">3.2</a>
    <li>EPRPolicy, <a href="#dictdef-eprpolicy">3.2.1</a>
+   <li>EPRRequestType, <a href="#enumdef-eprrequesttype">3.2.2</a>
    <li>EPRRule, <a href="#dictdef-eprrule">3.2.2</a>
-   <li>frameTypes, <a href="#dom-eprrule-frametypes">3.2.2</a>
    <li>match, <a href="#match">4.4</a>
+   <li>navigational request, <a href="#navigational-request">2</a>
    <li>navigationBehavior, <a href="#dom-eprpolicy-navigationbehavior">3.2.1</a>
    <li>path, <a href="#dom-eprrule-path">3.2.2</a>
    <li>redirect, <a href="#redirect">3.2.3</a>
    <li>regex, <a href="#dom-eprrule-regex">3.2.2</a>
-   <li>reportOnly, <a href="#dom-eprpolicy-reportonly">3.2.1</a>
    <li>reportURL, <a href="#dom-eprpolicy-reporturl">3.2.1</a>
-   <li>RequestContext, <a href="#enumdef-requestcontext">3.2.2</a>
-   <li>RequestFrameType, <a href="#enumdef-requestframetype">3.2.2</a>
    <li>rules
     <ul>
      <li>dict-member for EPRPolicy, <a href="#dom-eprpolicy-rules">3.2.1</a>
      <li>definition of, <a href="#rules">3.2.2</a>
     </ul>
-   <li>subresourceBehavior, <a href="#dom-eprpolicy-subresourcebehavior">3.2.1</a></ul>
+   <li>subresourceBehavior, <a href="#dom-eprpolicy-subresourcebehavior">3.2.1</a>
+   <li>subresource request, <a href="#subresource-request">2</a>
+   <li>types, <a href="#dom-eprrule-types">3.2.2</a></ul>
   <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="indexlist">
    <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
@@ -1296,6 +1321,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
    <dd>Eric Y. Chen; et al. <a href="http://www.collinjackson.com/research/papers/appisolation.pdf">App Isolation: Get the Security of Multiple Browsers with Just One</a>. URL: <a href="http://www.collinjackson.com/research/papers/appisolation.pdf">http://www.collinjackson.com/research/papers/appisolation.pdf</a></dl>
   <h2 class="no-num heading settled" id="idl-index"><span class="content">IDL Index</span><a class="self-link" href="#idl-index"></a></h2>
   <pre class="idl">enum <a data-global-name="" href="#enumdef-eprbehavior">EPRBehavior</a> {
+  "allow",
   "block",
   "redirect",
   "allowUnauthenticated",
@@ -1304,38 +1330,26 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
 
 dictionary <a data-global-name="" href="#dictdef-eprpolicy">EPRPolicy</a> {
   USVString? <a class="idl-code" data-global-name="EPRPolicy<dictionary>/reportURL<dict-member>" data-link-type="dict-member" data-type="USVString? " href="#dom-eprpolicy-reporturl">reportURL</a>;
-  boolean <a class="idl-code" data-default="false" data-global-name="EPRPolicy<dictionary>/reportOnly<dict-member>" data-link-type="dict-member" data-type="boolean " href="#dom-eprpolicy-reportonly">reportOnly</a> = false;
   <a data-link-type="idl-name" href="#enumdef-eprbehavior">EPRBehavior</a> <a class="idl-code" data-default="&quot;allowStrippedGET&quot;" data-global-name="EPRPolicy<dictionary>/navigationBehavior<dict-member>" data-link-type="dict-member" data-type="EPRBehavior " href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a> = "allowStrippedGET";
   <a data-link-type="idl-name" href="#enumdef-eprbehavior">EPRBehavior</a> <a class="idl-code" data-default="&quot;allowStrippedGET&quot;" data-global-name="EPRPolicy<dictionary>/subresourceBehavior<dict-member>" data-link-type="dict-member" data-type="EPRBehavior " href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a> = "allowStrippedGET";
   sequence&lt;<a data-link-type="idl-name" href="#dictdef-eprrule">EPRRule</a>> <a class="idl-code" data-global-name="EPRPolicy<dictionary>/rules<dict-member>" data-link-type="dict-member" data-type="sequence<EPRRule> " href="#dom-eprpolicy-rules">rules</a>;
 };
 
-enum <a data-global-name="" href="#enumdef-requestcontext">RequestContext</a> {
-    "audio", "beacon", "cspreport", "download", "embed", "eventsource",
-    "favicon", "fetch", "font", "form", "frame", "hyperlink", "iframe",
-    "image", "imageset", "import", "internal", "location", "manifest",
-    "metarefresh", "object", "ping", "plugin", "prefetch", "script",
-    "serviceworker", "sharedworker", "subresource", "style", "track",
-    "video", "worker", "xmlhttprequest", "xslt"
-};
-
-enum <a data-global-name="" href="#enumdef-requestframetype">RequestFrameType</a> {
-  "auxiliary", "nested", "none", "top-level"
+enum <a data-global-name="" href="#enumdef-eprrequesttype">EPRRequestType</a> {
+  "connection", "navigational", "subresource"
 };
 
 dictionary <a data-global-name="" href="#dictdef-eprrule">EPRRule</a> {
   USVString? <a class="idl-code" data-global-name="EPRRule<dictionary>/path<dict-member>" data-link-type="dict-member" data-type="USVString? " href="#dom-eprrule-path">path</a>;
   USVString? <a class="idl-code" data-global-name="EPRRule<dictionary>/regex<dict-member>" data-link-type="dict-member" data-type="USVString? " href="#dom-eprrule-regex">regex</a>;
-  sequence&lt;<a data-link-type="idl-name" href="#enumdef-requestcontext">RequestContext</a>> <a class="idl-code" data-global-name="EPRRule<dictionary>/contexts<dict-member>" data-link-type="dict-member" data-type="sequence<RequestContext> " href="#dom-eprrule-contexts">contexts</a>;
-  sequence&lt;<a data-link-type="idl-name" href="#enumdef-requestframetype">RequestFrameType</a>> <a class="idl-code" data-global-name="EPRRule<dictionary>/frameTypes<dict-member>" data-link-type="dict-member" data-type="sequence<RequestFrameType> " href="#dom-eprrule-frametypes">frameTypes</a>;
+  sequence&lt;<a data-link-type="idl-name" href="#enumdef-eprrequesttype">EPRRequestType</a>> <a class="idl-code" data-global-name="EPRRule<dictionary>/types<dict-member>" data-link-type="dict-member" data-type="sequence<EPRRequestType> " href="#dom-eprrule-types">types</a>;
   boolean <a class="idl-code" data-global-name="EPRRule<dictionary>/allowData<dict-member>" data-link-type="dict-member" data-type="boolean " href="#dom-eprrule-allowdata">allowData</a>;
 };
 
 </pre>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue">Do we need <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-reportonly">reportOnly</a></code>? It seems like this could be
-  modeled as an <code>allow</code> behavior instead?<a href="#issue-db701dab"> ↵ </a></div>
+   <div class="issue">We need to define violation reports. Steal something from CSP.<a href="#issue-b412787b"> ↵ </a></div>
    <div class="issue">How is this specified?<a href="#issue-ea6fca94"> ↵ </a></div>
    <div class="issue">Need to have spec language for this. There’s surely a regex
           spec somewhere, right?

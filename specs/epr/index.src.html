@@ -221,6 +221,26 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 <section>
   <h2 id="key-concepts">Key Concepts and Terminology</h2>
 
+  A <a>request</a> is a <dfn>navigational request</dfn> if its
+  <a for="request">context frame type</a> is one of "<code>top-level</code>",
+  "<code>auxiliary</code>", or "<code>nested</code>". Navigational requests
+  load a resource into a context where code can be executed, meaning that they
+  place an origin at risk of both XSS and XSRF attack.
+
+  A <a>request</a> is a <dfn>subresource request</dfn> if it is not a
+  <a>connection request</a>, and its <a for="request">context frame type</a>
+  is "<code>none</code>". Subresource requests cannot execute code directly,
+  so the XSS risk is minimal, but they do present the risk of XSRF attack.
+
+  A <a>request</a> is a <dfn>connection request</dfn> if its
+  <a for="request">context</a> is one of "<code>beacon</code>",
+  "<code>cspreport</code>", "<code>eventsource</code>", "<code>fetch</code>",
+  "<code>ping</code>", or "<code>xmlhttprequest</code>". These connection
+  types are distinguished from subresource requests only because of their
+  flexibility (<code>POST</code> vs <code>GET</code>, etc). The risks are
+  similar, but authors may wish to set different rules for these kinds of
+  requests than they would for other subresource requests.
+
   The Augmented Backus-Naur Form (ABNF) notation is specified in [[!RFC5234]].
 </section>
 
@@ -310,23 +330,23 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
         ...,
         "<a dict-member>epr</a>": {
           "<a dict-member>reportURL</a>": "https://example.com/reporting-endpoint",
-          "<a dict-member>navigationBehavior</a>": "allowStrippedGET",
-          "<a dict-member>subresourceBehavior</a>": "allowStrippedGET",
+          "<a dict-member>navigationBehavior</a>": "<a>allowStrippedGET</a>",
+          "<a dict-member>subresourceBehavior</a>": "<a>allowStrippedGET</a>",
           "<a dict-member>rules</a>": [
             {
               "<a dict-member>path</a>": "/",
-              "<a dict-member>frameTypes</a>": [ "top-level", "auxiliary", "nested" ],
+              "<a dict-member>types</a>": [ "navigational" ],
               "<a dict-member>allowData</a>": false
             },
             {
               "<a dict-member>regex</a>": "^/\\d+$",
-              "<a dict-member>frameTypes</a>": [ "top-level", "auxiliary", "nested" ],
+              "<a dict-member>types</a>": [ "navigational" ],
               "<a dict-member>allowData</a>": false
             },
             ...
             {
               "<a dict-member>path</a>": "/image",
-              "<a dict-member>contexts</a>": [ "image", "imageset" ],
+              "<a dict-member>types</a>": [ "subresource" ],
               "<a dict-member>allowData</a>": true
             },
           ]
@@ -362,11 +382,13 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <dt><dfn dict-member>reportURL</dfn></dt>
     <dd>
       A URL to which violation reports will be sent. See TODO for user agent
-      conformance requirements. Use the allow behavior to simulate a 
-      "report only" mode that does not actually block requests but does send 
-      reports back to the report URL.
-      
-      ISSUE: Which TODO (mentioned above)?
+      conformance requirements.
+
+      Note: Authors may use the <a>allow</a> behavior to simulate a
+      "report only" mode that does not actually modify incoming <a>requests</a>
+      but does send reports back to the report URL.
+
+      ISSUE: We need to define violation reports. Steal something from CSP.
     </dd>
     <dt><dfn dict-member>navigationBehavior</dfn></dt>
     <dd>
@@ -406,24 +428,14 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   The following IDL defines rules' syntax:
 
   <pre class="idl">
-    enum RequestContext {
-        "audio", "beacon", "cspreport", "download", "embed", "eventsource",
-        "favicon", "fetch", "font", "form", "frame", "hyperlink", "iframe",
-        "image", "imageset", "import", "internal", "location", "manifest",
-        "metarefresh", "object", "ping", "plugin", "prefetch", "script",
-        "serviceworker", "sharedworker", "subresource", "style", "track",
-        "video", "worker", "xmlhttprequest", "xslt"
-    };
-
-    enum RequestFrameType {
-      "auxiliary", "nested", "none", "top-level"
+    enum EPRRequestType {
+      "connection", "navigational", "subresource"
     };
 
     dictionary EPRRule {
       USVString? path;
       USVString? regex;
-      sequence&lt;RequestContext&gt; contexts;
-      sequence&lt;RequestFrameType&gt; frameTypes;
+      sequence&lt;EPRRequestType&gt; types;
       boolean allowData;
     };
   </pre>
@@ -438,18 +450,14 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       A regular expression, defining a <a>rule</a>'s scope. See [[#matching]]
       for user agent conformance requirements.
     </dd>
-    <dt><dfn dict-member>contexts</dfn></dt>
+    <dt><dfn dict-member>types</dfn></dt>
     <dd>
-      A set of <a for="request">contexts</a> to which this rule applies. See
+      A set of request types to which this rule applies: the values MUST be one
+      or more of "<code>navigational</code>" (which encompasses <a>navigational
+      requests</a>), "<code>subresource</code>" (<a>subresource requests</a>),
+      or "<code>connection</code>" (<a>connection requests</a>). See
       [[#matching]] for user agent conformance requirements.
     </dd>
-    <dt><dfn dict-member>frameTypes</dfn></dt>
-    <dd>
-      A set of <a for="request">context frame types</a> to which this rule
-      applies. See [[#matching]] for user agent conformance requirements.
-    </dd>
-    DR: This adds a little bit of complexity.  I would happy to leave it
-    out as I don't necessarily see a use case for specifying the frame type.
     <dt><dfn dict-member>allowData</dfn></dt>
     <dd>
       If <code>true</code>, then matching <a>requests</a>'
@@ -472,6 +480,12 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   then <a>allowStrippedGET</a> is used as a default):
 
   <dl>
+    <dt><dfn>allow</dfn></dt>
+    <dd>
+      Allow the request without modification. This behavior may be used to
+      put the user agent in a "report only" mode, where violations are reported
+      (as described in TODO), but requests proceed without modification.
+    </dd>
     <dt><dfn>block</dfn></dt>
     <dd>
       Cancel the request entirely, returning a <a>network error</a>.
@@ -514,14 +528,12 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       Let <var>rules</var> be the <a>rules</a> which a user agent has stored
       for <var>request</var>'s <a for="request">URL</a>'s <a>origin</a>.
+
+      Note: <var>rules</var> may be the empty set if no rules are specified. In
+      this case, the behavior specified in the policy's
+      {{EPRPolicy/navigationBehavior}} or {{EPRPolicy/subresourceBehavior}} will
+      be applied to all incoming requests.
     </li>
-    <li>
-      If <var>rules</var> is the empty set, abort these steps.
-    </li>
-    ISSUE: In theory there can be a manifest with no rules.  In that case EPR
-    is enforced for the origin (defaultResBehavior and defaultNavBehavior)
-    even when there are no rules.  So I think we need to describe some higher
-    level container than just "rules".
     <li>
       Let <var>matched</var> be <code>false</code>.
     </li>
@@ -534,36 +546,23 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
           Set <var>matched</var> to <code>true</code>.
         </li>
         <li>
-          If <var>rule</var>'s {{EPRRule/allowData}} is <code>false</code>, then
-          perform the [[#manifest-behaviors]] if any of the following statements
-          are true:
-
-          <ol>
-            <li>
-              <var>request</var>'s <a for="request">URL</a>'s
-              <a for="URL">fragment</a> property is not <code>null</code>.
-            </li>
-            <li>
-              <var>request</var>'s <a for="request">URL</a>'s
-              <a for="URL">query</a> property is not <code>null</code>.
-            </li>
-            <li>
-              <var>request</var>'s <a for="request">body</a> property is not
-              <code>null</code>.
-            </li>
-          </ol>
+          Skip the remaining <a>rules</a> in <var>rules</var>.
         </li>
       </ol>
     </li>
     <li>
-      If <var>matched</var> is <var>false</var>, perform the [[#manifest-behaviors]].
+      If <var>matched</var> is <var>true</var>, return without modifying
+      <var>request</var>.
+    </li>
+    <li>
+      TODO. 
     </li>
   </ol>
 
   <h3 id="no-data-policy">
     NO DATA
   </h3>
-  
+
   TODO: Fill in with detail from https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html
 
   <h3 id="process-epr-header">
@@ -643,16 +642,20 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <ol>
     <li>
-      If <var>request</var>'s <a for="request">context</a> is not in
-      <var>rule</var>'s {{EPRRule/contexts}} list, return <code>Does Not
-      Match</code>.
+      If <var>request</var> is a <a>connection request</a>, and
+      "<code>connection</code>" is not contained in <var>rule</var>'s
+      {{EPRRule/types}} list, return <code>Does Not Match</code>.
     </li>
     <li>
-      If <var>request</var>'s <a for="request">context frame type</a> is not in
-      <var>rule</var>'s {{EPRRule/frameTypes}} list, return <code>Does Not
-      Match</code>.
+      If <var>request</var> is a <a>navigational request</a>, and
+      "<code>navigational</code>" is not contained in <var>rule</var>'s
+      {{EPRRule/types}} list, return <code>Does Not Match</code>.
     </li>
-    ISSUE: Remove frame type?
+    <li>
+      If <var>request</var> is a <a>subresource request</a>, and
+      "<code>subresource</code>" is not contained in <var>rule</var>'s
+      {{EPRRule/types}} list, return <code>Does Not Match</code>.
+    </li>
     <li>
       If <var>rule</var> has a {{EPRRule/path}} property whose value is
       neither <code>null</code> nor <code>undefined</code>:
@@ -730,6 +733,26 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
           ISSUE: Need to have spec language for this. There's surely a regex
           spec somewhere, right?
           DR: Can we just reference the ECMAScript spec?
+        </li>
+      </ol>
+    </li>
+    <li>
+      If <var>rule</var>'s {{EPRRule/allowData}} is <code>false</code>, then
+      return <code>Does Not Match</code> if any of the following statements
+      are true:
+
+      <ol>
+        <li>
+          <var>request</var>'s <a for="request">URL</a>'s
+          <a for="URL">fragment</a> property is not <code>null</code>.
+        </li>
+        <li>
+          <var>request</var>'s <a for="request">URL</a>'s
+          <a for="URL">query</a> property is not <code>null</code>.
+        </li>
+        <li>
+          <var>request</var>'s <a for="request">body</a> property is not
+          <code>null</code>.
         </li>
       </ol>
     </li>
