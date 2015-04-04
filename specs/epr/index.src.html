@@ -274,27 +274,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       will run through [[#process-request]] to determine whether they <a>match</a>
       the ruleset defined in the <a>EPR manifest</a> we processed above.
 
-      If they don't match a ruleset, a default action will apply. If no default
-      is specified in the manifest, a hardcoded default policy will apply. A
-      different default policy may be specified for navigations vs. resource
-      loads.
-
-      Hardcoded default policy for both navigations (defaultNavBehavior) and
-      requests (defaultResBehavior) specifies that GET requests are allowed, with
-      path information but no querystring or hash data. Requests using all other
-      verbs are dropped.  The intent of this default policy is to prevent
-      reflected and DOM-based XSS.  Other available default policy options that
-      may be specified for defaultNavBehavior or defaultResBehavior:
-
-      <ul>
-        <li>Block all requests</li>
-        <li>Navigate to a specified URL</li>
-        <li>defaultResBehavior only: Allow the request but drop cookies
-        (This is only a safe option for resource request policy because even
-        non-authenticated XSS is problematic)
-        </li>
-      </ul>
-      ISSUE: A lot of the above is now redundant with the defaultAction section below.
+      If they don't match a ruleset, the user agent will take some action, as
+      described in [[#manifest-behaviors]].
     </li>
     <li>
       That's it!
@@ -646,13 +627,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   To <a>process response</a> <var>response</var>, execute the following steps:
 
   <ol>
-    <li>
-      ISSUE: Do we process a header for any response? Only responses to
-      top-level requests?
-      DR: Any response (except for under the conditions mentioned above).
-      We want EPR to "start happening" even if it's a resource request from
-      a third party site.
-    </li>
     <li>
       If <var>response</var>'s <a for="response">URL</a> is <a><i lang="la">a
       priori</i> insecure</a>, abort these steps.
