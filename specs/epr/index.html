@@ -172,8 +172,9 @@ the ways in which resources may be fetched from an origin.</p>
       <li><a href="#epr-header"><span class="secno">3.1</span> <span class="content">The <code>EPR</code> HTTP Response Header Field</span></a>
       <li><a href="#manifest"><span class="secno">3.2</span> <span class="content">Entry Point Manifests</span></a>
        <ul class="toc">
-        <li><a href="#manifest-epr"><span class="secno">3.2.1</span> <span class="content">The <code>EPR</code> manifest member</span></a>
+        <li><a href="#manifest-epr"><span class="secno">3.2.1</span> <span class="content">The <code>epr</code> manifest member</span></a>
         <li><a href="#manifest-ruleset"><span class="secno">3.2.2</span> <span class="content">Ruleset</span></a>
+        <li><a href="#manifest-behaviors"><span class="secno">3.2.3</span> <span class="content">Behaviors</span></a>
        </ul>
      </ul>
     <li><a href="#algorithms"><span class="secno">4</span> <span class="content">Processing Algorithms</span></a>
@@ -181,16 +182,13 @@ the ways in which resources may be fetched from an origin.</p>
       <li><a href="#process-request"><span class="secno">4.1</span> <span class="content">
     Process <var>request</var>
   </span></a>
-      <li><a href="#defaultAction"><span class="secno">4.2</span> <span class="content">
-    defaultAction
-  </span></a>
-      <li><a href="#no-data-policy"><span class="secno">4.3</span> <span class="content">
+      <li><a href="#no-data-policy"><span class="secno">4.2</span> <span class="content">
     NO DATA
   </span></a>
-      <li><a href="#process-epr-header"><span class="secno">4.4</span> <span class="content">
+      <li><a href="#process-epr-header"><span class="secno">4.3</span> <span class="content">
     Process <var>response</var>’s <code>EPR</code> header
   </span></a>
-      <li><a href="#matching"><span class="secno">4.5</span> <span class="content">
+      <li><a href="#matching"><span class="secno">4.4</span> <span class="content">
     Does <var>request</var> match <var>rule</var>?
   </span></a>
      </ul>
@@ -295,13 +293,13 @@ the ways in which resources may be fetched from an origin.</p>
 
 
       <p>Somewhere in Fetch after we have the headers, we’ll call out to
-      <a href="#process-epr-header">§4.4 
+      <a href="#process-epr-header">§4.3 
     Process response’s EPR header
   </a> to take whatever actions we need to take
       here. This means we’ll grab an <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a> file, and
       store it persistently for use in regulating future requests.
       As the manifest won’t yet be available until it is downloaded
-      asynchronously, a default policy (<a href="#no-data-policy">§4.3 
+      asynchronously, a default policy (<a href="#no-data-policy">§4.2 
     NO DATA
   </a>) will
       apply.  The default policy will also apply if the downloaded
@@ -375,7 +373,7 @@ the ways in which resources may be fetched from an origin.</p>
 
 
     <p>User agent conformance details upon receipt of such a header are explained in
-  <a href="#process-epr-header">§4.4 
+  <a href="#process-epr-header">§4.3 
     Process response’s EPR header
   </a>.</p>
 
@@ -394,54 +392,53 @@ the ways in which resources may be fetched from an origin.</p>
   
     <div class="example">
     
-     <pre>"epr_manifest": 
-  {
-    "reportUrl": "https://example.com/reporting-endpoint",
-    "reportOnly": false,
-    "defaultNavBehavior": "onlyGETwithPath",
-    "defaultResBehavior": "onlyGETwithPath",
-    "rules": [
+     <pre>{
+  "site": ...
+  ...,
+  "<a class="idl-code" data-link-type="dict-member" href="#dom-epr-manifest-epr">epr</a>": {
+    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-reporturl">reportURL</a>": "https://example.com/reporting-endpoint",
+    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-reportonly">reportOnly</a>": false,
+    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a>": "allowStrippedGET",
+    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a>": "allowStrippedGET",
+    "<a class="idl-code" data-link-type="dict-member" href="#dom-eprpolicy-rules">rules</a>": [
       {
-        "path": "/",
-        "contexts": [ "navigation" ],
-        "allowData": false
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-path">path</a>": "/",
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-frametypes">frameTypes</a>": [ "top-level", "auxiliary", "nested" ],
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-allowdata">allowData</a>": false
       },
       {
-        "regex": "^/\\d+$",
-        "contexts": [ "navigation" ],
-        "allowData": false
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-regex">regex</a>": "^/\\d+$",
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-frametypes">frameTypes</a>": [ "top-level", "auxiliary", "nested" ],
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-allowdata">allowData</a>": false
       },
       ...
       {
-        "path": "/image",
-        "contexts": [ "image" ],
-        "allowData": true
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-path">path</a>": "/image",
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-contexts">contexts</a>": [ "image", "imageset" ],
+        "<a class="idl-code" data-link-type="dict-member" href="#dom-eprrule-allowdata">allowData</a>": true
       },
     ]
   }
+}
 </pre>
-     
-
-
-     <p>TODO: Define reportUrl, reportOnly.  (defaultNavBehavior &amp; defaultResBehavior
-    were described previously, but maybe need to be described here as well.)</p>
      
   
     </div>
 
   
-    <h4 class="heading settled" data-level="3.2.1" id="manifest-epr"><span class="secno">3.2.1. </span><span class="content">The <code>EPR</code> manifest member</span><a class="self-link" href="#manifest-epr"></a></h4>
+    <h4 class="heading settled" data-level="3.2.1" id="manifest-epr"><span class="secno">3.2.1. </span><span class="content">The <code>epr</code> manifest member</span><a class="self-link" href="#manifest-epr"></a></h4>
 
 
     <p>The policy data that makes up the <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a> is delivered via an
-  <dfn class="idl-code" data-dfn-for="EPR Manifest" data-dfn-type="dict-member" data-export="" id="dom-epr-manifest-epr"><code>EPR</code><a class="self-link" href="#dom-epr-manifest-epr"></a></dfn> member of an
+  <dfn class="idl-code" data-dfn-for="EPR Manifest" data-dfn-type="dict-member" data-export="" id="dom-epr-manifest-epr"><code>epr</code><a class="self-link" href="#dom-epr-manifest-epr"></a></dfn> member of an
   application manifest <a data-link-type="biblio" href="#biblio-manifest">[MANIFEST]</a>. This member’s value is an dictionary
   adhering to the following IDL:</p>
 
   
     <pre class="idl">enum <dfn class="idl-code" data-dfn-type="enum" data-export="" data-global-name="" id="enumdef-eprbehavior">EPRBehavior<a class="self-link" href="#enumdef-eprbehavior"></a></dfn> {
-  "allow",
   "block",
+  "redirect",
+  "allowUnauthenticated",
   "allowStrippedGET"
 };
 
@@ -469,8 +466,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <dd>
-      ISSUE: Do we need this? It seems like this could be modeled as an
-      <code>allow</code> behavior instead?
+      <code>true</code> if the policy should be enforced, <code>false</code> if
+      it should only generate violation reports (TODO).
     
      
     
@@ -482,7 +479,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
       property defines the action the user agent will take. Detailed conformance
       requirements can be found in <a href="#process-request">§4.1 
     Process request
-  </a>.
+  </a>, and a high-level
+      description of the behaviors can be found in <a href="#manifest-behaviors">§3.2.3 Behaviors</a>.
     
      
     
@@ -494,7 +492,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
       property defines the action the user agent will take. Detailed conformance
       requirements can be found in <a href="#process-request">§4.1 
     Process request
-  </a>.
+  </a>, and a high-level
+      description of the behaviors can be found in <a href="#manifest-behaviors">§3.2.3 Behaviors</a>.
     
      
     
@@ -508,6 +507,10 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   
     </dl>
 
+
+    <p class="issue" id="issue-db701dab"><a class="self-link" href="#issue-db701dab"></a>Do we need <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-reportonly">reportOnly</a></code>? It seems like this could be
+  modeled as an <code>allow</code> behavior instead?</p>
+
   
     <h4 class="heading settled" data-level="3.2.2" id="manifest-ruleset"><span class="secno">3.2.2. </span><span class="content">Ruleset</span><a class="self-link" href="#manifest-ruleset"></a></h4>
 
@@ -517,7 +520,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>. Each rule is scoped to a specific subset of an origin’s
   URLs via a path prefix or a regular expression, and contains a set of
   behaviors which MUST be applied to <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a> which match the rule’s
-  scope (as defined in <a href="#matching">§4.5 
+  scope (as defined in <a href="#matching">§4.4 
     Does request match rule?
   </a>).</p>
 
@@ -560,7 +563,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <dd>
-      A path prefix defining a <a data-link-type="dfn" href="#rules">rule</a>’s scope. See <a href="#matching">§4.5 
+      A path prefix defining a <a data-link-type="dfn" href="#rules">rule</a>’s scope. See <a href="#matching">§4.4 
     Does request match rule?
   </a> for user
       agent conformance requirements.
@@ -571,7 +574,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <dd>
-      A regular expression, defining a <a data-link-type="dfn" href="#rules">rule</a>’s scope. See <a href="#matching">§4.5 
+      A regular expression, defining a <a data-link-type="dfn" href="#rules">rule</a>’s scope. See <a href="#matching">§4.4 
     Does request match rule?
   </a>
       for user agent conformance requirements.
@@ -583,7 +586,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     
      <dd>
       A set of <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">contexts</a> to which this rule applies. See
-      <a href="#matching">§4.5 
+      <a href="#matching">§4.4 
     Does request match rule?
   </a> for user agent conformance requirements.
     
@@ -594,7 +597,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     
      <dd>
       A set of <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame types</a> to which this rule
-      applies. See <a href="#matching">§4.5 
+      applies. See <a href="#matching">§4.4 
     Does request match rule?
   </a> for user agent conformance requirements.
     
@@ -620,6 +623,74 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
   
     </dl>
+
+  
+    <h4 class="heading settled" data-level="3.2.3" id="manifest-behaviors"><span class="secno">3.2.3. </span><span class="content">Behaviors</span><a class="self-link" href="#manifest-behaviors"></a></h4>
+
+
+    <p>If a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> does not <a data-link-type="dfn" href="#match">match</a> the ruleset defined in an <a data-link-type="dfn" href="#epr-manifest">EPR
+  manifest</a>’s <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-rules">rules</a></code> property, then the user agent looks to
+  either <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a></code> or <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a></code>
+  to determine what action to take.</p>
+
+
+    <p>The following behaviors are defined (and, if none is explicitly specified,
+  then <a data-link-type="dfn" href="#allowstrippedget">allowStrippedGET</a> is used as a default):</p>
+
+  
+    <dl>
+    
+     <dt><dfn data-dfn-type="dfn" data-noexport="" id="block">block<a class="self-link" href="#block"></a></dfn>
+     
+    
+     <dd>
+      Cancel the request entirely, returning a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-network-error">network error</a>.
+    
+     
+    
+     <dt><dfn data-dfn-type="dfn" data-noexport="" id="redirect">redirect<a class="self-link" href="#redirect"></a></dfn>
+     
+    
+     <dd>
+      Redirect the request to a specified URL.
+
+
+      <p class="issue" id="issue-ea6fca94"><a class="self-link" href="#issue-ea6fca94"></a>How is this specified?</p>
+      
+    
+     
+    
+     <dt><dfn data-dfn-type="dfn" data-noexport="" id="allowunauthenticated">allowUnauthenticated<a class="self-link" href="#allowunauthenticated"></a></dfn>
+     
+    
+     <dd>
+      Drop cookies and other authentication properties of the request by
+      setting it’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">credentials</a> flag to
+      "<code>omit</code>".
+    
+     
+    
+     <dt><dfn data-dfn-type="dfn" data-noexport="" id="allowstrippedget">allowStrippedGET<a class="self-link" href="#allowstrippedget"></a></dfn>
+     
+    
+     <dd>
+      Allow <code>GET</code> requests, after setting its
+      <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">url</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a> and
+      <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> properties to <code>null</code>.
+
+
+      <p><code>POST</code> and other request types will be canceled, returning a
+      <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-network-error">network error</a>.</p>
+      
+    
+     
+  
+    </dl>
+
+
+    <p>User agent conformance requirements are defined in <a href="#process-request">§4.1 
+    Process request
+  </a>.</p>
 </section>
 
 
@@ -669,10 +740,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
        
         
        <li>
-          If <var>rule</var>’s <code class="idl"><a data-link-type="idl" href="#dom-eprrule-allowdata">allowData</a></code> is <code>true</code>, then
-          perform the <a href="#defaultAction">§4.2 
-    defaultAction
-  </a> if any of the following statements 
+          If <var>rule</var>’s <code class="idl"><a data-link-type="idl" href="#dom-eprrule-allowdata">allowData</a></code> is <code>false</code>, then
+          perform the <a href="#manifest-behaviors">§3.2.3 Behaviors</a> if any of the following statements
           are true:
 
           
@@ -707,51 +776,14 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <li>
-      If <var>matched</var> is <var>false</var>, perform the <a href="#defaultAction">§4.2 
-    defaultAction
-  </a>.
+      If <var>matched</var> is <var>false</var>, perform the <a href="#manifest-behaviors">§3.2.3 Behaviors</a>.
     
      
   
     </ol>
 
   
-    <h3 class="heading settled" data-level="4.2" id="defaultAction"><span class="secno">4.2. </span><span class="content">
-    defaultAction
-  </span><a class="self-link" href="#defaultAction"></a></h3>
-
-
-    <p>The defaultAction is defined by the defaultResBehavior or defaultNavBehavior
-  from the EPR manifest.  If this is not defined in the manifest itself then
-  a hardcoded defaultAction of onlyGETwithPath is applied.</p>
-
-
-    <p>The available defaultActions are:</p>
-
-  
-    <ul>
-    
-     <li>onlyGETwithPath: GET requests are allowed, with
-      path information but no querystring or hash data.  Requests using all other 
-      verbs are dropped.  The intent of this default policy is to prevent
-      reflected and DOM-based XSS.
-     
-    
-     <li>block: Block all requests
-     
-    
-     <li>redirect: Navigate to a specified URL
-     
-    
-     <li>dropCookies: Allow the request but drop cookies (only allowed for
-    defaultResBehavior.  This is only a safe option for resource request policy
-    because even non-authenticated XSS is problematic)
-         
-  
-    </ul>
-
-  
-    <h3 class="heading settled" data-level="4.3" id="no-data-policy"><span class="secno">4.3. </span><span class="content">
+    <h3 class="heading settled" data-level="4.2" id="no-data-policy"><span class="secno">4.2. </span><span class="content">
     NO DATA
   </span><a class="self-link" href="#no-data-policy"></a></h3>
 
@@ -759,7 +791,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <p>TODO: Fill in with detail from https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html</p>
 
   
-    <h3 class="heading settled" data-level="4.4" id="process-epr-header"><span class="secno">4.4. </span><span class="content">
+    <h3 class="heading settled" data-level="4.3" id="process-epr-header"><span class="secno">4.3. </span><span class="content">
     Process <var>response</var>’s <code>EPR</code> header
   </span><a class="self-link" href="#process-epr-header"></a></h3>
 
@@ -861,7 +893,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     </ol>
 
   
-    <h3 class="heading settled" data-level="4.5" id="matching"><span class="secno">4.5. </span><span class="content">
+    <h3 class="heading settled" data-level="4.4" id="matching"><span class="secno">4.4. </span><span class="content">
     Does <var>request</var> match <var>rule</var>?
   </span><a class="self-link" href="#matching"></a></h3>
 
@@ -1160,23 +1192,24 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   <h3 class="no-num heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="indexlist">
    <li>allowData, <a href="#dom-eprrule-allowdata">3.2.2</a>
+   <li>allowStrippedGET, <a href="#allowstrippedget">3.2.3</a>
+   <li>allowUnauthenticated, <a href="#allowunauthenticated">3.2.3</a>
+   <li>block, <a href="#block">3.2.3</a>
    <li>conformant server, <a href="#conformant-server">Unnumbered section</a>
    <li>conformant user agent, <a href="#conformant-user-agent">Unnumbered section</a>
    <li>contexts, <a href="#dom-eprrule-contexts">3.2.2</a>
-   <li>EPR
-    <ul>
-     <li>definition of, <a href="#epr-http-response-header-field">3.1</a>
-     <li>dict-member for EPR Manifest, <a href="#dom-epr-manifest-epr">3.2.1</a>
-    </ul>
+   <li>EPR, <a href="#epr-http-response-header-field">3.1</a>
+   <li>epr, <a href="#dom-epr-manifest-epr">3.2.1</a>
    <li>EPRBehavior, <a href="#enumdef-eprbehavior">3.2.1</a>
    <li>EPR HTTP response header field, <a href="#epr-http-response-header-field">3.1</a>
    <li>EPR manifest, <a href="#epr-manifest">3.2</a>
    <li>EPRPolicy, <a href="#dictdef-eprpolicy">3.2.1</a>
    <li>EPRRule, <a href="#dictdef-eprrule">3.2.2</a>
    <li>frameTypes, <a href="#dom-eprrule-frametypes">3.2.2</a>
-   <li>match, <a href="#match">4.5</a>
+   <li>match, <a href="#match">4.4</a>
    <li>navigationBehavior, <a href="#dom-eprpolicy-navigationbehavior">3.2.1</a>
    <li>path, <a href="#dom-eprrule-path">3.2.2</a>
+   <li>redirect, <a href="#redirect">3.2.3</a>
    <li>regex, <a href="#dom-eprrule-regex">3.2.2</a>
    <li>reportOnly, <a href="#dom-eprpolicy-reportonly">3.2.1</a>
    <li>reportURL, <a href="#dom-eprpolicy-reporturl">3.2.1</a>
@@ -1200,6 +1233,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <li><a href="https://fetch.spec.whatwg.org/#concept-header">header</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-request-method">method</a>
+     <li><a href="https://fetch.spec.whatwg.org/#concept-network-error">network error</a>
      <li><a href="https://fetch.spec.whatwg.org/#process-response">process response</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-request">request</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-response">response</a>
@@ -1262,8 +1296,9 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
    <dd>Eric Y. Chen; et al. <a href="http://www.collinjackson.com/research/papers/appisolation.pdf">App Isolation: Get the Security of Multiple Browsers with Just One</a>. URL: <a href="http://www.collinjackson.com/research/papers/appisolation.pdf">http://www.collinjackson.com/research/papers/appisolation.pdf</a></dl>
   <h2 class="no-num heading settled" id="idl-index"><span class="content">IDL Index</span><a class="self-link" href="#idl-index"></a></h2>
   <pre class="idl">enum <a data-global-name="" href="#enumdef-eprbehavior">EPRBehavior</a> {
-  "allow",
   "block",
+  "redirect",
+  "allowUnauthenticated",
   "allowStrippedGET"
 };
 
@@ -1299,6 +1334,9 @@ dictionary <a data-global-name="" href="#dictdef-eprrule">EPRRule</a> {
 </pre>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
+   <div class="issue">Do we need <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-reportonly">reportOnly</a></code>? It seems like this could be
+  modeled as an <code>allow</code> behavior instead?<a href="#issue-db701dab"> ↵ </a></div>
+   <div class="issue">How is this specified?<a href="#issue-ea6fca94"> ↵ </a></div>
    <div class="issue">Need to have spec language for this. There’s surely a regex
           spec somewhere, right?
           DR: Can we just reference the ECMAScript spec?<a href="#issue-e10703d8"> ↵ </a></div></div></body>

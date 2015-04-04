@@ -305,48 +305,49 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <div class="example">
     <pre>
-    "epr_manifest": 
       {
-        "reportUrl": "https://example.com/reporting-endpoint",
-        "reportOnly": false,
-        "defaultNavBehavior": "onlyGETwithPath",
-        "defaultResBehavior": "onlyGETwithPath",
-        "rules": [
-          {
-            "path": "/",
-            "contexts": [ "navigation" ],
-            "allowData": false
-          },
-          {
-            "regex": "^/\\d+$",
-            "contexts": [ "navigation" ],
-            "allowData": false
-          },
-          ...
-          {
-            "path": "/image",
-            "contexts": [ "image" ],
-            "allowData": true
-          },
-        ]
+        "site": ...
+        ...,
+        "<a dict-member>epr</a>": {
+          "<a dict-member>reportURL</a>": "https://example.com/reporting-endpoint",
+          "<a dict-member>reportOnly</a>": false,
+          "<a dict-member>navigationBehavior</a>": "allowStrippedGET",
+          "<a dict-member>subresourceBehavior</a>": "allowStrippedGET",
+          "<a dict-member>rules</a>": [
+            {
+              "<a dict-member>path</a>": "/",
+              "<a dict-member>frameTypes</a>": [ "top-level", "auxiliary", "nested" ],
+              "<a dict-member>allowData</a>": false
+            },
+            {
+              "<a dict-member>regex</a>": "^/\\d+$",
+              "<a dict-member>frameTypes</a>": [ "top-level", "auxiliary", "nested" ],
+              "<a dict-member>allowData</a>": false
+            },
+            ...
+            {
+              "<a dict-member>path</a>": "/image",
+              "<a dict-member>contexts</a>": [ "image", "imageset" ],
+              "<a dict-member>allowData</a>": true
+            },
+          ]
+        }
       }
     </pre>
-
-    TODO: Define reportUrl, reportOnly.  (defaultNavBehavior & defaultResBehavior
-    were described previously, but maybe need to be described here as well.)
   </div>
 
-  <h4 id="manifest-epr">The <code>EPR</code> manifest member</h4>
+  <h4 id="manifest-epr">The <code>epr</code> manifest member</h4>
 
   The policy data that makes up the <a>EPR manifest</a> is delivered via an
-  <dfn dict-member for="EPR Manifest"><code>EPR</code></dfn> member of an
+  <dfn dict-member for="EPR Manifest"><code>epr</code></dfn> member of an
   application manifest [[!MANIFEST]]. This member's value is an dictionary
   adhering to the following IDL:
 
   <pre class="idl">
     enum EPRBehavior {
-      "allow",
       "block",
+      "redirect",
+      "allowUnauthenticated",
       "allowStrippedGET"
     };
 
@@ -366,26 +367,31 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     </dd>
     <dt><dfn dict-member>reportOnly</dfn></dt>
     <dd>
-      ISSUE: Do we need this? It seems like this could be modeled as an
-      <code>allow</code> behavior instead?
+      <code>true</code> if the policy should be enforced, <code>false</code> if
+      it should only generate violation reports (TODO).
     </dd>
     <dt><dfn dict-member>navigationBehavior</dfn></dt>
     <dd>
       If a navigational request doesn't <a>match</a> {{EPRPolicy/rules}}, this
       property defines the action the user agent will take. Detailed conformance
-      requirements can be found in [[#process-request]].
+      requirements can be found in [[#process-request]], and a high-level
+      description of the behaviors can be found in [[#manifest-behaviors]].
     </dd>
     <dt><dfn dict-member>subresourceBehavior</dfn></dt>
     <dd>
       If a non-navigational request doesn't <a>match</a> {{EPRPolicy/rules}}, this
       property defines the action the user agent will take. Detailed conformance
-      requirements can be found in [[#process-request]].
+      requirements can be found in [[#process-request]], and a high-level
+      description of the behaviors can be found in [[#manifest-behaviors]].
     </dd>
     <dt><dfn dict-member>rules</dfn></dt>
     <dd>
       The ruleset which should be applied. Details are in [[#manifest-ruleset]].
     </dd>
   </dl>
+
+  ISSUE: Do we need {{EPRPolicy/reportOnly}}? It seems like this could be
+  modeled as an <code>allow</code> behavior instead?
 
   <h4 id="manifest-ruleset">Ruleset</h4>
 
@@ -459,6 +465,46 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       See [[#process-request]] for user agent conformance requirements.
     </dd>
   </dl>
+
+  <h4 id="manifest-behaviors">Behaviors</h4>
+
+  If a <a>request</a> does not <a>match</a> the ruleset defined in an <a>EPR
+  manifest</a>'s {{EPRPolicy/rules}} property, then the user agent looks to
+  either {{EPRPolicy/navigationBehavior}} or {{EPRPolicy/subresourceBehavior}}
+  to determine what action to take.
+
+  The following behaviors are defined (and, if none is explicitly specified,
+  then <a>allowStrippedGET</a> is used as a default):
+
+  <dl>
+    <dt><dfn>block</dfn></dt>
+    <dd>
+      Cancel the request entirely, returning a <a>network error</a>.
+    </dd>
+    <dt><dfn>redirect</dfn></dt>
+    <dd>
+      Redirect the request to a specified URL.
+
+      ISSUE: How is this specified?
+    </dd>
+    <dt><dfn>allowUnauthenticated</dfn></dt>
+    <dd>
+      Drop cookies and other authentication properties of the request by
+      setting it's <a for="request">credentials</a> flag to
+      "<code>omit</code>".
+    </dd>
+    <dt><dfn>allowStrippedGET</dfn></dt>
+    <dd>
+      Allow <code>GET</code> requests, after setting its
+      <a for="request">url</a>'s <a for="URL">fragment</a> and
+      <a for="URL">query</a> properties to <code>null</code>.
+
+      <code>POST</code> and other request types will be canceled, returning a
+      <a>network error</a>.
+    </dd>
+  </dl>
+
+  User agent conformance requirements are defined in [[#process-request]].
 </section>
 
 <!-- Big Text: Algorithms -->
@@ -493,8 +539,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
           Set <var>matched</var> to <code>true</code>.
         </li>
         <li>
-          If <var>rule</var>'s {{EPRRule/allowData}} is <code>true</code>, then
-          perform the [[#defaultAction]] if any of the following statements 
+          If <var>rule</var>'s {{EPRRule/allowData}} is <code>false</code>, then
+          perform the [[#manifest-behaviors]] if any of the following statements
           are true:
 
           <ol>
@@ -515,31 +561,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       </ol>
     </li>
     <li>
-      If <var>matched</var> is <var>false</var>, perform the [[#defaultAction]].
+      If <var>matched</var> is <var>false</var>, perform the [[#manifest-behaviors]].
     </li>
   </ol>
-
-  <h3 id="defaultAction">
-    defaultAction
-  </h3>
-  
-  The defaultAction is defined by the defaultResBehavior or defaultNavBehavior
-  from the EPR manifest.  If this is not defined in the manifest itself then
-  a hardcoded defaultAction of onlyGETwithPath is applied.
-  
-  The available defaultActions are:
-  
-  <ul>
-    <li>onlyGETwithPath: GET requests are allowed, with
-      path information but no querystring or hash data.  Requests using all other 
-      verbs are dropped.  The intent of this default policy is to prevent
-      reflected and DOM-based XSS.</li>
-    <li>block: Block all requests</li>
-    <li>redirect: Navigate to a specified URL</li>
-    <li>dropCookies: Allow the request but drop cookies (only allowed for
-    defaultResBehavior.  This is only a safe option for resource request policy
-    because even non-authenticated XSS is problematic)</li>    
-  </ul>
 
   <h3 id="no-data-policy">
     NO DATA
