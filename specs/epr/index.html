@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Entry Point Regulation</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-04-04">4 April 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-04-05">5 April 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -339,39 +339,9 @@ the ways in which resources may be fetched from an origin.</p>
       the ruleset defined in the <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a> we processed above.
 
 
-      <p>If they don’t match a ruleset, a default action will apply. If no default
-      is specified in the manifest, a hardcoded default policy will apply. A
-      different default policy may be specified for navigations vs. resource
-      loads.</p>
+      <p>If they don’t match a ruleset, the user agent will take some action, as
+      described in <a href="#manifest-behaviors">§3.2.3 Behaviors</a>.</p>
       
-
-
-      <p>Hardcoded default policy for both navigations (defaultNavBehavior) and
-      requests (defaultResBehavior) specifies that GET requests are allowed, with
-      path information but no querystring or hash data. Requests using all other
-      verbs are dropped.  The intent of this default policy is to prevent
-      reflected and DOM-based XSS.  Other available default policy options that
-      may be specified for defaultNavBehavior or defaultResBehavior:</p>
-      
-
-      
-      <ul>
-        
-       <li>Block all requests
-       
-        
-       <li>Navigate to a specified URL
-       
-        
-       <li>defaultResBehavior only: Allow the request but drop cookies
-        (This is only a safe option for resource request policy because even
-        non-authenticated XSS is problematic)
-        
-       
-      
-      </ul>
-      
-      ISSUE: A lot of the above is now redundant with the defaultAction section below.
     
      
     
@@ -674,7 +644,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     
      <dd>
       Drop cookies and other authentication properties of the request by
-      setting it’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">credentials</a> flag to
+      setting it’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-credentials-mode">credentials mode</a> to
       "<code>omit</code>".
     
      
@@ -717,8 +687,14 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <ol>
     
      <li>
-      Let <var>rules</var> be the <a data-link-type="dfn" href="#rules">rules</a> which a user agent has stored
-      for <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>.
+      Let <var>policy</var> be the policy which a user agent has stored for
+      <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>.
+    
+     
+    
+     <li>
+      Let <var>rules</var> be the set of <a data-link-type="dfn" href="#rules">rules</a> contained in <var>policy</var>’s
+      <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-rules">rules</a></code> property.
 
 
       <p class="note" role="note">Note: <var>rules</var> may be the empty set if no rules are specified. In
@@ -763,7 +739,118 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <li>
-      TODO. 
+      Otherwise, let <var>behavior</var> be the value of <var>policy</var>’s
+      <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a></code> if <var>request</var> is a
+      <a data-link-type="dfn" href="#navigational-request">navigational request</a>, and <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a></code> otherwise.
+
+
+      <p class="issue" id="issue-52662b74"><a class="self-link" href="#issue-52662b74"></a>Do we need a <code>connectionBehavior</code> property?</p>
+      
+    
+     
+    
+     <li>
+      Execute the steps associated with the value of <var>behavior</var> in the
+      list below:
+
+      
+      <dl>
+        
+       <dt><a data-link-type="dfn" href="#allow">allow</a>
+       
+        
+       <dd>
+          
+        <ol>
+            
+         <li>
+              Return without modifying the request.
+            
+         
+          
+        </ol>
+        
+        
+       
+        
+       <dt><a data-link-type="dfn" href="#block">block</a>
+       
+        
+       <dd>
+          
+        <ol>
+            
+         <li>
+              Cancel the request, and return a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-network-error">network error</a>.
+            
+         
+          
+        </ol>
+        
+        
+       
+        
+       <dt><a data-link-type="dfn" href="#redirect">redirect</a>
+       
+        
+       <dd>
+          ISSUE: No idea how this works. One URL for all failures? One URL per rule?
+        
+       
+        
+       <dt><a data-link-type="dfn" href="#allowunauthenticated">allowUnauthenticated</a>
+       
+        
+       <dd>
+          
+        <ol>
+            
+         <li>
+              Set <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-credentials-mode">credentials mode</a>
+              property to <code>omit</code>.
+            
+         
+            
+         <li>
+              Set <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s
+              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-username">username</a> to the empty string, and
+              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-password">password</a> to <code>null</code>.
+            
+         
+          
+        </ol>
+        
+        
+       
+        
+       <dt><a data-link-type="dfn" href="#allowstrippedget">allowStrippedGET</a>
+       
+        
+       <dd>
+          
+        <ol>
+            
+         <li>
+              If <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-method">method</a> is not
+              <code>GET</code>, cancel the request, and return a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-network-error">network
+              error</a>.
+            
+         
+            
+         <li>
+              Set <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s
+              <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a> and <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> parameters
+              to <code>null</code>.
+            
+         
+          
+        </ol>
+        
+        
+       
+      
+      </dl>
+      
     
      
   
@@ -810,15 +897,6 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <ol>
     
      <li>
-      ISSUE: Do we process a header for any response? Only responses to
-      top-level requests?
-      DR: Any response (except for under the conditions mentioned above).
-      We want EPR to "start happening" even if it’s a resource request from
-      a third party site.
-    
-     
-    
-     <li>
       If <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-url">URL</a> is <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a
       priori</i> insecure</a>, abort these steps.
     
@@ -843,7 +921,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
           <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a> is <var>manifest URL</var>,
           <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a> is <code>none</code>,
           <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a> is <code>manifest</code>, and
-          <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">credentials</a> is <code>omit</code>.
+          <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-credentials-mode">credentials mode</a> is <code>omit</code>.
         
        
         
@@ -1253,7 +1331,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <li><a href="https://fetch.spec.whatwg.org/#concept-request-body">body</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-request-context">context</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a>
-     <li><a href="https://fetch.spec.whatwg.org/#concept-request-client">credentials</a>
+     <li><a href="https://fetch.spec.whatwg.org/#concept-request-credentials-mode">credentials mode</a>
      <li><a href="https://fetch.spec.whatwg.org/#fetching">fetching</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-header">header</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a>
@@ -1283,9 +1361,11 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
    <li><a data-link-type="biblio" href="#biblio-url">[URL]</a> defines the following terms:
     <ul>
      <li><a href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a>
+     <li><a href="http://www.w3.org/TR/url/#concept-url-password">password</a>
      <li><a href="http://www.w3.org/TR/url/#concept-url-path">path</a>
      <li><a href="http://www.w3.org/TR/url/#percent-decode">percent decode</a>
      <li><a href="http://www.w3.org/TR/url/#concept-url-query">query</a>
+     <li><a href="http://www.w3.org/TR/url/#concept-url-username">username</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-webidl2">[WEBIDL2]</a> defines the following terms:
     <ul>
@@ -1351,6 +1431,7 @@ dictionary <a data-global-name="" href="#dictdef-eprrule">EPRRule</a> {
   <div style="counter-reset:issue">
    <div class="issue">We need to define violation reports. Steal something from CSP.<a href="#issue-b412787b"> ↵ </a></div>
    <div class="issue">How is this specified?<a href="#issue-ea6fca94"> ↵ </a></div>
+   <div class="issue">Do we need a <code>connectionBehavior</code> property?<a href="#issue-52662b74"> ↵ </a></div>
    <div class="issue">Need to have spec language for this. There’s surely a regex
           spec somewhere, right?
           DR: Can we just reference the ECMAScript spec?<a href="#issue-e10703d8"> ↵ </a></div></div></body>
