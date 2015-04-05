@@ -223,25 +223,34 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 <section>
   <h2 id="key-concepts">Key Concepts and Terminology</h2>
 
-  A <a>request</a> is a <dfn>navigational request</dfn> if its
-  <a for="request">context frame type</a> is one of "<code>top-level</code>",
-  "<code>auxiliary</code>", or "<code>nested</code>". Navigational requests
-  load a resource into a context where code can be executed, meaning that they
-  place an origin at risk of both XSS and XSRF attack.
+  EPR categorizes <a>requests</a> as follows:
 
-  A <a>request</a> is a <dfn>subresource request</dfn> if it is not a
-  <a>connection request</a>, and its <a for="request">context frame type</a>
-  is "<code>none</code>". Subresource requests cannot execute code directly,
-  so the XSS risk is minimal, but they do present the risk of XSRF attack.
-
-  A <a>request</a> is a <dfn>connection request</dfn> if its
-  <a for="request">context</a> is one of "<code>beacon</code>",
-  "<code>cspreport</code>", "<code>eventsource</code>", "<code>fetch</code>",
-  "<code>ping</code>", or "<code>xmlhttprequest</code>". These connection
-  types are distinguished from subresource requests only because of their
-  flexibility (<code>POST</code> vs <code>GET</code>, etc). The risks are
-  similar, but authors may wish to set different rules for these kinds of
-  requests than they would for other subresource requests.
+  <ol>
+    <li>
+      <dfn>navigational request</dfn> if its <a for="request">context frame
+      type</a> is one of "<code>top-level</code>", "<code>auxiliary</code>",
+      or "<code>nested</code>". Navigational requests load a resource into a
+      context where code can be executed, meaning that they place an origin at
+      risk of both XSS and XSRF attack.
+    </li>
+    <li>
+      <dfn>subresource request</dfn> if it is not a <a>connection request</a>,
+      and its <a for="request">context frame type</a> is "<code>none</code>".
+      Subresource requests cannot execute code directly, so the XSS risk is
+      minimal, but they do present the risk of XSRF attack.
+    </li>
+    <li>
+      <dfn>connection request</dfn> if its <a for="request">context</a> is one
+      of "<code>beacon</code>", "<code>cspreport</code>",
+      "<code>eventsource</code>", "<code>fetch</code>", "<code>ping</code>", or
+      "<code>xmlhttprequest</code>". These connection types are distinguished
+      from subresource requests only because of their flexibility
+      (<code>POST</code> vs <code>GET</code>, etc) and their typical usage
+      (API endpoints vs static resources). The risks are similar, but authors
+      may wish to set different rules for these kinds of requests than they
+      would for other subresource requests.
+    </li>
+  </ol>
 
   The Augmented Backus-Naur Form (ABNF) notation is specified in [[!RFC5234]].
 </section>
@@ -255,7 +264,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <ol>
     <li>
       UA requests a resource from <code>example.com</code> for the very
-      first time.
+      first time. As no <a>EPR manifest</a>, and therefore no policy, is
+      available for this request, a <a>default EPR policy</a> will apply
+      as described in [[#default-policy]].
     </li>
     <li>
       <code>example.com</code> responds with a document that has an
@@ -266,10 +277,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       [[#process-epr-header]] to take whatever actions we need to take
       here. This means we'll grab an <a>EPR manifest</a> file, and
       store it persistently for use in regulating future requests.
-      As the manifest won't yet be available until it is downloaded
-      asynchronously, a default policy ([[#no-data-policy]]) will
-      apply.  The default policy will also apply if the downloaded
-      manifest fails to parse.
     </li>
     <li>
       Subsequent navigations and resource requests from <code>example.com</code>
@@ -571,6 +578,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
         </dd>
         <dt><a>redirect</a></dt>
         <dd>
+          TODO.
+
           ISSUE: No idea how this works. One URL for all failures? One URL per rule?
         </dd>
         <dt><a>allowUnauthenticated</a></dt>
@@ -606,11 +615,20 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     </li>
   </ol>
 
-  <h3 id="no-data-policy">
-    NO DATA
+  <h3 id="default-policy">
+    Default EPR policy
   </h3>
 
-  TODO: Fill in with detail from https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html
+  If no policy is available for a resource which is delivered with an
+  <code><a>EPR</a></code> header (because this is the first visit to an origin,
+  because an <a>EPR manifest</a> failed to parse, etc), then user agents MUST
+  apply a <dfn>default EPR policy</dfn> to the request.
+
+  ISSUE: drx@'s <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>
+  is problematic, as it would block navigational requests that contain query
+  parameters. Given the prevalance of tracking parameters (for instance,
+  <code>utm_{source,medium,campaign}</code> are quasi-ubiquitous), this seems
+  like it will cause issues.
 
   <h3 id="process-epr-header">
     Process <var>response</var>'s <code>EPR</code> header

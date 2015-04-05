@@ -182,8 +182,8 @@ the ways in which resources may be fetched from an origin.</p>
       <li><a href="#process-request"><span class="secno">4.1</span> <span class="content">
     Process <var>request</var>
   </span></a>
-      <li><a href="#no-data-policy"><span class="secno">4.2</span> <span class="content">
-    NO DATA
+      <li><a href="#default-policy"><span class="secno">4.2</span> <span class="content">
+    Default EPR policy
   </span></a>
       <li><a href="#process-epr-header"><span class="secno">4.3</span> <span class="content">
     Process <var>response</var>’s <code>EPR</code> header
@@ -265,27 +265,42 @@ the ways in which resources may be fetched from an origin.</p>
     <h2 class="heading settled" data-level="2" id="key-concepts"><span class="secno">2. </span><span class="content">Key Concepts and Terminology</span><a class="self-link" href="#key-concepts"></a></h2>
 
 
-    <p>A <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is a <dfn data-dfn-type="dfn" data-noexport="" id="navigational-request">navigational request<a class="self-link" href="#navigational-request"></a></dfn> if its
-  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a> is one of "<code>top-level</code>",
-  "<code>auxiliary</code>", or "<code>nested</code>". Navigational requests
-  load a resource into a context where code can be executed, meaning that they
-  place an origin at risk of both XSS and XSRF attack.</p>
+    <p>EPR categorizes <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a> as follows:</p>
 
-
-    <p>A <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is a <dfn data-dfn-type="dfn" data-noexport="" id="subresource-request">subresource request<a class="self-link" href="#subresource-request"></a></dfn> if it is not a
-  <a data-link-type="dfn" href="#connection-request">connection request</a>, and its <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a>
-  is "<code>none</code>". Subresource requests cannot execute code directly,
-  so the XSS risk is minimal, but they do present the risk of XSRF attack.</p>
-
-
-    <p>A <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is a <dfn data-dfn-type="dfn" data-noexport="" id="connection-request">connection request<a class="self-link" href="#connection-request"></a></dfn> if its
-  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a> is one of "<code>beacon</code>",
-  "<code>cspreport</code>", "<code>eventsource</code>", "<code>fetch</code>",
-  "<code>ping</code>", or "<code>xmlhttprequest</code>". These connection
-  types are distinguished from subresource requests only because of their
-  flexibility (<code>POST</code> vs <code>GET</code>, etc). The risks are
-  similar, but authors may wish to set different rules for these kinds of
-  requests than they would for other subresource requests.</p>
+  
+    <ol>
+    
+     <li>
+      <dfn data-dfn-type="dfn" data-noexport="" id="navigational-request">navigational request<a class="self-link" href="#navigational-request"></a></dfn> if its <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame
+      type</a> is one of "<code>top-level</code>", "<code>auxiliary</code>",
+      or "<code>nested</code>". Navigational requests load a resource into a
+      context where code can be executed, meaning that they place an origin at
+      risk of both XSS and XSRF attack.
+    
+     
+    
+     <li>
+      <dfn data-dfn-type="dfn" data-noexport="" id="subresource-request">subresource request<a class="self-link" href="#subresource-request"></a></dfn> if it is not a <a data-link-type="dfn" href="#connection-request">connection request</a>,
+      and its <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a> is "<code>none</code>".
+      Subresource requests cannot execute code directly, so the XSS risk is
+      minimal, but they do present the risk of XSRF attack.
+    
+     
+    
+     <li>
+      <dfn data-dfn-type="dfn" data-noexport="" id="connection-request">connection request<a class="self-link" href="#connection-request"></a></dfn> if its <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a> is one
+      of "<code>beacon</code>", "<code>cspreport</code>",
+      "<code>eventsource</code>", "<code>fetch</code>", "<code>ping</code>", or
+      "<code>xmlhttprequest</code>". These connection types are distinguished
+      from subresource requests only because of their flexibility
+      (<code>POST</code> vs <code>GET</code>, etc) and their typical usage
+      (API endpoints vs static resources). The risks are similar, but authors
+      may wish to set different rules for these kinds of requests than they
+      would for other subresource requests.
+    
+     
+  
+    </ol>
 
 
     <p>The Augmented Backus-Naur Form (ABNF) notation is specified in <a data-link-type="biblio" href="#biblio-rfc5234">[RFC5234]</a>.</p>
@@ -305,7 +320,11 @@ the ways in which resources may be fetched from an origin.</p>
     
      <li>
       UA requests a resource from <code>example.com</code> for the very
-      first time.
+      first time. As no <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a>, and therefore no policy, is
+      available for this request, a <a data-link-type="dfn" href="#default-epr-policy">default EPR policy</a> will apply
+      as described in <a href="#default-policy">§4.2 
+    Default EPR policy
+  </a>.
     
      
     
@@ -320,13 +339,7 @@ the ways in which resources may be fetched from an origin.</p>
     Process response’s EPR header
   </a> to take whatever actions we need to take
       here. This means we’ll grab an <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a> file, and
-      store it persistently for use in regulating future requests.
-      As the manifest won’t yet be available until it is downloaded
-      asynchronously, a default policy (<a href="#no-data-policy">§4.2 
-    NO DATA
-  </a>) will
-      apply.  The default policy will also apply if the downloaded
-      manifest fails to parse.</p>
+      store it persistently for use in regulating future requests.</p>
       
     
      
@@ -794,7 +807,11 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
        
         
        <dd>
-          ISSUE: No idea how this works. One URL for all failures? One URL per rule?
+          TODO.
+
+
+        <p class="issue" id="issue-e22784e4"><a class="self-link" href="#issue-e22784e4"></a>No idea how this works. One URL for all failures? One URL per rule?</p>
+        
         
        
         
@@ -857,12 +874,22 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     </ol>
 
   
-    <h3 class="heading settled" data-level="4.2" id="no-data-policy"><span class="secno">4.2. </span><span class="content">
-    NO DATA
-  </span><a class="self-link" href="#no-data-policy"></a></h3>
+    <h3 class="heading settled" data-level="4.2" id="default-policy"><span class="secno">4.2. </span><span class="content">
+    Default EPR policy
+  </span><a class="self-link" href="#default-policy"></a></h3>
 
 
-    <p>TODO: Fill in with detail from https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html</p>
+    <p>If no policy is available for a resource which is delivered with an
+  <code><a data-link-type="dfn" href="#epr-http-response-header-field">EPR</a></code> header (because this is the first visit to an origin,
+  because an <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a> failed to parse, etc), then user agents MUST
+  apply a <dfn data-dfn-type="dfn" data-noexport="" id="default-epr-policy">default EPR policy<a class="self-link" href="#default-epr-policy"></a></dfn> to the request.</p>
+
+
+    <p class="issue" id="issue-14e7d124"><a class="self-link" href="#issue-14e7d124"></a>drx@'s <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>
+  is problematic, as it would block navigational requests that contain query
+  parameters. Given the prevalance of tracking parameters (for instance,
+  <code>utm_{source,medium,campaign}</code> are quasi-ubiquitous), this seems
+  like it will cause issues.</p>
 
   
     <h3 class="heading settled" data-level="4.3" id="process-epr-header"><span class="secno">4.3. </span><span class="content">
@@ -1301,6 +1328,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
    <li>conformant server, <a href="#conformant-server">Unnumbered section</a>
    <li>conformant user agent, <a href="#conformant-user-agent">Unnumbered section</a>
    <li>connection request, <a href="#connection-request">2</a>
+   <li>default EPR policy, <a href="#default-epr-policy">4.2</a>
    <li>EPR, <a href="#epr-http-response-header-field">3.1</a>
    <li>epr, <a href="#dom-epr-manifest-epr">3.2.1</a>
    <li>EPRBehavior, <a href="#enumdef-eprbehavior">3.2.1</a>
@@ -1432,6 +1460,12 @@ dictionary <a data-global-name="" href="#dictdef-eprrule">EPRRule</a> {
    <div class="issue">We need to define violation reports. Steal something from CSP.<a href="#issue-b412787b"> ↵ </a></div>
    <div class="issue">How is this specified?<a href="#issue-ea6fca94"> ↵ </a></div>
    <div class="issue">Do we need a <code>connectionBehavior</code> property?<a href="#issue-52662b74"> ↵ </a></div>
+   <div class="issue">No idea how this works. One URL for all failures? One URL per rule?<a href="#issue-e22784e4"> ↵ </a></div>
+   <div class="issue">drx@'s <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>
+  is problematic, as it would block navigational requests that contain query
+  parameters. Given the prevalance of tracking parameters (for instance,
+  <code>utm_{source,medium,campaign}</code> are quasi-ubiquitous), this seems
+  like it will cause issues.<a href="#issue-14e7d124"> ↵ </a></div>
    <div class="issue">Need to have spec language for this. There’s surely a regex
           spec somewhere, right?
           DR: Can we just reference the ECMAScript spec?<a href="#issue-e10703d8"> ↵ </a></div></div></body>
