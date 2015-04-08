@@ -271,15 +271,14 @@ stronger hash functions as they become available.
 <section>
 #### Priority
 
-User agents MUST provide a mechanism of determining the relative priority of
-two hash functions. That is, if a user agent implemented a function like
-<dfn>getPrioritizedHashFunction(a, b)</dfn> it would return the hash function
-the user agent considers the most collision-resistant.
-For example, `getPrioritizedHashFunction('SHA-256', 'SHA-512')` would return
-`SHA-512`.
+User agents MUST provide a mechanism of determining the relative priority of two
+hash functions and return the empty string if the priority is equal. That is, if
+a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
+b)</dfn> it would return the hash function the user agent considers the most
+collision-resistant.  For example, `getPrioritizedHashFunction('SHA-256',
+'SHA-512')` would return `SHA-512` and `getPrioritizedHashFunction('SHA-256',
+'SHA-256')` would return the empty string.
 
-If both algorithms are equally strong, the user agent SHOULD ensure that there
-is a consistent ordering.
 </section><!-- /Framework::Cryptographic hash functions::Priority -->
 
 </section><!-- /Framework::Cryptographic hash functions -->
@@ -397,19 +396,22 @@ the user agent.
 <section>
 #### Get the strongest metadata from <var>set</var>.
 
-1.  Let <var>strongest</var> be the empty string.
+1.  Let <var>result</var> be the empty set and <var>strongest</var> be the empty
+    string.
 2.  For each <var>item</var> in <var>set</var>:
-    1.  If <var>strongest</var> is the empty string, set <var>strongest</var>
-        to <var>item</var>, skip to the next
-        <var>item</var>.
+    1.  If <var>result</var> is the empty set, add <var>item</var> to
+        <var>result</var> and set <var>strongest</var> to <var>item</var>, skip
+        to the next <var>item</var>.
     2.  Let <var>currentAlgorithm</var> be the <var>alg</var> component of
         <var>strongest</var>.
     3.  Let <var>newAlgorithm</var> be the <var>alg</var> component of
         <var>item</var>.
     4.  If the result of [`getPrioritizedHashFunction(currentAlgorithm, newAlgorithm)`][getPrioritizedHashFunction]
-        is <var>newAlgorithm</var>, set <var>strongest</var> to
-        <var>item</var>.
-3.  Return <var>strongest</var>.
+        is the empty string, add <var>item</var> to <var>result</var>. If the
+        result is <var>newAlgorithm</var>, set <var>strongest</var> to
+        <var>item</var>, set <var>result</var> to the empty set, and add
+        <var>item</var> to <var>result</var>.
+3.  Return <var>result</var>.
 
 [getPrioritizedHashFunction]: #dfn-getprioritizedhashfunction-a-b
 </section><!-- /Algorithms::get the strongest metadata -->
@@ -424,14 +426,29 @@ the user agent.
 4.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
 5.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
-6.  Let <var>algorithm</var> be the <var>alg</var> component of
-    <var>metadata</var>.
-7.  Let <var>expectedValue</var> be the <var>val</var> component of
-    <var>metadata</var>.
-8.  Let <var>actualValue</var> be the result of [applying
-    <var>algorithm</var> to <var>resource</var>][apply-algorithm].
-9.  If <var>actualValue</var> is a case-sensitive match for
-    <var>expectedValue</var>, return `true`. Otherwise, return `false`.
+6.  For each <var>item</var> in <var>metadata</var>:
+    1.  Let <var>algorithm</var> be the <var>alg</var> component of
+        <var>metadata</var>.
+    2.  Let <var>expectedValue</var> be the <var>val</var> component of
+        <var>metadata</var>.
+    3.  Let <var>actualValue</var> be the result of [applying
+        <var>algorithm</var> to <var>resource</var>][apply-algorithm].
+    4.  If <var>actualValue</var> is a case-sensitive match for
+        <var>expectedValue</var>, return `true`.
+7.  Return `false`.
+
+This algorithm allows the user agent to accept multiple, valid strong hash
+functions. For example, a developer might write a `script` element such as:
+
+    <script src="https://foobar.com/content-changes.js"
+            integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=
+                       sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=">
+
+which would allow the user agent to accept two different content payloads, one
+of which matches the first SHA256 hash value and the other matches the second
+SHA256 hash value.
+
+{:.example.highlight}
 
 User agents may allow users to modify the result of this algorithm via user
 preferences, bookmarklets, third-party additions to the user agent, and other

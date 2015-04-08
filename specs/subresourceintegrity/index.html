@@ -143,8 +143,7 @@ substitute malicious content.</p>
 <code>script</code> element, like so:</p>
 
   <pre><code>&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"
-        integrity="type:application/javascript
-                   sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="&gt;
+        integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="&gt;
 </code></pre>
 
   <p>Scripts, of course, are not the only resource type which would benefit
@@ -192,7 +191,7 @@ behavior) would change her code in unfortunate ways by adding
 <a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>link</code> element included on her page:</p>
 
           <pre class="example highlight"><code>&lt;link rel="stylesheet" href="https://site53.cdn.net/style.css"
-      integrity="type:text/css sha256-SDfwewFAE...wefjijfE"&gt;
+      integrity="sha256-SDfwewFAE...wefjijfE"&gt;
 </code></pre>
         </li>
         <li>
@@ -203,8 +202,7 @@ the code she’s carefully reviewed is executed. She can do so by generating
 adding it to the <code>script</code> element she includes on her page:</p>
 
           <pre class="example highlight"><code>&lt;script src="https://analytics-r-us.com/v1.0/include.js"
-        integrity="type:application/javascript
-                   sha256-SDfwewFAE...wefjijfE"&gt;&lt;/script&gt;
+        integrity="sha256-SDfwewFAE...wefjijfE"&gt;&lt;/script&gt;
 </code></pre>
         </li>
         <li>
@@ -256,9 +254,6 @@ unprivileged context are a document loaded over HTTP.</p>
 Content</a> specification. An example of a potentially secure origin
 is an origin whose scheme component is <code>HTTPS</code>.</p>
 
-    <p>The <dfn>MIME type</dfn> of a resource is a technical hint about the use
-and format of that resource. [[!MIMETYPE]]</p>
-
     <p>The <dfn>message body</dfn> and the <dfn>transfer encoding</dfn> of a resource
 are defined by <a href="http://tools.ietf.org/html/rfc7230#section-3">RFC7230, section 3</a>. [[!RFC7230]] </p>
 
@@ -295,12 +290,10 @@ metadata</dfn>, which consists of the following pieces of information:</p>
     <ul>
       <li>cryptographic hash function (“alg”)</li>
       <li><a href="#dfn-digest">digest</a> (“val”)</li>
-      <li>the resource’s <a href="#dfn-mime-type">MIME type</a> (“type”)</li>
     </ul>
 
     <p>The hash function and digest MUST be provided in order to validate a
-resource’s integrity. The MIME type SHOULD be provided, as it mitigates the
-risk of certain attack vectors.</p>
+resource’s integrity.</p>
 
     <p>This metadata MUST be encoded in the same format as the <code>hash-source</code>
 in <a href="http://www.w3.org/TR/CSP11/#source-list-syntax">section 4.2 of the Content Security Policy Level 2 specification</a>.</p>
@@ -311,11 +304,6 @@ an author might choose <a href="#dfn-sha-2">SHA-256</a> as a hash function.
 digest that results. This can be encoded as follows:</p>
 
     <pre class="example highlight"><code>sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
-</code></pre>
-
-    <p>Or, if the author further wishes to specify the Content Type (<code>application/javascript</code>):</p>
-
-    <pre class="example highlight"><code>type:application/javascript sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 </code></pre>
 
     <div class="note">
@@ -353,9 +341,8 @@ sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgR
       <p>Authors may choose to specify both, for example:</p>
 
       <pre><code>&lt;script src="hello_world.js"
-   integrity="type:application/javascript
-      sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-      sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
+   integrity="sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+              sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
     "&gt;&lt;/script&gt;
 </code></pre>
 
@@ -379,15 +366,14 @@ stronger hash functions as they become available.</p>
     <section>
       <h4 id="priority">Priority</h4>
 
-      <p>User agents MUST provide a mechanism of determining the relative priority of
-two hash functions. That is, if a user agent implemented a function like
-<dfn>getPrioritizedHashFunction(a, b)</dfn> it would return the hash function
-the user agent considers the most collision-resistant.
-For example, <code>getPrioritizedHashFunction('SHA-256', 'SHA-512')</code> would return
-<code>SHA-512</code>.</p>
+      <p>User agents MUST provide a mechanism of determining the relative priority of two
+hash functions and return the empty string if the priority is equal. That is, if
+a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
+b)</dfn> it would return the hash function the user agent considers the most
+collision-resistant.  For example, <code>getPrioritizedHashFunction('SHA-256',
+'SHA-512')</code> would return <code>SHA-512</code> and <code>getPrioritizedHashFunction('SHA-256',
+'SHA-256')</code> would return the empty string.</p>
 
-      <p>If both algorithms are equally strong, the user agent SHOULD ensure that there
-is a consistent ordering.</p>
     </section>
     <!-- /Framework::Cryptographic hash functions::Priority -->
 
@@ -510,22 +496,25 @@ agent, add <var>token</var> to <var>result</var>.</li>
       <h4 id="get-the-strongest-metadata-from-varsetvar">Get the strongest metadata from <var>set</var>.</h4>
 
       <ol>
-        <li>Let <var>strongest</var> be the empty string.</li>
+        <li>Let <var>result</var> be the empty set and <var>strongest</var> be the empty
+string.</li>
         <li>For each <var>item</var> in <var>set</var>:
           <ol>
-            <li>If <var>strongest</var> is the empty string, set <var>strongest</var>
-to <var>item</var>, skip to the next
-<var>item</var>.</li>
+            <li>If <var>result</var> is the empty set, add <var>item</var> to
+<var>result</var> and set <var>strongest</var> to <var>item</var>, skip
+to the next <var>item</var>.</li>
             <li>Let <var>currentAlgorithm</var> be the <var>alg</var> component of
 <var>strongest</var>.</li>
             <li>Let <var>newAlgorithm</var> be the <var>alg</var> component of
 <var>item</var>.</li>
             <li>If the result of <a href="#dfn-getprioritizedhashfunction-a-b"><code>getPrioritizedHashFunction(currentAlgorithm, newAlgorithm)</code></a>
-is <var>newAlgorithm</var>, set <var>strongest</var> to
-<var>item</var>.</li>
+is the empty string, add <var>item</var> to <var>result</var>. If the
+result is <var>newAlgorithm</var>, set <var>strongest</var> to
+<var>item</var>, set <var>result</var> to the empty set, and add
+<var>item</var> to <var>result</var>.</li>
           </ol>
         </li>
-        <li>Return <var>strongest</var>.</li>
+        <li>Return <var>result</var>.</li>
       </ol>
 
     </section>
@@ -542,24 +531,32 @@ validation</a>, return <code>false</code>.</li>
         <li>If <var>parsedMetadata</var> is <code>no metadata</code>, return <code>true</code>.</li>
         <li>Let <var>metadata</var> be the result of <a href="#get-the-strongest-metadata-from-set.x">getting the strongest
 metadata from <var>parsedMetadata</var></a>.</li>
-        <li>Let <var>algorithm</var> be the <var>alg</var> component of
+        <li>For each <var>item</var> in <var>metadata</var>:
+          <ol>
+            <li>Let <var>algorithm</var> be the <var>alg</var> component of
 <var>metadata</var>.</li>
-        <li>Let <var>expectedValue</var> be the <var>val</var> component of
+            <li>Let <var>expectedValue</var> be the <var>val</var> component of
 <var>metadata</var>.</li>
-        <li>Let <var>expectedType</var> be the <var>type</var> component of
-<var>metadata</var>.</li>
-        <li>If <var>expectedType</var> is not the empty string, and is not a
-case-insensitive match for <var>resource</var>’s <a href="#dfn-mime-type">MIME type</a>,
-return <code>false</code>.</li>
-        <li>Let <var>actualValue</var> be the result of <a href="#apply-algorithm-to-resource">applying
+            <li>Let <var>actualValue</var> be the result of <a href="#apply-algorithm-to-resource">applying
 <var>algorithm</var> to <var>resource</var></a>.</li>
-        <li>If <var>actualValue</var> is a case-sensitive match for
-<var>expectedValue</var>, return <code>true</code>. Otherwise, return <code>false</code>.</li>
+            <li>If <var>actualValue</var> is a case-sensitive match for
+<var>expectedValue</var>, return <code>true</code>.</li>
+          </ol>
+        </li>
+        <li>Return <code>false</code>.</li>
       </ol>
 
-      <p class="note">If <var>expectedType</var> is the empty string in #10, it would
-be reasonable for the user agent to warn the page’s author about the
-dangers of MIME type confusion attacks via its developer console.</p>
+      <p>This algorithm allows the user agent to accept multiple, valid strong hash
+functions. For example, a developer might write a <code>script</code> element such as:</p>
+
+      <pre><code>&lt;script src="https://foobar.com/content-changes.js"
+        integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=
+                   sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng="&gt;
+</code></pre>
+
+      <p>which would allow the user agent to accept two different content payloads, one
+of which matches the first SHA256 hash value and the other matches the second
+SHA256 hash value.</p>
 
       <p class="note">User agents may allow users to modify the result of this algorithm via user
 preferences, bookmarklets, third-party additions to the user agent, and other
@@ -603,12 +600,6 @@ stated otherwise, it is <code>indeterminate</code>.</p>
             <ol>
               <li>Set <var>response</var>’s integrity state to <code>pending</code>.</li>
               <li>Include a <code>Cache-Control</code> header whose value is “no-transform”.</li>
-              <li>If <var>request</var>’s integrity metadata contains a Content Type:
-                <ol>
-                  <li>Set <var>request</var>’s <code>Accept</code> header value to the value
-of <var>request</var>’s integrity metadata’s Content Type.</li>
-                </ol>
-              </li>
             </ol>
           </li>
         </ol>
@@ -674,8 +665,9 @@ for all possible subresources, i.e., <code>a</code>, <code>audio</code>, <code>e
 The value of the attribute MUST be either the empty string, or at least one
 valid metadata as described by the following ABNF grammar:</p>
 
-    <pre><code>integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) 1*WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
-option-expression  = option-name ":" option-value
+    <pre><code>integrity-metadata = *WSP hash-with-options *( 1*WSP hash-with-options ) *WSP / *WSP
+hash-with-options  = hash-expression *("?" option-expression)
+option-expression  = option-name "=" option-value
 option-name        = 1*option-name-char
 option-name-char   = ALPHA / DIGIT / "-"
 option-value       = *option-value-char
@@ -685,17 +677,14 @@ base64-value       = &lt;base64-value production from [Content Security Policy L
 hash-expression    = hash-algo "-" base64-value
 </code></pre>
 
-    <p>At the moment, the only option-name that is defined is <code>type</code> and its
-value must be a valid <a href="#dfn-mime-type">MIME type</a>.</p>
-
     <p>The <code>integrity</code> IDL attribute must <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a> the <code>integrity</code> content attribute.</p>
 
-    <div class="note">
-      <p>It should be noted that this syntax does not allow for <a href="https://www.igvita.com/2013/05/01/deploying-webp-via-accept-content-negotiation/">content negotiation</a> if
-the developer specifies a MIME type. A change to the syntax to allow this may be
-considered in a future version of the spec, but for now, if a developer wants to
-use content negotiation, they will have to omit a <code>type</code> <code>option-expression</code>.</p>
+    <p><code>option-expression</code>s are associated on a per <code>hash-expression</code> basis and are
+applied only to the <code>hash-expression</code> that immediately precedes it.</p>
 
+    <div class="note">
+      <p>At the moment, no <code>option-expression</code>s are defined. However, future versions of
+the spec make define options, such as [MIME types][].</p>
     </div>
 
   </section>
