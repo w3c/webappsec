@@ -556,8 +556,9 @@ The `integrity` attribute represents [integrity metadata][] for an element.
 The value of the attribute MUST be either the empty string, or at least one
 valid metadata as described by the following ABNF grammar:
 
-    integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) 1*WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
-    option-expression  = option-name ":" option-value
+    integrity-metadata = *WSP hash-with-options *( 1*WSP hash-with-options ) *WSP / *WSP
+    hash-with-options  = hash-expression *("?" option-expression)
+    option-expression  = option-name "=" option-value
     option-name        = 1*option-name-char
     option-name-char   = ALPHA / DIGIT / "-"
     option-value       = *option-value-char
@@ -566,18 +567,14 @@ valid metadata as described by the following ABNF grammar:
     base64-value       = <base64-value production from [Content Security Policy Level 2, section 4.2]>
     hash-expression    = hash-algo "-" base64-value
 
-At the moment, the only option-name that is defined is `type` and its
-value must be a valid [MIME type][].
-
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
 
-<div class="note">
-It should be noted that this syntax does not allow for [content negotiation][] if
-the developer specifies a MIME type. A change to the syntax to allow this may be
-considered in a future version of the spec, but for now, if a developer wants to
-use content negotiation, they will have to omit a `type` `option-expression`.
+`option-expression`s are associated on a per `hash-expression` basis and are
+applied only to the `hash-expression` that immediately precedes it.
 
-[content negotiation]: https://www.igvita.com/2013/05/01/deploying-webp-via-accept-content-negotiation/
+<div class="note">
+At the moment, no `option-expression`s are defined. However, future versions of
+the spec make define options, such as [MIME types][].
 </div>
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
