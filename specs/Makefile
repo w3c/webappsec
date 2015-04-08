@@ -18,6 +18,7 @@ POWER: powerfulfeatures/index.html
 REFERRER: referrer-policy/index.html
 UPGRADE: upgrade/index.html
 UPGRADE-FPWD: upgrade/published/2015-02-FPWD.html
+UPGRADE-WD: upgrade/published/WD.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 	bikeshed -f spec ./csp-pinning/index.src.html
@@ -54,6 +55,9 @@ upgrade/index.html: upgrade/index.src.html biblio.json
 
 upgrade/published/2015-02-FPWD.html: upgrade/index.src.html
 	bikeshed -f spec --md-status=FPWD --md-date=2015-02-26 ./upgrade/index.src.html ./upgrade/published/2015-02-FPWD.html
+
+upgrade/published/WD.html: upgrade/index.src.html
+	bikeshed -f spec --md-status=WD ./upgrade/index.src.html ./upgrade/published/WD.html
 
 publish:
 	git push origin master master:gh-pages
