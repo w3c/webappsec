@@ -45,8 +45,7 @@ This example can be communicated to a user agent by adding the hash to a
 `script` element, like so:
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"
-            integrity="type:application/javascript
-                       sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=">
+            integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=">
 
 {:.example.highlight}
 
@@ -90,7 +89,7 @@ and JavaScript.
     [integrity metadata][] to the `link` element included on her page:
 
         <link rel="stylesheet" href="https://site53.cdn.net/style.css"
-              integrity="type:text/css sha256-SDfwewFAE...wefjijfE">
+              integrity="sha256-SDfwewFAE...wefjijfE">
     {:.example.highlight}
 
 *   An author wants to include JavaScript provided by a third-party
@@ -100,8 +99,7 @@ and JavaScript.
     adding it to the `script` element she includes on her page:
 
         <script src="https://analytics-r-us.com/v1.0/include.js"
-                integrity="type:application/javascript
-                           sha256-SDfwewFAE...wefjijfE"></script>
+                integrity="sha256-SDfwewFAE...wefjijfE"></script>
     {:.example.highlight}
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
@@ -154,9 +152,6 @@ is an origin whose scheme component is <code>HTTPS</code>.
 [potentially secure origin]: #dfn-potentially-secure-origin
 [mixedcontent]: https://www.w3.org/TR/mixed-content/#potentially-secure-origin
 
-The <dfn>MIME type</dfn> of a resource is a technical hint about the use
-and format of that resource. [[!MIMETYPE]]
-
 The <dfn>message body</dfn> and the <dfn>transfer encoding</dfn> of a resource
 are defined by [RFC7230, section 3][messagebody]. [[!RFC7230]] 
 
@@ -200,11 +195,9 @@ metadata</dfn>, which consists of the following pieces of information:
 
 * cryptographic hash function ("alg")
 * [digest][] ("val")
-* the resource's [MIME type][] ("type")
 
 The hash function and digest MUST be provided in order to validate a
-resource's integrity. The MIME type SHOULD be provided, as it mitigates the
-risk of certain attack vectors.
+resource's integrity.
 
 This metadata MUST be encoded in the same format as the `hash-source`
 in [section 4.2 of the Content Security Policy Level 2 specification][csp2-section42].
@@ -215,11 +208,6 @@ an author might choose [SHA-256][sha2] as a hash function.
 digest that results. This can be encoded as follows:
 
     sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
-{:.example.highlight}
-
-Or, if the author further wishes to specify the Content Type (`application/javascript`):
-
-    type:application/javascript sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 {:.example.highlight}
 
 <div class="note">
@@ -235,7 +223,6 @@ result of the following command line:
 
 [sha2]: #dfn-sha-2
 [digest]: #dfn-digest
-[MIME type]: #dfn-mime-type
 [integrity metadata]: #dfn-integrity-metadata
 </section><!-- /Framework::Required metadata -->
 
@@ -261,9 +248,8 @@ either of the following hash expressions:
 Authors may choose to specify both, for example:
 
     <script src="hello_world.js"
-       integrity="type:application/javascript
-          sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-          sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
+       integrity="sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+                  sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
         "></script>
 
 In this case, the user agent will choose the strongest hash function in the
@@ -442,20 +428,10 @@ the user agent.
     <var>metadata</var>.
 7.  Let <var>expectedValue</var> be the <var>val</var> component of
     <var>metadata</var>.
-8.  Let <var>expectedType</var> be the <var>type</var> component of
-    <var>metadata</var>.
-9.  If <var>expectedType</var> is not the empty string, and is not a
-    case-insensitive match for <var>resource</var>'s [MIME type][],
-    return `false`.
-10. Let <var>actualValue</var> be the result of [applying
+8.  Let <var>actualValue</var> be the result of [applying
     <var>algorithm</var> to <var>resource</var>][apply-algorithm].
-11. If <var>actualValue</var> is a case-sensitive match for
+9.  If <var>actualValue</var> is a case-sensitive match for
     <var>expectedValue</var>, return `true`. Otherwise, return `false`.
-
-If <var>expectedType</var> is the empty string in #10, it would
-be reasonable for the user agent to warn the page's author about the
-dangers of MIME type confusion attacks via its developer console.
-{:.note}
 
 User agents may allow users to modify the result of this algorithm via user
 preferences, bookmarklets, third-party additions to the user agent, and other
@@ -494,9 +470,6 @@ to enable the rest of this specification's work [[!FETCH]]:
 
         1.  Set <var>response</var>'s integrity state to `pending`.
         2.  Include a `Cache-Control` header whose value is "no-transform".
-        3.  If <var>request</var>'s integrity metadata contains a Content Type:
-            1.  Set <var>request</var>'s `Accept` header value to the value
-                of <var>request</var>'s integrity metadata's Content Type.
 
 4.  Add the following step before step #1 of the handling of 401 status
     codes in the [HTTP fetch][] algorithm:
