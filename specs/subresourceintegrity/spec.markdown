@@ -45,8 +45,7 @@ This example can be communicated to a user agent by adding the hash to a
 `script` element, like so:
 
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"
-            integrity="type=application/javascript
-                       sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=">
+            integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=">
 
 {:.example.highlight}
 
@@ -90,7 +89,7 @@ and JavaScript.
     [integrity metadata][] to the `link` element included on her page:
 
         <link rel="stylesheet" href="https://site53.cdn.net/style.css"
-              integrity="type=text/css sha256-SDfwewFAE...wefjijfE">
+              integrity="sha256-SDfwewFAE...wefjijfE">
     {:.example.highlight}
 
 *   An author wants to include JavaScript provided by a third-party
@@ -100,8 +99,7 @@ and JavaScript.
     adding it to the `script` element she includes on her page:
 
         <script src="https://analytics-r-us.com/v1.0/include.js"
-                integrity="type=application/javascript
-                           sha256-SDfwewFAE...wefjijfE"></script>
+                integrity="sha256-SDfwewFAE...wefjijfE"></script>
     {:.example.highlight}
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
@@ -154,9 +152,6 @@ is an origin whose scheme component is <code>HTTPS</code>.
 [potentially secure origin]: #dfn-potentially-secure-origin
 [mixedcontent]: https://www.w3.org/TR/mixed-content/#potentially-secure-origin
 
-The <dfn>MIME type</dfn> of a resource is a technical hint about the use
-and format of that resource. [[!MIMETYPE]]
-
 The <dfn>message body</dfn> and the <dfn>transfer encoding</dfn> of a resource
 are defined by [RFC7230, section 3][messagebody]. [[!RFC7230]] 
 
@@ -200,11 +195,9 @@ metadata</dfn>, which consists of the following pieces of information:
 
 * cryptographic hash function ("alg")
 * [digest][] ("val")
-* the resource's [MIME type][] ("type")
 
 The hash function and digest MUST be provided in order to validate a
-resource's integrity. The MIME type SHOULD be provided, as it mitigates the
-risk of certain attack vectors.
+resource's integrity.
 
 This metadata MUST be encoded in the same format as the `hash-source`
 in [section 4.2 of the Content Security Policy Level 2 specification][csp2-section42].
@@ -215,11 +208,6 @@ an author might choose [SHA-256][sha2] as a hash function.
 digest that results. This can be encoded as follows:
 
     sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
-{:.example.highlight}
-
-Or, if the author further wishes to specify the Content Type (`application/javascript`):
-
-    type=application/javascript sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 {:.example.highlight}
 
 <div class="note">
@@ -235,7 +223,6 @@ result of the following command line:
 
 [sha2]: #dfn-sha-2
 [digest]: #dfn-digest
-[MIME type]: #dfn-mime-type
 [integrity metadata]: #dfn-integrity-metadata
 </section><!-- /Framework::Required metadata -->
 
@@ -261,9 +248,8 @@ either of the following hash expressions:
 Authors may choose to specify both, for example:
 
     <script src="hello_world.js"
-       integrity="type=application/javascript
-          sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-          sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
+       integrity="sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+                  sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
         "></script>
 
 In this case, the user agent will choose the strongest hash function in the
@@ -285,15 +271,14 @@ stronger hash functions as they become available.
 <section>
 #### Priority
 
-User agents MUST provide a mechanism of determining the relative priority of
-two hash functions. That is, if a user agent implemented a function like
-<dfn>getPrioritizedHashFunction(a, b)</dfn> it would return the hash function
-the user agent considers the most collision-resistant.
-For example, `getPrioritizedHashFunction('SHA-256', 'SHA-512')` would return
-`SHA-512`.
+User agents MUST provide a mechanism of determining the relative priority of two
+hash functions and return the empty string if the priority is equal. That is, if
+a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
+b)</dfn> it would return the hash function the user agent considers the most
+collision-resistant.  For example, `getPrioritizedHashFunction('SHA-256',
+'SHA-512')` would return `SHA-512` and `getPrioritizedHashFunction('SHA-256',
+'SHA-256')` would return the empty string.
 
-If both algorithms are equally strong, the user agent SHOULD ensure that there
-is a consistent ordering.
 </section><!-- /Framework::Cryptographic hash functions::Priority -->
 
 </section><!-- /Framework::Cryptographic hash functions -->
@@ -411,19 +396,22 @@ the user agent.
 <section>
 #### Get the strongest metadata from <var>set</var>.
 
-1.  Let <var>strongest</var> be the empty string.
+1.  Let <var>result</var> be the empty set and <var>strongest</var> be the empty
+    string.
 2.  For each <var>item</var> in <var>set</var>:
-    1.  If <var>strongest</var> is the empty string, set <var>strongest</var>
-        to <var>item</var>, skip to the next
-        <var>item</var>.
+    1.  If <var>result</var> is the empty set, add <var>item</var> to
+        <var>result</var> and set <var>strongest</var> to <var>item</var>, skip
+        to the next <var>item</var>.
     2.  Let <var>currentAlgorithm</var> be the <var>alg</var> component of
         <var>strongest</var>.
     3.  Let <var>newAlgorithm</var> be the <var>alg</var> component of
         <var>item</var>.
     4.  If the result of [`getPrioritizedHashFunction(currentAlgorithm, newAlgorithm)`][getPrioritizedHashFunction]
-        is <var>newAlgorithm</var>, set <var>strongest</var> to
-        <var>item</var>.
-3.  Return <var>strongest</var>.
+        is the empty string, add <var>item</var> to <var>result</var>. If the
+        result is <var>newAlgorithm</var>, set <var>strongest</var> to
+        <var>item</var>, set <var>result</var> to the empty set, and add
+        <var>item</var> to <var>result</var>.
+3.  Return <var>result</var>.
 
 [getPrioritizedHashFunction]: #dfn-getprioritizedhashfunction-a-b
 </section><!-- /Algorithms::get the strongest metadata -->
@@ -438,24 +426,29 @@ the user agent.
 4.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
 5.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
-6.  Let <var>algorithm</var> be the <var>alg</var> component of
-    <var>metadata</var>.
-7.  Let <var>expectedValue</var> be the <var>val</var> component of
-    <var>metadata</var>.
-8.  Let <var>expectedType</var> be the <var>type</var> component of
-    <var>metadata</var>.
-9.  If <var>expectedType</var> is not the empty string, and is not a
-    case-insensitive match for <var>resource</var>'s [MIME type][],
-    return `false`.
-10. Let <var>actualValue</var> be the result of [applying
-    <var>algorithm</var> to <var>resource</var>][apply-algorithm].
-11. If <var>actualValue</var> is a case-sensitive match for
-    <var>expectedValue</var>, return `true`. Otherwise, return `false`.
+6.  For each <var>item</var> in <var>metadata</var>:
+    1.  Let <var>algorithm</var> be the <var>alg</var> component of
+        <var>metadata</var>.
+    2.  Let <var>expectedValue</var> be the <var>val</var> component of
+        <var>metadata</var>.
+    3.  Let <var>actualValue</var> be the result of [applying
+        <var>algorithm</var> to <var>resource</var>][apply-algorithm].
+    4.  If <var>actualValue</var> is a case-sensitive match for
+        <var>expectedValue</var>, return `true`.
+7.  Return `false`.
 
-If <var>expectedType</var> is the empty string in #10, it would
-be reasonable for the user agent to warn the page's author about the
-dangers of MIME type confusion attacks via its developer console.
-{:.note}
+This algorithm allows the user agent to accept multiple, valid strong hash
+functions. For example, a developer might write a `script` element such as:
+
+    <script src="https://foobar.com/content-changes.js"
+            integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=
+                       sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=">
+
+which would allow the user agent to accept two different content payloads, one
+of which matches the first SHA256 hash value and the other matches the second
+SHA256 hash value.
+
+{:.example.highlight}
 
 User agents may allow users to modify the result of this algorithm via user
 preferences, bookmarklets, third-party additions to the user agent, and other
@@ -494,9 +487,6 @@ to enable the rest of this specification's work [[!FETCH]]:
 
         1.  Set <var>response</var>'s integrity state to `pending`.
         2.  Include a `Cache-Control` header whose value is "no-transform".
-        3.  If <var>request</var>'s integrity metadata contains a Content Type:
-            1.  Set <var>request</var>'s `Accept` header value to the value
-                of <var>request</var>'s integrity metadata's Content Type.
 
 4.  Add the following step before step #1 of the handling of 401 status
     codes in the [HTTP fetch][] algorithm:
@@ -556,7 +546,8 @@ The `integrity` attribute represents [integrity metadata][] for an element.
 The value of the attribute MUST be either the empty string, or at least one
 valid metadata as described by the following ABNF grammar:
 
-    integrity-metadata = *WSP [ option-expression *( 1*WSP option-expression ) 1*WSP ] hash-expression *( 1*WSP hash-expression ) *WSP / *WSP
+    integrity-metadata = *WSP hash-with-options *( 1*WSP hash-with-options ) *WSP / *WSP
+    hash-with-options  = hash-expression *("?" option-expression)
     option-expression  = option-name "=" option-value
     option-name        = 1*option-name-char
     option-name-char   = ALPHA / DIGIT / "-"
@@ -566,10 +557,15 @@ valid metadata as described by the following ABNF grammar:
     base64-value       = <base64-value production from [Content Security Policy Level 2, section 4.2]>
     hash-expression    = hash-algo "-" base64-value
 
-At the moment, the only option-name that is defined is `type` and its
-value must be a valid [MIME type][].
-
 The `integrity` IDL attribute must [reflect][] the `integrity` content attribute.
+
+`option-expression`s are associated on a per `hash-expression` basis and are
+applied only to the `hash-expression` that immediately precedes it.
+
+<div class="note">
+At the moment, no `option-expression`s are defined. However, future versions of
+the spec make define options, such as MIME types [[!MIMETYPES]].
+</div>
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
 </section><!-- /Framework::HTML::integrity -->
