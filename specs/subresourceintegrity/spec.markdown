@@ -564,7 +564,7 @@ applied only to the `hash-expression` that immediately precedes it.
 
 <div class="note">
 At the moment, no `option-expression`s are defined. However, future versions of
-the spec make define options, such as [MIME types][].
+the spec make define options, such as MIME types [[!MIMETYPES]].
 </div>
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
