@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Entry Point Regulation</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-04-05">5 April 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-04-08">8 April 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -99,11 +99,11 @@
   <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
 
   <div class="p-summary" data-fill-with="abstract">
-   <p>This document allows authors to mitigate the risk of certain kinds of
+   <p>Entry Point Regulation aims to mitigate the risk of reflected cross-site
 
-cross-site scripting (XSS) and cross-site request forgery (XSRF) attacks
-by defining a mechanism which an author can use to assert restrictions upon
-the ways in which resources may be fetched from an origin.</p>
+scripting (XSS), cross-site script inclusion (XSSI), and cross-site request
+forgery (CSRF) attacks by demarcating the areas of an application which are
+intended to be navigable.</p>
 
 </div>
 
@@ -237,20 +237,78 @@ the ways in which resources may be fetched from an origin.</p>
     <p><em>This section is not normative.</em></p>
 
 
-    <p>EPR provides a browser-enforced mechanism for validating an entry point
-  policy supplied with a web application.  External references and navigations
-  to non-entry points can then be restricted based on this policy.</p>
+    <p>Entry Point Regulation intends to provide defense-in-depth against reflected
+  cross-site scripting and other content injection (XSS), cross-site script
+  inclusion (XSSI), and cross-site request forgery (CSRF) attacks.</p>
 
 
-    <p>Entry point regulation may be considered an implementation of concepts
-  introduced by Charlie Reis et al. in <a data-link-type="biblio" href="#biblio-isolation">[ISOLATION]</a>.</p>
+    <p>These attacks all rely on the fundamentally porous nature of the web: any
+  addressible portion of an application can be requested by any third-party,
+  with arbitrary <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> parameters and <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a>
+  identifiers. The user agent will happily issue such requests with all the
+  authority granted to the user, which can result in a number of problems.</p>
+
+
+    <p>If an author can limit incoming traffic to a strict set of well-audited entry
+  points, web applications can reduce the risk these attacks present, and indeed
+  some authors have taken steps to do so via server-side logic (and, soon, via
+  Service Workers). These server-side redirects can be an effective solution,
+  but have a number of drawbacks. Complexity to the side, they are prone to
+  false-positive restrictions in cases where a user’s intent should override the
+  author’s intent (bookmarked links, for instance).</p>
+
+
+    <p>This document defines a client-side scheme which can be layered on top of
+  an existing application without server-side modifications, providing the
+  attack mitigation authors desire, while allowing user intent to trumph brittle
+  filters when possible.</p>
 
   
     <h3 class="heading settled" data-level="1.1" id="goals"><span class="secno">1.1. </span><span class="content">Goals</span><a class="self-link" href="#goals"></a></h3>
 
 
-    <p>TBD.</p>
+    <p>After an author implements EPR for an origin, the following statements ought
+  to hold:</p>
 
+
+    <ol>
+     <li data-md="">
+      <p>Authors should be able to block incoming requests based on the
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a> being requested. That is a request for
+  <code>/</code> might be allowed, while a request for
+  <code>/api/logout.cgi</code> might be denied.</p>
+      
+
+
+      <p>Modifications might include stripping <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> and
+  <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a> data from the request’s URL, stripping</p>
+      
+
+
+     <li data-md="">
+      <p>Authors should be able to block or modify incoming requests that contain
+  data (e.g. the URL might have <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> or
+  <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a> data, or the request might contain a
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-body">body</a>) differently to requests that do not contain
+  data.</p>
+      
+
+
+     <li data-md="">
+      <p>Requests should be excluded from the above filters if the request
+  originates from a same-origin source. That is, any page on
+  <code>https://example.com/</code> may request any resource on that origin,
+  while requests from <code>https://not-example.com/</code> would be
+  restricted.</p>
+      
+
+
+     <li data-md="">
+      <p>A user agent may choose to exclude other requests from the above filters
+  in order to prioritize a user’s intent. For instance, URLs typed directly
+  into the address bar, or bookmarked URLs.</p>
+      
+</ol>
   
     <h3 class="heading settled" data-level="1.2" id="examples"><span class="secno">1.2. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h3>
 
@@ -396,7 +454,7 @@ the ways in which resources may be fetched from an origin.</p>
   in a manifest via the <code>epr_manifest</code> attribute.</p>
 
   
-    <div class="example">
+    <div class="example" id="example-cd9d5230"><a class="self-link" href="#example-cd9d5230"></a>
     
      <pre>{
   "site": ...
@@ -1244,7 +1302,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <h2 class="heading settled" data-level="6" id="acknowledgements"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
 
 
-     <p>Awesome people are awesome.</p>
+     <p>Entry point regulation is an implementation of concepts introduced by Charlie
+  Reis et al. in section 5 of <a data-link-type="biblio" href="#biblio-isolation">[ISOLATION]</a>.</p>
 </section>
 
 </section></main>
@@ -1273,7 +1332,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     like this:
 
     </p>
-  <div class="example">
+  <div class="example" id="example-f839f6c8"><a class="self-link" href="#example-f839f6c8"></a>
         
    <p>This is an example of an informative example.</p>
    

@@ -8,10 +8,10 @@ Level: 1
 Editor: David Ross, Google Inc., drx@google.com
 Editor: Mike West 56384, Google Inc., mkwst@google.com
 Abstract:
-  This document allows authors to mitigate the risk of certain kinds of
-  cross-site scripting (XSS) and cross-site request forgery (XSRF) attacks
-  by defining a mechanism which an author can use to assert restrictions upon
-  the ways in which resources may be fetched from an origin.
+  Entry Point Regulation aims to mitigate the risk of reflected cross-site
+  scripting (XSS), cross-site script inclusion (XSSI), and cross-site request
+  forgery (CSRF) attacks by demarcating the areas of an application which are
+  intended to be navigable.
 Indent: 2
 </pre>
 <pre class="anchors">
@@ -195,16 +195,57 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <em>This section is not normative.</em>
 
-  EPR provides a browser-enforced mechanism for validating an entry point
-  policy supplied with a web application.  External references and navigations
-  to non-entry points can then be restricted based on this policy.
+  Entry Point Regulation intends to provide defense-in-depth against reflected
+  cross-site scripting and other content injection (XSS), cross-site script
+  inclusion (XSSI), and cross-site request forgery (CSRF) attacks.
 
-  Entry point regulation may be considered an implementation of concepts
-  introduced by Charlie Reis et al. in [[ISOLATION]].
+  These attacks all rely on the fundamentally porous nature of the web: any
+  addressible portion of an application can be requested by any third-party,
+  with arbitrary <a for="URL">query</a> parameters and <a for="URL">fragment</a>
+  identifiers. The user agent will happily issue such requests with all the
+  authority granted to the user, which can result in a number of problems.
+
+  If an author can limit incoming traffic to a strict set of well-audited entry
+  points, web applications can reduce the risk these attacks present, and indeed
+  some authors have taken steps to do so via server-side logic (and, soon, via
+  Service Workers). These server-side redirects can be an effective solution,
+  but have a number of drawbacks. Complexity to the side, they are prone to
+  false-positive restrictions in cases where a user's intent should override the
+  author's intent (bookmarked links, for instance).
+
+  This document defines a client-side scheme which can be layered on top of
+  an existing application without server-side modifications, providing the
+  attack mitigation authors desire, while allowing user intent to trumph brittle
+  filters when possible.
 
   <h3 id="goals">Goals</h3>
 
-  TBD.
+  After an author implements EPR for an origin, the following statements ought
+  to hold:
+
+  1.  Authors should be able to block incoming requests based on the
+      <a for="request">URL</a> being requested. That is a request for
+      <code>/</code> might be allowed, while a request for
+      <code>/api/logout.cgi</code> might be denied.
+
+      Modifications might include stripping <a for="URL">query</a> and
+      <a for="URL">fragment</a> data from the request's URL, stripping 
+
+  2.  Authors should be able to block or modify incoming requests that contain
+      data (e.g. the URL might have <a for="URL">query</a> or
+      <a for="URL">fragment</a> data, or the request might contain a
+      <a for="request">body</a>) differently to requests that do not contain
+      data.
+
+  3.  Requests should be excluded from the above filters if the request
+      originates from a same-origin source. That is, any page on
+      <code>https://example.com/</code> may request any resource on that origin,
+      while requests from <code>https://not-example.com/</code> would be
+      restricted.
+
+  4.  A user agent may choose to exclude other requests from the above filters
+      in order to prioritize a user's intent. For instance, URLs typed directly
+      into the address bar, or bookmarked URLs.
 
   <h3 id="examples">Examples</h3>
 
@@ -851,5 +892,6 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>
 
-  Awesome people are awesome.
+  Entry point regulation is an implementation of concepts introduced by Charlie
+  Reis et al. in section 5 of [[ISOLATION]].
 </section>
