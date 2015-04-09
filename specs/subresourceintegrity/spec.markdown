@@ -732,10 +732,6 @@ Thus, authors SHOULD deliver integrity metadata only to a [privileged
 document][]. See also [securing the web][].
 
 [Securing the Web]: https://w3ctag.github.io/web-https/
-[privileged document]: #dfn-privileged-document
-[unprivileged document]: #dfn-privileged-document
-[unprivileged context]: #dfn-privileged-context
-
 </section><!-- /Security::Insecure channels -->
 
 <section>
