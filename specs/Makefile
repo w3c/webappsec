@@ -7,6 +7,7 @@ clean:
 	rm -rf ./referrer-policy/index.html
 
 CREDENTIAL: credentialmanagement/index.html
+CREDENTIAL-FPWD: credentialmanagement/published/2015-04-FPWD.html
 CSP-PINNING: csp-pinning/index.html
 CSP-PINNING-FPWD: csp-pinning/published/2015-02-FPWD.html
 CSP2: CSP2/index.html
@@ -37,6 +38,9 @@ content-security-policy/index.html: content-security-policy/index.src.html bibli
 
 credentialmanagement/index.html: credentialmanagement/index.src.html biblio.json
 	bikeshed -f spec ./credentialmanagement/index.src.html
+
+credentialmanagement/published/2015-04-FPWD.html: credentialmanagement/index.src.html biblio.json
+	bikeshed -f spec --md-status=FPWD ./credentialmanagement/index.src.html ./credentialmanagement/published/2015-04-FPWD.html
 
 mixedcontent/index.html: mixedcontent/index.src.html biblio.json
 	bikeshed -f spec ./mixedcontent/index.src.html
