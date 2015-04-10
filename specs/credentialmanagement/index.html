@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Credential Management</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-03-30">30 March 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-04-10">10 April 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -80,7 +80,7 @@
      <dt>Version History:
      <dd><a href="https://github.com/w3c/webappsec/commits/master/specs/credentialmanagement/index.src.html">https://github.com/w3c/webappsec/commits/master/specs/credentialmanagement/index.src.html</a>
      <dt>Feedback:
-     <dd><span><a href="mailto:public-webappsec@w3.org?subject=%5BCREDENTIAL%5D%20feedback">public-webappsec@w3.org</a> with subject line “<kbd>[CREDENTIAL] <var>… message topic …</var></kbd>” (<a href="http://lists.w3.org/Archives/Public/public-webappsec/" rel="discussion">archives</a>)</span>
+     <dd><span><a href="mailto:public-webappsec@w3.org?subject=%5Bcredential-management%5D%20feedback">public-webappsec@w3.org</a> with subject line “<kbd>[credential-management] <var>… message topic …</var></kbd>” (<a href="http://lists.w3.org/Archives/Public/public-webappsec/" rel="discussion">archives</a>)</span>
      <dt>Issue Tracking:
      <dd><a href="#issues-index">Inline In Spec</a>
      <dt class="editor">Editor:
@@ -102,7 +102,10 @@
   <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
 
   <div class="p-summary" data-fill-with="abstract">
-   <p>This specification describes an imperative API enabling a website to request a user’s credentials in order to sign them in, and to help the user agent correctly store user credentials for future use.</p>
+   <p>This specification describes an imperative API enabling a website to request a
+
+user’s credentials from a user agent, and to help the user agent correctly
+store user credentials for future use.</p>
 
 </div>
 
@@ -124,13 +127,13 @@
 </p>
    <p>
 	The (<a href="http://lists.w3.org/Archives/Public/public-webappsec/">archived</a>) public mailing list
-	<a href="mailto:public-webappsec@w3.org?Subject=%5BCREDENTIAL%5D%20PUT%20SUBJECT%20HERE">public-webappsec@w3.org</a>
+	<a href="mailto:public-webappsec@w3.org?Subject=%5Bcredential-management%5D%20PUT%20SUBJECT%20HERE">public-webappsec@w3.org</a>
 	(see <a href="http://www.w3.org/Mail/Request">instructions</a>)
 	is preferred for discussion of this specification.
 	When sending e-mail,
-	please put the text “CREDENTIAL” in the subject,
+	please put the text “credential-management” in the subject,
 	preferably like this:
-	“[CREDENTIAL] <em>…summary of comment…</em>”
+	“[credential-management] <em>…summary of comment…</em>”
 
 </p>
    <p>
@@ -307,11 +310,11 @@
 
     <p>These use cases are explored in more detail in <a href="#use-cases">§1.1 Use Cases</a> and in
   <a href="https://w3c.github.io/webappsec/usecases/credentialmanagement/">
-  Credential Management: Use Cases and Requirements</a>;
-  this specification attempts to address many of the requirements that document
-  outlines by defining a Credential Manager API which a website can use to
-  request <a data-link-type="dfn" href="#credentials">credentials</a> for a user, and to notify the user agent that the
-  user successfully signed in or signed out.</p>
+  Credential Management: Use Cases and Requirements</a>; this specification
+  attempts to address many of the requirements that document outlines by
+  defining a Credential Manager API which a website can use to request
+  <a data-link-type="dfn" href="#credentials">credentials</a> for a user, and to ask the user agent to persist
+  credentials when a user signs in successfully.</p>
 
 
     <p class="note" role="note">Note: The API defined here is intentionally small and simple: it does not
@@ -412,14 +415,9 @@
      
 
     
-     <div class="example" id="example-6d33492a"><a class="self-link" href="#example-6d33492a"></a>
+     <div class="example">
       
-      <pre>if (!navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>) {
-  // Sadness! Return early.
-  return;
-}
-
-navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get()</a>.then(
+      <pre>navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get()</a>.then(
     function(credential) {
       if (!credential) {
         // The user either doesn’t have credentials for this site, or
@@ -431,7 +429,6 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
 
       credential.<a class="idl-code" data-link-type="method" href="#dom-localcredential-sendurl">send</a>("https://example.com/loginEndpoint")
         .then(function (response) {
-          navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-store">store</a>(credential);
           // Notify the user that signin succeeded! Do amazing, signed-in things!
         });
     });
@@ -452,24 +449,14 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
      
 
     
-     <div class="example" id="example-2da23a44"><a class="self-link" href="#example-2da23a44"></a>
+     <div class="example">
       
-      <pre>if (!navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>) {
-  // Sadness! Return early.
-  return;
-}
-
-navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get</a>({
+      <pre>navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get</a>({
   "<a data-link-type="idl" href="#dom-credentialrequestoptions-federations">federations</a>": [ "https://federation.com" ]
 }).then(
     function(credential) {
-      if (!credential) {
-        // The user either doesn’t have credentials for this site, or
-        // refused to share them. Insert some code here to show a basic
-        // login form (or, ideally, do nothing, since this API should
-        // really be progressive enhancement on top of an existing form).
+      if (!credential)
         return;
-      }
 
       if (credential instanceof <a data-link-type="idl" href="#federatedcredential">FederatedCredential</a>) {
         switch (credential.<a data-link-type="idl" href="#dom-federatedcredential-federation">federation</a>) {
@@ -485,8 +472,10 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
       
 
 
-      <p class="note" role="note">Note: This API is focused on a sign-in workflow, but could potentially
-      be useful for federated <strong>sign-up</strong> flows as well.</p>
+      <p class="note" role="note">Note: This API does not go out to the identity provider to grab a token,
+      or authenticate the user in anyway. It provides a hint to the website as
+      to which identity provider the user prefers to use, and little more. See
+      <a href="#future-work">§9 Future Work</a> for directions future versions of this API could take.</p>
       
     
      </div>
@@ -502,13 +491,14 @@ navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-cr
      
 
     
-     <div class="example" id="example-7b1d8e65"><a class="self-link" href="#example-7b1d8e65"></a>
+     <div class="example">
       If a user is signed in by calling <code class="idl"><a data-link-type="idl" href="#dom-localcredential-sendurl">send()</a></code> on a <code class="idl"><a data-link-type="idl" href="#localcredential">LocalCredential</a></code>
       object, then we can check the response to determine whether the user
       was signed in successfully, and notify the user agent accordingly:
 
       
-      <pre>// Given `credential`:
+      <pre>var credential = new <a data-link-type="idl" href="#localcredential">LocalCredential</a>("username",
+                                     "password");
 credential.send("https://example.com/sign-in/")
   .then(function (response) {
     if (response.status == 200)
@@ -521,7 +511,7 @@ credential.send("https://example.com/sign-in/")
      
 
     
-     <div class="example" id="example-be72aa9a"><a class="self-link" href="#example-be72aa9a"></a>
+     <div class="example">
       If we’re using a <a data-link-type="dfn" href="#federated-identity-provider">federated identity provider</a>:
 
       
@@ -783,6 +773,18 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       in <a href="#send-localcredential">§4.4 
     Send localCredential to url.
   </a> when this method is executed.
+
+
+      <p class="issue" id="issue-80c723f0"><a class="self-link" href="#issue-80c723f0"></a>Do we need the ability to pass in more information than just a URL?
+      Perhaps a dictionary of key/value pairs to be appended to the
+      username/password pair?</p>
+      
+
+
+      <p class="issue" id="issue-6bd91de6"><a class="self-link" href="#issue-6bd91de6"></a>Probably not something for v1, but an interesting option would be
+      to provide a hash function here that the user agent would apply to the
+      password before sending it over the wire.</p>
+      
     
      
   
@@ -896,13 +898,6 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
   generated passwords. Perhaps something similar to iOS8’s
   <code>SecCreateSharedWebCredentialPassword</code>.</p>
 
-
-    <p class="issue" id="issue-6dc34f78"><a class="self-link" href="#issue-6dc34f78"></a>Should we add <code>notifyChange(optional Credential credential)</code>?
-  The functionality is currently wrapped up in <a href="#save-credential">§4.3 
-    Save credential
-  </a>, but could
-  be trivially pushed out into a separate API if that makes things more clear.</p>
-
   
     <h3 class="heading settled" data-level="3.3" id="interfaces-request-options"><span class="secno">3.3. </span><span class="content">get Options</span><a class="self-link" href="#interfaces-request-options"></a></h3>
 
@@ -952,7 +947,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     </dl>
 
   
-    <div class="example" id="example-145909c3"><a class="self-link" href="#example-145909c3"></a>
+    <div class="example">
     Suppose <code>https://example.com/</code> only supports federated sign-in
     via <code>https://identity.example.com/</code>. It could request credentials
     via the following call:
@@ -1466,7 +1461,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     
      <li>
       Return a promise rejected with a <code>TypeError</code> if
-      <var>endpoint</var> is not a valid <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#url">URL</a></code>.
+      <var>endpoint</var> is not a valid <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#url">URL</a></code> <strong>and</strong> terminate
+      this algorithm.
     
      
     
@@ -2049,7 +2045,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     like this:
 
     </p>
-  <div class="example" id="example-f839f6c8"><a class="self-link" href="#example-f839f6c8"></a>
+  <div class="example">
         
    <p>This is an example of an informative example.</p>
    
@@ -2306,14 +2302,15 @@ dictionary <a data-global-name="" href="#dictdef-credentialrequestoptions">Crede
    <div class="issue">We need to get rid of the
   <code><span>[[requiresUserMediation]]</span></code>
   slot in favor of an origin-specific value.<a href="#issue-e536848c"> ↵ </a></div>
+   <div class="issue">Do we need the ability to pass in more information than just a URL?
+      Perhaps a dictionary of key/value pairs to be appended to the
+      username/password pair?<a href="#issue-80c723f0"> ↵ </a></div>
+   <div class="issue">Probably not something for v1, but an interesting option would be
+      to provide a hash function here that the user agent would apply to the
+      password before sending it over the wire.<a href="#issue-6bd91de6"> ↵ </a></div>
    <div class="issue">We should support explicit sign-up via <code class="idl"><a data-link-type="idl" href="#localcredential">LocalCredential</a></code>s with
   generated passwords. Perhaps something similar to iOS8’s
   <code>SecCreateSharedWebCredentialPassword</code>.<a href="#issue-1a314ee6"> ↵ </a></div>
-   <div class="issue">Should we add <code>notifyChange(optional Credential credential)</code>?
-  The functionality is currently wrapped up in <a href="#save-credential">§4.3 
-    Save credential
-  </a>, but could
-  be trivially pushed out into a separate API if that makes things more clear.<a href="#issue-6dc34f78"> ↵ </a></div>
    <div class="issue">Should we introduce a new Fetch context?
       <code>credential</code> or something? <a href="https://github.com/w3c/webappsec/issues/231">&lt;https://github.com/w3c/webappsec/issues/231></a><a href="#issue-b97befdf"> ↵ </a></div>
    <div class="issue">Is this a meaningful restriction for Service Workers? Probably not.<a href="#issue-bc2c9b42"> ↵ </a></div>

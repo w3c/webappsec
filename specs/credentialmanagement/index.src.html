@@ -2,11 +2,14 @@
 <pre class="metadata">
 Status: ED
 ED: https://w3c.github.io/webappsec/specs/credentialmanagement/
-Shortname: CREDENTIAL
+Shortname: credential-management
 Level: 1
 Editor: Mike West, Google Inc., mkwst@google.com
 Group: webappsec
-Abstract: This specification describes an imperative API enabling a website to request a user's credentials in order to sign them in, and to help the user agent correctly store user credentials for future use.
+Abstract:
+  This specification describes an imperative API enabling a website to request a
+  user's credentials from a user agent, and to help the user agent correctly
+  store user credentials for future use.
 Version History: https://github.com/w3c/webappsec/commits/master/specs/credentialmanagement/index.src.html
 !Use Cases: <a href="https://w3c.github.io/webappsec/usecases/credentialmanagement/">https://w3c.github.io/webappsec/usecases/credentialmanagement/</a>
 Indent: 2
@@ -30,7 +33,7 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
       text: top-level browsing context; url: top-level-browsing-context
       text: nested browsing context
       text: active document
-  type: element-attr 
+  type: element-attr
     urlPrefix: forms.html
       text: autocomplete; for: form; url: attr-form-autocomplete
   type: interface
@@ -142,11 +145,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   These use cases are explored in more detail in [[#use-cases]] and in
   <a href="https://w3c.github.io/webappsec/usecases/credentialmanagement/">
-  Credential Management: Use Cases and Requirements</a>;
-  this specification attempts to address many of the requirements that document
-  outlines by defining a Credential Manager API which a website can use to
-  request <a>credentials</a> for a user, and to notify the user agent that the
-  user successfully signed in or signed out.
+  Credential Management: Use Cases and Requirements</a>; this specification
+  attempts to address many of the requirements that document outlines by
+  defining a Credential Manager API which a website can use to request
+  <a>credentials</a> for a user, and to ask the user agent to persist
+  credentials when a user signs in successfully.
 
   Note: The API defined here is intentionally small and simple: it does not
   intend to provide authentication in and of itself, but is limited to providing
@@ -221,11 +224,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <div class="example">
       <pre>
-        if (!navigator.<a attribute>credentials</a>) {
-          // Sadness! Return early.
-          return;
-        }
-
         navigator.<a attribute>credentials</a>.<a idl>get()</a>.then(
             function(credential) {
               if (!credential) {
@@ -238,7 +236,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
               credential.<a method lt="send()">send</a>("https://example.com/loginEndpoint")
                 .then(function (response) {
-                  navigator.<a attribute>credentials</a>.<a idl lt="store()">store</a>(credential);
                   // Notify the user that signin succeeded! Do amazing, signed-in things!
                 });
             });
@@ -253,22 +250,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <div class="example">
       <pre>
-        if (!navigator.<a attribute>credentials</a>) {
-          // Sadness! Return early.
-          return;
-        }
-
         navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
           "<a idl for="CredentialRequestOptions">federations</a>": [ "https://federation.com" ]
         }).then(
             function(credential) {
-              if (!credential) {
-                // The user either doesn't have credentials for this site, or
-                // refused to share them. Insert some code here to show a basic
-                // login form (or, ideally, do nothing, since this API should
-                // really be progressive enhancement on top of an existing form).
+              if (!credential)
                 return;
-              }
 
               if (credential instanceof <a idl>FederatedCredential</a>) {
                 switch (credential.<a idl for="FederatedCredential">federation</a>) {
@@ -282,8 +269,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
             });
       </pre>
 
-      Note: This API is focused on a sign-in workflow, but could potentially
-      be useful for federated <strong>sign-up</strong> flows as well.
+      Note: This API does not go out to the identity provider to grab a token,
+      or authenticate the user in anyway. It provides a hint to the website as
+      to which identity provider the user prefers to use, and little more. See
+      [[#future-work]] for directions future versions of this API could take.
     </div>
 
     <h4 id="examples-post-signin">Post-sign-in Confirmation</h4>
@@ -297,7 +286,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       was signed in successfully, and notify the user agent accordingly:
 
       <pre>
-        // Given `credential`:
+        var credential = new <a idl>LocalCredential</a>("username",
+                                             "password");
         credential.send("https://example.com/sign-in/")
           .then(function (response) {
             if (response.status == 200)
@@ -500,6 +490,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       represented by this object to a same-origin endpoint in order to sign a
       user into a website. The user agent MUST execute the algorithm described
       in [[#send-localcredential]] when this method is executed.
+
+      ISSUE: Do we need the ability to pass in more information than just a URL?
+      Perhaps a dictionary of key/value pairs to be appended to the
+      username/password pair?
+
+      ISSUE: Probably not something for v1, but an interesting option would be
+      to provide a hash function here that the user agent would apply to the
+      password before sending it over the wire.
     </dd>
   </dl>
 
@@ -575,10 +573,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   ISSUE: We should support explicit sign-up via {{LocalCredential}}s with
   generated passwords. Perhaps something similar to iOS8's
   <code>SecCreateSharedWebCredentialPassword</code>.
-
-  ISSUE: Should we add <code>notifyChange(optional Credential credential)</code>?
-  The functionality is currently wrapped up in [[#save-credential]], but could
-  be trivially pushed out into a separate API if that makes things more clear.
 
   <h3 id="interfaces-request-options">get Options</h3>
 
@@ -1272,7 +1266,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   which data can be sent. In particular, authors should ensure that the
   following directives are set, explicitly or implicitly, in
   their pages' policies:
- 
+
   <ol>
     <li>
       <code><a>connect-src</a></code> further restricts the origins to which
