@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Entry Point Regulation</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-04-10">10 April 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-04-13">13 April 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -190,6 +190,9 @@ intended to be navigable.</p>
   </span></a>
       <li><a href="#matching"><span class="secno">4.4</span> <span class="content">
     Does <var>request</var> match <var>rule</var>?
+  </span></a>
+      <li><a href="#reporting"><span class="secno">4.5</span> <span class="content">
+    Report <var>request</var> as an entrypoint violation
   </span></a>
      </ul>
     <li><a href="#iana-considerations"><span class="secno">5</span> <span class="content">IANA Considerations</span></a>
@@ -361,6 +364,12 @@ intended to be navigable.</p>
     </ol>
 
 
+    <p>An <dfn data-dfn-type="dfn" data-export="" id="epr-store">EPR store<a class="self-link" href="#epr-store"></a></dfn> is an opaque storage mechanism which offers a
+  user agent the ability to save, retrieve, and modify <a data-link-type="dfn" href="#epr-manifest">EPR manifests</a> on
+  a per-origin basis. The implementation is vendor-specific, and the interface
+  provided is not exposed to the web.</p>
+
+
     <p>The Augmented Backus-Naur Form (ABNF) notation is specified in <a data-link-type="biblio" href="#biblio-rfc5234">[RFC5234]</a>.</p>
 </section>
 
@@ -389,7 +398,7 @@ intended to be navigable.</p>
      <li>
       <code>example.com</code> responds with a document that has an
       <code><a data-link-type="dfn" href="#epr-http-response-header-field">EPR</a></code> header, which tells the UA that it should
-      regulate some entry points.
+      regulate entry points for the origin.
 
 
       <p>Somewhere in Fetch after we have the headers, we’ll call out to
@@ -488,6 +497,12 @@ intended to be navigable.</p>
   
     </div>
 
+
+    <p class="issue" id="issue-eb6de00a"><a class="self-link" href="#issue-eb6de00a"></a>It isn’t clear that the EPR manifest ought to be part of an application
+  manifest as defined in <a data-link-type="biblio" href="#biblio-manifest">[MANIFEST]</a>. We’ve lumped it in there at the moment
+  because it seems worth trying out, but it’s not clear that the concepts
+  (though similar) mesh as well as they need to.</p>
+
   
     <h4 class="heading settled" data-level="3.2.1" id="manifest-epr"><span class="secno">3.2.1. </span><span class="content">The <code>epr</code> manifest member</span><a class="self-link" href="#manifest-epr"></a></h4>
 
@@ -520,17 +535,15 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <dd>
-      A URL to which violation reports will be sent. See TODO for user agent
-      conformance requirements.
+      A URL to which violation reports will be sent. See <a href="#reporting">§4.5 
+    Report request as an entrypoint violation
+  </a> for user
+      agent conformance requirements.
 
 
       <p class="note" role="note">Note: Authors may use the <a data-link-type="dfn" href="#allow">allow</a> behavior to simulate a
       "report only" mode that does not actually modify incoming <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a>
       but does send reports back to the report URL.</p>
-      
-
-
-      <p class="issue" id="issue-b412787b"><a class="self-link" href="#issue-b412787b"></a>We need to define violation reports. Steal something from CSP.</p>
       
     
      
@@ -578,18 +591,12 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <p>EPR manifests define a set of <dfn data-dfn-type="dfn" data-noexport="" id="rules">rules<a class="self-link" href="#rules"></a></dfn> for a site, governing a user
   agent’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#fetching">fetching</a> behavior for <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a> made to that site’s
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>. Each rule is scoped to a specific subset of an origin’s
-  URLs via a path prefix or a regular expression, and contains a set of
-  behaviors which MUST be applied to <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a> which match the rule’s
-  scope (as defined in <a href="#matching">§4.4 
+  URLs via a path prefix or a regular expression. Incoming <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a>
+  which do not match the ruleset (as defined in <a href="#matching">§4.4 
     Does request match rule?
-  </a>).</p>
-
-
-    <p>DR: This implies there is something akin to defaultResBehavior and
-  defaultNavBehavior that defines the behavior on a per-rule basis.  Today
-  the prototype does not allow for this.  I would prefer not to make this
-  configurable on a per-rule basis for simplicity’s sake.  But if there’s
-  a use case we could add it.</p>
+  </a>) will be dealt
+  with as defined in <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-navigationbehavior">navigationBehavior</a></code> or
+  <code class="idl"><a data-link-type="idl" href="#dom-eprpolicy-subresourcebehavior">subresourceBehavior</a></code>, as appropriate.</p>
 
 
     <p>The following IDL defines rules' syntax:</p>
@@ -686,7 +693,10 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <dd>
       Allow the request without modification. This behavior may be used to
       put the user agent in a "report only" mode, where violations are reported
-      (as described in TODO), but requests proceed without modification.
+      (as described in <a href="#reporting">§4.5 
+    Report request as an entrypoint violation
+  </a>), but requests proceed without
+      modification.
     
      
     
@@ -758,8 +768,9 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <ol>
     
      <li>
-      Let <var>policy</var> be the policy which a user agent has stored for
-      <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>.
+      Let <var>policy</var> be the policy retrieved from a user agent’s <a data-link-type="dfn" href="#epr-store">EPR
+      store</a> for <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-url">URL</a>’s
+      <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>.
     
      
     
@@ -943,7 +954,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   apply a <dfn data-dfn-type="dfn" data-noexport="" id="default-epr-policy">default EPR policy<a class="self-link" href="#default-epr-policy"></a></dfn> to the request.</p>
 
 
-    <p class="issue" id="issue-14e7d124"><a class="self-link" href="#issue-14e7d124"></a>drx@'s <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>
+    <p class="issue" id="issue-c9d1ad55"><a class="self-link" href="#issue-c9d1ad55"></a>Can we simply drop this and turn EPR into a TOFU scheme? The existing
+  <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>
   is problematic, as it would block navigational requests that contain query
   parameters. Given the prevalance of tracking parameters (for instance,
   <code>utm_{source,medium,campaign}</code> are quasi-ubiquitous), this seems
@@ -959,21 +971,28 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a> to extract an <code><a data-link-type="dfn" href="#epr-http-response-header-field">EPR</a></code>
   header field. If such a field is present, the user agent MUST fetch and
   process an <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a> from <var>response</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>
-  unless:</p>
+  unless one or more of the following statements is true:</p>
+
   
-    <ul>
-  
-     <li>The request was for a manifest file.  (So as not to go into an
-  infinite loop.)
+    <ol>
+    
+     <li>
+      <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">context</a> is
+      <code>manifest</code>
+    
+     
+    
+     <li>
+       A manifest for this origin is already cached at the user agent.
+    
+     
+    
+     <li>
+      There is already a pending manifest request for the origin.
+    
      
   
-     <li>A manifest for this origin is already cached at the user agent.
-     
-  
-     <li>There is already a pending manifest request for the origin.
-     
-  
-    </ul>
+    </ol>
 
 
     <p>To <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#process-response">process response</a> <var>response</var>, execute the following steps:</p>
@@ -1023,10 +1042,9 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
         <ol>
             
          <li>
-              TODO.  Need to discuss storage &amp; caching.  Also it should be 
-              possible for the user to manually clear stored manifests
-              when they clear their browser history.
-              the
+              Store the manifest in the user agent’s <a data-link-type="dfn" href="#epr-store">EPR Store</a>, keyed
+              to <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-url">URL</a>’s
+              <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>.
             
          
           
@@ -1241,6 +1259,14 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
   
     </ol>
+
+  
+    <h3 class="heading settled" data-level="4.5" id="reporting"><span class="secno">4.5. </span><span class="content">
+    Report <var>request</var> as an entrypoint violation
+  </span><a class="self-link" href="#reporting"></a></h3>
+
+
+    <p class="issue" id="issue-b412787b"><a class="self-link" href="#issue-b412787b"></a>We need to define violation reports. Steal something from CSP.</p>
 </section>
 
 
@@ -1396,6 +1422,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
    <li>EPRPolicy, <a href="#dictdef-eprpolicy">3.2.1</a>
    <li>EPRRequestType, <a href="#enumdef-eprrequesttype">3.2.2</a>
    <li>EPRRule, <a href="#dictdef-eprrule">3.2.2</a>
+   <li>EPR store, <a href="#epr-store">2</a>
    <li>match, <a href="#match">4.4</a>
    <li>navigational request, <a href="#navigational-request">2</a>
    <li>navigationBehavior, <a href="#dom-eprpolicy-navigationbehavior">3.2.1</a>
@@ -1516,16 +1543,21 @@ dictionary <a data-global-name="" href="#dictdef-eprrule">EPRRule</a> {
 </pre>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue">We need to define violation reports. Steal something from CSP.<a href="#issue-b412787b"> ↵ </a></div>
+   <div class="issue">It isn’t clear that the EPR manifest ought to be part of an application
+  manifest as defined in <a data-link-type="biblio" href="#biblio-manifest">[MANIFEST]</a>. We’ve lumped it in there at the moment
+  because it seems worth trying out, but it’s not clear that the concepts
+  (though similar) mesh as well as they need to.<a href="#issue-eb6de00a"> ↵ </a></div>
    <div class="issue">How is this specified?<a href="#issue-ea6fca94"> ↵ </a></div>
    <div class="issue">Do we need a <code>connectionBehavior</code> property?<a href="#issue-52662b74"> ↵ </a></div>
    <div class="issue">No idea how this works. One URL for all failures? One URL per rule?<a href="#issue-e22784e4"> ↵ </a></div>
-   <div class="issue">drx@'s <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>
+   <div class="issue">Can we simply drop this and turn EPR into a TOFU scheme? The existing
+  <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>
   is problematic, as it would block navigational requests that contain query
   parameters. Given the prevalance of tracking parameters (for instance,
   <code>utm_{source,medium,campaign}</code> are quasi-ubiquitous), this seems
-  like it will cause issues.<a href="#issue-14e7d124"> ↵ </a></div>
+  like it will cause issues.<a href="#issue-c9d1ad55"> ↵ </a></div>
    <div class="issue">Need to have spec language for this. There’s surely a regex
           spec somewhere, right?
-          DR: Can we just reference the ECMAScript spec?<a href="#issue-e10703d8"> ↵ </a></div></div></body>
+          DR: Can we just reference the ECMAScript spec?<a href="#issue-e10703d8"> ↵ </a></div>
+   <div class="issue">We need to define violation reports. Steal something from CSP.<a href="#issue-b412787b"> ↵ </a></div></div></body>
 </html>
