@@ -295,8 +295,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       was signed in successfully, and notify the user agent accordingly:
 
       <pre>
-        var credential = new <a idl>LocalCredential</a>("username",
-                                             "password");
+        var credential = new <a idl>LocalCredential</a>({
+          "<a idl for="CredentialData">id</a>": "JaneDoe98",
+          "<a idl for="LocalCredentialData">password</a>": "MfPeRQq5P3yVry68Q4KZMMhB"
+        });
         credential.send("https://example.com/sign-in/")
           .then(function (response) {
             if (response.status == 200)
@@ -311,7 +313,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <pre>
         if (navigator.<a attribute>credentials</a>) {
           navigator.<a attribute>credentials</a>.<a idl lt="store()">store</a>(
-            new <a idl>FederatedCredential</a>("username", "https://federation.com")
+            new <a idl>FederatedCredential</a>({
+              "<a idl for="CredentialData">id</a>": "username",
+              "<a idl for="FederatedCredentialData">federation</a>": "https://federation.com"
+            })
           );
         }
       </pre>
@@ -440,6 +445,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h4 id="interfaces-credential-types-credential"><code>Credential</code></h4>
   <pre class="idl">
+    dictionary CredentialData {
+      DOMString id;
+      DOMString name;
+      DOMString avatarURL; 
+    };
+
     [NoInterfaceObject]
     interface Credential {
       readonly attribute DOMString id;
@@ -490,7 +501,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h4 id="interfaces-credential-types-localcredential"><code>LocalCredential</code></h4>
   <pre class="idl">
-    [Constructor(DOMString id, DOMString password, optional DOMString name, optional DOMString avatarURL)]
+    dictionary LocalCredentialData : CredentialData {
+      DOMString password;
+    };
+
+    [Constructor(LocalCredentialData data)]
     interface LocalCredential : Credential {
       Promise&lt;Response&gt; send(DOMString url);
     };
@@ -519,12 +534,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   to the web, but used to construct the {{RequestInit}} object generated during
   {{LocalCredential/send()}}.
 
-  ISSUE(w3c/webappsec#243): Anne notes that we should probably move to a
-  dictionary for these constructors sooner rather than later.
-
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
-    [Constructor(DOMString id, DOMString federation, optional DOMString name, optional DOMString avatarURL)]
+    dictionary FederatedCredentialData : CredentialData {
+      DOMString federation;
+    };
+
+    [Constructor(FederatedCredentialData data)]
     interface FederatedCredential : Credential {
       readonly attribute DOMString federation;
     };
