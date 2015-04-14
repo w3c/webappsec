@@ -11,7 +11,7 @@ Abstract:
   Entry Point Regulation aims to mitigate the risk of reflected cross-site
   scripting (XSS), cross-site script inclusion (XSSI), and cross-site request
   forgery (CSRF) attacks by demarcating the areas of an application which are
-  intended to be navigable.
+  intended to be referencable.
 Indent: 2
 </pre>
 <pre class="anchors">
@@ -224,12 +224,13 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   to hold:
 
   1.  Authors should be able to block incoming requests based on the
-      <a for="request">URL</a> being requested. That is a request for
+      <a for="request">URL</a> being requested. That is, a request for
       <code>/</code> might be allowed, while a request for
       <code>/api/logout.cgi</code> might be denied.
 
       Modifications might include stripping <a for="URL">query</a> and
-      <a for="URL">fragment</a> data from the request's URL, stripping 
+      <a for="URL">fragment</a> data from the request's URL, or stripping
+      cookies and other authentication information.
 
   2.  Authors should be able to block or modify incoming requests that contain
       data (e.g. the URL might have <a for="URL">query</a> or
@@ -237,15 +238,20 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <a for="request">body</a>) differently to requests that do not contain
       data.
 
-  3.  Requests should be excluded from the above filters if the request
+  3.  Authors should be able to block or modify incoming requests based on the
+      request's <a for="request">context</a>; that is, navigations create
+      different attack surfaces than subresource inclusions, and should be
+      treated differently.
+
+  4.  Requests should be excluded from the above filters if the request
       originates from a same-origin source. That is, any page on
       <code>https://example.com/</code> may request any resource on that origin,
       while requests from <code>https://not-example.com/</code> would be
       restricted.
 
-  4.  A user agent may choose to exclude other requests from the above filters
+  5.  A user agent may choose to exclude other requests from the above filters
       in order to prioritize a user's intent. For instance, URLs typed directly
-      into the address bar, or bookmarked URLs.
+      into the address bar, or bookmarked URLs might skip filters entirely.
 
   <h3 id="examples">Examples</h3>
 
@@ -271,8 +277,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <dfn>navigational request</dfn> if its <a for="request">context frame
       type</a> is one of "<code>top-level</code>", "<code>auxiliary</code>",
       or "<code>nested</code>". Navigational requests load a resource into a
-      context where code can be executed, meaning that they place an origin at
-      risk of both XSS and XSRF attack.
+      context where markup will be rendered, meaning that they place an origin
+      at risk of both XSS and XSRF attack.
     </li>
     <li>
       <dfn>subresource request</dfn> if it is not a <a>connection request</a>,
