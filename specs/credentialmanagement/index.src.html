@@ -91,6 +91,7 @@ spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
   type: interface
     text: DOMString; url: idl-DOMString
     text: USVString; url: idl-USVString
+    text: object; url: idl-object
     text: boolean; url: idl-boolean
 spec: WEBMESSAGING; urlPrefix: http://www.w3.org/TR/webmessaging/
   type: method
@@ -231,7 +232,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <div class="example">
       <pre>
-        navigator.<a attribute>credentials</a>.<a idl>get()</a>.then(
+        navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>(
+          "<a idl>types</a>": [ "LocalCredential" ]
+        ).then(
             function(credential) {
               if (!credential) {
                 // The user either doesn't have credentials for this site, or
@@ -261,7 +264,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <div class="example">
       <pre>
         navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
-          "<a idl for="CredentialRequestOptions">federations</a>": [ "https://federation.com" ]
+          "<a idl>types</a>": [ "FederatedCredential" ],
+          "<a idl>filter</a>": {
+              "<a idl>federations</a>": [ "https://federation.com" ]
+          }
         }).then(
             function(credential) {
               if (!credential)
@@ -556,6 +562,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
+    dictionary FederatedCredentialFilter {
+      sequence&lt;USVString&gt; federations;
+    };
+
     dictionary FederatedCredentialData : CredentialData {
       USVString federation;
     };
@@ -565,6 +575,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       readonly attribute USVString federation;
     };
   </pre>
+  <dl dfn-for="FederatedCredentialFilter">
+    <dt><dfn dict-member>federations</dfn></dt>
+    <dd>
+      An array of federation identifiers. For details regarding valid formats
+      see [[#identifying-federations]]
+    </dd>
+  </dl>
   <dl dfn-for="FederatedCredential">
     <dt><dfn attribute>federation</dfn></dt>
     <dd>
@@ -629,21 +646,18 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <pre class="idl">
     dictionary CredentialRequestOptions {
-      boolean excludePasswords = false;
-      sequence&lt;USVString&gt; federations;
+      sequence&lt;DOMString&gt; types;
       boolean suppressUI = false;
+      object filter;
     };
   </pre>
   <dl dfn-for="CredentialRequestOptions">
-    <dt><dfn dict-member>excludePasswords</dfn></dt>
+    <dt><dfn dict-member>types</dfn></dt>
     <dd>
-      If <code>true</code>, the user agent will not return {{LocalCredential}}
-      objects in response to a request.
-    </dd>
-    <dt><dfn dict-member>federations</dfn></dt>
-    <dd>
-      An array of federation identifiers. For details regarding valid formats
-      see [[#identifying-federations]]
+      A sequence of strings specifying the types of {{Credential}} objects which
+      the caller wishes to obtain. An empty sequence signifies that the caller
+      will accept any credential type. For processing details, see the algorithm
+      defined in [[#request-credential]].
     </dd>
     <dt><dfn dict-member>suppressUI</dfn></dt>
     <dd>
@@ -654,6 +668,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <code>undefined</code>. For processing details, see the algorithm defined
       in [[#request-credential]].
     </dd>
+    <dt><dfn dict-member>filter</dfn></dt>
+    <dd>
+      An arbitrary object containing a set of parameters which will be used to
+      select a particular {{Credential}} to return. This process is described in
+      [[#match-filter]].
+    </dd>
   </dl>
 
   <div class="example">
@@ -663,8 +683,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <pre>
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
-        "<a idl>excludePasswords</a>": true,
-        "<a idl>federations</a>": [ "https://identity.example.com/" ]
+        "<a idl>types</a>": [ "FederatedCredential" ],
+        "<a idl>filter</a>": {
+            "<a idl>federations</a>": [ "https://identity.example.com/" ]
+        }
       }).then(function (credential) {
         // ...
       });
@@ -677,8 +699,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <pre>
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
-        "<a idl>excludePasswords</a>": true,
-        "<a idl>federations</a>": [ "https://identity.example.com/" ],
+        "<a idl>types</a>": [ "FederatedCredential" ],
+        "<a idl>filter</a>": {
+            "<a idl>federations</a>": [ "https://identity.example.com/" ]
+        },
         "<a idl>suppressUI</a>": true
       }).then(function (credential) {
         // ...
@@ -697,7 +721,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   agents to be helpful.
 
   For consistency, federations passed into the APIs defined in this document
-  (e.g. {{CredentialRequestOptions}}'s {{CredentialRequestOptions/federations}}
+  (e.g. {{FederatedCredentialFilter}}'s {{FederatedCredentialFilter/federations}}
   array, or {{FederatedCredential}}'s {{FederatedCredential/federation}} property)
   MUST be identified by the <a>ASCII serialization</a> of the origin the provider
   uses for sign in. That is, Facebook would be represented by
@@ -821,6 +845,17 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
+  <h3 id="match-filter">
+    Does <var>credential</var> match <var>filter</var>
+  </h3>
+
+  Given a {{Credential}} (<var>credential</var>) and a
+  {{CredentialRequestOptions/filter}} (<var>filter</var>), this algorithm
+  returns <code>Matches</code> if <var>credential</var> matches
+  <var>filter</var>, and <code>Does Not Match</code> otherwise.
+
+  TODO.
+
   <h3 id="request-credential-without-mediation">
     Request a <code>Credential</code> for <var>origin</var> with
     <var>options</var> <em>without</em> user mediation
@@ -862,8 +897,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <li>
       If <var>credential</var> is a <code>FederatedCredential</code>, and
       the value of <var>credential</var>'s {{FederatedCredential/federation}}
-      attribute does not appear in <var>options</var>'
-      {{CredentialRequestOptions/federations}} array, return <code>null</code>.
+      attribute does not appear in <var>filter's</var>'
+      {{FederatedCredentialFilter/federations}} array, return <code>null</code>.
+
+      TODO
     </li>
     <li>
       Return <var>credential</var>.
@@ -1383,7 +1420,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   This could allow a malicious website to determine if a user has credentials
   saved for particular federated identity providers by repeatedly calling
   {{get()}} with a single item in the
-  {{CredentialRequestOptions/federations}} array. The risk is mitigated by the
+  {{FederatedCredentialFilter/federations}} array. The risk is mitigated by the
   fact that a user-mediated {{get()}} is tied to a user gesture, and the
   user would, sooner or later, be prompted to provide credentials to the site,
   which would certainly raise her suspicions as to its behavior.
