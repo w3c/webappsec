@@ -88,6 +88,8 @@ spec: XHR; urlPrefix: https://xhr.spec.whatwg.org/
   type: constructor
     text: XMLHttpget(); for: XMLHttpRequest; url: dom-xmlhttprequest
 spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
+  type: dfn
+    text: type name; url: dfn-type-name
   type: interface
     text: DOMString; url: idl-DOMString
     text: USVString; url: idl-USVString
@@ -539,6 +541,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   which stores the <a>origin</a> for which the credential was saved. This
   property is not directly exposed to the web.
 
+  All {{LocallyStoredCredential}} objects MUST define a
+  <dfn lt="filter matching algorithm">filter matching algorithm</dfn>
+  which returns <code>Match</code> if the object matches a
+  {{CredentialRequestOptions/filter}}, and <code>Does Not Match</code>
+  otherwise.
+
   <h4 id="interfaces-credential-types-passwordcredential"><code>PasswordCredential</code></h4>
   <pre class="idl">
     dictionary PasswordCredentialData : CredentialData {
@@ -574,6 +582,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   to the web, but used to construct the {{RequestInit}} object generated during
   {{PasswordCredential/send()}}.
 
+  <h5 id="passwordcredential-matching">
+    Matching Algorithm
+  </h5>
+
+  {{PasswordCredential}} objects' <a>filter matching algorithm</a> always
+  returns <code>Match</code>.
+
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
     dictionary FederatedCredentialFilter {
@@ -603,6 +618,30 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       [[#identifying-federations]]
     </dd>
   </dl>
+
+  <h5 id="federatedcredential-matching">
+    Matching Algorithm
+  </h5>
+
+  {{FederatedCredential}} objects' <a>filter matching algorithm</a> is as
+  follows. Given a {{FederatedCredential}} (<var>credential</var>) and a
+  {{CredentialRequestOptions/filter}} (<var>filter</var>):
+
+  <ol>
+    <li>
+      If <var>filter</var> has no property named <code>federations</code>, or
+      if the value of <var>filter</var>'s <code>federation</code> is not a
+      sequence of {{USVString}}, return <code>Does Not Match</code>.
+    </li>
+    <li>
+      If <var>credential</var>'s {{FederatedCredential/federation}} is not
+      a case-sensitive match for one or more values in <var>filter</var>'s
+      <code>federation</code> sequence, return <code>Does Not Match</code>.
+    </li>
+    <li>
+      Return <code>Matches</code>.
+    </li>
+  </ol>
 
   <h3 id="interfaces-credential-manager">Credential Manager</h3>
 
@@ -686,7 +725,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <dd>
       An arbitrary object containing a set of parameters which will be used to
       select a particular {{Credential}} to return. This process is described in
-      [[#match-filter]].
+      each {{Credential}} type's <a>filter matching algorithm</a>.
     </dd>
   </dl>
 
@@ -760,35 +799,32 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 <section>
   <h2 id="algorithms">Algorithms</h2>
 
-  <h3 id="request-credential">
-    Request a <code>Credential</code> with <var>options</var>
+  <h3 id="processing">
+    Processing <code>Credential</code>s
   </h3>
 
-  This algorithm accepts a {{CredentialRequestOptions}} <var>options</var>, and
-  returns a <code>Promise</code> which resolves with either a single
-  {{Credential}} object if one could be obtained, or with <code>undefined</code>
-  if no credential was available (either because the user refused to share a
-  credential with this page, or because no credentials were available, period).
+  <h4 id="request-credential">
+    Request a <code>Credential</code>
+  </h4>
+
+  Given a {{CredentialRequestOptions}} object (<var>options</var>), this
+  algorithm returns a <code>Promise</code> which resolves with either a
+  single {{Credential}} object if one can be obtained, or <code>undefined</code>
+  if not.
 
   If called from an environment which is not a <a>privileged context</a>, or
   from somewhere other than a <a>top-level browsing context</a>, the
-  <code>Promise</code> will be rejected with a <code>SecurityError</code>.
+  <code>Promise</code> will be rejected with a <code>NotSupportedError</code>.
 
   <ol>
-    <li>
-      Let <var>promise</var> be a newly created <code>Promise</code> object.
-    </li>
-    <li>
-      Return <var>promise</var>, and execute the remaining steps asynchronously.
-    </li>
     <li>
       Let <var>settings</var> be the <a>incumbent settings object</a>.
     </li>
     <li>
-      Reject <var>promise</var> with a <code>SecurityError</code>
-      <strong>and</strong> terminate this algorithm, if any of the following
-      conditions are met:
-      <ul>
+      Return a <code>Promise</code> rejected with <code>NotSupportedError</code>
+      if any of the following statements are true:
+
+      <ol>
         <li>
           <var>settings</var> does not have a <a>responsible document</a>
         </li>
@@ -799,135 +835,87 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         <li>
           <var>settings</var> is not a <a>privileged context</a>
         </li>
-      </ul>
-    </li>
-    <li>
-      Let <var>origin</var> be the <a>origin</a> of the <var>environment</var>.
-    </li>
-    <li>
-      Let <var>credential</var> be the result of executing the algorithm
-      defined in [[#request-credential-without-mediation]] with
-      <var>origin</var> and <var>options</var> as arguments.
-    </li>
-    <li>
-      If <var>credential</var> is not <code>null</code>, resolve
-      <var>promise</var> with <var>credential</var> and terminate this
-      algorithm.
-    </li>
-    <li>
-      If <var>options</var> is <code>undefined</code>, or if <code>options</code>'
-      {{suppressUI}} property is <code>false</code>, then:
-
-      <ol>
-        <li>
-          If this algorithm would not be <a>allowed to show a popup</a>, then
-          reject <var>promise</var> with a <code>SecurityError</code> and
-          terminate this algorithm.
-
-          Note: This requirement only applies if we would show UI to the user.
-          If she's elected to allow credentials to be provided without user
-          mediation, and we can do so, then we don't require a user gesture
-          for {{get()}}. Otherwise, we do, due to the considerations in
-          [[#privacy-considerations]].
-        </li>
-        <li>
-          Ask the user which {{Credential}} to share.
-
-          Note: This behavior is vendor-specific. Guidelines for user agent
-          behavior are presented in [[#user-mediation]].
-        </li>
-        <li>
-          Let <var>credential</var> be the {{Credential}} the user chose, or
-          <code>null</code> if the user chose not to share a credential with
-          <var>origin</var>.
-        </li>
-        <li>
-          If <var>credential</var> is not <code>null</code>:
-         
-          <ol>
-            <li>
-              Resolve <var>promise</var> with <var>credential</var> and
-              terminate this algorithm.
-            </li>
-          </ol>
-        </li>
       </ol>
     </li>
     <li>
-      No {{Credential}} is available: terminate this algorithm by resolving
-      <var>promise</var> with with <code>undefined</code>.
+      Let <var>type</var> be lowest common ancestor interface of the types
+      referenced in <var>options</var>.
+
+      ISSUE: This is terribly hand-wavey. The intent is clear, but I need to do
+      the work to walk through the list of DOMStrings and convert them to
+      interfaces and etc. Busywork for later.
+    </li>
+    <li>
+      Return a <code>Promise</code> rejected with <code>TypeMismatchError</code>
+      if <var>type</var> is {{Credential}}.
+    </li>
+    <li>
+      Let <var>promise</var> be a newly created <code>Promise</code> object.
+    </li>
+    <li>
+      Return <var>promise</var>, and execute the remaining steps asynchronously.
+    </li>
+    <li>
+      Switch on <var>type</var>, and execute the associated steps:
+
+      <dl>
+        <dt>{{LocallyStoredCredential}}</dt>
+        <dd>
+          <ol>
+            <li>
+              Let <var>result</var> be the result of executing
+              [[#request-locallystoredcredential-without-mediation]],
+              passing in <var>origin</var> and <var>options</var>'
+              {{CredentialRequestOptions/filter}} property.
+            </li>
+            <li>
+              If <var>result</var> is not <code>null</code>, resolve
+              <var>promise</var> with <var>result</var>, and terminate this
+              algorithm.
+            </li>
+            <li>
+              If <var>options</var>' {{CredentialRequestOptions/suppressUI}}
+              is <code>true</code>, resolve <var>promise</var> with
+              <var>undefined</var>, and terminate this algorithm.
+            </li>
+            <li>
+              If this algorithm would not be <a>allowed to show a popup</a>,
+              then reject <var>promise</var> with a <code>SecurityError</code>
+              and terminate this algorithm.
+
+              Note: This boils down to requiring a user gesture for {{get()}}
+              before showing the user any UI.
+            </li>
+            <li>
+              Resolve <var>promise</var> with the result of executing
+              [[#request-locallystoredcredential-with-mediation]],
+              passing in <var>origin</var> and <var>options</var>'
+              {{CredentialRequestOptions/filter}} property.
+            </li>
+          </ol>
+        </dd>
+
+        <dt><em>This is an extension point.</em></dt>
+        <dd>
+          When new credential types are defined in the future, they'll go here.
+        </dd>
+      </dl>
     </li>
   </ol>
 
-  <h3 id="match-filter">
-    Does <var>credential</var> match <var>filter</var>
-  </h3>
-
-  Given a {{Credential}} (<var>credential</var>) and a
-  {{CredentialRequestOptions/filter}} (<var>filter</var>), this algorithm
-  returns <code>Matches</code> if <var>credential</var> matches
-  <var>filter</var>, and <code>Does Not Match</code> otherwise.
-
-  TODO.
-
-  <h3 id="request-credential-without-mediation">
-    Request a <code>Credential</code> for <var>origin</var> with
-    <var>options</var> <em>without</em> user mediation
-  </h3>
-
-  This algorithm accepts an <a>origin</a> <var>origin</var> and a
-  {{CredentialRequestOptions}} <var>options</var>, and returns either a single
-  {{Credential}} object if one can be provided without user mediation, or
-  <code>null</code> if not.
-
-  <ol>
-    <li>
-      If the user agent has disabled sharing credentials without user
-      mediation, return <code>null</code>.
-
-      Note: See [[#user-mediation-requirements]] for details.
-    </li>
-    <li>
-      Let <var>credentials</var> be the set of {{Credential}} objects in the
-      <a>credential store</a> whose {{[[origin]]}} slot is equal to the <a>ASCII
-      serialization</a> of <var>origin</var>, and whose
-      {{[[requiresUserMediation]]}} slot is <code>false</code>.
-
-      Note: This is an exact match, not a <a>registerable domain</a> match.
-      See [[#security-cross-origin-leakage]] for details as to why.
-    </li>
-    <li>
-      If <var>credentials</var> is empty, or contains more than one
-      {{Credential}} object, return <code>null</code>.
-
-      Note: In the future, we may wish to allow multiple {{Credential}} objects
-      to be returned; for the moment, we're erring on the cautious side to avoid
-      accidentally revealing explicit relationships between user accounts.
-    </li>
-    <li>
-      Otherwise, let <var>credential</var> be the single {{Credential}} object
-      in <var>credentials</var>.
-    </li>
-    <li>
-      If <var>credential</var> is a <code>FederatedCredential</code>, and
-      the value of <var>credential</var>'s {{FederatedCredential/federation}}
-      attribute does not appear in <var>filter's</var>'
-      {{FederatedCredentialFilter/federations}} array, return <code>null</code>.
-
-      TODO
-    </li>
-    <li>
-      Return <var>credential</var>.
-    </li>
-  </ol>
-
-  Note: If a user agent implements some sort of "private browsing" mode, we
-  recommend that this algorithm always return <code>null</code> when the user
-  has enabled private browsing.
+  ISSUE: How do we deal with a future in which {{LocallyStoredCredential}} isn't
+  the only type? For example, how could an author pull some "RemoteCredential"
+  that required interaction with a third-party, but fall back to a
+  {{PasswordCredential}}? For the moment, we're resolving this by rejecting the
+  promise if the types listed in {{CredentialRequestOptions/types}} aren't all
+  instances of the same type, but that seems like something we'd want to fix.
 
   <h3 id="save-credential">
     Save <var>credential</var>
   </h3>
+  
+  ISSUE: This needs to be rewritten in light of the {{LocallyStoredCredential}}
+  split.
 
   This algorithm accepts a {{Credential}} <var>credential</var>, and hands it
   to the internal credential manager for processing. It returns a
@@ -1049,9 +1037,153 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h3 id="send-passwordcredential">
-    Send <var>passwordCredential</var> to <var>url</var>.
+  <h4 id="is-match">
+    Does <var>origin A</var> match <var>origin B</var>?
+  </h4>
+
+  <ol>
+    <li>
+      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
+      <code>Exact Match</code>.
+    </li>
+    <li>
+      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
+      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
+      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
+      domain</a>, then return <code>Fuzzy Match</code>.
+    </li>
+    <li>
+      Return <code>No Match</code>
+    </li>
+  </ol>
+
+  <h3 id="processing-locallystored">
+    Processing <code>LocallyStoredCredential</code>s
   </h3>
+
+  <h4 id="gather-locallystoredcredentials">
+    Gather <code>LocallyStoredCredential</code>s
+  </h4>
+
+  Given an <a>origin</a> (<var>origin</var>), and a sequence of {{DOMString}}
+  (<var>types</var>), and a {{CredentialRequestOptions/filter}} object
+  (<var>filter</var>), this algorithm returns a sequence of
+  {{LocallyStoredCredential}} from the user agent's <a>credential store</a>
+  which are potential candidates:
+
+  <ol>
+    <li>
+      Let <var>credentials</var> be the set of {{Credential}} objects in the
+      <a>credential store</a> whose {{[[origin]]}} slot is equal to the <a>ASCII
+      serialization</a> of <var>origin</var>, and whose
+      {{[[requiresUserMediation]]}} slot is <code>false</code>.
+
+      Note: This is an exact match, not a <a>registerable domain</a> match.
+      See [[#security-cross-origin-leakage]] for details as to why.
+    </li>
+    <li>
+      Remove any items from <var>credentials</var> whose <a>type name</a> is not
+      a case-sensitive match for a value in <var>types</var>.
+    </li>
+    <li>
+      Remove any items from <var>credentials</var> whose <a>filter matching
+      algorithm</a> returns <code>Does Not Match</code> when executed on
+      <var>filter</var>.
+    </li>
+    <li>
+      Return <var>credentials</var>.
+    </li>
+  </ol>
+
+  <h4 id="request-locallystoredcredential-without-mediation">
+    Request a <code>LocallyStoredCredential</code> <em>without</em> user mediation
+  </h4>
+
+  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
+  type names (<var>types</var>) and a {{CredentialRequestOptions/filter}} object
+  (<var>filter</var>), and returns either a single {{LocallyStoredCredential}}
+  object <strong>if and only if</strong> one can be provided without user
+  mediation, or <code>null</code> if not.
+
+  <ol>
+    <li>
+      If the user agent has disabled sharing credentials without user
+      mediation, return <code>null</code>.
+
+      Note: See [[#user-mediation-requirements]] for details.
+    </li>
+    <li>
+      Let <var>credentials</var> be the result of executing
+      [[#gather-locallystoredcredentials]] on <var>origin</var>,
+      <var>types</var>, and <var>filter</var>.
+    </li>
+    <li>
+      If <var>credentials</var> is empty, or contains more than one
+      {{Credential}} object, return <code>null</code>.
+
+      Note: In the future, we may wish to allow multiple {{Credential}} objects
+      to be returned; for the moment, we're erring on the cautious side to avoid
+      accidentally revealing explicit relationships between user accounts.
+    </li>
+    <li>
+      Otherwise, let <var>credential</var> be the single {{Credential}} object
+      in <var>credentials</var>.
+    </li>
+    <li>
+      Return <var>credential</var>.
+    </li>
+  </ol>
+
+  Note: If a user agent implements some sort of "private browsing" mode, we
+  recommend that this algorithm always return <code>null</code> when the user
+  has enabled private browsing.
+
+  <h4 id="request-locallystoredcredential-with-mediation">
+    Request a <code>LocallyStoredCredential</code> with user mediation
+  </h4>
+
+  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
+  type names (<var>types</var>) and a {{CredentialRequestOptions/filter}} object
+  (<var>filter</var>), and returns either a single {{LocallyStoredCredential}}
+  object, or <code>null</code> if none can be provided.
+
+  <ol>
+    <li>
+      Let <var>credentials</var> be the result of executing
+      [[#gather-locallystoredcredentials]] on <var>origin</var>,
+      <var>types</var>, and <var>filter</var>.
+    </li>
+      This requirement only applies if we would show UI to the user.
+      If she's elected to allow credentials to be provided without user
+      mediation, and we can do so, then we don't require a user gesture
+      for {{get()}}. Otherwise, we do, due to the considerations in
+      [[#privacy-considerations]].
+    </li>
+    <li>
+      Ask the user which {{Credential}} to share.
+
+      Note: This behavior is vendor-specific. Guidelines for user agent
+      behavior are presented in [[#user-mediation]].
+    </li>
+    <li>
+      Let <var>credential</var> be the {{Credential}} the user chose, or
+      <code>null</code> if the user chose not to share a credential with
+      <var>origin</var>.
+    </li>
+    <li>
+      If <var>credential</var> is not <code>null</code>, then resolve
+      <var>promise</var> with <var>credential</var> and terminate this
+      algorithm.
+    </li>
+    <li>
+      No {{Credential}} is available: terminate this algorithm by resolving
+      <var>promise</var> with with <code>undefined</code>.
+    </li>
+  </ol>
+
+  <h4 id="send-passwordcredential">
+    Send <var>passwordCredential</var> to <var>url</var>.
+  </h4>
 
   Given an endpoint URL (<var>url</var>) this method will <code>POST</code>
   the credential information from a {{PasswordCredential}} (<var>credential</var>)
@@ -1131,14 +1263,15 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h3 id="require-user-mediation-for-origin">
+  <h4 id="require-user-mediation-for-origin">
     Require user mediation for <var>origin</var>
-  </h3>
+  </h4>
 
   <ol>
     <li>
-      Let <var>credentials</var> be the set of all {{Credential}} objects in
-      the <a>credential store</a> whose {{[[origin]]}} is <var>origin</var>.
+      Let <var>credentials</var> be the set of all {{LocallyStoredCredential}}
+      objects in the <a>credential store</a> whose {{[[origin]]}} is
+      <var>origin</var>.
     </li>
     <li>
       For each <var>credential</var> in <var>credentials</var>:
@@ -1148,26 +1281,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
           <code>true</code>.
       </ol>
-    </li>
-  </ol>
-
-  <h3 id="is-match">
-    Does <var>origin A</var> match <var>origin B</var>?
-  </h3>
-
-  <ol>
-    <li>
-      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
-      <code>Exact Match</code>.
-    </li>
-    <li>
-      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
-      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
-      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
-      domain</a>, then return <code>Fuzzy Match</code>.
-    </li>
-    <li>
-      Return <code>No Match</code>
     </li>
   </ol>
 </section>
