@@ -211,7 +211,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         used elements like email addresses, and so on.
 
         ISSUE(w3c/webappsec#244): Anne notes that this use case is weak. Shoring
-        it up requires <a href="#issue-1a314ee6">deciding whether we want to
+        it up requires <a href="#issue-fc00d72b">deciding whether we want to
         explicitly support creation and password generation</a>.
       </li>
       <li>
@@ -225,7 +225,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <section>
     <h3 id="introduction-examples">Examples</h3>
 
-    <h4 id="examples-local-signin">Local Sign-in</h4>
+    <h4 id="examples-password-signin">Password-based Sign-in</h4>
 
     A website that supports only username/password pairs can request
     credentials, and use them in existing sign-in forms:
@@ -233,7 +233,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <div class="example">
       <pre>
         navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>(
-          "<a idl>types</a>": [ "LocalCredential" ]
+          "<a idl>types</a>": [ "PasswordCredential" ]
         ).then(
             function(credential) {
               if (!credential) {
@@ -243,7 +243,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 // really be progressive enhancement on top of an existing form).
                 return;
               }
-              if (credential instanceof <a idl>LocalCredential</a>) {
+              if (credential instanceof <a idl>PasswordCredential</a>) {
                 credential.<a method lt="send()">send</a>("https://example.com/loginEndpoint")
                   .then(function (response) {
                     // Notify the user that signin succeeded! Do amazing, signed-in things!
@@ -312,14 +312,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     website to tell the credential manager that sign-in succeeded.
 
     <div class="example">
-      If a user is signed in by calling {{send()}} on a {{LocalCredential}}
+      If a user is signed in by calling {{send()}} on a {{PasswordCredential}}
       object, then we can check the response to determine whether the user
       was signed in successfully, and notify the user agent accordingly:
 
       <pre>
-        var credential = new <a idl>LocalCredential</a>({
+        var credential = new <a idl>PasswordCredential</a>({
           "<a idl for="CredentialData">id</a>": "JaneDoe98",
-          "<a idl for="LocalCredentialData">password</a>": "MfPeRQq5P3yVry68Q4KZMMhB"
+          "<a idl for="PasswordCredentialData">password</a>": "MfPeRQq5P3yVry68Q4KZMMhB"
         });
         credential.send("https://example.com/sign-in/")
           .then(function (response) {
@@ -353,7 +353,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <h4 id="examples-change-password">Change Password</h4>
 
-    The "Local Sign-In" mechanism can be reused for "password change" with no
+    The "Password Sign-In" mechanism can be reused for "password change" with no
     modifications: if the user changes her credentials, the website can notify
     the user agent that she's successfully signed in with new credentials. The
     user agent can then update the credentials it stores.
@@ -409,13 +409,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <dl>
     <dt><dfn export>Credentials</dfn></dt>
-    <dt><dfn export>Local Credentials</dfn></dt>
+    <dt><dfn export>Password Credentials</dfn></dt>
     <dt><dfn export>Federated Credentials</dfn></dt>
     <dd>
       Broadly speaking, <strong>credential</strong> is an assertion about an
       entity which enables a trust decision. This specification defines two
       specific types of credentials which are useful for authentication:
-      "local" credentials, which consist of a username/password
+      "password" credentials, which consist of a username/password
       pair, and "federated" credentials, which point out to a <a>federated
       identity provider</a> which is trusted to correctly assert a user's
       authentication.
@@ -465,8 +465,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <h3 id="interfaces-credential-types">Credential Types</h3>
 
   This document defines a generic and extensible {{Credential}} interface, as
-  well as two specific instances: {{LocalCredential}} and
-  {{FederatedCredential}} (which, as you might expect, map to <a>local
+  well as two specific instances: {{PasswordCredential}} and
+  {{FederatedCredential}} (which, as you might expect, map to <a>password
   credentials</a> and <a>federated credentials</a>, respectively):
 
   <h4 id="interfaces-credential-types-credential"><code>Credential</code></h4>
@@ -525,24 +525,24 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <code><dfn attribute for="Credential">[[requiresUserMediation]]</dfn></code>
   slot in favor of an origin-specific value.
 
-  <h4 id="interfaces-credential-types-localcredential"><code>LocalCredential</code></h4>
+  <h4 id="interfaces-credential-types-passwordcredential"><code>PasswordCredential</code></h4>
   <pre class="idl">
-    dictionary LocalCredentialData : CredentialData {
+    dictionary PasswordCredentialData : CredentialData {
       DOMString password;
     };
 
-    [Constructor(LocalCredentialData data)]
-    interface LocalCredential : Credential {
+    [Constructor(PasswordCredentialData data)]
+    interface PasswordCredential : Credential {
       Promise&lt;Response&gt; send(USVString url);
     };
   </pre>
-  <dl dfn-for="LocalCredential">
+  <dl dfn-for="PasswordCredential">
     <dt><dfn method lt="send(url)">send(url)</dfn></dt>
     <dd>
       This method can be used to transmit the username and password information
       represented by this object to a same-origin endpoint in order to sign a
       user into a website. The user agent MUST execute the algorithm described
-      in [[#send-localcredential]] when this method is executed.
+      in [[#send-passwordcredential]] when this method is executed.
 
       ISSUE: Do we need the ability to pass in more information than just a URL?
       Perhaps a dictionary of key/value pairs to be appended to the
@@ -554,11 +554,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  All {{LocalCredential}} objects have an internal slot named
-  <code><dfn attribute for="LocalCredential">[[password]]</dfn></code>
+  All {{PasswordCredential}} objects have an internal slot named
+  <code><dfn attribute for="PasswordCredential">[[password]]</dfn></code>
   which stores the credential's password. This property is not directly exposed
   to the web, but used to construct the {{RequestInit}} object generated during
-  {{LocalCredential/send()}}.
+  {{PasswordCredential/send()}}.
 
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
@@ -638,7 +638,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  ISSUE: We should support explicit sign-up via {{LocalCredential}}s with
+  ISSUE: We should support explicit sign-up via {{PasswordCredential}}s with
   generated passwords. Perhaps something similar to iOS8's
   <code>SecCreateSharedWebCredentialPassword</code>.
 
@@ -954,11 +954,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       with a <code>SecurityError</code> and terminate this algorithm.
     </li>
     <li>
-      If <var>credential</var> is a {{LocalCredential}}, then:
+      If <var>credential</var> is a {{PasswordCredential}}, then:
 
       <ol>
         <li>
-          If the user agent's credential manager contains a {{LocalCredential}}
+          If the user agent's credential manager contains a {{PasswordCredential}}
           <var>storedCredential</var> whose {{Credential/id}} attribute is
           <var>credential</var>'s {{Credential/id}} and whose
           {{[[origin]]}} slot is <var>origin</var>, then:
@@ -1035,12 +1035,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h3 id="send-localcredential">
-    Send <var>localCredential</var> to <var>url</var>.
+  <h3 id="send-passwordcredential">
+    Send <var>passwordCredential</var> to <var>url</var>.
   </h3>
 
   Given an endpoint URL (<var>url</var>) this method will <code>POST</code>
-  the credential information from a {{LocalCredential}} (<var>credential</var>)
+  the credential information from a {{PasswordCredential}} (<var>credential</var>)
   to <var>url</var>. In order to mitigate the risk of data leakage,
   <var>url</var> MUST be same-origin with <var>credential</var>'s
   internal {{[[origin]]}} slot.
@@ -1343,9 +1343,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  {{LocalCredential}}s further mitigate the risk of data leakage by never
+  {{PasswordCredential}}s further mitigate the risk of data leakage by never
   exposing the {{[[password]]}} slot directly to a page's JavaScript, but
-  instead performing asynchronous submission via {{LocalCredential/send()}},
+  instead performing asynchronous submission via {{PasswordCredential/send()}},
   which verifies that the endpoint is a valid one for the credential before
   submission.
 
@@ -1358,7 +1358,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <ol>
     <li>
       <code><a>connect-src</a></code> further restricts the origins to which
-      {{LocalCredential/send()}} may submit data (which mitigates the risk of
+      {{PasswordCredential/send()}} may submit data (which mitigates the risk of
       redirect-based attacks.
     </li>
     <li>
