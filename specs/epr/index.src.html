@@ -696,9 +696,8 @@ EPR-enabled site.
         </dd>
         <dt><a>redirect</a></dt>
         <dd>
-          TODO.
-
-          ISSUE: No idea how this works. One URL for all failures? One URL per rule?
+          Do not make the request to the original resource.  Redirect the
+          user agent to the <a>redirectURL</a>.
         </dd>
         <dt><a>allowUnauthenticated</a></dt>
         <dd>
@@ -748,17 +747,34 @@ EPR-enabled site.
     Default EPR policy
   </h3>
 
-  If no policy is available for a resource which is delivered with an
-  <code><a>EPR</a></code> header (because this is the first visit to an origin,
-  because an <a>EPR manifest</a> failed to parse, etc), then user agents MUST
-  apply a <dfn>default EPR policy</dfn> to the request.
+  A default policy MUST be applied when all of the following criteria are 
+  met:
+  <ul>
+    <li>An EPR header has been received by the user agent indicating that the
+    site site has opted-in to EPR.</li>
+    <li>No EPR manifest is currently available.  (Possibly because it hasn't
+    been downloaded yet, it failed to parse, etc.</li>
+    <li>The request is a <a>navigational request</a>.</li>
+    <li>The request was initiated by a cross-origin web site, not by the
+    user's selection of a bookmark or by the user typing an address into the
+    address bar.</li>
+  </ul>
+  
+  The <dfn>default EPR policy</dfn> specifies the <a>allowStrippedGET</a> 
+  behavior is applied to requests, preventing requests from containing data 
+  that would enable reflected or DOM-based XSS.
+  
+  ISSUE: Allow data on everything under a specific hardcoded path, in order to
+  facilitate URLs sent in e-mail, etc.?
+  
+  The intent of the default EPR policy is to mitigate XSS (not XSRF) when no 
+  EPR policy is available yet.  Even when the user is not authenticated to
+  a site, XSS is problematic because the attack may persist until the user
+  has authenticated.  This is not the case with XSRF, and XSRF is not
+  effective until the user has authenticated to a site, at which point it is
+  much more likely that a policy has been downloaded.
 
-  ISSUE: Can we simply drop this and turn EPR into a TOFU scheme? The existing
-  <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>
-  is problematic, as it would block navigational requests that contain query
-  parameters. Given the prevalance of tracking parameters (for instance,
-  <code>utm_{source,medium,campaign}</code> are quasi-ubiquitous), this seems
-  like it will cause issues.
+  Note: The original <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>.
 
   <h3 id="process-epr-header">
     Process <var>response</var>'s <code>EPR</code> header
