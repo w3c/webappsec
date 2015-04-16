@@ -674,7 +674,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       successful password change operation.
 
       When {{store()}} is called, the user agent MUST execute the algorithm
-      defined in [[#save-credential]] with <var>credential</var> as an
+      defined in [[#store-credential]] with <var>credential</var> as an
       argument.
     </dd>
     <dt><dfn method>requireUserMediation()</dfn></dt>
@@ -821,6 +821,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Let <var>settings</var> be the <a>incumbent settings object</a>.
     </li>
     <li>
+      Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
+    </li>
+    <li>
       Return a <code>Promise</code> rejected with <code>NotSupportedError</code>
       if any of the following statements are true:
 
@@ -865,8 +868,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
             <li>
               Let <var>result</var> be the result of executing
               [[#request-locallystoredcredential-without-mediation]],
-              passing in <var>origin</var> and <var>options</var>'
-              {{CredentialRequestOptions/filter}} property.
+              passing in <var>origin</var>, <var>options</var>'
+              {{CredentialRequestOptions/types}} property, and
+              <var>options</var>' {{CredentialRequestOptions/filter}} property.
             </li>
             <li>
               If <var>result</var> is not <code>null</code>, resolve
@@ -889,8 +893,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
             <li>
               Resolve <var>promise</var> with the result of executing
               [[#request-locallystoredcredential-with-mediation]],
-              passing in <var>origin</var> and <var>options</var>'
-              {{CredentialRequestOptions/filter}} property.
+              passing in <var>origin</var>, <var>options</var>'
+              {{CredentialRequestOptions/types}} property, and
+              <var>options</var>' {{CredentialRequestOptions/filter}} property.
             </li>
           </ol>
         </dd>
@@ -910,130 +915,75 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   promise if the types listed in {{CredentialRequestOptions/types}} aren't all
   instances of the same type, but that seems like something we'd want to fix.
 
-  <h3 id="save-credential">
-    Save <var>credential</var>
-  </h3>
-  
-  ISSUE: This needs to be rewritten in light of the {{LocallyStoredCredential}}
-  split.
+  <h4 id="store-credential">
+    Store a <code>Credential</code>
+  </h4>
 
-  This algorithm accepts a {{Credential}} <var>credential</var>, and hands it
-  to the internal credential manager for processing. It returns a
-  <code>Promise</code> which resolves with no arguments once credential is
-  successfully persisted to the credential manager, or when the user rejects
-  storage:
+  Given a {{Credential}} object (<var>credential</var>), this algorithm executes
+  a type-specific storage algorithm. {{LocallyStoredCredential}} objects will
+  be persisted to the user agent's <a>credential store</a>. Future object types
+  could, for instance, be persisted to some other (potentially remote) storage
+  mechanism.
+
+  If called from an environment which is not a <a>privileged context</a>, or
+  from somewhere other than a <a>top-level browsing context</a>, the
+  <code>Promise</code> will be rejected with a <code>NotSupportedError</code>.
 
   <ol>
     <li>
-      Let <var>promise</var> be a newly created <code>Promise</code> object.
+      Let <var>settings</var> be the <a>incumbent settings object</a>.
     </li>
     <li>
-      Return <var>promise</var>, and execute the remaining steps asynchronously.
+      Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
     </li>
     <li>
-      Let <var>environment</var> be the <a>incumbent settings object</a>.
-    </li>
-    <li>
-      If <var>environment</var>'s <a>responsible browsing context</a> is not a
-      <a>top-level browsing context</a>, or <var>environment</var> is not a
-      <a>privileged context</a>, then reject <var>promise</var> with a
-      <code>SecurityError</code> <strong>and</strong> terminate this algorithm.
-    </li>
-    <li>
-      Let <var>origin</var> be the <a>origin</a> of the <var>environment</var>.
-    </li>
-    <li>
-      Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
-      <code>true</code>.
-    </li>
-    <li>
-      Set <var>credential</var>'s {{[[origin]]}} slot to the <a>ASCII
-      serialization</a> of <var>origin</var>.
-    </li>
-    <li>
-      If <var>credential</var>'s {{LocallyStoredCredential/iconURL}} is an
-      <a><i lang="la">a priori</i> insecure URL</a>, reject <var>promise</var>
-      with a <code>SecurityError</code> and terminate this algorithm.
-    </li>
-    <li>
-      If <var>credential</var> is a {{PasswordCredential}}, then:
+      Return a <code>Promise</code> rejected with <code>NotSupportedError</code>
+      if any of the following statements are true:
 
       <ol>
         <li>
-          If the user agent's credential manager contains a {{PasswordCredential}}
-          <var>storedCredential</var> whose {{Credential/id}} attribute is
-          <var>credential</var>'s {{Credential/id}} and whose
-          {{[[origin]]}} slot is <var>origin</var>, then:
-
-          <ol>
-            <li>
-              If the user grants <var>origin</var> permission to update
-              credentials (as discussed in [[#user-mediated-storage]]), then:
-
-              <ol>
-                <li>
-                  Set <var>storedCredential</var>'s {{[[password]]}} to the
-                  value of <var>credential</var>'s {{[[password]]}}
-                  slot.
-                </li>
-                <li>
-                  Set <var>storedCredential</var>'s {{LocallyStoredCredential/name}} to the
-                  value of <var>credential</var>'s {{LocallyStoredCredential/name}}.
-                </li>
-                <li>
-                  Set <var>storedCredential</var>'s {{LocallyStoredCredential/iconURL}} to
-                  the value of <var>credential</var>'s {{LocallyStoredCredential/iconURL}}.
-                </li>
-              </ol>
-            </li>
-            <li>
-              Resolve <var>promise</var>.
-            </li>
-          </ol>
+          <var>settings</var> does not have a <a>responsible document</a>
         </li>
         <li>
-          Otherwise:
-
-          <ol>
-            <li>
-              If the user grants <var>origin</var> permission to store
-              credentials (as discussed in [[#user-mediated-storage]]), then
-              store <var>credential</var> in the <a>credential store</a>.
-            </li>
-            <li>
-              Resolve <var>promise</var>.
-            </li>
-          </ol>
+          <var>settings</var>' <a>responsible document</a> is not the
+          <a>active document</a> in the <a>top-level browsing context</a>
+        </li>
+        <li>
+          <var>settings</var> is not a <a>privileged context</a>
         </li>
       </ol>
     </li>
     <li>
-      Otherwise, <var>credential</var> is a {{FederatedCredential}}:
+      Switch on <var>type</var>, and execute the associated steps:
 
-      <ol>
-        <li>
-          If the user agent's credential manager contains a
-          {{FederatedCredential}} <var>storedCredential</var> whose
-          {{Credential/id}} attribute is <var>credential</var>'s
-          {{Credential/id}} and whose {{FederatedCredential/federation}}
-          attribute is <var>credential</var>'s
-          {{FederatedCredential/federation}}, then resolve <var>promise</var>.
-        </li>
-        <li>
-          Otherwise:
-
+      <dl>
+        <dt>{{LocallyStoredCredential}}</dt>
+        <dd>
           <ol>
             <li>
-              If the user grants <var>origin</var> permission to store
-              credentials (as discussed in [[#user-mediated-storage]]), then
-              store <var>credential</var> in the <a>credential store</a>.
+              If this algorithm would not be <a>allowed to show a popup</a>,
+              then reject <var>promise</var> with a <code>SecurityError</code>
+              and terminate this algorithm.
+
+              Note: This boils down to requiring a user gesture for {{store()}}
+              before showing the user any UI.
+
+              ISSUE: Do we need this? There is risk associated with {{get()}},
+              less clear that the same applies to {{store()}}
             </li>
             <li>
-              Resolve <var>promise</var>.
+              Resolve <var>promise</var> with the result of executing
+              [[#store-locallystoredcredential]],
+              passing in <var>credential</var> and <var>origin</var>.
             </li>
           </ol>
-        </li>
-      </ol>
+        </dd>
+
+        <dt><em>This is an extension point.</em></dt>
+        <dd>
+          When new credential types are defined in the future, they'll go here.
+        </dd>
+      </dl>
     </li>
   </ol>
 
@@ -1260,6 +1210,124 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <li>
       Return the promise that results from executing the initial value of
       {{fetch()}} on <var>url</var> and <var>init</var>.
+    </li>
+  </ol>
+
+  <h4 id="store-locallystoredcredential">
+    Store <var>credential</var>
+  </h4>
+ 
+  This algorithm accepts a {{LocallyStoredCredential}} (<var>credential</var>),
+  and an <a>origin</a> (<var>origin</var>), and hands it to the internal
+  credential manager for processing. It returns <code>undefined</code> both once
+  credential is successfully persisted to the credential manager, and when the
+  user rejects storage:
+
+  <ol>
+    <li>
+      Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
+      <code>true</code>.
+    </li>
+    <li>
+      Set <var>credential</var>'s {{[[origin]]}} slot to the <a>ASCII
+      serialization</a> of <var>origin</var>.
+    </li>
+    <li>
+      If <var>credential</var>'s {{LocallyStoredCredential/iconURL}} is an
+      <a><i lang="la">a priori</i> insecure URL</a>, set <var>credential</var>'s
+      {{LocallyStoredCredential/iconURL}} to the empty string.
+    </li>
+    <li>
+      Switch on <var>credential</var>'s interface, and execute the associated
+      steps:
+
+      <dl>
+        <dt>{{PasswordCredential}}</dt>
+        <dd>
+          <ol>
+            <li>
+              If the user agent's credential manager contains a
+              {{PasswordCredential}} <var>storedCredential</var> whose
+              {{Credential/id}} attribute is <var>credential</var>'s
+              {{Credential/id}} and whose {{[[origin]]}} slot is
+              <var>origin</var>, then:
+
+              <ol>
+                <li>
+                  If the user grants <var>origin</var> permission to update
+                  credentials (as discussed in [[#user-mediated-storage]]),
+                  then:
+
+                  <ol>
+                    <li>
+                      Set <var>storedCredential</var>'s {{[[password]]}} to the
+                      value of <var>credential</var>'s {{[[password]]}}
+                      slot.
+                    </li>
+                    <li>
+                      Set <var>storedCredential</var>'s
+                      {{LocallyStoredCredential/name}} to the
+                      value of <var>credential</var>'s
+                      {{LocallyStoredCredential/name}}.
+                    </li>
+                    <li>
+                      Set <var>storedCredential</var>'s
+                      {{LocallyStoredCredential/iconURL}} to
+                      the value of <var>credential</var>'s
+                      {{LocallyStoredCredential/iconURL}}.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+                  Resolve <var>promise</var>.
+                </li>
+              </ol>
+            </li>
+            <li>
+              Otherwise:
+
+              <ol>
+                <li>
+                  If the user grants <var>origin</var> permission to store
+                  credentials (as discussed in [[#user-mediated-storage]]), then
+                  store <var>credential</var> in the <a>credential store</a>.
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </dd>
+
+        <dt>{{FederatedCredential}}</dt>
+        <dd>
+          <ol>
+            <li>
+              If the user agent's credential manager does not contain a
+              {{FederatedCredential}} <var>storedCredential</var> whose
+              {{Credential/id}} attribute is <var>credential</var>'s
+              {{Credential/id}} and whose {{FederatedCredential/federation}}
+              attribute is <var>credential</var>'s
+              {{FederatedCredential/federation}}, then:
+
+              <ol>
+                <li>
+                  If the user grants <var>origin</var> permission to store
+                  credentials (as discussed in [[#user-mediated-storage]]),
+                  store <var>credential</var> in the <a>credential store</a>.
+                </li>
+              </ol>
+            </li>
+          </ol>
+
+        </dd>
+
+        <dt><em>This is an extension point.</em></dt>
+        <dd>
+          When new credential types are defined in the future, they'll go here.
+        </dd>
+      </dl>
+    </li>
+    <li>
+      Return <code>undefined</code>.
     </li>
   </ol>
 
@@ -1508,7 +1576,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   {{store()}} with a <code>SecurityError</code> when called from a
   context which is not a <a>top-level browsing context</a>.
 
-  See the algorithms defined in [[#request-credential]] and [[#save-credential]]
+  See the algorithms defined in [[#request-credential]] and [[#store-credential]]
   for details.
 
   ISSUE: Is this a meaningful restriction for Service Workers? Probably not.
