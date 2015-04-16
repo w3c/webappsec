@@ -404,12 +404,16 @@ scenario where this is useful then it makes sense to do this.
   MUST make a manifest file available via [[MANIFEST]].  EPR rules are included
   in a manifest via the <code>epr_manifest</code> attribute.
 
+ISSUE: "epr_manifest" attribute inconsistent (?) with "epr" member as described
+below.
+
   <div class="example">
     <pre>
       {
         ...,
         "<a dict-member>epr</a>": {
           "<a dict-member>reportURL</a>": "https://example.com/reporting-endpoint",
+          "<a dict-member>redirectURL</a>": "https://example.com/",
           "<a dict-member>navigationBehavior</a>": "<a>allowStrippedGET</a>",
           "<a dict-member>subresourceBehavior</a>": "<a>allowStrippedGET</a>",
           "<a dict-member>rules</a>": [
@@ -458,6 +462,7 @@ scenario where this is useful then it makes sense to do this.
 
     dictionary EPRPolicy {
       USVString? reportURL;
+      USVString? redirectURL;
       EPRBehavior navigationBehavior = "allowStrippedGET";
       EPRBehavior subresourceBehavior = "allowStrippedGET";
       sequence&lt;EPRRule&gt; rules;
@@ -472,6 +477,10 @@ scenario where this is useful then it makes sense to do this.
       Note: Authors may use the <a>allow</a> behavior to simulate a
       "report only" mode that does not actually modify incoming <a>requests</a>
       but does send reports back to the report URL.
+    </dd>
+    <dt><dfn dict-member>redirectURL</dfn></dt>
+    <dd>
+      A URL to redirect to when using the <a>redirect</a> behavior.
     </dd>
     <dt><dfn dict-member>navigationBehavior</dfn></dt>
     <dd>
@@ -521,12 +530,14 @@ scenario where this is useful then it makes sense to do this.
     <dt><dfn dict-member>path</dfn></dt>
     <dd>
       A path prefix defining a <a>rule</a>'s scope. See [[#matching]] for user
-      agent conformance requirements.
+      agent conformance requirements.  One <a>path</a> or <a>regex</a> may be
+      specified for a given rule, but not both.
     </dd>
     <dt><dfn dict-member>regex</dfn></dt>
     <dd>
       A regular expression, defining a <a>rule</a>'s scope. See [[#matching]]
-      for user agent conformance requirements.
+      for user agent conformance requirements.  One <a>path</a> or 
+      <a>regex</a> may be specified for a given rule, but not both.
     </dd>
     <dt><dfn dict-member>types</dfn></dt>
     <dd>
@@ -572,8 +583,6 @@ scenario where this is useful then it makes sense to do this.
     <dt><dfn>redirect</dfn></dt>
     <dd>
       Redirect the request to a specified URL.
-
-      ISSUE: How is this specified?
     </dd>
     <dt><dfn>allowUnauthenticated</dfn></dt>
     <dd>
