@@ -301,7 +301,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </pre>
 
       Note: This API does not go out to the identity provider to grab a token,
-      or authenticate the user in anyway. It provides a hint to the website as
+      or authenticate the user in any way. It provides a hint to the website as
       to which identity provider the user prefers to use, and little more. See
       [[#future-work]] for directions future versions of this API could take.
     </div>
@@ -430,10 +430,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <dd>
       A <strong>credential store</strong> is an opaque storage mechanism which
       offers a user agent the ability to save, retrieve, and modify
-      {{Credential}} objects.
+      {{Credential}} objects. The implementation is vendor-specific, and the
+      interface provided is not exposed to the web.
 
-      The implementation is vendor-specific, and the interface provided is not
-      exposed to the web.
+      Note: The types of credentials defined in this document are stored locally
+      in a user agent's credential store, but future versions of this and other
+      documents will likely define credential types which are external to the
+      user agent.
     </dd>
 
     <dt>
@@ -464,10 +467,15 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="interfaces-credential-types">Credential Types</h3>
 
-  This document defines a generic and extensible {{Credential}} interface, as
-  well as two specific instances: {{PasswordCredential}} and
-  {{FederatedCredential}} (which, as you might expect, map to <a>password
-  credentials</a> and <a>federated credentials</a>, respectively):
+  This document defines a generic and extensible {{Credential}} interface from
+  which all <a>credentials</a> will inherit, and a slightly less-generic
+  {{LocallyStoredCredential}}, which defines the specific attributes shared
+  by any <a>credential</a> persisted in user agent's <a>credential store</a>.
+  
+  {{PasswordCredential}} and {{FederatedCredential}} both inherit from
+  {{LocallyStoredCredential}}, and, as you might expect, are the concrete types
+  mapped to <a>password credentials</a> and <a>federated credentials</a>,
+  respectively.
 
   <h4 id="interfaces-credential-types-credential"><code>Credential</code></h4>
   <pre class="idl">
@@ -480,10 +488,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     [NoInterfaceObject]
     interface Credential {
       readonly attribute DOMString id;
-      readonly attribute DOMString name;
-      readonly attribute USVString iconURL;
     };
-
     Credential implements Transferable;
   </pre>
   <dl dfn-for="Credential">
@@ -492,7 +497,25 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       The credential's identifier. This might be a GUID, username, or email
       address, for instance.
     </dd>
+  </dl>
 
+  {{Credential}} objects implement {{Transferable}}, and MUST support the
+  the <a>structured clone</a> algorithm by defining a cloning mechanism.
+
+  ISSUE: Define cloning algorithms.
+
+  ISSUE(w3c/webappsec#258): We need to get rid of the
+  <code><dfn attribute for="Credential">[[requiresUserMediation]]</dfn></code>
+  slot in favor of an origin-specific value.
+
+  <pre class="idl">
+    [NoInterfaceObject]
+    interface LocallyStoredCredential : Credential {
+      readonly attribute DOMString name;
+      readonly attribute USVString iconURL;
+    };
+  </pre>
+  <dl dfn-for="LocallyStoredCredential">
     <dt><dfn attribute>name</dfn></dt>
     <dd>
       A name associated with the credential, intended as a human-understandable
@@ -511,19 +534,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  All {{Credential}} objects have an internal slot named
-  <code><dfn attribute for="Credential">[[origin]]</dfn></code>, which stores
-  the <a>origin</a> for which the credential was saved. This property is not
-  directly exposed to the web.
-
-  {{Credential}} objects implement {{Transferable}}, and MUST support the
-  the <a>structured clone</a> algorithm by defining a cloning mechanism.
-
-  ISSUE: Define cloning algorithms.
-
-  ISSUE(w3c/webappsec#258): We need to get rid of the
-  <code><dfn attribute for="Credential">[[requiresUserMediation]]</dfn></code>
-  slot in favor of an origin-specific value.
+  All {{LocallyStoredCredential}} objects have an internal slot named
+  <code><dfn attribute for="LocallyStoredCredential">[[origin]]</dfn></code>,
+  which stores the <a>origin</a> for which the credential was saved. This
+  property is not directly exposed to the web.
 
   <h4 id="interfaces-credential-types-passwordcredential"><code>PasswordCredential</code></h4>
   <pre class="idl">
@@ -532,7 +546,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     [Constructor(PasswordCredentialData data)]
-    interface PasswordCredential : Credential {
+    interface PasswordCredential : LocallyStoredCredential {
       Promise&lt;Response&gt; send(USVString url);
     };
   </pre>
@@ -571,7 +585,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     [Constructor(FederatedCredentialData data)]
-    interface FederatedCredential : Credential {
+    interface FederatedCredential : LocallyStoredCredential {
       readonly attribute USVString federation;
     };
   </pre>
@@ -949,7 +963,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       serialization</a> of <var>origin</var>.
     </li>
     <li>
-      If <var>credential</var>'s {{Credential/iconURL}} is an
+      If <var>credential</var>'s {{LocallyStoredCredential/iconURL}} is an
       <a><i lang="la">a priori</i> insecure URL</a>, reject <var>promise</var>
       with a <code>SecurityError</code> and terminate this algorithm.
     </li>
@@ -975,12 +989,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                   slot.
                 </li>
                 <li>
-                  Set <var>storedCredential</var>'s {{Credential/name}} to the
-                  value of <var>credential</var>'s {{Credential/name}}.
+                  Set <var>storedCredential</var>'s {{LocallyStoredCredential/name}} to the
+                  value of <var>credential</var>'s {{LocallyStoredCredential/name}}.
                 </li>
                 <li>
-                  Set <var>storedCredential</var>'s {{Credential/iconURL}} to
-                  the value of <var>credential</var>'s {{Credential/iconURL}}.
+                  Set <var>storedCredential</var>'s {{LocallyStoredCredential/iconURL}} to
+                  the value of <var>credential</var>'s {{LocallyStoredCredential/iconURL}}.
                 </li>
               </ol>
             </li>
@@ -1429,7 +1443,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <h3 id="privacy-chooser-leakage">Chooser Leakage</h3>
 
   If a user agent displays images supplied by a website or federation (for
-  example, if a {{Credential}}'s {{Credential/iconURL}} is displayed),
+  example, if a {{Credential}}'s {{LocallyStoredCredential/iconURL}} is displayed),
   requests for these images MUST NOT be directly tied to instantiating the
   chooser in order to avoid leaking chooser usage. One option would be to fetch
   the images in the background when saving or updating a {{Credential}}, and to
