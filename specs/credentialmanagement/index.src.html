@@ -88,9 +88,12 @@ spec: XHR; urlPrefix: https://xhr.spec.whatwg.org/
   type: constructor
     text: XMLHttpget(); for: XMLHttpRequest; url: dom-xmlhttprequest
 spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
+  type: dfn
+    text: type name; url: dfn-type-name
   type: interface
     text: DOMString; url: idl-DOMString
     text: USVString; url: idl-USVString
+    text: object; url: idl-object
     text: boolean; url: idl-boolean
 spec: WEBMESSAGING; urlPrefix: http://www.w3.org/TR/webmessaging/
   type: method
@@ -210,7 +213,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         used elements like email addresses, and so on.
 
         ISSUE(w3c/webappsec#244): Anne notes that this use case is weak. Shoring
-        it up requires <a href="#issue-1a314ee6">deciding whether we want to
+        it up requires <a href="#issue-fc00d72b">deciding whether we want to
         explicitly support creation and password generation</a>.
       </li>
       <li>
@@ -224,14 +227,16 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <section>
     <h3 id="introduction-examples">Examples</h3>
 
-    <h4 id="examples-local-signin">Local Sign-in</h4>
+    <h4 id="examples-password-signin">Password-based Sign-in</h4>
 
     A website that supports only username/password pairs can request
     credentials, and use them in existing sign-in forms:
 
     <div class="example">
       <pre>
-        navigator.<a attribute>credentials</a>.<a idl>get()</a>.then(
+        navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>(
+          "<a idl>types</a>": [ "PasswordCredential" ]
+        ).then(
             function(credential) {
               if (!credential) {
                 // The user either doesn't have credentials for this site, or
@@ -240,7 +245,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 // really be progressive enhancement on top of an existing form).
                 return;
               }
-              if (credential instanceof <a idl>LocalCredential</a>) {
+              if (credential instanceof <a idl>PasswordCredential</a>) {
                 credential.<a method lt="send()">send</a>("https://example.com/loginEndpoint")
                   .then(function (response) {
                     // Notify the user that signin succeeded! Do amazing, signed-in things!
@@ -261,7 +266,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <div class="example">
       <pre>
         navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
-          "<a idl for="CredentialRequestOptions">federations</a>": [ "https://federation.com" ]
+          "<a idl>types</a>": [ "FederatedCredential" ],
+          "<a idl>filter</a>": {
+              "<a idl>federations</a>": [ "https://federation.com" ]
+          }
         }).then(
             function(credential) {
               if (!credential)
@@ -295,7 +303,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </pre>
 
       Note: This API does not go out to the identity provider to grab a token,
-      or authenticate the user in anyway. It provides a hint to the website as
+      or authenticate the user in any way. It provides a hint to the website as
       to which identity provider the user prefers to use, and little more. See
       [[#future-work]] for directions future versions of this API could take.
     </div>
@@ -306,14 +314,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     website to tell the credential manager that sign-in succeeded.
 
     <div class="example">
-      If a user is signed in by calling {{send()}} on a {{LocalCredential}}
+      If a user is signed in by calling {{send()}} on a {{PasswordCredential}}
       object, then we can check the response to determine whether the user
       was signed in successfully, and notify the user agent accordingly:
 
       <pre>
-        var credential = new <a idl>LocalCredential</a>({
+        var credential = new <a idl>PasswordCredential</a>({
           "<a idl for="CredentialData">id</a>": "JaneDoe98",
-          "<a idl for="LocalCredentialData">password</a>": "MfPeRQq5P3yVry68Q4KZMMhB"
+          "<a idl for="PasswordCredentialData">password</a>": "MfPeRQq5P3yVry68Q4KZMMhB"
         });
         credential.send("https://example.com/sign-in/")
           .then(function (response) {
@@ -347,7 +355,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <h4 id="examples-change-password">Change Password</h4>
 
-    The "Local Sign-In" mechanism can be reused for "password change" with no
+    The "Password Sign-In" mechanism can be reused for "password change" with no
     modifications: if the user changes her credentials, the website can notify
     the user agent that she's successfully signed in with new credentials. The
     user agent can then update the credentials it stores.
@@ -403,15 +411,19 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <dl>
     <dt><dfn export>Credentials</dfn></dt>
-    <dt><dfn export>Local Credentials</dfn></dt>
+    <dt><dfn export>Password Credentials</dfn></dt>
     <dt><dfn export>Federated Credentials</dfn></dt>
     <dd>
-      A user authenticates herself to an <a>origin</a> by submitting a set of
-      <strong>credentials</strong>. This document defines two types of
-      credentials: "local" credentials, which consist of a username/password
+      Broadly speaking, <strong>credential</strong> is an assertion about an
+      entity which enables a trust decision. This specification defines two
+      specific types of credentials which are useful for authentication:
+      "password" credentials, which consist of a username/password
       pair, and "federated" credentials, which point out to a <a>federated
       identity provider</a> which is trusted to correctly assert a user's
       authentication.
+
+      Note: These two types are, of course, not exhaustive. Future versions of
+      this and other documents will likely define other types of credentials.
     </dd>
 
     <dt>
@@ -420,10 +432,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <dd>
       A <strong>credential store</strong> is an opaque storage mechanism which
       offers a user agent the ability to save, retrieve, and modify
-      {{Credential}} objects.
+      {{LocallyStoredCredential}} objects. The implementation is
+      vendor-specific, and the interface provided is not exposed to the web.
 
-      The implementation is vendor-specific, and the interface provided is not
-      exposed to the web.
+      Note: The types of credentials defined in this document are stored locally
+      in a user agent's credential store, but future versions of this and other
+      documents will likely define credential types which are external to the
+      user agent.
     </dd>
 
     <dt>
@@ -454,10 +469,15 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="interfaces-credential-types">Credential Types</h3>
 
-  This document defines a generic and extensible {{Credential}} interface, as
-  well as two specific instances: {{LocalCredential}} and
-  {{FederatedCredential}} (which, as you might expect, map to <a>local
-  credentials</a> and <a>federated credentials</a>, respectively):
+  This document defines a generic and extensible {{Credential}} interface from
+  which all <a>credentials</a> will inherit, and a slightly less-generic
+  {{LocallyStoredCredential}}, which defines the specific attributes shared
+  by any <a>credential</a> persisted in user agent's <a>credential store</a>.
+  
+  {{PasswordCredential}} and {{FederatedCredential}} both inherit from
+  {{LocallyStoredCredential}}, and, as you might expect, are the concrete types
+  mapped to <a>password credentials</a> and <a>federated credentials</a>,
+  respectively.
 
   <h4 id="interfaces-credential-types-credential"><code>Credential</code></h4>
   <pre class="idl">
@@ -470,10 +490,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     [NoInterfaceObject]
     interface Credential {
       readonly attribute DOMString id;
-      readonly attribute DOMString name;
-      readonly attribute USVString iconURL;
     };
-
     Credential implements Transferable;
   </pre>
   <dl dfn-for="Credential">
@@ -482,7 +499,25 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       The credential's identifier. This might be a GUID, username, or email
       address, for instance.
     </dd>
+  </dl>
 
+  {{Credential}} objects implement {{Transferable}}, and MUST support the
+  the <a>structured clone</a> algorithm by defining a cloning mechanism.
+
+  ISSUE: Define cloning algorithms.
+
+  ISSUE(w3c/webappsec#258): We need to get rid of the
+  <code><dfn attribute for="Credential">[[requiresUserMediation]]</dfn></code>
+  slot in favor of an origin-specific value.
+
+  <pre class="idl">
+    [NoInterfaceObject]
+    interface LocallyStoredCredential : Credential {
+      readonly attribute DOMString name;
+      readonly attribute USVString iconURL;
+    };
+  </pre>
+  <dl dfn-for="LocallyStoredCredential">
     <dt><dfn attribute>name</dfn></dt>
     <dd>
       A name associated with the credential, intended as a human-understandable
@@ -501,38 +536,35 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  All {{Credential}} objects have an internal slot named
-  <code><dfn attribute for="Credential">[[origin]]</dfn></code>, which stores
-  the <a>origin</a> for which the credential was saved. This property is not
-  directly exposed to the web.
+  All {{LocallyStoredCredential}} objects have an internal slot named
+  <code><dfn attribute for="LocallyStoredCredential">[[origin]]</dfn></code>,
+  which stores the <a>origin</a> for which the credential was saved. This
+  property is not directly exposed to the web.
 
-  {{Credential}} objects implement {{Transferable}}, and MUST support the
-  the <a>structured clone</a> algorithm by defining a cloning mechanism.
+  All {{LocallyStoredCredential}} objects MUST define a
+  <dfn lt="filter matching algorithm">filter matching algorithm</dfn>
+  which returns <code>Match</code> if the object matches a
+  {{CredentialRequestOptions/filter}}, and <code>Does Not Match</code>
+  otherwise.
 
-  ISSUE: Define cloning algorithms.
-
-  ISSUE(w3c/webappsec#258): We need to get rid of the
-  <code><dfn attribute for="Credential">[[requiresUserMediation]]</dfn></code>
-  slot in favor of an origin-specific value.
-
-  <h4 id="interfaces-credential-types-localcredential"><code>LocalCredential</code></h4>
+  <h4 id="interfaces-credential-types-passwordcredential"><code>PasswordCredential</code></h4>
   <pre class="idl">
-    dictionary LocalCredentialData : CredentialData {
+    dictionary PasswordCredentialData : CredentialData {
       DOMString password;
     };
 
-    [Constructor(LocalCredentialData data)]
-    interface LocalCredential : Credential {
+    [Constructor(PasswordCredentialData data)]
+    interface PasswordCredential : LocallyStoredCredential {
       Promise&lt;Response&gt; send(USVString url);
     };
   </pre>
-  <dl dfn-for="LocalCredential">
+  <dl dfn-for="PasswordCredential">
     <dt><dfn method lt="send(url)">send(url)</dfn></dt>
     <dd>
       This method can be used to transmit the username and password information
       represented by this object to a same-origin endpoint in order to sign a
       user into a website. The user agent MUST execute the algorithm described
-      in [[#send-localcredential]] when this method is executed.
+      in [[#send-passwordcredential]] when this method is executed.
 
       ISSUE: Do we need the ability to pass in more information than just a URL?
       Perhaps a dictionary of key/value pairs to be appended to the
@@ -544,23 +576,41 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  All {{LocalCredential}} objects have an internal slot named
-  <code><dfn attribute for="LocalCredential">[[password]]</dfn></code>
+  All {{PasswordCredential}} objects have an internal slot named
+  <code><dfn attribute for="PasswordCredential">[[password]]</dfn></code>
   which stores the credential's password. This property is not directly exposed
   to the web, but used to construct the {{RequestInit}} object generated during
-  {{LocalCredential/send()}}.
+  {{PasswordCredential/send()}}.
+
+  <h5 id="passwordcredential-matching">
+    Matching Algorithm
+  </h5>
+
+  {{PasswordCredential}} objects' <a>filter matching algorithm</a> always
+  returns <code>Match</code>.
 
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
+    dictionary FederatedCredentialFilter {
+      sequence&lt;USVString&gt; federations;
+    };
+
     dictionary FederatedCredentialData : CredentialData {
       USVString federation;
     };
 
     [Constructor(FederatedCredentialData data)]
-    interface FederatedCredential : Credential {
+    interface FederatedCredential : LocallyStoredCredential {
       readonly attribute USVString federation;
     };
   </pre>
+  <dl dfn-for="FederatedCredentialFilter">
+    <dt><dfn dict-member>federations</dfn></dt>
+    <dd>
+      An array of federation identifiers. For details regarding valid formats
+      see [[#identifying-federations]]
+    </dd>
+  </dl>
   <dl dfn-for="FederatedCredential">
     <dt><dfn attribute>federation</dfn></dt>
     <dd>
@@ -568,6 +618,30 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       [[#identifying-federations]]
     </dd>
   </dl>
+
+  <h5 id="federatedcredential-matching">
+    Matching Algorithm
+  </h5>
+
+  {{FederatedCredential}} objects' <a>filter matching algorithm</a> is as
+  follows. Given a {{FederatedCredential}} (<var>credential</var>) and a
+  {{CredentialRequestOptions/filter}} (<var>filter</var>):
+
+  <ol>
+    <li>
+      If <var>filter</var> has no property named <code>federations</code>, or
+      if the value of <var>filter</var>'s <code>federation</code> is not a
+      sequence of {{USVString}}, return <code>Does Not Match</code>.
+    </li>
+    <li>
+      If <var>credential</var>'s {{FederatedCredential/federation}} is not
+      a case-sensitive match for one or more values in <var>filter</var>'s
+      <code>federation</code> sequence, return <code>Does Not Match</code>.
+    </li>
+    <li>
+      Return <code>Matches</code>.
+    </li>
+  </ol>
 
   <h3 id="interfaces-credential-manager">Credential Manager</h3>
 
@@ -600,7 +674,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       successful password change operation.
 
       When {{store()}} is called, the user agent MUST execute the algorithm
-      defined in [[#save-credential]] with <var>credential</var> as an
+      defined in [[#store-credential]] with <var>credential</var> as an
       argument.
     </dd>
     <dt><dfn method>requireUserMediation()</dfn></dt>
@@ -617,7 +691,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  ISSUE: We should support explicit sign-up via {{LocalCredential}}s with
+  ISSUE: We should support explicit sign-up via {{PasswordCredential}}s with
   generated passwords. Perhaps something similar to iOS8's
   <code>SecCreateSharedWebCredentialPassword</code>.
 
@@ -625,21 +699,18 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <pre class="idl">
     dictionary CredentialRequestOptions {
-      boolean excludePasswords = false;
-      sequence&lt;USVString&gt; federations;
+      sequence&lt;DOMString&gt; types;
       boolean suppressUI = false;
+      object filter;
     };
   </pre>
   <dl dfn-for="CredentialRequestOptions">
-    <dt><dfn dict-member>excludePasswords</dfn></dt>
+    <dt><dfn dict-member>types</dfn></dt>
     <dd>
-      If <code>true</code>, the user agent will not return {{LocalCredential}}
-      objects in response to a request.
-    </dd>
-    <dt><dfn dict-member>federations</dfn></dt>
-    <dd>
-      An array of federation identifiers. For details regarding valid formats
-      see [[#identifying-federations]]
+      A sequence of strings specifying the types of {{Credential}} objects which
+      the caller wishes to obtain. An empty sequence signifies that the caller
+      will accept any credential type. For processing details, see the algorithm
+      defined in [[#request-credential]].
     </dd>
     <dt><dfn dict-member>suppressUI</dfn></dt>
     <dd>
@@ -650,6 +721,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <code>undefined</code>. For processing details, see the algorithm defined
       in [[#request-credential]].
     </dd>
+    <dt><dfn dict-member>filter</dfn></dt>
+    <dd>
+      An arbitrary object containing a set of parameters which will be used to
+      select a particular {{Credential}} to return. This process is described in
+      each {{Credential}} type's <a>filter matching algorithm</a>.
+    </dd>
   </dl>
 
   <div class="example">
@@ -659,8 +736,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <pre>
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
-        "<a idl>excludePasswords</a>": true,
-        "<a idl>federations</a>": [ "https://identity.example.com/" ]
+        "<a idl>types</a>": [ "FederatedCredential" ],
+        "<a idl>filter</a>": {
+            "<a idl>federations</a>": [ "https://identity.example.com/" ]
+        }
       }).then(function (credential) {
         // ...
       });
@@ -673,8 +752,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <pre>
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
-        "<a idl>excludePasswords</a>": true,
-        "<a idl>federations</a>": [ "https://identity.example.com/" ],
+        "<a idl>types</a>": [ "FederatedCredential" ],
+        "<a idl>filter</a>": {
+            "<a idl>federations</a>": [ "https://identity.example.com/" ]
+        },
         "<a idl>suppressUI</a>": true
       }).then(function (credential) {
         // ...
@@ -693,7 +774,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   agents to be helpful.
 
   For consistency, federations passed into the APIs defined in this document
-  (e.g. {{CredentialRequestOptions}}'s {{CredentialRequestOptions/federations}}
+  (e.g. {{FederatedCredentialFilter}}'s {{FederatedCredentialFilter/federations}}
   array, or {{FederatedCredential}}'s {{FederatedCredential/federation}} property)
   MUST be identified by the <a>ASCII serialization</a> of the origin the provider
   uses for sign in. That is, Facebook would be represented by
@@ -718,35 +799,35 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 <section>
   <h2 id="algorithms">Algorithms</h2>
 
-  <h3 id="request-credential">
-    Request a <code>Credential</code> with <var>options</var>
+  <h3 id="processing">
+    Processing <code>Credential</code>s
   </h3>
 
-  This algorithm accepts a {{CredentialRequestOptions}} <var>options</var>, and
-  returns a <code>Promise</code> which resolves with either a single
-  {{Credential}} object if one could be obtained, or with <code>undefined</code>
-  if no credential was available (either because the user refused to share a
-  credential with this page, or because no credentials were available, period).
+  <h4 id="request-credential">
+    Request a <code>Credential</code>
+  </h4>
+
+  Given a {{CredentialRequestOptions}} object (<var>options</var>), this
+  algorithm returns a <code>Promise</code> which resolves with either a
+  single {{Credential}} object if one can be obtained, or <code>undefined</code>
+  if not.
 
   If called from an environment which is not a <a>privileged context</a>, or
   from somewhere other than a <a>top-level browsing context</a>, the
-  <code>Promise</code> will be rejected with a <code>SecurityError</code>.
+  <code>Promise</code> will be rejected with a <code>NotSupportedError</code>.
 
   <ol>
-    <li>
-      Let <var>promise</var> be a newly created <code>Promise</code> object.
-    </li>
-    <li>
-      Return <var>promise</var>, and execute the remaining steps asynchronously.
-    </li>
     <li>
       Let <var>settings</var> be the <a>incumbent settings object</a>.
     </li>
     <li>
-      Reject <var>promise</var> with a <code>SecurityError</code>
-      <strong>and</strong> terminate this algorithm, if any of the following
-      conditions are met:
-      <ul>
+      Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
+    </li>
+    <li>
+      Return a <code>Promise</code> rejected with <code>NotSupportedError</code>
+      if any of the following statements are true:
+
+      <ol>
         <li>
           <var>settings</var> does not have a <a>responsible document</a>
         </li>
@@ -757,75 +838,222 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         <li>
           <var>settings</var> is not a <a>privileged context</a>
         </li>
-      </ul>
+      </ol>
     </li>
     <li>
-      Let <var>origin</var> be the <a>origin</a> of the <var>environment</var>.
+      Let <var>type</var> be lowest common ancestor interface of the types
+      referenced in <var>options</var>.
+
+      ISSUE: This is terribly hand-wavey. The intent is clear, but I need to do
+      the work to walk through the list of DOMStrings and convert them to
+      interfaces and etc. Busywork for later.
     </li>
     <li>
-      Let <var>credential</var> be the result of executing the algorithm
-      defined in [[#request-credential-without-mediation]] with
-      <var>origin</var> and <var>options</var> as arguments.
+      Return a <code>Promise</code> rejected with <code>TypeMismatchError</code>
+      if <var>type</var> is {{Credential}}.
     </li>
     <li>
-      If <var>credential</var> is not <code>null</code>, resolve
-      <var>promise</var> with <var>credential</var> and terminate this
-      algorithm.
+      Let <var>promise</var> be a newly created <code>Promise</code> object.
     </li>
     <li>
-      If <var>options</var> is <code>undefined</code>, or if <code>options</code>'
-      {{suppressUI}} property is <code>false</code>, then:
+      Return <var>promise</var>, and execute the remaining steps asynchronously.
+    </li>
+    <li>
+      Switch on <var>type</var>, and execute the associated steps:
+
+      <dl>
+        <dt>{{LocallyStoredCredential}}</dt>
+        <dd>
+          <ol>
+            <li>
+              Let <var>result</var> be the result of executing
+              [[#request-locallystoredcredential-without-mediation]],
+              passing in <var>origin</var>, <var>options</var>'
+              {{CredentialRequestOptions/types}} property, and
+              <var>options</var>' {{CredentialRequestOptions/filter}} property.
+            </li>
+            <li>
+              If <var>result</var> is not <code>null</code>, resolve
+              <var>promise</var> with <var>result</var>, and terminate this
+              algorithm.
+            </li>
+            <li>
+              If <var>options</var>' {{CredentialRequestOptions/suppressUI}}
+              is <code>true</code>, resolve <var>promise</var> with
+              <var>undefined</var>, and terminate this algorithm.
+            </li>
+            <li>
+              If this algorithm would not be <a>allowed to show a popup</a>,
+              then reject <var>promise</var> with a <code>SecurityError</code>
+              and terminate this algorithm.
+
+              Note: This boils down to requiring a user gesture for {{get()}}
+              before showing the user any UI.
+            </li>
+            <li>
+              Resolve <var>promise</var> with the result of executing
+              [[#request-locallystoredcredential-with-mediation]],
+              passing in <var>origin</var>, <var>options</var>'
+              {{CredentialRequestOptions/types}} property, and
+              <var>options</var>' {{CredentialRequestOptions/filter}} property.
+            </li>
+          </ol>
+        </dd>
+
+        <dt><em>This is an extension point.</em></dt>
+        <dd>
+          When new credential types are defined in the future, they'll go here.
+        </dd>
+      </dl>
+    </li>
+  </ol>
+
+  ISSUE: How do we deal with a future in which {{LocallyStoredCredential}} isn't
+  the only type? For example, how could an author pull some "RemoteCredential"
+  that required interaction with a third-party, but fall back to a
+  {{PasswordCredential}}? For the moment, we're resolving this by rejecting the
+  promise if the types listed in {{CredentialRequestOptions/types}} aren't all
+  instances of the same type, but that seems like something we'd want to fix.
+
+  <h4 id="store-credential">
+    Store a <code>Credential</code>
+  </h4>
+
+  Given a {{Credential}} object (<var>credential</var>), this algorithm executes
+  a type-specific storage algorithm. {{LocallyStoredCredential}} objects will
+  be persisted to the user agent's <a>credential store</a>. Future object types
+  could, for instance, be persisted to some other (potentially remote) storage
+  mechanism.
+
+  If called from an environment which is not a <a>privileged context</a>, or
+  from somewhere other than a <a>top-level browsing context</a>, the
+  <code>Promise</code> will be rejected with a <code>NotSupportedError</code>.
+
+  <ol>
+    <li>
+      Let <var>settings</var> be the <a>incumbent settings object</a>.
+    </li>
+    <li>
+      Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
+    </li>
+    <li>
+      Return a <code>Promise</code> rejected with <code>NotSupportedError</code>
+      if any of the following statements are true:
 
       <ol>
         <li>
-          If this algorithm would not be <a>allowed to show a popup</a>, then
-          reject <var>promise</var> with a <code>SecurityError</code> and
-          terminate this algorithm.
-
-          Note: This requirement only applies if we would show UI to the user.
-          If she's elected to allow credentials to be provided without user
-          mediation, and we can do so, then we don't require a user gesture
-          for {{get()}}. Otherwise, we do, due to the considerations in
-          [[#privacy-considerations]].
+          <var>settings</var> does not have a <a>responsible document</a>
         </li>
         <li>
-          Ask the user which {{Credential}} to share.
-
-          Note: This behavior is vendor-specific. Guidelines for user agent
-          behavior are presented in [[#user-mediation]].
+          <var>settings</var>' <a>responsible document</a> is not the
+          <a>active document</a> in the <a>top-level browsing context</a>
         </li>
         <li>
-          Let <var>credential</var> be the {{Credential}} the user chose, or
-          <code>null</code> if the user chose not to share a credential with
-          <var>origin</var>.
-        </li>
-        <li>
-          If <var>credential</var> is not <code>null</code>:
-         
-          <ol>
-            <li>
-              Resolve <var>promise</var> with <var>credential</var> and
-              terminate this algorithm.
-            </li>
-          </ol>
+          <var>settings</var> is not a <a>privileged context</a>
         </li>
       </ol>
     </li>
     <li>
-      No {{Credential}} is available: terminate this algorithm by resolving
-      <var>promise</var> with with <code>undefined</code>.
+      Switch on <var>type</var>, and execute the associated steps:
+
+      <dl>
+        <dt>{{LocallyStoredCredential}}</dt>
+        <dd>
+          <ol>
+            <li>
+              If this algorithm would not be <a>allowed to show a popup</a>,
+              then reject <var>promise</var> with a <code>SecurityError</code>
+              and terminate this algorithm.
+
+              Note: This boils down to requiring a user gesture for {{store()}}
+              before showing the user any UI.
+
+              ISSUE: Do we need this? There is risk associated with {{get()}},
+              less clear that the same applies to {{store()}}
+            </li>
+            <li>
+              Resolve <var>promise</var> with the result of executing
+              [[#store-locallystoredcredential]],
+              passing in <var>credential</var> and <var>origin</var>.
+            </li>
+          </ol>
+        </dd>
+
+        <dt><em>This is an extension point.</em></dt>
+        <dd>
+          When new credential types are defined in the future, they'll go here.
+        </dd>
+      </dl>
     </li>
   </ol>
 
-  <h3 id="request-credential-without-mediation">
-    Request a <code>Credential</code> for <var>origin</var> with
-    <var>options</var> <em>without</em> user mediation
+  <h4 id="is-match">
+    Does <var>origin A</var> match <var>origin B</var>?
+  </h4>
+
+  <ol>
+    <li>
+      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
+      <code>Exact Match</code>.
+    </li>
+    <li>
+      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
+      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
+      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
+      domain</a>, then return <code>Fuzzy Match</code>.
+    </li>
+    <li>
+      Return <code>No Match</code>
+    </li>
+  </ol>
+
+  <h3 id="processing-locallystored">
+    Processing <code>LocallyStoredCredential</code>s
   </h3>
 
-  This algorithm accepts an <a>origin</a> <var>origin</var> and a
-  {{CredentialRequestOptions}} <var>options</var>, and returns either a single
-  {{Credential}} object if one can be provided without user mediation, or
-  <code>null</code> if not.
+  <h4 id="gather-locallystoredcredentials">
+    Gather <code>LocallyStoredCredential</code>s
+  </h4>
+
+  Given an <a>origin</a> (<var>origin</var>), and a sequence of {{DOMString}}
+  (<var>types</var>), and a {{CredentialRequestOptions/filter}} object
+  (<var>filter</var>), this algorithm returns a sequence of
+  {{LocallyStoredCredential}} from the user agent's <a>credential store</a>
+  which are potential candidates:
+
+  <ol>
+    <li>
+      Let <var>credentials</var> be the set of {{Credential}} objects in the
+      <a>credential store</a> whose {{[[origin]]}} slot is equal to the <a>ASCII
+      serialization</a> of <var>origin</var>, and whose
+      {{[[requiresUserMediation]]}} slot is <code>false</code>.
+
+      Note: This is an exact match, not a <a>registerable domain</a> match.
+      See [[#security-cross-origin-leakage]] for details as to why.
+    </li>
+    <li>
+      Remove any items from <var>credentials</var> whose <a>type name</a> is not
+      a case-sensitive match for a value in <var>types</var>.
+    </li>
+    <li>
+      Remove any items from <var>credentials</var> whose <a>filter matching
+      algorithm</a> returns <code>Does Not Match</code> when executed on
+      <var>filter</var>.
+    </li>
+    <li>
+      Return <var>credentials</var>.
+    </li>
+  </ol>
+
+  <h4 id="request-locallystoredcredential-without-mediation">
+    Request a <code>LocallyStoredCredential</code> <em>without</em> user mediation
+  </h4>
+
+  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
+  type names (<var>types</var>) and a {{CredentialRequestOptions/filter}} object
+  (<var>filter</var>), and returns either a single {{LocallyStoredCredential}}
+  object <strong>if and only if</strong> one can be provided without user
+  mediation, or <code>null</code> if not.
 
   <ol>
     <li>
@@ -835,13 +1063,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Note: See [[#user-mediation-requirements]] for details.
     </li>
     <li>
-      Let <var>credentials</var> be the set of {{Credential}} objects in the
-      <a>credential store</a> whose {{[[origin]]}} slot is equal to the <a>ASCII
-      serialization</a> of <var>origin</var>, and whose
-      {{[[requiresUserMediation]]}} slot is <code>false</code>.
-
-      Note: This is an exact match, not a <a>registerable domain</a> match.
-      See [[#security-cross-origin-leakage]] for details as to why.
+      Let <var>credentials</var> be the result of executing
+      [[#gather-locallystoredcredentials]] on <var>origin</var>,
+      <var>types</var>, and <var>filter</var>.
     </li>
     <li>
       If <var>credentials</var> is empty, or contains more than one
@@ -856,12 +1080,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       in <var>credentials</var>.
     </li>
     <li>
-      If <var>credential</var> is a <code>FederatedCredential</code>, and
-      the value of <var>credential</var>'s {{FederatedCredential/federation}}
-      attribute does not appear in <var>options</var>'
-      {{CredentialRequestOptions/federations}} array, return <code>null</code>.
-    </li>
-    <li>
       Return <var>credential</var>.
     </li>
   </ol>
@@ -870,136 +1088,55 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   recommend that this algorithm always return <code>null</code> when the user
   has enabled private browsing.
 
-  <h3 id="save-credential">
-    Save <var>credential</var>
-  </h3>
+  <h4 id="request-locallystoredcredential-with-mediation">
+    Request a <code>LocallyStoredCredential</code> with user mediation
+  </h4>
 
-  This algorithm accepts a {{Credential}} <var>credential</var>, and hands it
-  to the internal credential manager for processing. It returns a
-  <code>Promise</code> which resolves with no arguments once credential is
-  successfully persisted to the credential manager, or when the user rejects
-  storage:
+  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
+  type names (<var>types</var>) and a {{CredentialRequestOptions/filter}} object
+  (<var>filter</var>), and returns either a single {{LocallyStoredCredential}}
+  object, or <code>null</code> if none can be provided.
 
   <ol>
     <li>
-      Let <var>promise</var> be a newly created <code>Promise</code> object.
+      Let <var>credentials</var> be the result of executing
+      [[#gather-locallystoredcredentials]] on <var>origin</var>,
+      <var>types</var>, and <var>filter</var>.
+    </li>
+      This requirement only applies if we would show UI to the user.
+      If she's elected to allow credentials to be provided without user
+      mediation, and we can do so, then we don't require a user gesture
+      for {{get()}}. Otherwise, we do, due to the considerations in
+      [[#privacy-considerations]].
     </li>
     <li>
-      Return <var>promise</var>, and execute the remaining steps asynchronously.
-    </li>
-    <li>
-      Let <var>environment</var> be the <a>incumbent settings object</a>.
-    </li>
-    <li>
-      If <var>environment</var>'s <a>responsible browsing context</a> is not a
-      <a>top-level browsing context</a>, or <var>environment</var> is not a
-      <a>privileged context</a>, then reject <var>promise</var> with a
-      <code>SecurityError</code> <strong>and</strong> terminate this algorithm.
-    </li>
-    <li>
-      Let <var>origin</var> be the <a>origin</a> of the <var>environment</var>.
-    </li>
-    <li>
-      Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
-      <code>true</code>.
-    </li>
-    <li>
-      Set <var>credential</var>'s {{[[origin]]}} slot to the <a>ASCII
-      serialization</a> of <var>origin</var>.
-    </li>
-    <li>
-      If <var>credential</var>'s {{Credential/iconURL}} is an
-      <a><i lang="la">a priori</i> insecure URL</a>, reject <var>promise</var>
-      with a <code>SecurityError</code> and terminate this algorithm.
-    </li>
-    <li>
-      If <var>credential</var> is a {{LocalCredential}}, then:
+      Ask the user which {{Credential}} to share.
 
-      <ol>
-        <li>
-          If the user agent's credential manager contains a {{LocalCredential}}
-          <var>storedCredential</var> whose {{Credential/id}} attribute is
-          <var>credential</var>'s {{Credential/id}} and whose
-          {{[[origin]]}} slot is <var>origin</var>, then:
-
-          <ol>
-            <li>
-              If the user grants <var>origin</var> permission to update
-              credentials (as discussed in [[#user-mediated-storage]]), then:
-
-              <ol>
-                <li>
-                  Set <var>storedCredential</var>'s {{[[password]]}} to the
-                  value of <var>credential</var>'s {{[[password]]}}
-                  slot.
-                </li>
-                <li>
-                  Set <var>storedCredential</var>'s {{Credential/name}} to the
-                  value of <var>credential</var>'s {{Credential/name}}.
-                </li>
-                <li>
-                  Set <var>storedCredential</var>'s {{Credential/iconURL}} to
-                  the value of <var>credential</var>'s {{Credential/iconURL}}.
-                </li>
-              </ol>
-            </li>
-            <li>
-              Resolve <var>promise</var>.
-            </li>
-          </ol>
-        </li>
-        <li>
-          Otherwise:
-
-          <ol>
-            <li>
-              If the user grants <var>origin</var> permission to store
-              credentials (as discussed in [[#user-mediated-storage]]), then
-              store <var>credential</var> in the <a>credential store</a>.
-            </li>
-            <li>
-              Resolve <var>promise</var>.
-            </li>
-          </ol>
-        </li>
-      </ol>
+      Note: This behavior is vendor-specific. Guidelines for user agent
+      behavior are presented in [[#user-mediation]].
     </li>
     <li>
-      Otherwise, <var>credential</var> is a {{FederatedCredential}}:
-
-      <ol>
-        <li>
-          If the user agent's credential manager contains a
-          {{FederatedCredential}} <var>storedCredential</var> whose
-          {{Credential/id}} attribute is <var>credential</var>'s
-          {{Credential/id}} and whose {{FederatedCredential/federation}}
-          attribute is <var>credential</var>'s
-          {{FederatedCredential/federation}}, then resolve <var>promise</var>.
-        </li>
-        <li>
-          Otherwise:
-
-          <ol>
-            <li>
-              If the user grants <var>origin</var> permission to store
-              credentials (as discussed in [[#user-mediated-storage]]), then
-              store <var>credential</var> in the <a>credential store</a>.
-            </li>
-            <li>
-              Resolve <var>promise</var>.
-            </li>
-          </ol>
-        </li>
-      </ol>
+      Let <var>credential</var> be the {{Credential}} the user chose, or
+      <code>null</code> if the user chose not to share a credential with
+      <var>origin</var>.
+    </li>
+    <li>
+      If <var>credential</var> is not <code>null</code>, then resolve
+      <var>promise</var> with <var>credential</var> and terminate this
+      algorithm.
+    </li>
+    <li>
+      No {{Credential}} is available: terminate this algorithm by resolving
+      <var>promise</var> with with <code>undefined</code>.
     </li>
   </ol>
 
-  <h3 id="send-localcredential">
-    Send <var>localCredential</var> to <var>url</var>.
-  </h3>
+  <h4 id="send-passwordcredential">
+    Send <var>passwordCredential</var> to <var>url</var>.
+  </h4>
 
   Given an endpoint URL (<var>url</var>) this method will <code>POST</code>
-  the credential information from a {{LocalCredential}} (<var>credential</var>)
+  the credential information from a {{PasswordCredential}} (<var>credential</var>)
   to <var>url</var>. In order to mitigate the risk of data leakage,
   <var>url</var> MUST be same-origin with <var>credential</var>'s
   internal {{[[origin]]}} slot.
@@ -1076,14 +1213,133 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h3 id="require-user-mediation-for-origin">
-    Require user mediation for <var>origin</var>
-  </h3>
+  <h4 id="store-locallystoredcredential">
+    Store <var>credential</var>
+  </h4>
+ 
+  This algorithm accepts a {{LocallyStoredCredential}} (<var>credential</var>),
+  and an <a>origin</a> (<var>origin</var>), and hands it to the internal
+  credential manager for processing. It returns <code>undefined</code> both once
+  credential is successfully persisted to the credential manager, and when the
+  user rejects storage:
 
   <ol>
     <li>
-      Let <var>credentials</var> be the set of all {{Credential}} objects in
-      the <a>credential store</a> whose {{[[origin]]}} is <var>origin</var>.
+      Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
+      <code>true</code>.
+    </li>
+    <li>
+      Set <var>credential</var>'s {{[[origin]]}} slot to the <a>ASCII
+      serialization</a> of <var>origin</var>.
+    </li>
+    <li>
+      If <var>credential</var>'s {{LocallyStoredCredential/iconURL}} is an
+      <a><i lang="la">a priori</i> insecure URL</a>, set <var>credential</var>'s
+      {{LocallyStoredCredential/iconURL}} to the empty string.
+    </li>
+    <li>
+      Switch on <var>credential</var>'s interface, and execute the associated
+      steps:
+
+      <dl>
+        <dt>{{PasswordCredential}}</dt>
+        <dd>
+          <ol>
+            <li>
+              If the user agent's credential manager contains a
+              {{PasswordCredential}} <var>storedCredential</var> whose
+              {{Credential/id}} attribute is <var>credential</var>'s
+              {{Credential/id}} and whose {{[[origin]]}} slot is
+              <var>origin</var>, then:
+
+              <ol>
+                <li>
+                  If the user grants <var>origin</var> permission to update
+                  credentials (as discussed in [[#user-mediated-storage]]),
+                  then:
+
+                  <ol>
+                    <li>
+                      Set <var>storedCredential</var>'s {{[[password]]}} to the
+                      value of <var>credential</var>'s {{[[password]]}}
+                      slot.
+                    </li>
+                    <li>
+                      Set <var>storedCredential</var>'s
+                      {{LocallyStoredCredential/name}} to the
+                      value of <var>credential</var>'s
+                      {{LocallyStoredCredential/name}}.
+                    </li>
+                    <li>
+                      Set <var>storedCredential</var>'s
+                      {{LocallyStoredCredential/iconURL}} to
+                      the value of <var>credential</var>'s
+                      {{LocallyStoredCredential/iconURL}}.
+                    </li>
+                  </ol>
+                </li>
+                <li>
+                  Resolve <var>promise</var>.
+                </li>
+              </ol>
+            </li>
+            <li>
+              Otherwise:
+
+              <ol>
+                <li>
+                  If the user grants <var>origin</var> permission to store
+                  credentials (as discussed in [[#user-mediated-storage]]), then
+                  store <var>credential</var> in the <a>credential store</a>.
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </dd>
+
+        <dt>{{FederatedCredential}}</dt>
+        <dd>
+          <ol>
+            <li>
+              If the user agent's credential manager does not contain a
+              {{FederatedCredential}} <var>storedCredential</var> whose
+              {{Credential/id}} attribute is <var>credential</var>'s
+              {{Credential/id}} and whose {{FederatedCredential/federation}}
+              attribute is <var>credential</var>'s
+              {{FederatedCredential/federation}}, then:
+
+              <ol>
+                <li>
+                  If the user grants <var>origin</var> permission to store
+                  credentials (as discussed in [[#user-mediated-storage]]),
+                  store <var>credential</var> in the <a>credential store</a>.
+                </li>
+              </ol>
+            </li>
+          </ol>
+
+        </dd>
+
+        <dt><em>This is an extension point.</em></dt>
+        <dd>
+          When new credential types are defined in the future, they'll go here.
+        </dd>
+      </dl>
+    </li>
+    <li>
+      Return <code>undefined</code>.
+    </li>
+  </ol>
+
+  <h4 id="require-user-mediation-for-origin">
+    Require user mediation for <var>origin</var>
+  </h4>
+
+  <ol>
+    <li>
+      Let <var>credentials</var> be the set of all {{LocallyStoredCredential}}
+      objects in the <a>credential store</a> whose {{[[origin]]}} is
+      <var>origin</var>.
     </li>
     <li>
       For each <var>credential</var> in <var>credentials</var>:
@@ -1093,26 +1349,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
           <code>true</code>.
       </ol>
-    </li>
-  </ol>
-
-  <h3 id="is-match">
-    Does <var>origin A</var> match <var>origin B</var>?
-  </h3>
-
-  <ol>
-    <li>
-      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
-      <code>Exact Match</code>.
-    </li>
-    <li>
-      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
-      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
-      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
-      domain</a>, then return <code>Fuzzy Match</code>.
-    </li>
-    <li>
-      Return <code>No Match</code>
     </li>
   </ol>
 </section>
@@ -1302,9 +1538,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  {{LocalCredential}}s further mitigate the risk of data leakage by never
+  {{PasswordCredential}}s further mitigate the risk of data leakage by never
   exposing the {{[[password]]}} slot directly to a page's JavaScript, but
-  instead performing asynchronous submission via {{LocalCredential/send()}},
+  instead performing asynchronous submission via {{PasswordCredential/send()}},
   which verifies that the endpoint is a valid one for the credential before
   submission.
 
@@ -1317,7 +1553,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <ol>
     <li>
       <code><a>connect-src</a></code> further restricts the origins to which
-      {{LocalCredential/send()}} may submit data (which mitigates the risk of
+      {{PasswordCredential/send()}} may submit data (which mitigates the risk of
       redirect-based attacks.
     </li>
     <li>
@@ -1340,7 +1576,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   {{store()}} with a <code>SecurityError</code> when called from a
   context which is not a <a>top-level browsing context</a>.
 
-  See the algorithms defined in [[#request-credential]] and [[#save-credential]]
+  See the algorithms defined in [[#request-credential]] and [[#store-credential]]
   for details.
 
   ISSUE: Is this a meaningful restriction for Service Workers? Probably not.
@@ -1379,7 +1615,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   This could allow a malicious website to determine if a user has credentials
   saved for particular federated identity providers by repeatedly calling
   {{get()}} with a single item in the
-  {{CredentialRequestOptions/federations}} array. The risk is mitigated by the
+  {{FederatedCredentialFilter/federations}} array. The risk is mitigated by the
   fact that a user-mediated {{get()}} is tied to a user gesture, and the
   user would, sooner or later, be prompted to provide credentials to the site,
   which would certainly raise her suspicions as to its behavior.
@@ -1388,7 +1624,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <h3 id="privacy-chooser-leakage">Chooser Leakage</h3>
 
   If a user agent displays images supplied by a website or federation (for
-  example, if a {{Credential}}'s {{Credential/iconURL}} is displayed),
+  example, if a {{Credential}}'s {{LocallyStoredCredential/iconURL}} is displayed),
   requests for these images MUST NOT be directly tied to instantiating the
   chooser in order to avoid leaking chooser usage. One option would be to fetch
   the images in the background when saving or updating a {{Credential}}, and to
