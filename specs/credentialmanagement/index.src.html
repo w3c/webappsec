@@ -656,8 +656,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     interface CredentialsContainer {
       Promise&lt;Credential?&gt; get(optional CredentialRequestOptions options);
-      Promise&lt;any&gt; store(optional Credential credential);
-      Promise&lt;any&gt; requireUserMediation();
+      Promise&lt;Credential?&gt; store(optional Credential credential);
+      Promise&lt;void&gt; requireUserMediation();
     };
   </pre>
   <dl dfn-for="CredentialsContainer">
@@ -959,6 +959,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </ol>
     </li>
     <li>
+      Let <var>promise</var> be a newly created <code>Promise</code> object.
+    </li>
+    <li>
+      Return <var>promise</var>, and execute the remaining steps asynchronously.
+    </li>
+    <li>
       Switch on <var>type</var>, and execute the associated steps:
 
       <dl>
@@ -1213,14 +1219,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   </ol>
 
   <h4 id="store-locallystoredcredential">
-    Store <var>credential</var>
+    Store <code>LocallyStoredCredential</code> 
   </h4>
  
   This algorithm accepts a {{LocallyStoredCredential}} (<var>credential</var>),
   and an <a>origin</a> (<var>origin</var>), and hands it to the internal
-  credential manager for processing. It returns <code>undefined</code> both once
-  credential is successfully persisted to the credential manager, and when the
-  user rejects storage:
+  credential manager for processing. It returns <var>credential</var> regardless
+  of whether the user allows or disallows the credential to be persisted to the
+  <a>credential store</a>:
 
   <ol>
     <li>
@@ -1277,9 +1283,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                     </li>
                   </ol>
                 </li>
-                <li>
-                  Resolve <var>promise</var>.
-                </li>
               </ol>
             </li>
             <li>
@@ -1316,7 +1319,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
               </ol>
             </li>
           </ol>
-
         </dd>
 
         <dt><em>This is an extension point.</em></dt>
@@ -1326,7 +1328,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </dl>
     </li>
     <li>
-      Return <code>undefined</code>.
+      Return <var>credential</var>.
     </li>
   </ol>
 
