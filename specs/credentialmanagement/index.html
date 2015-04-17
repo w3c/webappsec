@@ -455,10 +455,10 @@ store user credentials for future use.</p>
      
 
     
-     <div class="example" id="example-30fc4097"><a class="self-link" href="#example-30fc4097"></a>
+     <div class="example" id="example-9ea5d971"><a class="self-link" href="#example-9ea5d971"></a>
       
       <pre>navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get</a>(
-  "<a data-link-type="idl" href="#dom-credentialrequest-types">types</a>": [ "PasswordCredential" ]
+  "<a data-link-type="idl" href="#dom-credentialrequest-types">types</a>": [ "password" ]
 ).then(
     function(credential) {
       if (!credential) {
@@ -494,10 +494,10 @@ store user credentials for future use.</p>
      
 
     
-     <div class="example" id="example-4486b5bb"><a class="self-link" href="#example-4486b5bb"></a>
+     <div class="example" id="example-9f6d6d03"><a class="self-link" href="#example-9f6d6d03"></a>
       
       <pre>navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get</a>({
-  "<a data-link-type="idl" href="#dom-credentialrequest-types">types</a>": [ "FederatedCredential" ],
+  "<a data-link-type="idl" href="#dom-credentialrequest-types">types</a>": [ "federated" ],
   "<a data-link-type="idl" href="#dom-credentialrequest-options">options</a>": {
       "<a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-federations">federations</a>": [ "https://federation.com" ]
   }
@@ -799,8 +799,32 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      
     
      <dd>
-      The credential’s type. This attribute reflects the value of the
-      credential’s interface’s <a data-link-type="dfn" href="https://heycam.github.io/webidl/#dfn-type-name">type name</a>.
+      The credential’s type. This attribute’s getter returns the value of the
+      credential’s <code class="idl"><a data-link-type="idl" href="#dom-credential-internaltype">[[internaltype]]</a></code> slot.
+
+
+      <p class="note" role="note">Note: The <code class="idl"><a data-link-type="idl" href="#dom-credential-internaltype">[[internaltype]]</a></code> slot’s value will be the same for all
+      credentials implementing a particular interface. Currently,
+      <code class="idl"><a data-link-type="idl" href="#passwordcredential">PasswordCredential</a></code> objects have a <code class="idl"><a data-link-type="idl" href="#dom-credential-internaltype">[[internaltype]]</a></code> of
+      <code>password</code>, and <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> objects have a
+      <code class="idl"><a data-link-type="idl" href="#dom-credential-internaltype">[[internaltype]]</a></code> of <code>federated</code>.</p>
+      
+    
+     
+    
+     <dt><code><dfn class="idl-code" data-dfn-for="Credential" data-dfn-type="argument" data-export="" id="dom-credential-internaltype">[[internaltype]]<a class="self-link" href="#dom-credential-internaltype"></a></dfn></code>
+     
+    
+     <dd>
+      All <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects have an internal slot named
+      <code>[[internaltype]]</code>, which unsurprisingly contains a string representing
+      the type of the credential. This property is exposed to the web via the
+      <code class="idl"><a data-link-type="idl" href="#dom-credential-type">type</a></code> attribute.
+
+
+      <p class="issue" id="issue-e7c89ef4"><a class="self-link" href="#issue-e7c89ef4"></a>Bikeshed won’t let me name this
+      <code>[[type]]</code>. <a href="https://github.com/tabatkins/bikeshed/issues/392">&lt;https://github.com/tabatkins/bikeshed/issues/392></a></p>
+      
     
      
   
@@ -855,14 +879,18 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       
     
      
+    
+     <dt><code><dfn class="idl-code" data-dfn-for="LocallyStoredCredential" data-dfn-type="argument" data-export="" id="dom-locallystoredcredential-origin">[[origin]]<a class="self-link" href="#dom-locallystoredcredential-origin"></a></dfn></code>
+     
+    
+     <dd>
+      All <code class="idl"><a data-link-type="idl" href="#locallystoredcredential">LocallyStoredCredential</a></code> objects have an internal slot named
+      <code>[[origin]]</code>, which stores the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> for which the
+      credential was saved. This property is not directly exposed to the web.
+    
+     
   
     </dl>
-
-
-    <p>All <code class="idl"><a data-link-type="idl" href="#locallystoredcredential">LocallyStoredCredential</a></code> objects have an internal slot named
-  <code><dfn class="idl-code" data-dfn-for="LocallyStoredCredential" data-dfn-type="attribute" data-export="" id="dom-locallystoredcredential-origin">[[origin]]<a class="self-link" href="#dom-locallystoredcredential-origin"></a></dfn></code>,
-  which stores the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> for which the credential was saved. This
-  property is not directly exposed to the web.</p>
 
 
     <p>All <code class="idl"><a data-link-type="idl" href="#locallystoredcredential">LocallyStoredCredential</a></code> objects MUST define an <dfn data-dfn-type="dfn" data-noexport="" id="options-matching-algorithm">options matching
@@ -909,6 +937,15 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       
     
      
+    
+     <dt><code class="idl"><a data-link-type="idl" href="#dom-credential-internaltype">[[internaltype]]</a></code>
+     
+    
+     <dd>
+      All <code class="idl"><a data-link-type="idl" href="#passwordcredential">PasswordCredential</a></code> objects have their <code class="idl"><a data-link-type="idl" href="#dom-credential-internaltype">[[internaltype]]</a></code> slot’s
+      value set to <code>password</code>.
+    
+     
   
     </dl>
 
@@ -949,6 +986,15 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      <dd>
       The credential’s federation. For details regarding valid formats, see
       <a href="#identifying-federations">§3.2.2 Identifying Federations</a>
+    
+     
+    
+     <dt><code class="idl"><a data-link-type="idl" href="#dom-credential-internaltype">[[internaltype]]</a></code>
+     
+    
+     <dd>
+      All <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> objects have their <code class="idl"><a data-link-type="idl" href="#dom-credential-internaltype">[[internaltype]]</a></code>
+      slot’s value set to <code>federated</code>.
     
      
   
@@ -1160,14 +1206,14 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     </dl>
 
   
-    <div class="example" id="example-7e8b64ba"><a class="self-link" href="#example-7e8b64ba"></a>
+    <div class="example" id="example-8b000ffc"><a class="self-link" href="#example-8b000ffc"></a>
     Suppose <code>https://example.com/</code> only supports federated sign-in
     via <code>https://identity.example.com/</code>. It could request credentials
     via the following call:
 
     
      <pre>navigator.<a data-link-type="idl" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get</a>({
-  "<a data-link-type="idl" href="#dom-credentialrequest-types">types</a>": [ "FederatedCredential" ],
+  "<a data-link-type="idl" href="#dom-credentialrequest-types">types</a>": [ "federated" ],
   "<a data-link-type="idl" href="#dom-credentialrequest-options">options</a>": {
       "<a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-federations">federations</a>": [ "https://identity.example.com/" ]
   }
@@ -1186,7 +1232,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
 
     
      <pre>navigator.<a data-link-type="idl" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get</a>({
-  "<a data-link-type="idl" href="#dom-credentialrequest-types">types</a>": [ "FederatedCredential" ],
+  "<a data-link-type="idl" href="#dom-credentialrequest-types">types</a>": [ "federated" ],
   "<a data-link-type="idl" href="#dom-credentialrequest-options">options</a>": {
       "<a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-federations">federations</a>": [ "https://identity.example.com/" ]
   },
@@ -1605,8 +1651,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <li>
-      Remove any items from <var>credentials</var> whose <a data-link-type="dfn" href="https://heycam.github.io/webidl/#dfn-type-name">type name</a> is not
-      a case-sensitive match for a value in <var>types</var>.
+      Remove any items from <var>credentials</var> whose <code class="idl"><a data-link-type="idl" href="#dom-credential-type">type</a></code>
+      property is not a case-sensitive match for a value in <var>types</var>.
     
      
     
@@ -2603,6 +2649,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     </ul>
    <li>identity provider, <a href="#federated-identity-provider">2</a>
    <li>IDP, <a href="#federated-identity-provider">2</a>
+   <li>[[internaltype]], <a href="#dom-credential-internaltype">3.1.1</a>
    <li>LocallyStoredCredential, <a href="#locallystoredcredential">3.1.1</a>
    <li>name
     <ul>
@@ -2692,7 +2739,6 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <li><a href="https://heycam.github.io/webidl/#idl-DOMString">DOMString</a>
      <li><a href="https://heycam.github.io/webidl/#idl-USVString">USVString</a>
      <li><a href="https://heycam.github.io/webidl/#idl-boolean">boolean</a>
-     <li><a href="https://heycam.github.io/webidl/#dfn-type-name">type name</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-xhr">[XHR]</a> defines the following terms:
     <ul>
@@ -2807,6 +2853,8 @@ dictionary <a data-global-name="" href="#dictdef-credentialrequest">CredentialRe
    <div class="issue">Anne notes that this use case is weak. Shoring
         it up requires <a href="#issue-fc00d72b">deciding whether we want to
         explicitly support creation and password generation</a>. <a href="https://github.com/w3c/webappsec/issues/244">&lt;https://github.com/w3c/webappsec/issues/244></a><a href="#issue-3fa0b838"> ↵ </a></div>
+   <div class="issue">Bikeshed won’t let me name this
+      <code>[[type]]</code>. <a href="https://github.com/tabatkins/bikeshed/issues/392">&lt;https://github.com/tabatkins/bikeshed/issues/392></a><a href="#issue-e7c89ef4"> ↵ </a></div>
    <div class="issue">Define cloning algorithms.<a href="#issue-43c3f08c"> ↵ </a></div>
    <div class="issue">We need to get rid of the
   <code><span>[[requiresUserMediation]]</span></code>
