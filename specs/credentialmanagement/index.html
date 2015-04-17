@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Credential Management</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-04-16">16 April 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-04-17">17 April 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -244,7 +244,7 @@ store user credentials for future use.</p>
     Send <var>passwordCredential</var> to <var>url</var>.
   </span></a>
         <li><a href="#store-locallystoredcredential"><span class="secno">4.2.5</span> <span class="content">
-    Store <var>credential</var>
+    Store <code>LocallyStoredCredential</code> 
   </span></a>
         <li><a href="#require-user-mediation-for-origin"><span class="secno">4.2.6</span> <span class="content">
     Require user mediation for <var>origin</var>
@@ -453,7 +453,7 @@ store user credentials for future use.</p>
      
 
     
-     <div class="example" id="example-51893357"><a class="self-link" href="#example-51893357"></a>
+     <div class="example" id="example-30fc4097"><a class="self-link" href="#example-30fc4097"></a>
       
       <pre>navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get</a>(
   "<a data-link-type="idl" href="#dom-credentialrequestoptions-types">types</a>": [ "PasswordCredential" ]
@@ -466,7 +466,7 @@ store user credentials for future use.</p>
         // really be progressive enhancement on top of an existing form).
         return;
       }
-      if (credential instanceof <a data-link-type="idl" href="#passwordcredential">PasswordCredential</a>) {
+      if (credential.type == "PasswordCredential") {
         credential.<a class="idl-code" data-link-type="method" href="#dom-passwordcredential-sendurl">send</a>("https://example.com/loginEndpoint")
           .then(function (response) {
             // Notify the user that signin succeeded! Do amazing, signed-in things!
@@ -492,7 +492,7 @@ store user credentials for future use.</p>
      
 
     
-     <div class="example" id="example-2aa6b958"><a class="self-link" href="#example-2aa6b958"></a>
+     <div class="example" id="example-0613c7cf"><a class="self-link" href="#example-0613c7cf"></a>
       
       <pre>navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialscontainer-get">get</a>({
   "<a data-link-type="idl" href="#dom-credentialrequestoptions-types">types</a>": [ "FederatedCredential" ],
@@ -504,7 +504,7 @@ store user credentials for future use.</p>
       if (!credential)
         return;
 
-      if (credential instanceof <a data-link-type="idl" href="#federatedcredential">FederatedCredential</a>) {
+      if (credential.type == "FederatedCredential") {
         switch (credential.<a data-link-type="idl" href="#dom-federatedcredential-federation">federation</a>) {
         case "https://www.facebook.com/":
           // Use Facebook’s SDK, a la https://developers.facebook.com/docs/facebook-login/login-flow-for-web/#logindialog
@@ -777,6 +777,7 @@ credential.send("https://example.com/sign-in/")
 [NoInterfaceObject]
 interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-global-name="" id="credential">Credential<a class="self-link" href="#credential"></a></dfn> {
   readonly attribute DOMString <a class="idl-code" data-global-name="Credential<interface>/id<attribute>" data-link-type="attribute" data-readonly="" data-type="DOMString " href="#dom-credential-id">id</a>;
+  readonly attribute DOMString <a class="idl-code" data-global-name="Credential<interface>/type<attribute>" data-link-type="attribute" data-readonly="" data-type="DOMString " href="#dom-credential-type">type</a>;
 };
 <a data-link-type="idl-name" href="#credential">Credential</a> implements <a data-link-type="idl-name" href="http://www.w3.org/TR/html5/infrastructure.html#transferable">Transferable</a>;
 </pre>
@@ -789,6 +790,15 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      <dd>
       The credential’s identifier. This might be a GUID, username, or email
       address, for instance.
+    
+     
+    
+     <dt><dfn class="idl-code" data-dfn-for="Credential" data-dfn-type="attribute" data-export="" id="dom-credential-type">type<a class="self-link" href="#dom-credential-type"></a></dfn>, <span> of type <a data-link-type="idl-name" href="https://heycam.github.io/webidl/#idl-DOMString">DOMString</a>, readonly</span>
+     
+    
+     <dd>
+      The credential’s type. This attribute reflects the value of the
+      credential’s interface’s <a data-link-type="dfn" href="https://heycam.github.io/webidl/#dfn-type-name">type name</a>.
     
      
   
@@ -866,7 +876,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
   DOMString <dfn class="idl-code" data-dfn-for="PasswordCredentialData" data-dfn-type="dict-member" data-export="" data-global-name="PasswordCredentialData<dictionary>/password<dict-member>" data-type="DOMString " id="dom-passwordcredentialdata-password">password<a class="self-link" href="#dom-passwordcredentialdata-password"></a></dfn>;
 };
 
-[<dfn class="idl-code" data-dfn-for="PasswordCredential" data-dfn-type="constructor" data-export="" data-global-name="PasswordCredential<interface>/PasswordCredential(data)<constructor>" data-lt="PasswordCredential(data)" id="dom-passwordcredential-passwordcredentialdata">Constructor<a class="self-link" href="#dom-passwordcredential-passwordcredentialdata"></a></dfn>(<a data-link-type="idl-name" href="#dictdef-passwordcredentialdata">PasswordCredentialData</a> <dfn class="idl-code" data-dfn-for="PasswordCredential/PasswordCredential(data)" data-dfn-type="argument" data-export="" data-global-name="PasswordCredential<interface>/PasswordCredential(data)<method>/data<argument>" id="dom-passwordcredential-passwordcredentialdata-data">data<a class="self-link" href="#dom-passwordcredential-passwordcredentialdata-data"></a></dfn>)]
+[<dfn class="idl-code" data-dfn-for="PasswordCredential" data-dfn-type="constructor" data-export="" data-global-name="PasswordCredential<interface>/PasswordCredential(data)<constructor>" data-lt="PasswordCredential(data)" id="dom-passwordcredential-passwordcredentialdata">Constructor<a class="self-link" href="#dom-passwordcredential-passwordcredentialdata"></a></dfn>(<a data-link-type="idl-name" href="#dictdef-passwordcredentialdata">PasswordCredentialData</a> <dfn class="idl-code" data-dfn-for="PasswordCredential/PasswordCredential(data)" data-dfn-type="argument" data-export="" data-global-name="PasswordCredential<interface>/PasswordCredential(data)<method>/data<argument>" id="dom-passwordcredential-passwordcredentialdata-data">data<a class="self-link" href="#dom-passwordcredential-passwordcredentialdata-data"></a></dfn>), Exposed=<a data-link-type="idl-name" href="http://www.w3.org/TR/html5/browser.html#window">Window</a>]
 interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-global-name="" id="passwordcredential">PasswordCredential<a class="self-link" href="#passwordcredential"></a></dfn> : <a data-link-type="idl-name" href="#locallystoredcredential">LocallyStoredCredential</a> {
   Promise&lt;<a data-link-type="idl-name" href="https://fetch.spec.whatwg.org/#response">Response</a>> <a class="idl-code" data-global-name="PasswordCredential<interface>/send(url)<method>" data-link-type="method" href="#dom-passwordcredential-sendurl">send</a>(USVString <dfn class="idl-code" data-dfn-for="PasswordCredential/send" data-dfn-type="argument" data-export="" data-global-name="PasswordCredential/send/url<argument>" id="dom-passwordcredential-send-url">url<a class="self-link" href="#dom-passwordcredential-send-url"></a></dfn>);
 };
@@ -928,7 +938,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   USVString <dfn class="idl-code" data-dfn-for="FederatedCredentialData" data-dfn-type="dict-member" data-export="" data-global-name="FederatedCredentialData<dictionary>/federation<dict-member>" data-type="USVString " id="dom-federatedcredentialdata-federation">federation<a class="self-link" href="#dom-federatedcredentialdata-federation"></a></dfn>;
 };
 
-[<dfn class="idl-code" data-dfn-for="FederatedCredential" data-dfn-type="constructor" data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential(data)<constructor>" data-lt="FederatedCredential(data)" id="dom-federatedcredential-federatedcredentialdata">Constructor<a class="self-link" href="#dom-federatedcredential-federatedcredentialdata"></a></dfn>(<a data-link-type="idl-name" href="#dictdef-federatedcredentialdata">FederatedCredentialData</a> <dfn class="idl-code" data-dfn-for="FederatedCredential/FederatedCredential(data)" data-dfn-type="argument" data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential(data)<method>/data<argument>" id="dom-federatedcredential-federatedcredentialdata-data">data<a class="self-link" href="#dom-federatedcredential-federatedcredentialdata-data"></a></dfn>)]
+[<dfn class="idl-code" data-dfn-for="FederatedCredential" data-dfn-type="constructor" data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential(data)<constructor>" data-lt="FederatedCredential(data)" id="dom-federatedcredential-federatedcredentialdata">Constructor<a class="self-link" href="#dom-federatedcredential-federatedcredentialdata"></a></dfn>(<a data-link-type="idl-name" href="#dictdef-federatedcredentialdata">FederatedCredentialData</a> <dfn class="idl-code" data-dfn-for="FederatedCredential/FederatedCredential(data)" data-dfn-type="argument" data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential(data)<method>/data<argument>" id="dom-federatedcredential-federatedcredentialdata-data">data<a class="self-link" href="#dom-federatedcredential-federatedcredentialdata-data"></a></dfn>), Exposed=<a data-link-type="idl-name" href="http://www.w3.org/TR/html5/browser.html#window">Window</a>]
 interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-global-name="" id="federatedcredential">FederatedCredential<a class="self-link" href="#federatedcredential"></a></dfn> : <a data-link-type="idl-name" href="#locallystoredcredential">LocallyStoredCredential</a> {
   readonly attribute USVString <a class="idl-code" data-global-name="FederatedCredential<interface>/federation<attribute>" data-link-type="attribute" data-readonly="" data-type="USVString " href="#dom-federatedcredential-federation">federation</a>;
 };
@@ -1009,8 +1019,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
 interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-global-name="" id="credentialscontainer">CredentialsContainer<a class="self-link" href="#credentialscontainer"></a></dfn> {
   Promise&lt;<a data-link-type="idl-name" href="#credential">Credential</a>?> <a class="idl-code" data-global-name="CredentialsContainer<interface>/get(options)<method>/get()<method>" data-link-type="method" href="#dom-credentialscontainer-get">get</a>(optional <a data-link-type="idl-name" href="#dictdef-credentialrequestoptions">CredentialRequestOptions</a> <dfn class="idl-code" data-dfn-for="CredentialsContainer/get" data-dfn-type="argument" data-export="" data-global-name="CredentialsContainer/get/options<argument>" id="dom-credentialscontainer-get-options">options<a class="self-link" href="#dom-credentialscontainer-get-options"></a></dfn>);
-  Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/store(credential)<method>/store()<method>" data-link-type="method" href="#dom-credentialscontainer-store">store</a>(optional <a data-link-type="idl-name" href="#credential">Credential</a> <dfn class="idl-code" data-dfn-for="CredentialsContainer/store" data-dfn-type="argument" data-export="" data-global-name="CredentialsContainer/store/credential<argument>" id="dom-credentialscontainer-store-credential">credential<a class="self-link" href="#dom-credentialscontainer-store-credential"></a></dfn>);
-  Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/requireUserMediation()<method>" data-link-type="method" href="#dom-credentialscontainer-requireusermediation">requireUserMediation</a>();
+  Promise&lt;<a data-link-type="idl-name" href="#credential">Credential</a>?> <a class="idl-code" data-global-name="CredentialsContainer<interface>/store(credential)<method>/store()<method>" data-link-type="method" href="#dom-credentialscontainer-store">store</a>(optional <a data-link-type="idl-name" href="#credential">Credential</a> <dfn class="idl-code" data-dfn-for="CredentialsContainer/store" data-dfn-type="argument" data-export="" data-global-name="CredentialsContainer/store/credential<argument>" id="dom-credentialscontainer-store-credential">credential<a class="self-link" href="#dom-credentialscontainer-store-credential"></a></dfn>);
+  Promise&lt;void> <a class="idl-code" data-global-name="CredentialsContainer<interface>/requireUserMediation()<method>" data-link-type="method" href="#dom-credentialscontainer-requireusermediation">requireUserMediation</a>();
 };
 </pre>
   
@@ -1025,6 +1035,13 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     Request a Credential
   </a> with
       <var>options</var> as an argument.
+
+
+      <p class="note" role="note">Note: If and when we need to support returning more than a single
+      credential in response to a single call, we will likely introduce a
+      <code>getAll()</code> method which would return
+      <code>Promise&lt;sequence&lt;Credential>></code>.</p>
+      
     
      
     
@@ -1439,6 +1456,16 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      
     
      <li>
+      Let <var>promise</var> be a newly created <code>Promise</code> object.
+    
+     
+    
+     <li>
+      Return <var>promise</var>, and execute the remaining steps asynchronously.
+    
+     
+    
+     <li>
       Switch on <var>type</var>, and execute the associated steps:
 
       
@@ -1471,7 +1498,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
          <li>
               Resolve <var>promise</var> with the result of executing
               <a href="#store-locallystoredcredential">§4.2.5 
-    Store credential
+    Store LocallyStoredCredential 
   </a>,
               passing in <var>credential</var> and <var>origin</var>.
             
@@ -1691,15 +1718,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      
     
      <li>
-      If <var>credential</var> is not <code>null</code>, then resolve
-      <var>promise</var> with <var>credential</var> and terminate this
-      algorithm.
-    
-     
-    
-     <li>
-      No <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> is available: terminate this algorithm by resolving
-      <var>promise</var> with with <code>undefined</code>.
+      Return <var>credential</var>.
     
      
   
@@ -1828,15 +1847,15 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
   
     <h4 class="heading settled" data-level="4.2.5" id="store-locallystoredcredential"><span class="secno">4.2.5. </span><span class="content">
-    Store <var>credential</var>
+    Store <code>LocallyStoredCredential</code> 
   </span><a class="self-link" href="#store-locallystoredcredential"></a></h4>
 
 
     <p>This algorithm accepts a <code class="idl"><a data-link-type="idl" href="#locallystoredcredential">LocallyStoredCredential</a></code> (<var>credential</var>),
   and an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> (<var>origin</var>), and hands it to the internal
-  credential manager for processing. It returns <code>undefined</code> both once
-  credential is successfully persisted to the credential manager, and when the
-  user rejects storage:</p>
+  credential manager for processing. It returns <var>credential</var> regardless
+  of whether the user allows or disallows the credential to be persisted to the
+  <a data-link-type="dfn" href="#credential-store">credential store</a>:</p>
 
   
     <ol>
@@ -1919,11 +1938,6 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
             
                 
            
-                
-           <li>
-                  Resolve <var>promise</var>.
-                
-           
               
           </ol>
           
@@ -1986,7 +2000,6 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
           
         </ol>
         
-
         
        
 
@@ -2005,7 +2018,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      
     
      <li>
-      Return <code>undefined</code>.
+      Return <var>credential</var>.
     
      
   
@@ -2018,6 +2031,16 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
   
     <ol>
+    
+     <li>
+      Let <var>promise</var> be a newly created <code>Promise</code> object.
+    
+     
+    
+     <li>
+      Return <var>promise</var>, and execute the remaining steps asynchronously.
+    
+     
     
      <li>
       Let <var>credentials</var> be the set of all <code class="idl"><a data-link-type="idl" href="#locallystoredcredential">LocallyStoredCredential</a></code>
@@ -2038,6 +2061,11 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
       
       </ol>
       
+    
+     
+    
+     <li>
+      Resolve <var>promise</var> with <code>undefined</code>.
     
      
   
@@ -2579,6 +2607,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
    <li>send(url), <a href="#dom-passwordcredential-sendurl">3.1.2</a>
    <li>store(), <a href="#dom-credentialscontainer-store">3.2</a>
    <li>suppressUI, <a href="#dom-credentialrequestoptions-suppressui">3.3</a>
+   <li>type, <a href="#dom-credential-type">3.1.1</a>
    <li>types, <a href="#dom-credentialrequestoptions-types">3.3</a>
    <li>url, <a href="#dom-passwordcredential-send-url">3.1.2</a></ul>
   <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
@@ -2598,6 +2627,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     <ul>
      <li><a href="http://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a>
      <li><a href="http://www.w3.org/TR/html5/infrastructure.html#transferable">Transferable</a>
+     <li><a href="http://www.w3.org/TR/html5/browser.html#window">Window</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#allowed-to-show-a-popup">allowed to show a popup</a>
      <li><a href="http://www.w3.org/TR/html5/forms.html#attr-form-autocomplete">autocomplete</a>
@@ -2704,6 +2734,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 [NoInterfaceObject]
 interface <a data-global-name="" href="#credential">Credential</a> {
   readonly attribute DOMString <a class="idl-code" data-global-name="Credential<interface>/id<attribute>" data-link-type="attribute" data-readonly="" data-type="DOMString " href="#dom-credential-id">id</a>;
+  readonly attribute DOMString <a class="idl-code" data-global-name="Credential<interface>/type<attribute>" data-link-type="attribute" data-readonly="" data-type="DOMString " href="#dom-credential-type">type</a>;
 };
 <a data-link-type="idl-name" href="#credential">Credential</a> implements <a data-link-type="idl-name" href="http://www.w3.org/TR/html5/infrastructure.html#transferable">Transferable</a>;
 
@@ -2717,7 +2748,7 @@ dictionary <a data-global-name="" href="#dictdef-passwordcredentialdata">Passwor
   DOMString <a data-global-name="PasswordCredentialData<dictionary>/password<dict-member>" data-type="DOMString " href="#dom-passwordcredentialdata-password">password</a>;
 };
 
-[<a data-global-name="PasswordCredential<interface>/PasswordCredential(data)<constructor>" href="#dom-passwordcredential-passwordcredentialdata">Constructor</a>(<a data-link-type="idl-name" href="#dictdef-passwordcredentialdata">PasswordCredentialData</a> <a data-global-name="PasswordCredential<interface>/PasswordCredential(data)<method>/data<argument>" href="#dom-passwordcredential-passwordcredentialdata-data">data</a>)]
+[<a data-global-name="PasswordCredential<interface>/PasswordCredential(data)<constructor>" href="#dom-passwordcredential-passwordcredentialdata">Constructor</a>(<a data-link-type="idl-name" href="#dictdef-passwordcredentialdata">PasswordCredentialData</a> <a data-global-name="PasswordCredential<interface>/PasswordCredential(data)<method>/data<argument>" href="#dom-passwordcredential-passwordcredentialdata-data">data</a>), Exposed=<a data-link-type="idl-name" href="http://www.w3.org/TR/html5/browser.html#window">Window</a>]
 interface <a data-global-name="" href="#passwordcredential">PasswordCredential</a> : <a data-link-type="idl-name" href="#locallystoredcredential">LocallyStoredCredential</a> {
   Promise&lt;<a data-link-type="idl-name" href="https://fetch.spec.whatwg.org/#response">Response</a>> <a class="idl-code" data-global-name="PasswordCredential<interface>/send(url)<method>" data-link-type="method" href="#dom-passwordcredential-sendurl">send</a>(USVString <a data-global-name="PasswordCredential/send/url<argument>" href="#dom-passwordcredential-send-url">url</a>);
 };
@@ -2730,7 +2761,7 @@ dictionary <a data-global-name="" href="#dictdef-federatedcredentialdata">Federa
   USVString <a data-global-name="FederatedCredentialData<dictionary>/federation<dict-member>" data-type="USVString " href="#dom-federatedcredentialdata-federation">federation</a>;
 };
 
-[<a data-global-name="FederatedCredential<interface>/FederatedCredential(data)<constructor>" href="#dom-federatedcredential-federatedcredentialdata">Constructor</a>(<a data-link-type="idl-name" href="#dictdef-federatedcredentialdata">FederatedCredentialData</a> <a data-global-name="FederatedCredential<interface>/FederatedCredential(data)<method>/data<argument>" href="#dom-federatedcredential-federatedcredentialdata-data">data</a>)]
+[<a data-global-name="FederatedCredential<interface>/FederatedCredential(data)<constructor>" href="#dom-federatedcredential-federatedcredentialdata">Constructor</a>(<a data-link-type="idl-name" href="#dictdef-federatedcredentialdata">FederatedCredentialData</a> <a data-global-name="FederatedCredential<interface>/FederatedCredential(data)<method>/data<argument>" href="#dom-federatedcredential-federatedcredentialdata-data">data</a>), Exposed=<a data-link-type="idl-name" href="http://www.w3.org/TR/html5/browser.html#window">Window</a>]
 interface <a data-global-name="" href="#federatedcredential">FederatedCredential</a> : <a data-link-type="idl-name" href="#locallystoredcredential">LocallyStoredCredential</a> {
   readonly attribute USVString <a class="idl-code" data-global-name="FederatedCredential<interface>/federation<attribute>" data-link-type="attribute" data-readonly="" data-type="USVString " href="#dom-federatedcredential-federation">federation</a>;
 };
@@ -2741,8 +2772,8 @@ partial interface <a class="idl-code" data-link-type="interface" href="http://ww
 
 interface <a data-global-name="" href="#credentialscontainer">CredentialsContainer</a> {
   Promise&lt;<a data-link-type="idl-name" href="#credential">Credential</a>?> <a class="idl-code" data-global-name="CredentialsContainer<interface>/get(options)<method>/get()<method>" data-link-type="method" href="#dom-credentialscontainer-get">get</a>(optional <a data-link-type="idl-name" href="#dictdef-credentialrequestoptions">CredentialRequestOptions</a> <a data-global-name="CredentialsContainer/get/options<argument>" href="#dom-credentialscontainer-get-options">options</a>);
-  Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/store(credential)<method>/store()<method>" data-link-type="method" href="#dom-credentialscontainer-store">store</a>(optional <a data-link-type="idl-name" href="#credential">Credential</a> <a data-global-name="CredentialsContainer/store/credential<argument>" href="#dom-credentialscontainer-store-credential">credential</a>);
-  Promise&lt;any> <a class="idl-code" data-global-name="CredentialsContainer<interface>/requireUserMediation()<method>" data-link-type="method" href="#dom-credentialscontainer-requireusermediation">requireUserMediation</a>();
+  Promise&lt;<a data-link-type="idl-name" href="#credential">Credential</a>?> <a class="idl-code" data-global-name="CredentialsContainer<interface>/store(credential)<method>/store()<method>" data-link-type="method" href="#dom-credentialscontainer-store">store</a>(optional <a data-link-type="idl-name" href="#credential">Credential</a> <a data-global-name="CredentialsContainer/store/credential<argument>" href="#dom-credentialscontainer-store-credential">credential</a>);
+  Promise&lt;void> <a class="idl-code" data-global-name="CredentialsContainer<interface>/requireUserMediation()<method>" data-link-type="method" href="#dom-credentialscontainer-requireusermediation">requireUserMediation</a>();
 };
 
 dictionary <a data-global-name="" href="#dictdef-credentialrequestoptions">CredentialRequestOptions</a> {
