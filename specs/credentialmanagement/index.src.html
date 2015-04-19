@@ -685,16 +685,16 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <pre class="idl">
     partial interface Navigator {
-      readonly attribute CredentialsContainer credentials;
+      readonly attribute CredentialContainer credentials;
     };
 
-    interface CredentialsContainer {
+    interface CredentialContainer {
       Promise&lt;Credential?&gt; get(optional CredentialRequest request);
       Promise&lt;Credential&gt; store(optional Credential credential);
       Promise&lt;void&gt; requireUserMediation();
     };
   </pre>
-  <dl dfn-for="CredentialsContainer">
+  <dl dfn-for="CredentialContainer">
     <dt><dfn method>get()</dfn></dt>
     <dd>
       Request a credential from the credential manager. The user agent MUST
@@ -739,7 +739,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   </h4>
 
   In order to obtain the desired {{Credential}} via
-  {{CredentialsContainer/get()}}, the caller specifies a few parameters in a
+  {{CredentialContainer/get()}}, the caller specifies a few parameters in a
   {{CredentialRequest}} dictionary.
 
   Note: The {{CredentialRequestOptions}} typedef is an extension point. If and
@@ -1720,6 +1720,62 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   ISSUE: Add some thoughts here about when and how the API should be used,
   especially with regard to {{suppressUI}}.
+
+  <h3 id="implementation-extension">Extension Points</h3>
+
+  As noted in [[#future-work-other-groups]], there is known interest in
+  extending the API defined here to serve use cases beyond those this
+  document addresses. To that end, the API is fairly generic, with several
+  explicit extension points. If we wished to add a new credential type, how
+  would we spell it out?
+
+  <div class="example">
+    <ol>
+      <li>
+        Define a new <code>ExampleCredential</code> that inherits from
+        {{Credential}}:
+
+        <pre>
+          interface ExampleCredential : Credential {
+            // Definition goes here.
+          };
+        </pre>
+      </li>
+      <li>
+        Define the options that the new credential type requires, and add them
+        to the {{CredentialRequestOptions}} typedef:
+
+        <pre>
+          dictionary ExampleCredentialRequestOptions {
+            // Definition goes here.
+          };
+
+          typedef (FederatedCredentialRequestOptions or ExampleCredentialRequestOptions) CredentialRequestOptions;
+        </pre>
+      </li>
+      <li>
+        Add <code>ExampleCredential</code> to the switch in step 8 of
+        [[#request-credential]], and define the request behavior necessary to
+        grab and return the new type.
+      </li>
+      <li>
+        Add <code>ExampleCredential</code> to the switch in step 6 of
+        [[#store-credential]], and define the persistance behavior necessary to
+        store the new type.
+      </li>
+    </ol>
+  </div>
+
+  You might also need new primitives. For instance, you might want to return
+  many {{Credential}} objects rather than just one. That might be accomplished
+  in a generic fashion by adding a <code>getAll()</code> method to
+  {{CredentialContainer}}, and defining a <code>CredentialSet</code> object that
+  contained a <code>sequence&lt;Credential&gt;</code>, and could be easily
+  extended to meet some use case.
+
+  For any such extension, we recommend getting in touch with
+  <a href="mailto:public-webappsec@w3.org">public-webappsec@</a> for
+  consultation and review.
 </section>
 
 <!--
