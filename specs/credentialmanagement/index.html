@@ -720,7 +720,8 @@ credential.send("https://example.com/sign-in/")
      <dd>
       A <strong>credential store</strong> is an opaque storage mechanism which
       offers a user agent the ability to save, retrieve, and modify
-      <code class="idl"><a data-link-type="idl" href="#locallystoredcredential">LocallyStoredCredential</a></code> objects. The implementation is
+      <code class="idl"><a data-link-type="idl" href="#locallystoredcredential">LocallyStoredCredential</a></code> objects; and to mark <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origins</a> with a
+      <dfn data-dfn-type="dfn" data-noexport="" id="requires-user-mediation">requires user mediation<a class="self-link" href="#requires-user-mediation"></a></dfn> flag. The implementation is
       vendor-specific, and the interface provided is not exposed to the web.
 
 
@@ -836,11 +837,6 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
 
 
     <p class="issue" id="issue-43c3f08c"><a class="self-link" href="#issue-43c3f08c"></a>Define cloning algorithms.</p>
-
-
-    <p class="issue" id="issue-e536848c"><a class="self-link" href="#issue-e536848c"></a>We need to get rid of the
-  <code><dfn class="idl-code" data-dfn-for="Credential" data-dfn-type="attribute" data-export="" id="dom-credential-requiresusermediation-slot">[[requiresUserMediation]]<a class="self-link" href="#dom-credential-requiresusermediation-slot"></a></dfn></code>
-  slot in favor of an origin-specific value. <a href="https://github.com/w3c/webappsec/issues/258">&lt;https://github.com/w3c/webappsec/issues/258></a></p>
 
   
     <pre class="idl">[NoInterfaceObject]
@@ -1640,8 +1636,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      <li>
       Let <var>credentials</var> be the set of <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects in the
       <a data-link-type="dfn" href="#credential-store">credential store</a> whose <code class="idl"><a data-link-type="idl" href="#dom-locallystoredcredential-origin-slot">[[origin]]</a></code> slot is equal to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-6.2">ASCII
-      serialization</a> of <var>origin</var>, and whose
-      <code class="idl"><a data-link-type="idl" href="#dom-credential-requiresusermediation-slot">[[requiresUserMediation]]</a></code> slot is <code>false</code>.
+      serialization</a> of <var>origin</var>.
 
 
       <p class="note" role="note">Note: This is an exact match, not a <a data-link-type="dfn" href="https://publicsuffix.org/list/#">registerable domain</a> match.
@@ -1687,7 +1682,9 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     
      <li>
       If the user agent has disabled sharing credentials without user
-      mediation, return <code>null</code>.
+      mediation, or <var>origin</var>’s <a data-link-type="dfn" href="#requires-user-mediation">requires user mediation</a> flag
+      in the user agent’s <a data-link-type="dfn" href="#credential-store">credential store</a> is <code>true</code>, return
+      <code>null</code>.
 
 
       <p class="note" role="note">Note: See <a href="#user-mediation-requirements">§5.2 Requiring User Mediation</a> for details.</p>
@@ -1924,12 +1921,6 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <ol>
     
      <li>
-      Set <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-credential-requiresusermediation-slot">[[requiresUserMediation]]</a></code> slot to
-      <code>true</code>.
-    
-     
-    
-     <li>
       Set <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-locallystoredcredential-origin-slot">[[origin]]</a></code> slot to the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-6.2">ASCII
       serialization</a> of <var>origin</var>.
     
@@ -2106,24 +2097,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <li>
-      Let <var>credentials</var> be the set of all <code class="idl"><a data-link-type="idl" href="#locallystoredcredential">LocallyStoredCredential</a></code>
-      objects in the <a data-link-type="dfn" href="#credential-store">credential store</a> whose <code class="idl"><a data-link-type="idl" href="#dom-locallystoredcredential-origin-slot">[[origin]]</a></code> is
-      <var>origin</var>.
-    
-     
-    
-     <li>
-      For each <var>credential</var> in <var>credentials</var>:
-
-      
-      <ol>
-        
-       <li>
-          Set <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-credential-requiresusermediation-slot">[[requiresUserMediation]]</a></code> slot to
-          <code>true</code>.
-      
-      </ol>
-      
+      Set <var>origin</var>’s <a data-link-type="dfn" href="#requires-user-mediation">requires user mediation</a> flag to
+      <code>true</code> in the user agent’s <a data-link-type="dfn" href="#credential-store">credential store</a>.
     
      
     
@@ -2199,11 +2174,12 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     <h3 class="heading settled" data-level="5.2" id="user-mediation-requirements"><span class="secno">5.2. </span><span class="content">Requiring User Mediation</span><a class="self-link" href="#user-mediation-requirements"></a></h3>
 
 
-    <p>If a <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code>'s <code class="idl"><a data-link-type="idl" href="#dom-credential-requiresusermediation-slot">[[requiresUserMediation]]</a></code> slot is <code>false</code>,
-  it will be provided to pages matching its <code class="idl"><a data-link-type="idl" href="#dom-locallystoredcredential-origin-slot">[[origin]]</a></code> without user
-  interaction. The user will be signed-in to that origin persistently, which,
-  on the one hand, is desirable from the perspective of usability and
-  convinience, but which might nevertheless surprise the user.</p>
+    <p>If a an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>’s <a data-link-type="dfn" href="#requires-user-mediation">requires user mediation</a> flag is set to
+  <code>false</code> in the user agent’s <a data-link-type="dfn" href="#credential-store">credential store</a>, then
+  <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects from that origin MAY be provided to pages from that
+  origin without user interaction. The user will be signed-in to that origin
+  persistently, which, on the one hand, is desirable from the perspective of
+  usability and convinience, but which might nevertheless surprise the user.</p>
 
 
     <p>If the user agent syncs the state of a <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> between devices, an
@@ -2225,8 +2201,8 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <li>
-      User agents MUST NOT set the <code class="idl"><a data-link-type="idl" href="#dom-credential-requiresusermediation-slot">[[requiresUserMediation]]</a></code> slot’s value
-      to <code>false</code> without user consent. For example, the
+      User agents MUST NOT set an origin’s <a data-link-type="dfn" href="#requires-user-mediation">requires user mediation</a> slot’s
+      value to <code>false</code> without user consent. For example, the
       <a data-link-type="dfn" href="#credential-chooser">credential chooser</a> described in <a href="#user-mediated-selection">§5.3 Credential Selection</a> could
       have a checkbox which the user could toggle to mark the selected
       credential as available without mediation for the origin, or the user
@@ -2685,7 +2661,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
    <li>PasswordCredentialData, <a href="#dictdef-passwordcredentialdata">3.1.2</a>
    <li>Password Credentials, <a href="#password-credentials">2</a>
    <li>request, <a href="#dom-credentialscontainer-get-request">3.2</a>
-   <li>[[requiresUserMediation]], <a href="#dom-credential-requiresusermediation-slot">3.1.1</a>
+   <li>requires user mediation, <a href="#requires-user-mediation">2</a>
    <li>requireUserMediation(), <a href="#dom-credentialscontainer-requireusermediation">3.2</a>
    <li>send(url), <a href="#dom-passwordcredential-sendurl">3.1.2</a>
    <li>store(), <a href="#dom-credentialscontainer-store">3.2</a>
@@ -2876,9 +2852,6 @@ dictionary <a data-global-name="" href="#dictdef-credentialrequest">CredentialRe
         it up requires <a href="#issue-fc00d72b">deciding whether we want to
         explicitly support creation and password generation</a>. <a href="https://github.com/w3c/webappsec/issues/244">&lt;https://github.com/w3c/webappsec/issues/244></a><a href="#issue-3fa0b838"> ↵ </a></div>
    <div class="issue">Define cloning algorithms.<a href="#issue-43c3f08c"> ↵ </a></div>
-   <div class="issue">We need to get rid of the
-  <code><span>[[requiresUserMediation]]</span></code>
-  slot in favor of an origin-specific value. <a href="https://github.com/w3c/webappsec/issues/258">&lt;https://github.com/w3c/webappsec/issues/258></a><a href="#issue-e536848c"> ↵ </a></div>
    <div class="issue">How do we make this responsive? Adopt <a data-link-type="biblio" href="#biblio-manifest">[MANIFEST]</a>'s icon syntax?<a href="#issue-abf570d9"> ↵ </a></div>
    <div class="issue">Anne suggests that this might be better modeled
       as an <code>ImageBitmap</code> or <code>blob:</code>. <a href="https://github.com/w3c/webappsec/issues/247">&lt;https://github.com/w3c/webappsec/issues/247></a><a href="#issue-cb43d243"> ↵ </a></div>

@@ -451,7 +451,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <dd>
       A <strong>credential store</strong> is an opaque storage mechanism which
       offers a user agent the ability to save, retrieve, and modify
-      {{LocallyStoredCredential}} objects. The implementation is
+      {{LocallyStoredCredential}} objects; and to mark <a>origins</a> with a
+      <dfn>requires user mediation</dfn> flag. The implementation is
       vendor-specific, and the interface provided is not exposed to the web.
 
       Note: The types of credentials defined in this document are stored locally
@@ -543,10 +544,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   the <a>structured clone</a> algorithm by defining a cloning mechanism.
 
   ISSUE: Define cloning algorithms.
-
-  ISSUE(w3c/webappsec#258): We need to get rid of the
-  <code><dfn attribute for="Credential">[[requiresUserMediation]]</dfn></code>
-  slot in favor of an origin-specific value.
 
   <pre class="idl">
     [NoInterfaceObject]
@@ -1098,8 +1095,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <li>
       Let <var>credentials</var> be the set of {{Credential}} objects in the
       <a>credential store</a> whose {{[[origin]]}} slot is equal to the <a>ASCII
-      serialization</a> of <var>origin</var>, and whose
-      {{[[requiresUserMediation]]}} slot is <code>false</code>.
+      serialization</a> of <var>origin</var>.
 
       Note: This is an exact match, not a <a>registerable domain</a> match.
       See [[#security-cross-origin-leakage]] for details as to why.
@@ -1131,7 +1127,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <ol>
     <li>
       If the user agent has disabled sharing credentials without user
-      mediation, return <code>null</code>.
+      mediation, or <var>origin</var>'s <a>requires user mediation</a> flag
+      in the user agent's <a>credential store</a> is <code>true</code>, return
+      <code>null</code>.
 
       Note: See [[#user-mediation-requirements]] for details.
     </li>
@@ -1292,10 +1290,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <ol>
     <li>
-      Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
-      <code>true</code>.
-    </li>
-    <li>
       Set <var>credential</var>'s {{[[origin]]}} slot to the <a>ASCII
       serialization</a> of <var>origin</var>.
     </li>
@@ -1406,18 +1400,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Return <var>promise</var>, and execute the remaining steps asynchronously.
     </li>
     <li>
-      Let <var>credentials</var> be the set of all {{LocallyStoredCredential}}
-      objects in the <a>credential store</a> whose {{[[origin]]}} is
-      <var>origin</var>.
-    </li>
-    <li>
-      For each <var>credential</var> in <var>credentials</var>:
-
-      <ol>
-        <li>
-          Set <var>credential</var>'s {{[[requiresUserMediation]]}} slot to
-          <code>true</code>.
-      </ol>
+      Set <var>origin</var>'s <a>requires user mediation</a> flag to
+      <code>true</code> in the user agent's <a>credential store</a>.
     </li>
     <li>
       Resolve <var>promise</var> with <code>undefined</code>.
@@ -1478,11 +1462,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="user-mediation-requirements">Requiring User Mediation</h3>
 
-  If a {{Credential}}'s {{[[requiresUserMediation]]}} slot is <code>false</code>,
-  it will be provided to pages matching its {{[[origin]]}} without user
-  interaction. The user will be signed-in to that origin persistently, which,
-  on the one hand, is desirable from the perspective of usability and
-  convinience, but which might nevertheless surprise the user.
+  If a an <a>origin</a>'s <a>requires user mediation</a> flag is set to
+  <code>false</code> in the user agent's <a>credential store</a>, then
+  {{Credential}} objects from that origin MAY be provided to pages from that
+  origin without user interaction. The user will be signed-in to that origin
+  persistently, which, on the one hand, is desirable from the perspective of
+  usability and convinience, but which might nevertheless surprise the user.
 
   If the user agent syncs the state of a {{Credential}} between devices, an
   origin could explicitly tie the devices together in a way which might surprise
@@ -1498,8 +1483,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       for specific origins (or specific credentials on specific origins).
     </li>
     <li>
-      User agents MUST NOT set the {{[[requiresUserMediation]]}} slot's value
-      to <code>false</code> without user consent. For example, the
+      User agents MUST NOT set an origin's <a>requires user mediation</a> slot's
+      value to <code>false</code> without user consent. For example, the
       <a>credential chooser</a> described in [[#user-mediated-selection]] could
       have a checkbox which the user could toggle to mark the selected
       credential as available without mediation for the origin, or the user
