@@ -264,7 +264,8 @@ store user credentials for future use.</p>
       <li><a href="#security-cross-origin-leakage"><span class="secno">6.1</span> <span class="content">Cross-origin Credential Leakage</span></a>
       <li><a href="#security-origin-confusion"><span class="secno">6.2</span> <span class="content">Origin Confusion</span></a>
       <li><a href="#security-insecure-origins"><span class="secno">6.3</span> <span class="content">Insecure Sites</span></a>
-      <li><a href="#security-autocomplete-off"><span class="secno">6.4</span> <span class="content">
+      <li><a href="#security-xss"><span class="secno">6.4</span> <span class="content">Script Injection</span></a>
+      <li><a href="#security-autocomplete-off"><span class="secno">6.5</span> <span class="content">
     Avoid reintroducing <code>autocomplete="off"</code>
   </span></a>
      </ul>
@@ -278,6 +279,7 @@ store user credentials for future use.</p>
      <ul class="toc">
       <li><a href="#implementation-for-authors"><span class="secno">8.1</span> <span class="content">Website Authors</span></a>
       <li><a href="#implementation-extension"><span class="secno">8.2</span> <span class="content">Extension Points</span></a>
+      <li><a href="#implementation-browser-extensions"><span class="secno">8.3</span> <span class="content">Browser Extensions</span></a>
      </ul>
     <li><a href="#future-work"><span class="secno">9</span> <span class="content">Future Work</span></a>
      <ul class="toc">
@@ -2409,7 +2411,23 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   any meaningful way.</p>
 
   
-    <h3 class="heading settled" data-level="6.4" id="security-autocomplete-off"><span class="secno">6.4. </span><span class="content">
+    <h3 class="heading settled" data-level="6.4" id="security-xss"><span class="secno">6.4. </span><span class="content">Script Injection</span><a class="self-link" href="#security-xss"></a></h3>
+
+
+    <p>If a malicious party is able to inject script into an origin, they could
+  (among many other things you wouldn’t like) overwrite the behavior of
+  <code class="idl"><a data-link-type="idl" href="#dom-credentialcontainer-store">store()</a></code> to steal a user’s credentials as they’re written into the
+  <a data-link-type="dfn" href="#credential-store">credential store</a>.</p>
+
+
+    <p>Authors SHOULD mititgate the risk of such attacks by properly escaping input
+  and output, and add layers of defense in depth by setting a reasonably
+  strong Content Security Policy <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> which restricts the origins from
+  which script can be injected, and by using Subresource Integrity checks
+  <a data-link-type="biblio" href="#biblio-sri">[SRI]</a> to ensure that only trusted JavaScript is executed.</p>
+
+  
+    <h3 class="heading settled" data-level="6.5" id="security-autocomplete-off"><span class="secno">6.5. </span><span class="content">
     Avoid reintroducing <code>autocomplete="off"</code>
   </span><a class="self-link" href="#security-autocomplete-off"></a></h3>
 
@@ -2570,6 +2588,20 @@ typedef (FederatedCredentialRequestOptions or ExampleCredentialRequestOptions) C
     <p>For any such extension, we recommend getting in touch with
   <a href="mailto:public-webappsec@w3.org">public-webappsec@</a> for
   consultation and review.</p>
+
+  
+    <h3 class="heading settled" data-level="8.3" id="implementation-browser-extensions"><span class="secno">8.3. </span><span class="content">Browser Extensions</span><a class="self-link" href="#implementation-browser-extensions"></a></h3>
+
+
+    <p>Ideally, user agents that implement an extension system of some sort will
+  allow third-parties to hook into these API endpoints in order to improve
+  the behavior of third party credential management software in the same way
+  that user agents can improve their own via this imperative approach.</p>
+
+
+    <p>This could range from a complex new API that the user agent mediates, or
+  simply by allowing extensions to overwrite the <code class="idl"><a data-link-type="idl" href="#dom-credentialcontainer-get">get()</a></code> and <code class="idl"><a data-link-type="idl" href="#dom-credentialcontainer-store">store()</a></code>
+  endpoints for their own purposes.</p>
 </section>
 
 
@@ -2873,6 +2905,8 @@ typedef (FederatedCredentialRequestOptions or ExampleCredentialRequestOptions) C
    <dd>Marcos Caceres; Anssi Kostiainen; Kenneth Rohde Christiansen; et al. <a href="http://w3c.github.io/manifest/">Manifest for web application</a>. WD. URL: <a href="http://w3c.github.io/manifest/">http://w3c.github.io/manifest/</a>
    <dt id="biblio-rfc6749"><a class="self-link" href="#biblio-rfc6749"></a>[RFC6749]
    <dd>Dick Hardt; et al. <a href="http://www.ietf.org/rfc/rfc6749.txt">The OAuth 2.0 Authorization Framework</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6749.txt">http://www.ietf.org/rfc/rfc6749.txt</a>
+   <dt id="biblio-sri"><a class="self-link" href="#biblio-sri"></a>[SRI]
+   <dd>Frederik Braun; et al. <a href="http://www.w3.org/TR/SRI/">Subresource Integrity</a>. 18 March 2014. WD. URL: <a href="http://www.w3.org/TR/SRI/">http://www.w3.org/TR/SRI/</a>
    <dt id="biblio-web-login"><a class="self-link" href="#biblio-web-login"></a>[WEB-LOGIN]
    <dd>Jason Denizac; Robin Berjon; Anne van Kesteren. <a href="https://github.com/jden/web-login">web-login</a>. URL: <a href="https://github.com/jden/web-login">https://github.com/jden/web-login</a>
    <dt id="biblio-web-payments-use-cases"><a class="self-link" href="#biblio-web-payments-use-cases"></a>[WEB-PAYMENTS-USE-CASES]
