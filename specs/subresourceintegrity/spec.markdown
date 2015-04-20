@@ -610,6 +610,12 @@ If the document's integrity policy contains `report`, the user agent MAY render
 or execute resources that fail an integrity check, <em>but</em> MUST
 [report a violation][].
 
+On a failed integrity check, an <code>error</code> event is thrown. Developers
+wishing to provide a canonical fallback resource are encouraged to catch this
+<code>error</code> event and provide an appropriate handler to replace the
+failed resource with a different one.
+{:.note}
+
 [csp]: http://w3.org/TR/CSP2
 [report a violation]: http://www.w3.org/TR/CSP2/#report-a-violation
 [integrity policy]: #dfn-integrity-policy
