@@ -225,15 +225,17 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <li>
         While signing into a website with a username and password is fairly well
         supported, creating a new account on a website is more or less left up
-        to the user. The user agent has a good deal of information which could
-        help the user create an account, of course: for instance, it knows
-        whether the user has stored passwords for federated identity providers
-        which the website might support, it could help the user fill in commonly
-        used elements like email addresses, and so on.
+        to the user. The user agent's knowledge of a user's browsing history,
+        access to the <a>credential store</a>, and general mediation of a user's
+        activity means that it is in a very good position indeed to help users
+        sign up for new sites.
 
-        ISSUE(w3c/webappsec#244): Anne notes that this use case is weak. Shoring
-        it up requires <a href="#issue-fc00d72b">deciding whether we want to
-        explicitly support creation and password generation</a>.
+        Note: This is especially true for sites which support federated identity
+        providers, as those often support not just one or two, but many. Rather
+        than presenting a user with a dozen icons from which to choose a
+        familiar-looking provider, the site can ask the user agent to display
+        only those providers the user actually uses. See
+        [[#user-mediated-selection]] for discussion.
       </li>
       <li>
         Finally, changing passwords is less well-suppported than it could be if
@@ -1101,6 +1103,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       See [[#security-cross-origin-leakage]] for details as to why.
     </li>
     <li>
+      The user agent MAY synthesize {{Credential}} objects to add to the list
+      based on vendor-specific heuristics (as described in [[#synthesis]]).
+    </li>
+    <li>
       Remove any items from <var>credentials</var> whose {{Credential/type}}
       property is not a case-sensitive match for a value in <var>types</var>.
     </li>
@@ -1522,17 +1528,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   requesting credentials.
 
   The chooser interface SHOULD include all {{Credential}} objects associated
-  with the origin that requested credentials. It MAY also include credentials
-  associated with <a>federated identity providers</a> which the origin supports.
-  For example, a credential associated with
-  <code>https://www.facebook.com</code> might be suggested as a
-  {{FederatedCredential}} on <code>https://example.com</code> if the latter
-  lists the former as an accepted identity provider.
-
-  Note: The credentials suggested in the chooser are not exposed to the web
-  unless the user explicitly allows it. The user agent is therefore free to
-  synthesize {{FederatedCredential}} objects for use in the chooser without
-  risking a user's privacy.
+  with the origin that requested credentials. It may also synthesize
+  {{Credential}} objects to support a sign-up use case, as discussed in
+  [[#synthesis]].
 
   <em>The following image is an exceptionally non-normative mock:</em>
 
@@ -1543,6 +1541,43 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   the utility of such a chooser. For example, favicons could help disambiguate
   identity providers, etc. Any additional information stored MUST not be
   exposed directly to the web.
+
+  <h4 id="synthesis">Synthesizing Credentials</h4>
+
+  In response to a call to {{get()}} a user agent MAY offer a user the ability
+  to create a {{Credential}} on the fly, rather than returning an empty set.
+  Since credentials suggested in the <a>credential chooser</a> are never exposed
+  to the web unless the user explicitly selects them, the user agent is free
+  to use any of a number of heuristics to help a user get signed-into/-up for
+  a website.
+
+  <div class="example">
+    Assume for a moment that <code>https://example.com/</code> is an amazing new
+    website that supports a large number of federated identity providers in an
+    effort to make sign-up as seamless as possible for new users. This ends up
+    being a bit counterproductive, as the site needs to display a list of dozens
+    of providers, hoping that users will see an icon they remember.
+
+    A call to {{get()}} will end up with an empty list of {{Credential}} objects
+    for new users, as they won't have any <code>https://example.com/</code>
+    credentials. They might, however, have a {{PasswordCredential}} stored for
+    the exciting social media site <code>https://federation.com/</code>, which
+    they visit daily.
+
+    In this case, based on its knowledge of the user's history and credentials,
+    the user agent might choose to synthesize a {{FederatedCredential}} for
+    <code>https://example.com/</code>, using the {{Credential/id}} from
+    <code>https://federation.com/</code>'s {{PasswordCredential}}, and offer
+    it to the user as a sign-up options in a <a>chooser</a>.
+
+    In this way, <code>https://example.com/</code> can support dozens of
+    providers as arguments to {{get()}} (via
+    {{FederatedCredentialRequestOptions}}'s
+    {{FederatedCredentialRequestOptions/federations}} property), and the user
+    agent can cull that list down to the federations with which the user
+    regularly interacts (or which have been previously used as
+    {{FederatedCredential}}s, or any of a number of other heuristics).
+  </div>
 </section>
 
 <!--

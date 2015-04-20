@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Credential Management</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-04-19">19 April 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-04-20">20 April 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -258,6 +258,9 @@ store user credentials for future use.</p>
       <li><a href="#user-mediated-storage"><span class="secno">5.1</span> <span class="content">Storing and Updating Credentials</span></a>
       <li><a href="#user-mediation-requirements"><span class="secno">5.2</span> <span class="content">Requiring User Mediation</span></a>
       <li><a href="#user-mediated-selection"><span class="secno">5.3</span> <span class="content">Credential Selection</span></a>
+       <ul class="toc">
+        <li><a href="#synthesis"><span class="secno">5.3.1</span> <span class="content">Synthesizing Credentials</span></a>
+       </ul>
      </ul>
     <li><a href="#security-considerations"><span class="secno">6</span> <span class="content">Security Considerations</span></a>
      <ul class="toc">
@@ -422,16 +425,18 @@ store user credentials for future use.</p>
       <li>
         While signing into a website with a username and password is fairly well
         supported, creating a new account on a website is more or less left up
-        to the user. The user agent has a good deal of information which could
-        help the user create an account, of course: for instance, it knows
-        whether the user has stored passwords for federated identity providers
-        which the website might support, it could help the user fill in commonly
-        used elements like email addresses, and so on.
+        to the user. The user agent’s knowledge of a user’s browsing history,
+        access to the <a data-link-type="dfn" href="#credential-store">credential store</a>, and general mediation of a user’s
+        activity means that it is in a very good position indeed to help users
+        sign up for new sites.
 
 
-       <p class="issue" id="issue-3fa0b838"><a class="self-link" href="#issue-3fa0b838"></a>Anne notes that this use case is weak. Shoring
-        it up requires <a href="#issue-fc00d72b">deciding whether we want to
-        explicitly support creation and password generation</a>. <a href="https://github.com/w3c/webappsec/issues/244">&lt;https://github.com/w3c/webappsec/issues/244></a></p>
+       <p class="note" role="note">Note: This is especially true for sites which support federated identity
+        providers, as those often support not just one or two, but many. Rather
+        than presenting a user with a dozen icons from which to choose a
+        familiar-looking provider, the site can ask the user agent to display
+        only those providers the user actually uses. See
+        <a href="#user-mediated-selection">§5.3 Credential Selection</a> for discussion.</p>
        
       
       
@@ -1650,6 +1655,12 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
      
     
      <li>
+      The user agent MAY synthesize <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects to add to the list
+      based on vendor-specific heuristics (as described in <a href="#synthesis">§5.3.1 Synthesizing Credentials</a>).
+    
+     
+    
+     <li>
       Remove any items from <var>credentials</var> whose <code class="idl"><a data-link-type="idl" href="#dom-credential-type">type</a></code>
       property is not a case-sensitive match for a value in <var>types</var>.
     
@@ -2257,18 +2268,9 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
 
 
     <p>The chooser interface SHOULD include all <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects associated
-  with the origin that requested credentials. It MAY also include credentials
-  associated with <a data-link-type="dfn" href="#federated-identity-provider">federated identity providers</a> which the origin supports.
-  For example, a credential associated with
-  <code>https://www.facebook.com</code> might be suggested as a
-  <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> on <code>https://example.com</code> if the latter
-  lists the former as an accepted identity provider.</p>
-
-
-    <p class="note" role="note">Note: The credentials suggested in the chooser are not exposed to the web
-  unless the user explicitly allows it. The user agent is therefore free to
-  synthesize <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> objects for use in the chooser without
-  risking a user’s privacy.</p>
+  with the origin that requested credentials. It may also synthesize
+  <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects to support a sign-up use case, as discussed in
+  <a href="#synthesis">§5.3.1 Synthesizing Credentials</a>.</p>
 
 
     <p><em>The following image is an exceptionally non-normative mock:</em></p>
@@ -2282,6 +2284,53 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   the utility of such a chooser. For example, favicons could help disambiguate
   identity providers, etc. Any additional information stored MUST not be
   exposed directly to the web.</p>
+
+  
+    <h4 class="heading settled" data-level="5.3.1" id="synthesis"><span class="secno">5.3.1. </span><span class="content">Synthesizing Credentials</span><a class="self-link" href="#synthesis"></a></h4>
+
+
+    <p>In response to a call to <code class="idl"><a data-link-type="idl" href="#dom-credentialcontainer-get">get()</a></code> a user agent MAY offer a user the ability
+  to create a <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> on the fly, rather than returning an empty set.
+  Since credentials suggested in the <a data-link-type="dfn" href="#credential-chooser">credential chooser</a> are never exposed
+  to the web unless the user explicitly selects them, the user agent is free
+  to use any of a number of heuristics to help a user get signed-into/-up for
+  a website.</p>
+
+  
+    <div class="example" id="example-06e61ee6"><a class="self-link" href="#example-06e61ee6"></a>
+    Assume for a moment that <code>https://example.com/</code> is an amazing new
+    website that supports a large number of federated identity providers in an
+    effort to make sign-up as seamless as possible for new users. This ends up
+    being a bit counterproductive, as the site needs to display a list of dozens
+    of providers, hoping that users will see an icon they remember.
+
+
+     <p>A call to <code class="idl"><a data-link-type="idl" href="#dom-credentialcontainer-get">get()</a></code> will end up with an empty list of <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects
+    for new users, as they won’t have any <code>https://example.com/</code>
+    credentials. They might, however, have a <code class="idl"><a data-link-type="idl" href="#passwordcredential">PasswordCredential</a></code> stored for
+    the exciting social media site <code>https://federation.com/</code>, which
+    they visit daily.</p>
+     
+
+
+     <p>In this case, based on its knowledge of the user’s history and credentials,
+    the user agent might choose to synthesize a <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> for
+    <code>https://example.com/</code>, using the <code class="idl"><a data-link-type="idl" href="#dom-credential-id">id</a></code> from
+    <code>https://federation.com/</code>’s <code class="idl"><a data-link-type="idl" href="#passwordcredential">PasswordCredential</a></code>, and offer
+    it to the user as a sign-up options in a <a data-link-type="dfn" href="#credential-chooser">chooser</a>.</p>
+     
+
+
+     <p>In this way, <code>https://example.com/</code> can support dozens of
+    providers as arguments to <code class="idl"><a data-link-type="idl" href="#dom-credentialcontainer-get">get()</a></code> (via
+    <code class="idl"><a data-link-type="idl" href="#dictdef-federatedcredentialrequestoptions">FederatedCredentialRequestOptions</a></code>'s
+    <code class="idl"><a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-federations">federations</a></code> property), and the user
+    agent can cull that list down to the federations with which the user
+    regularly interacts (or which have been previously used as
+    <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code>s, or any of a number of other heuristics).</p>
+     
+  
+    </div>
 </section>
 
 
@@ -2978,9 +3027,6 @@ dictionary <a data-global-name="" href="#dictdef-credentialrequest">CredentialRe
 </pre>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue">Anne notes that this use case is weak. Shoring
-        it up requires <a href="#issue-fc00d72b">deciding whether we want to
-        explicitly support creation and password generation</a>. <a href="https://github.com/w3c/webappsec/issues/244">&lt;https://github.com/w3c/webappsec/issues/244></a><a href="#issue-3fa0b838"> ↵ </a></div>
    <div class="issue">Define cloning algorithms.<a href="#issue-43c3f08c"> ↵ </a></div>
    <div class="issue">How do we make this responsive? Adopt <a data-link-type="biblio" href="#biblio-manifest">[MANIFEST]</a>'s icon syntax?<a href="#issue-abf570d9"> ↵ </a></div>
    <div class="issue">Anne suggests that this might be better modeled
