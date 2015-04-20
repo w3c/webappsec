@@ -306,9 +306,9 @@ collision-resistant.  For example, `getPrioritizedHashFunction('SHA-256',
 [eligible]: #is-resource-eligible-for-integrity-validation
 
 In order to mitigate an attacker's ability to read data cross-origin by
-brute-forcing values via integrity checks, resources are only eligible
-for such checks if they are same-origin, publicly cachable, or are the
-result of explicit access granted to the loading origin via CORS. [[!CORS]]
+brute-forcing values via integrity checks, resources are only eligible for such
+checks if they are same-origin or are the result of explicit access granted to
+the loading origin via CORS. [[!CORS]]
 
 As noted in [RFC6454, section 4](uri-origin), some user agents use
 globally unique identifiers for each file URI. This means that
@@ -358,9 +358,7 @@ The following algorithm details these restrictions:
     return `true`.
 4.  If the [origin][fetch-origin] of <var>request</var> is
     <var>resource</var>'s origin, return `true`.
-5.  If <var>resource</var> is [cachable by a shared cache][], as defined
-    in [[!RFC7234]], return `true`.
-6.  Return `false`.
+5.  Return `false`.
 
 Step 3 returns `true` if the resource was a CORS-enabled request. If the
 resource failed the CORS checks, it won't be available to us for integrity
@@ -369,7 +367,6 @@ checking because it won't have loaded successfully.
 
 [fetch-mode]: http://fetch.spec.whatwg.org/#concept-request-mode
 [fetch-origin]: http://fetch.spec.whatwg.org/#concept-request-origin
-[cachable by a shared cache]: http://tools.ietf.org/html/rfc7234#section-3
 </section><!-- Algorithms::eligible -->
 <section>
 #### Parse <var>metadata</var>.
