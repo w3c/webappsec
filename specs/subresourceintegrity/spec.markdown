@@ -611,7 +611,7 @@ or execute resources that fail an integrity check, <em>but</em> MUST
 [report a violation][].
 
 On a failed integrity check, an <code>error</code> event is thrown. Developers
-wishing to provide a canonical fallback resource are encouraged to catch this
+wishing to provide a canonical fallback resource can catch this
 <code>error</code> event and provide an appropriate handler to replace the
 failed resource with a different one.
 {:.note}
