@@ -78,21 +78,20 @@ and future versions of the specification are likely to expand this coverage.
 #### Resource Integrity
 
 *   An author wishes to use a content delivery network to improve performance
-    for her globally-distributed users. She wishes to ensure, however, that
-    the CDN's servers deliver _only_ the code she expects them to deliver. She
-    can mitigate the risk that CDN compromise (or unexpectedly malicious
-    behavior) would change her site in unfortunate ways by adding
-    [integrity metadata][] to the `link` element included on her page:
+    for globally-distributed users. It is important, however, to ensure that
+    the CDN's servers deliver _only_ the code the author expects them to
+    deliver. To mitigate the risk that a CDN compromise (or unexpectedly malicious
+    behavior) would change that site in unfortunate ways, the following
+    [integrity metadata][] is added to the `link` element included on the page:
 
         <link rel="stylesheet" href="https://site53.cdn.net/style.css"
               integrity="sha256-SDfwewFAE...wefjijfE">
     {:.example.highlight}
 
 *   An author wants to include JavaScript provided by a third-party
-    analytics service on her site. She wants, however, to ensure that only
-    the code she's carefully reviewed is executed. She can do so by generating
-    [integrity metadata][] for the script she's planning on including, and
-    adding it to the `script` element she includes on her page:
+    analytics service. To ensure that only the code that has been carefully
+    reviewed is executed, the author generates [integrity metadata][] for
+    the script, and adds it to the `script` element:
 
         <script src="https://analytics-r-us.com/v1.0/include.js"
                 integrity="sha256-SDfwewFAE...wefjijfE"></script>
@@ -103,7 +102,7 @@ and future versions of the specification are likely to expand this coverage.
     [Integrity metadata][] mitigates the risk that altered JavaScript will run
     in these page's high-privilege context.
 
-*   The author of a mash-up wants to make sure her creation remains in a working
+*   The author of a mash-up wants to make sure it remains in a working
     state. Adding [integrity metadata][] to external subresources defines an
     expected revision of the included files.
 
