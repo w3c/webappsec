@@ -588,6 +588,14 @@ attribute DOMString integrity
 
 The user agent MUST refuse to render or execute resources that fail an
 integrity check, <em>and</em> MUST return an error.
+
+On a failed integrity check, an <code>error</code> event is thrown. Developers
+wishing to provide a canonical fallback resource (e.g. a resource not served
+from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
+<code>error</code> event and provide an appropriate handler to replace the
+failed resource with a different one.
+{:.note}
+
 </section>
 
 <section>
