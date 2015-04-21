@@ -190,11 +190,8 @@ content they load, meaning for example that they could load a
 particular URL.</p>
       </li>
       <li>
-        <p>The verification mechanism should have reporting functionality which
-would inform the author that an invalid resource was downloaded.
-Further it should be possible for an author to choose to run <em>only</em>
-the reporting functionality, allowing potentially corrupt resources
-to run on her site, but flagging violations for manual review.</p>
+        <p>The verification mechanism should have error-reporting functionality which
+would inform the author that an invalid resource was downloaded.</p>
       </li>
     </ol>
 
@@ -240,8 +237,7 @@ in these page’s high-privilege context.</p>
         <li>
           <p>The author of a mash-up wants to make sure her creation remains in a working
 state. Adding <a href="#dfn-integrity-metadata">integrity metadata</a> to external subresources defines an
-expected revision of the included files. The author can then use the reporting
-functionality to be notified of changes to the included resources.</p>
+expected revision of the included files.</p>
         </li>
       </ul>
 
@@ -695,7 +691,7 @@ option-expression  = option-name "=" option-value
 option-name        = 1*option-name-char
 option-name-char   = ALPHA / DIGIT / "-"
 option-value       = *option-value-char
-option-value-char  = ALPHA / DIGIT / "-" / "+" / "." / "/"
+option-value-char  = ALPHA / DIGIT / "!" / "#" / "$" / "%" / "&amp;" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / "/"
 hash-algo          = &lt;hash-algo production from [Content Security Policy Level 2, section 4.2]&gt;
 base64-value       = &lt;base64-value production from [Content Security Policy Level 2, section 4.2]&gt;
 hash-expression    = hash-algo "-" base64-value
@@ -740,28 +736,10 @@ the spec make define options, such as MIME types [[!MIMETYPE]].</p>
   <section>
     <h4 id="handling-integrity-violations">Handling integrity violations</h4>
 
-    <p>Documents may specify the behavior of a failed integrity check by delivering
-a <a href="http://w3.org/TR/CSP2">Content Security Policy</a> which contains an <code>integrity-policy</code>
-directive, defined by the following ABNF grammar:</p>
+    <p>The user agent MUST refuse to render or execute resources that fail an
+integrity check, <em>and</em> MUST return an error.</p>
 
-    <pre><code>directive-name  = "integrity-policy"
-directive-value = 1#failure-mode
-failure-mode    = ( "block" / "report" )
-</code></pre>
-
-    <p>A document’s <dfn>integrity policy</dfn> is the value of the
-<code>integrity-policy</code> directive, if explicitly provided as part of the
-document’s Content Security Policy, or <code>block</code> otherwise.</p>
-
-    <p>If the document’s integrity policy contains <code>block</code>, the user agent MUST refuse
-to render or execute resources that fail an integrity check, <em>and</em> MUST
-<a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a violation</a>.</p>
-
-    <p>If the document’s integrity policy contains <code>report</code>, the user agent MAY render
-or execute resources that fail an integrity check, <em>but</em> MUST
-<a href="http://www.w3.org/TR/CSP2/#report-a-violation">report a violation</a>.</p>
-
-    <p>On a failed integrity check, an <code>error</code> event is thrown. Developers
+    <p class="note">On a failed integrity check, an <code>error</code> event is thrown. Developers
 wishing to provide a canonical fallback resource (e.g. a resource not served
 from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
 <code>error</code> event and provide an appropriate handler to replace the
@@ -789,16 +767,11 @@ the element:</p>
       <ol>
         <li>If the response’s integrity state is <code>corrupt</code>:
           <ol>
-            <li>If the document’s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-              <ol>
-                <li>Abort the <code>load</code> event, and treat the resource as having failed
+            <li>Abort the <code>load</code> event, and treat the resource as having failed
 to load.</li>
-                <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the origin of
+            <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the origin of
 the <code>link</code> element’s Document, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
 <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the <code>link</code> element.</li>
-              </ol>
-            </li>
-            <li><a href="http://www.w3.org/TR/CSP2/#report-a-violation">Report a violation</a>.</li>
           </ol>
         </li>
       </ol>
@@ -825,15 +798,10 @@ of the element’s <code>integrity</code> attribute.</li>
           <ol>
             <li>If the response’s integrity state is <code>corrupt</code>:
               <ol>
-                <li>If the document’s <a href="#dfn-integrity-policy">integrity policy</a> is <code>block</code>:
-                  <ol>
-                    <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the <code>script</code>
+                <li>If <var>resource</var> is <a href="http://tools.ietf.org/html/rfc6454#section-5">same origin</a> with the <code>script</code>
 element’s Document’s origin, then <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
 <a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the element, and
 abort these steps.</li>
-                  </ol>
-                </li>
-                <li><a href="http://www.w3.org/TR/CSP2/#report-a-violation">Report a violation</a>.</li>
               </ol>
             </li>
           </ol>
@@ -932,8 +900,7 @@ static resource: consider a JSON response that looks like this:</p>
 
     <p>An attacker can precompute hashes for the response with a variety of
 common usernames, and specify those hashes while repeatedly attempting
-to load the document. By examining the reported violations, the attacker
-can obtain a user’s username.</p>
+to load the document.</p>
 
     <p>User agents SHOULD mitigate the risk by refusing to fire <code>error</code> events
 on elements which loaded cross-origin resources, but some side-channels

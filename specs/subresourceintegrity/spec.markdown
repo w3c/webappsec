@@ -67,11 +67,8 @@ and JavaScript.
     _specific_ script, and not _any_ script that happens to have a
     particular URL.
 
-2.  The verification mechanism should have reporting functionality which
+2.  The verification mechanism should have error-reporting functionality which
     would inform the author that an invalid resource was downloaded.
-    Further it should be possible for an author to choose to run _only_
-    the reporting functionality, allowing potentially corrupt resources
-    to run on her site, but flagging violations for manual review.
 
 </section><!-- /Introduction::Goals -->
 
@@ -109,8 +106,7 @@ and JavaScript.
 
 *   The author of a mash-up wants to make sure her creation remains in a working
     state. Adding [integrity metadata][] to external subresources defines an
-    expected revision of the included files. The author can then use the reporting
-    functionality to be notified of changes to the included resources.
+    expected revision of the included files.
 
 </section><!-- Introduction::UseCases::Integrity -->
 </section><!-- /Introduction::Use Cases -->
@@ -549,7 +545,7 @@ valid metadata as described by the following ABNF grammar:
     option-name        = 1*option-name-char
     option-name-char   = ALPHA / DIGIT / "-"
     option-value       = *option-value-char
-    option-value-char  = ALPHA / DIGIT / "-" / "+" / "." / "/"
+    option-value-char  = ALPHA / DIGIT / "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / "/"
     hash-algo          = <hash-algo production from [Content Security Policy Level 2, section 4.2]>
     base64-value       = <base64-value production from [Content Security Policy Level 2, section 4.2]>
     hash-expression    = hash-algo "-" base64-value
@@ -590,37 +586,16 @@ attribute DOMString integrity
 <section>
 #### Handling integrity violations
 
-Documents may specify the behavior of a failed integrity check by delivering
-a [Content Security Policy][csp] which contains an `integrity-policy`
-directive, defined by the following ABNF grammar:
-
-    directive-name  = "integrity-policy"
-    directive-value = 1#failure-mode
-    failure-mode    = ( "block" / "report" )
-
-A document's <dfn>integrity policy</dfn> is the value of the
-`integrity-policy` directive, if explicitly provided as part of the
-document's Content Security Policy, or `block` otherwise.
-
-If the document's integrity policy contains `block`, the user agent MUST refuse
-to render or execute resources that fail an integrity check, <em>and</em> MUST
-[report a violation][].
-
-If the document's integrity policy contains `report`, the user agent MAY render
-or execute resources that fail an integrity check, <em>but</em> MUST
-[report a violation][].
+The user agent MUST refuse to render or execute resources that fail an
+integrity check, <em>and</em> MUST return an error.
 
 On a failed integrity check, an <code>error</code> event is thrown. Developers
 wishing to provide a canonical fallback resource (e.g. a resource not served
 from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
 <code>error</code> event and provide an appropriate handler to replace the
 failed resource with a different one.
-
 {:.note}
 
-[csp]: http://w3.org/TR/CSP2
-[report a violation]: http://www.w3.org/TR/CSP2/#report-a-violation
-[integrity policy]: #dfn-integrity-policy
 </section>
 
 <section>
@@ -639,13 +614,11 @@ Additionally, perform the following steps before firing a `load` event at
 the element:
 
 1.  If the response's integrity state is `corrupt`:
-    1.  If the document's [integrity policy][] is `block`:
-        1.  Abort the `load` event, and treat the resource as having failed
-            to load.
-        2.  If <var>resource</var> is [same origin][] with the origin of
-            the `link` element's Document, then [queue a task][] to
-            [fire a simple event][] named `error` at the `link` element.
-    2.  [Report a violation][].
+    1.  Abort the `load` event, and treat the resource as having failed
+        to load.
+    2.  If <var>resource</var> is [same origin][] with the origin of
+        the `link` element's Document, then [queue a task][] to
+        [fire a simple event][] named `error` at the `link` element.
 
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
 [same origin]: http://tools.ietf.org/html/rfc6454#section-5
@@ -665,12 +638,10 @@ Insert the following steps after step 5 of step 14 of HTML5's
 
 8.  Once the [fetching algorithm][] has completed:
     2.  If the response's integrity state is `corrupt`:
-        1.  If the document's [integrity policy][] is `block`:
-            1.  If <var>resource</var> is [same origin][] with the `script`
-                element's Document's origin, then [queue a task][] to
-                [fire a simple event][] named `error` at the element, and
-                abort these steps.
-        2.  [Report a violation][].
+        1.  If <var>resource</var> is [same origin][] with the `script`
+            element's Document's origin, then [queue a task][] to
+            [fire a simple event][] named `error` at the element, and
+            abort these steps.
 {:start="6"}
 
 [prepare]: http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script
@@ -769,8 +740,7 @@ static resource: consider a JSON response that looks like this:
 
 An attacker can precompute hashes for the response with a variety of
 common usernames, and specify those hashes while repeatedly attempting
-to load the document. By examining the reported violations, the attacker
-can obtain a user's username.
+to load the document.
 
 User agents SHOULD mitigate the risk by refusing to fire `error` events
 on elements which loaded cross-origin resources, but some side-channels

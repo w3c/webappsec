@@ -1,0 +1,1058 @@
+<h1>Entry Point Regulation</h1>
+<pre class="metadata">
+Status: ED
+Group: WebAppSec
+ED: https://w3c.github.io/webappsec/specs/epr/
+Shortname: EPR
+Level: 1
+Editor: David Ross, Google Inc., drx@google.com
+Editor: Mike West 56384, Google Inc., mkwst@google.com
+Abstract:
+  Entry Point Regulation aims to mitigate the risk of reflected cross-site
+  scripting (XSS), cross-site script inclusion (XSSI), and cross-site request
+  forgery (CSRF) attacks by demarcating the areas of an application which are
+  intended to be externally referencable.  A specified policy is applied on
+  external requests for all non-demarcated resources.
+Indent: 2
+</pre>
+<pre class="anchors">
+spec: CSP2; urlPrefix: https://www.w3.org/TR/CSP2/
+  type: dfn
+    text: content-security-policy
+    text: content-security-policy-report-only
+    text: default-src
+    text: report-uri
+    text: protected resource
+    text: security policy
+    text: send violation reports
+    text: report a violation
+    text: violation report; url: example-violation-report
+    url: enforce
+      text: enforce
+      text: enforced
+    url: monitor
+      text: monitor
+      text: monitored
+spec: DOM; urlPrefix: http://www.w3.org/TR/dom/
+  type: interface
+    text: Document; url: interface-document
+spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+    text: process response
+    text: append; url: concept-header-list-append
+    text: response; url: concept-response
+    text: request; url: concept-request
+    text: header; url: concept-header
+    text: url; for: request; url: concept-request-url
+    text: mode; for: request; url: concept-request-mode
+    text: body; for: request; url: concept-request-body
+    text: client; for: request; url: concept-request-client
+    text: credentials mode; for: request; url: concept-request-credentials-mode
+    text: context; for: request; url: concept-request-context
+    text: method; for: request; url: concept-request-method
+    text: context frame type; for: request; url: concept-request-context-frame-type
+    text: header list; for: request; url: concept-request-header-list
+    text: url; for: response; url: concept-response-url
+    text: header list; for: response; url: concept-response-header-list
+    text: network error; url: concept-network-error
+spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
+  type: dfn
+    urlPrefix: infrastructure.html
+      text: ascii case-insensitive match; url: ascii-case-insensitive
+    urlPrefix: browsers.html
+      text: ancestor browsing context
+      text: browsing context
+      text: creating a new document object; url: create-a-document-object
+      text: nested browsing context
+    urlPrefix: webappapis.html
+      text: environment settings object; url: settings-object
+      text: incumbent settings object
+      text: responsible document
+      text: responsible browsing context
+      text: relevant settings object for a script
+spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
+  urlPrefix: workers.html
+    type: dfn
+      text: set up a worker environment settings object
+    type: interface
+      text: SharedWorker
+spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+  type: dfn
+    text: embedding document
+    text: strict mode
+    text: block-all-mixed-content
+    url: a-priori-insecure-url
+      text: a priori insecure origin
+      text: a priori insecure url
+      text: a priori insecure
+    url: potentially-secure-origin
+      text: potentially secure origin
+      text: potentially secure url
+      text: potentially secure
+spec: SERVICE-WORKERS; urlPrefix: https://slightlyoff.github.io/ServiceWorker/spec/service_worker/
+  type: interface
+    text: ServiceWorker; url: service-worker-interface
+spec: URL; urlPrefix: http://www.w3.org/TR/url/
+  type: dfn
+    text: URL parser; url: concept-url-parser
+    text: base URL; url: concept-base-url
+    text: path; for: URL; url: concept-url-path
+    text: username; for: URL; url: concept-url-username
+    text: password; for: URL; url: concept-url-password
+    text: query; for: URL; url: concept-url-query
+    text: fragment; for: URL; url: concept-url-fragment
+    text: percent decode
+  type: interface
+    text: URL; url: concept-url
+  type: attribute
+    text: host; for: URL; url: concept-url-host
+    text: path; for: URL; url: concept-url-path
+    text: port; for: URL; url: concept-url-port
+    text: scheme; for: URL; url: concept-url-scheme
+spec: WEBIDL2; urlPrefix: https://heycam.github.io/webidl/
+  type: interface
+    text: USVString; url: idl-USVString
+    text: boolean; url: idl-boolean
+spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
+  type: interface
+    text: Worker
+spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
+  type: dfn
+    text: BIT; url: appendix-B.1
+    text: WSP; url: appendix-B.1
+spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
+  type: dfn
+    text: origin; url: section-3.2
+spec: RFC6455; urlPrefix: https://tools.ietf.org/html/rfc6455
+  type: dfn
+    text: establish a websocket connection; url: section-4.1
+    text: fail the websocket connection; url: section-7.1.7
+spec: RFC6797; urlPrefix: https://tools.ietf.org/html/rfc6797
+  type: dfn
+    text: Strict-Transport-Security; url: section-6.1
+    text: congruent match; url: section-8.2
+    text: superdomain match; url: section-8.2
+    text: includeSubDomains; url: section-6.1.2
+    text: Known HSTS Host Domain Name Matching; url: section-8.2
+    text: Known HSTS Host; url: section-8.1.1
+spec: RFC7231; urlPrefix: https://tools.ietf.org/html/rfc7231
+  type: dfn
+    text: Vary; url: section-7.1.4
+    text: resource representation; url: section-3
+spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
+  type: dfn
+    text: Cache-Control; url: section-5.2
+    text: no-store; url: section-5.2.2.3
+spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
+  type: dfn
+    text: Prefer; url: section-2
+</pre>
+
+<!-- BIBLIOGRAPHY -->
+<pre class="biblio">
+{
+  "ISOLATION": {
+    "authors": [ "Eric Y. Chen", "Jason Bau", "Charles Reis", "Adam Barth", "Collin Jackson" ],
+    "title": "App Isolation: Get the Security of Multiple Browsers with Just One",
+    "href": "http://www.collinjackson.com/research/papers/appisolation.pdf",
+    "publisher": "ACM"
+  },
+  "URL": {
+    "authors": [ "Anne van Kesteren", "Sam Ruby" ],
+    "title": "URL",
+    "href": "http://www.w3.org/TR/url",
+    "status": "WD",
+    "publisher": "W3C"
+  },
+  "WEBIDL2": {
+    "authors": [ "Cameron McCormack", "Boris Zbarsky" ],
+    "title": "Web IDL (Second Edition)",
+    "href": "https://heycam.github.io/webidl/",
+    "status": "ED",
+    "publisher": "W3C"
+  },
+  "MANIFEST": {
+    "authors": [ "Marcos Caceres", "Kenneth Rohde Christiansen", "Mounir Lamouri", "Anssi Kostiainen" ],
+    "href": "https://w3c.github.io/manifest/",
+    "title": "Manifest for a web application",
+    "publisher": "W3C",
+    "status": "WD"
+  }
+}
+</pre>
+
+<!--
+████ ██    ██ ████████ ████████   ███████
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████
+-->
+<section>
+  <h2 id="intro">Introduction</h2>
+
+  <em>This section is not normative.</em>
+
+  Entry Point Regulation intends to provide defense-in-depth against reflected
+  cross-site scripting and other content injection (XSS), cross-site script
+  inclusion (XSSI), and cross-site request forgery (CSRF) attacks.
+
+  These attacks all rely on the fundamentally porous nature of the web: any
+  addressible portion of an application can be requested by any third-party,
+  with arbitrary <a for="URL">query</a> parameters and <a for="URL">fragment</a>
+  identifiers. The user agent will happily issue such requests with all the
+  authority granted to the user, which can result in a number of problems.
+
+  If an author can limit incoming traffic to a strict set of well-audited entry
+  points, web applications can reduce the risk these attacks present, and indeed
+  some authors have taken steps to do so via server-side logic, single page
+  application (SPA) frameworks, (and, soon, via Service Workers). Server-side 
+  techniques can be an effective solution, but have a number of drawbacks. 
+  Complexity to the side, they are prone to false-positive restrictions in cases 
+  where a user's intent should override the author's intent (bookmarked links, 
+  for instance).
+
+  This document defines a browser-enforced mechanism which can be layered on top
+  of an existing application without server-side modifications, providing the
+  attack mitigation authors desire, while allowing user intent to trumph brittle
+  filters when possible.
+
+  <h3 id="goals">Goals</h3>
+
+  The threat model EPR operates under assumes that the user is authenticated to 
+  various web sites within a single browser, and that the user browses to web 
+  content that may be malicious.  Web content can freely make authenticated 
+  cross-origin requests, enabling XSS, XSRF, and XSSI attacks.  While CSP has 
+  shown to be an effective approach to addressing XSS, the protection CSP 
+  provides is only as good as the policies web sites are able to put into place.  
+  In many cases enforcing optimally secure CSP policies has proven difficult, 
+  for example when web content needs to leverage javascript libraries requiring 
+  eval().  EPR provides a defense-in-depth option for authors to mitigate XSS 
+  while also providing a new opportunity to mitigate XSRF and XSSI attacks.
+
+  After an author implements EPR for an origin, the following statements ought
+  to hold:
+
+  1.  Authors should be able to block incoming requests based on the
+      <a for="request">URL</a> being requested. That is, a request for
+      <code>/</code> might be allowed, while a request for
+      <code>/api/logout.cgi</code> might be denied.
+
+      Modifications might include stripping <a for="URL">query</a> and
+      <a for="URL">fragment</a> data from the request's URL, or stripping
+      cookies and other authentication information.
+
+  2.  Authors should be able to block or modify incoming requests that contain
+      data (e.g. the URL might have <a for="URL">query</a> or
+      <a for="URL">fragment</a> data, or the request might contain a
+      <a for="request">body</a>) differently to requests that do not contain
+      data.
+
+  3.  Authors should be able to block or modify incoming requests based on the
+      request's <a for="request">context</a>; that is, navigations create
+      different attack surfaces than subresource inclusions, and should be
+      treated differently.
+
+  4.  Requests should be excluded from the above filters if the request
+      originates from a same-origin source. That is, any page on
+      <code>https://example.com/</code> may request any resource on that origin,
+      while requests from <code>https://not-example.com/</code> would be
+      restricted.
+
+  5.  A user agent may choose to exclude other requests from the above filters
+      in order to prioritize a user's intent. For instance, URLs typed directly
+      into the address bar, or bookmarked URLs might skip filters entirely.
+
+  <h3 id="examples">Examples</h3>
+
+  The developer of a web-based "Internet of Things" administration console
+  would like to have a high degree of assurance that XSS and XSRF attacks will
+  not affect users.  If such an attack were to occur it could allow attackers
+  to turn users' home appliances on and off at will, or perform other actions 
+  with serious consequences.  Because of the pervasive nature of XSS and XSRF 
+  vulnerabilities, the developer had been considering creating only monolithic 
+  desktop and mobile applications as opposed to utilizing the web platform.  
+  While thiswould allow them to sidestep the security concerns inherrent with 
+  the web platform, it is clearly not ideal for users.  Implementation of CSP 
+  seemed to present a solution, however a fully restrictive policy is not 
+  possible due to library compatibility requirements.
+  
+  The developer decides to implement Entry Point Regulation.  They create a 
+  manifest specifying a default policy to block external requests by default.
+  The developer lists out each entry point path in their manifest.  Testing 
+  is first performed in report-only mode, and the blocking behavior is only 
+  enabled once the developer is comfortable with the behavior of EPR.
+</section>
+
+<!--
+████████  ████████ ████████ ████ ██    ██ ████ ████████ ████  ███████  ██    ██  ██████
+██     ██ ██       ██        ██  ███   ██  ██     ██     ██  ██     ██ ███   ██ ██    ██
+██     ██ ██       ██        ██  ████  ██  ██     ██     ██  ██     ██ ████  ██ ██
+██     ██ ██████   ██████    ██  ██ ██ ██  ██     ██     ██  ██     ██ ██ ██ ██  ██████
+██     ██ ██       ██        ██  ██  ████  ██     ██     ██  ██     ██ ██  ████       ██
+██     ██ ██       ██        ██  ██   ███  ██     ██     ██  ██     ██ ██   ███ ██    ██
+████████  ████████ ██       ████ ██    ██ ████    ██    ████  ███████  ██    ██  ██████
+-->
+<section>
+  <h2 id="key-concepts">Key Concepts and Terminology</h2>
+
+  EPR categorizes <a>requests</a> as follows:
+
+  <ol>
+    <li>
+      <dfn>navigational request</dfn> if its <a for="request">context frame
+      type</a> is one of "<code>top-level</code>", "<code>auxiliary</code>",
+      or "<code>nested</code>". Navigational requests load a resource into a
+      context where markup will be rendered, meaning that they place an origin
+      at risk of both XSS and XSRF attack.
+    </li>
+    <li>
+      <dfn>subresource request</dfn> if it is not a <a>connection request</a>,
+      and its <a for="request">context frame type</a> is "<code>none</code>".
+      Subresource requests cannot execute code directly, so the XSS risk is
+      minimal, but they do present the risk of XSRF attack.
+    </li>
+    <li>
+      <dfn>connection request</dfn> if its <a for="request">context</a> is one
+      of "<code>beacon</code>", "<code>cspreport</code>",
+      "<code>eventsource</code>", "<code>fetch</code>", "<code>ping</code>", or
+      "<code>xmlhttprequest</code>". These connection types are distinguished
+      from subresource requests only because of their flexibility
+      (<code>POST</code> vs <code>GET</code>, etc) and their typical usage
+      (API endpoints vs static resources). The risks are similar, but authors
+      may wish to set different rules for these kinds of requests than they
+      would for other subresource requests.
+    </li>
+  </ol>
+
+ISSUE: In the interest of keeping manifest creation simple, we should consider 
+merging subresource and connection requests into a single category.
+Navigations are susceptable to XSS, whereas this is not a concern for 
+subresource and connection requests.  If there isn't a similar very specific 
+distinction between attacks that would involve subresource and connection 
+requests than we should merge them.
+
+ISSUE: It could make sense to split out IMAGE SRC, SCRIPT SRC, etc. requests.
+It should be very easy for a manifest author to tag individual rules in
+the manifest so that images would be available to IMG tags on a different
+origin, but not SCRIPT tags.  If we can identify a very specific attack
+scenario where this is useful then it makes sense to do this.
+
+  An <dfn export>EPR store</dfn> is an opaque storage mechanism which offers a
+  user agent the ability to save, retrieve, and modify <a>EPR manifests</a> on
+  a per-origin basis. The implementation is vendor-specific, and the interface
+  provided is not exposed to the web.
+
+  The Augmented Backus-Naur Form (ABNF) notation is specified in [[!RFC5234]].
+</section>
+
+<!--
+████████  ████████ ██       ████ ██     ██ ████████ ████████  ██    ██
+██     ██ ██       ██        ██  ██     ██ ██       ██     ██  ██  ██ 
+██     ██ ██       ██        ██  ██     ██ ██       ██     ██   ████  
+██     ██ ██████   ██        ██  ██     ██ ██████   ████████     ██   
+██     ██ ██       ██        ██   ██   ██  ██       ██   ██      ██   
+██     ██ ██       ██        ██    ██ ██   ██       ██    ██     ██   
+████████  ████████ ████████ ████    ███    ████████ ██     ██    ██   
+-->
+<section>
+  <h2 id="framework">Framework</h2>
+
+  In a nutshell:
+
+  <ol>
+    <li>
+      UA requests a resource from <code>example.com</code> for the very
+      first time. As no <a>EPR manifest</a>, and therefore no policy, is
+      available for this request, a <a>default EPR policy</a> will apply
+      as described in [[#default-policy]].
+    </li>
+    <li>
+      <code>example.com</code> responds with a document that has an
+      <code><a>EPR</a></code> header, which tells the UA that it should
+      regulate entry points for the origin.
+
+      Somewhere in Fetch after we have the headers, we'll call out to
+      [[#process-epr-header]] to take whatever actions we need to take
+      here. This means we'll grab an <a>EPR manifest</a> file, and
+      store it persistently for use in regulating future requests.
+    </li>
+    <li>
+      Subsequent navigations and resource requests from <code>example.com</code>
+      will run through [[#process-request]] to determine whether they <a>match</a>
+      the ruleset defined in the <a>EPR manifest</a> we processed above.
+
+      If they don't match a ruleset, the user agent will take some action, as
+      described in [[#manifest-behaviors]].
+    </li>
+    <li>
+      That's it!
+    </li>
+  </ol>
+
+  <h3 id="epr-header">The <code>EPR</code> HTTP Response Header Field</h3>
+
+  Servers may request the protections outlined in this document by sending an
+  <dfn local-lt="EPR"><code>EPR</code> HTTP response header field</dfn> along
+  with a response. This request is represented by the following ABNF:
+
+  <pre>
+    "EPR:" *<a>WSP</a> "1" *<a>WSP</a>
+  </pre>
+
+  User agent conformance details upon receipt of such a header are explained in
+  [[#process-epr-header]].
+
+  <h3 id="manifest">Entry Point Manifests</h3>
+
+  An <dfn>EPR manifest</dfn> is a JSON file containing entry point regulation
+  policy data for an <a>origin</a>.
+
+  Servers which opt-in to EPR protections via the <code><a>EPR</a></code> header
+  MUST make a manifest file available via [[MANIFEST]].  EPR rules are included
+  in a manifest via the <code>epr_manifest</code> attribute.
+
+ISSUE: "epr_manifest" attribute inconsistent (?) with "epr" member as described
+below.
+
+  <div class="example">
+    <pre>
+      {
+        ...,
+        "<a dict-member>epr</a>": {
+          "<a dict-member>reportURL</a>": "https://example.com/reporting-endpoint",
+          "<a dict-member>redirectURL</a>": "https://example.com/",
+          "<a dict-member>navigationBehavior</a>": "<a>allowStrippedGET</a>",
+          "<a dict-member>subresourceBehavior</a>": "<a>allowStrippedGET</a>",
+          "<a dict-member>rules</a>": [
+            {
+              "<a dict-member>path</a>": "/",
+              "<a dict-member>types</a>": [ "navigational" ],
+              "<a dict-member>allowData</a>": false
+            },
+            {
+              "<a dict-member>regex</a>": "^/\\d+$",
+              "<a dict-member>types</a>": [ "navigational" ],
+              "<a dict-member>allowData</a>": false
+            },
+            ...
+            {
+              "<a dict-member>path</a>": "/image",
+              "<a dict-member>types</a>": [ "subresource" ],
+              "<a dict-member>allowData</a>": true
+            },
+          ]
+        }
+      }
+    </pre>
+  </div>
+
+  ISSUE: It isn't clear that the EPR manifest ought to be part of an application
+  manifest as defined in [[MANIFEST]]. We've lumped it in there at the moment
+  because it seems worth trying out, but it's not clear that the concepts
+  (though similar) mesh as well as they need to.
+
+  <h4 id="manifest-epr">The <code>epr</code> manifest member</h4>
+
+  The policy data that makes up the <a>EPR manifest</a> is delivered via an
+  <dfn dict-member for="EPR Manifest"><code>epr</code></dfn> member of an
+  application manifest [[!MANIFEST]]. This member's value is an dictionary
+  adhering to the following IDL:
+
+  <pre class="idl">
+    enum EPRBehavior {
+      "allow",
+      "block",
+      "redirect",
+      "allowUnauthenticated",
+      "allowStrippedGET"
+    };
+
+    dictionary EPRPolicy {
+      USVString? reportURL;
+      USVString? redirectURL;
+      EPRBehavior navigationBehavior = "allowStrippedGET";
+      EPRBehavior subresourceBehavior = "allowStrippedGET";
+      sequence&lt;EPRRule&gt; rules;
+    };
+  </pre>
+  <dl dfn-for="EPRPolicy">
+    <dt><dfn dict-member>reportURL</dfn></dt>
+    <dd>
+      A URL to which violation reports will be sent. See [[#reporting]] for user
+      agent conformance requirements.
+
+      Note: Authors may use the <a>allow</a> behavior to simulate a
+      "report only" mode that does not actually modify incoming <a>requests</a>
+      but does send reports back to the report URL.
+    </dd>
+    <dt><dfn dict-member>redirectURL</dfn></dt>
+    <dd>
+      A URL to redirect to when using the <a>redirect</a> behavior.
+    </dd>
+    <dt><dfn dict-member>navigationBehavior</dfn></dt>
+    <dd>
+      If a navigational request doesn't <a>match</a> {{EPRPolicy/rules}}, this
+      property defines the action the user agent will take. Detailed conformance
+      requirements can be found in [[#process-request]], and a high-level
+      description of the behaviors can be found in [[#manifest-behaviors]].
+    </dd>
+    <dt><dfn dict-member>subresourceBehavior</dfn></dt>
+    <dd>
+      If a non-navigational request doesn't <a>match</a> {{EPRPolicy/rules}}, this
+      property defines the action the user agent will take. Detailed conformance
+      requirements can be found in [[#process-request]], and a high-level
+      description of the behaviors can be found in [[#manifest-behaviors]].
+    </dd>
+    <dt><dfn dict-member>rules</dfn></dt>
+    <dd>
+      The ruleset which should be applied. Details are in [[#manifest-ruleset]].
+    </dd>
+  </dl>
+
+  <h4 id="manifest-ruleset">Ruleset</h4>
+
+  EPR manifests define a set of <dfn>rules</dfn> for a site, governing a user
+  agent's <a>fetching</a> behavior for <a>requests</a> made to that site's
+  <a>origin</a>. Each rule is scoped to a specific subset of an origin's
+  URLs via a path prefix or a regular expression. Incoming <a>requests</a>
+  which do not match the ruleset (as defined in [[#matching]]) will be dealt
+  with as defined in {{EPRPolicy/navigationBehavior}} or
+  {{EPRPolicy/subresourceBehavior}}, as appropriate.
+
+  The following IDL defines rules' syntax:
+
+  <pre class="idl">
+    enum EPRRequestType {
+      "connection", "navigational", "subresource"
+    };
+
+    dictionary EPRRule {
+      USVString? path;
+      USVString? regex;
+      sequence&lt;EPRRequestType&gt; types;
+      boolean allowData;
+    };
+  </pre>
+  <dl dfn-for="EPRRule">
+    <dt><dfn dict-member>path</dfn></dt>
+    <dd>
+      A path prefix defining a <a>rule</a>'s scope. See [[#matching]] for user
+      agent conformance requirements. One {{EPRRule/path}} or {{EPRRule/regex}}
+      may be specified for a given rule, but not both.
+    </dd>
+    <dt><dfn dict-member>regex</dfn></dt>
+    <dd>
+      A regular expression, defining a <a>rule</a>'s scope. See [[#matching]]
+      for user agent conformance requirements. One {{EPRRule/path}} or
+      {{EPRRule/regex}} may be specified for a given rule, but not both.
+    </dd>
+    <dt><dfn dict-member>types</dfn></dt>
+    <dd>
+      A set of request types to which this rule applies: the values MUST be one
+      or more of "<code>navigational</code>" (which encompasses <a>navigational
+      requests</a>), "<code>subresource</code>" (<a>subresource requests</a>),
+      or "<code>connection</code>" (<a>connection requests</a>). See
+      [[#matching]] for user agent conformance requirements.
+    </dd>
+    <dt><dfn dict-member>allowData</dfn></dt>
+    <dd>
+      If <code>true</code>, then matching <a>requests</a>'
+      <a for="request">URL</a>s are allowed to contain non-empty
+      <a for="URL">query</a> and <a for="URL">fragment</a> properties,
+      and <a>requests</a>' <a for="request">body</a> may be non-null.
+
+      See [[#process-request]] for user agent conformance requirements.
+    </dd>
+  </dl>
+
+  <h4 id="manifest-behaviors">Behaviors</h4>
+
+  If a <a>request</a> does not <a>match</a> the ruleset defined in an <a>EPR
+  manifest</a>'s {{EPRPolicy/rules}} property, then the user agent looks to
+  either {{EPRPolicy/navigationBehavior}} or {{EPRPolicy/subresourceBehavior}}
+  to determine what action to take.
+
+  The following behaviors are defined (and, if none is explicitly specified,
+  then <a>allowStrippedGET</a> is used as a default):
+
+  <dl>
+    <dt><dfn>allow</dfn></dt>
+    <dd>
+      Allow the request without modification. This behavior may be used to
+      put the user agent in a "report only" mode, where violations are reported
+      (as described in [[#reporting]]), but requests proceed without
+      modification.
+    </dd>
+    <dt><dfn>block</dfn></dt>
+    <dd>
+      Cancel the request entirely, returning a <a>network error</a>.
+    </dd>
+    <dt><dfn>redirect</dfn></dt>
+    <dd>
+      Redirect the request to a specified URL.
+    </dd>
+    <dt><dfn>allowUnauthenticated</dfn></dt>
+    <dd>
+      Drop cookies and other authentication properties of the request by
+      setting it's <a for="request">credentials mode</a> to
+      "<code>omit</code>".
+    </dd>
+    <dt><dfn>allowStrippedGET</dfn></dt>
+    <dd>
+      Allow <code>GET</code> requests, after setting its
+      <a for="request">url</a>'s <a for="URL">fragment</a> and
+      <a for="URL">query</a> properties to <code>null</code>.
+
+      <code>POST</code> and other request types will be canceled, returning a
+      <a>network error</a>.
+    </dd>
+  </dl>
+
+  User agent conformance requirements are defined in [[#process-request]].
+  
+<h4 id="manifest-caching">Caching</h4>
+
+EPR manifest files are cached as per standard policy served in HTTP headers.  
+Manifest files are removed if the user clears their browser cache, as is
+any persistent indication that EPR has been enabled by the site (as may have
+been indicated by a HTTP response header).  When a manifest file expires from 
+the cache, the user agent should attempt to download the manifest file again
+when possible.  At minimum this should occur on the next request to the
+EPR-enabled site.
+
+</section>
+
+<!--
+   ███    ██        ██████    ███████  ████████  ████ ████████ ██     ██ ██     ██  ██████ 
+  ██ ██   ██       ██    ██  ██     ██ ██     ██  ██     ██    ██     ██ ███   ███ ██    ██
+ ██   ██  ██       ██        ██     ██ ██     ██  ██     ██    ██     ██ ████ ████ ██      
+██     ██ ██       ██   ████ ██     ██ ████████   ██     ██    █████████ ██ ███ ██  ██████ 
+█████████ ██       ██    ██  ██     ██ ██   ██    ██     ██    ██     ██ ██     ██       ██
+██     ██ ██       ██    ██  ██     ██ ██    ██   ██     ██    ██     ██ ██     ██ ██    ██
+██     ██ ████████  ██████    ███████  ██     ██ ████    ██    ██     ██ ██     ██  ██████ 
+-->
+<section>
+  <h2 id="algorithms">Processing Algorithms</h2>
+
+  <h3 id="process-request">
+    Process <var>request</var>
+  </h3>
+
+  <ol>
+    <li>
+      Let <var>policy</var> be the policy retrieved from a user agent's <a>EPR
+      store</a> for <var>request</var>'s <a for="request">URL</a>'s
+      <a>origin</a>.
+    </li>
+    <li>
+      Let <var>rules</var> be the set of <a>rules</a> contained in <var>policy</var>'s
+      {{EPRPolicy/rules}} property.
+      
+      Note: <var>rules</var> may be the empty set if no rules are specified. In
+      this case, the behavior specified in the policy's
+      {{EPRPolicy/navigationBehavior}} or {{EPRPolicy/subresourceBehavior}} will
+      be applied to all incoming requests.
+    </li>
+    <li>
+      Let <var>matched</var> be <code>false</code>.
+    </li>
+    <li>
+      For each <var>rule</var> in <var>rules</var>, if <var>request</var>
+      <a>matches</a> <var>rule</var>:
+
+      <ol>
+        <li>
+          Set <var>matched</var> to <code>true</code>.
+        </li>
+        <li>
+          Skip the remaining <a>rules</a> in <var>rules</var>.
+        </li>
+      </ol>
+    </li>
+    <li>
+      If <var>matched</var> is <var>true</var>, return without modifying
+      <var>request</var>.
+    </li>
+    <li>
+      Otherwise, let <var>behavior</var> be the value of <var>policy</var>'s
+      {{EPRPolicy/navigationBehavior}} if <var>request</var> is a
+      <a>navigational request</a>, and {{EPRPolicy/subresourceBehavior}} otherwise.
+
+      ISSUE: Do we need a <code>connectionBehavior</code> property?
+    </li>
+    <li>
+      Execute the steps associated with the value of <var>behavior</var> in the
+      list below:
+
+      <dl>
+        <dt><a>allow</a></dt>
+        <dd>
+          <ol>
+            <li>
+              Return without modifying the request.
+            </li>
+          </ol>
+        </dd>
+        <dt><a>block</a></dt>
+        <dd>
+          <ol>
+            <li>
+              Cancel the request, and return a <a>network error</a>.
+            </li>
+          </ol>
+        </dd>
+        <dt><a>redirect</a></dt>
+        <dd>
+          Do not make the request to the original resource.  Redirect the
+          user agent to the {{redirectURL}}.
+        </dd>
+        <dt><a>allowUnauthenticated</a></dt>
+        <dd>
+          <ol>
+            <li>
+              Set <var>request</var>'s <a for="request">credentials mode</a>
+              property to <code>omit</code>.
+            </li>
+            <li>
+              Set <var>request</var>'s <a for="request">URL</a>'s
+              <a for="URL">username</a> to the empty string, and
+              <a for="URL">password</a> to <code>null</code>.
+            </li>
+          </ol>
+        </dd>
+        <dt><a>allowStrippedGET</a></dt>
+        <dd>
+          <ol>
+            <li>
+              If <var>request</var>'s <a for="request">method</a> is not
+              <code>GET</code>, cancel the request, and return a <a>network
+              error</a>.
+            </li>
+            <li>
+              Set <var>request</var>'s <a for="request">URL</a>'s
+              <a for="URL">fragment</a> and <a for="URL">query</a> parameters
+              to <code>null</code>.
+            </li>
+          </ol>
+        </dd>
+      </dl>
+    </li>
+    <li>
+      Follow steps in [[#reporting]].
+    </li>
+    <li>
+      Given <var>matched</var> is <var>false</var>, the user agent should
+      initiate a new background manifest download.  It is possible that a 
+      policy author might make a mistake and deploy a policy that 
+      inappropriately blocks access to resources.  So initiating a new
+      download when a policy action is applied prevents broken manifests
+      from persisting in the cache.  The user agent may choose to
+      implement heuristics so as to avoid excessive manifest download
+      attempts.  For example, by never attempting to re-download a 
+      manifest more than once an hour.
+    </li>
+  </ol>
+
+  <h3 id="default-policy">
+    Default EPR policy
+  </h3>
+
+  A default policy MUST be applied when all of the following criteria are 
+  met:
+  <ul>
+    <li>An EPR header has been received by the user agent indicating that the
+    site site has opted-in to EPR.</li>
+    <li>No EPR manifest is currently available.  (Possibly because it hasn't
+    been downloaded yet, it failed to parse, etc.</li>
+    <li>The request is a <a>navigational request</a>.</li>
+    <li>The request was initiated by a cross-origin web site, not by the
+    user's selection of a bookmark or by the user typing an address into the
+    address bar.</li>
+  </ul>
+  
+  The <dfn>default EPR policy</dfn> specifies the <a>allowStrippedGET</a> 
+  behavior is applied to requests, preventing requests from containing data 
+  that would enable reflected or DOM-based XSS.
+  
+  ISSUE: Allow data on everything under a specific hardcoded path, in order to
+  facilitate URLs sent in e-mail, etc.?
+  
+  The intent of the default EPR policy is to mitigate XSS (not XSRF) when no 
+  EPR policy is available yet.  Even when the user is not authenticated to
+  a site, XSS is problematic because the attack may persist until the user
+  has authenticated.  This is not the case with XSRF, and XSRF is not
+  effective until the user has authenticated to a site, at which point it is
+  much more likely that a policy has been downloaded.
+
+  Note: The original <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Nov/0018.html">proposal</a>.
+
+  <h3 id="process-epr-header">
+    Process <var>response</var>'s <code>EPR</code> header
+  </h3>
+
+  Given a <a>response</a> (<var>response</var>), this algorithm parses its
+  <a for="response">header list</a> to extract an <code><a>EPR</a></code>
+  header field. If such a field is present, the user agent MUST fetch and
+  process an <a>EPR manifest</a> from <var>response</var>'s <a>origin</a>
+  unless one or more of the following statements is true:
+
+  <ol>
+    <li>
+      <var>response</var>'s <a>request</a>'s <a for="request">context</a> is
+      <code>manifest</code>
+    </li>
+    <li>
+       A manifest for this origin is already cached at the user agent.
+    </li>
+    <li>
+      There is already a pending manifest request for the origin.
+    </li>
+  </ol>
+
+  To <a>process response</a> <var>response</var>, execute the following steps:
+
+  <ol>
+    <li>
+      If <var>response</var>'s <a for="response">URL</a> is <a><i lang="la">a
+      priori</i> insecure</a>, abort these steps.
+    </li>
+    <li>
+      If <var>response</var>'s <a for="response">header list</a> contains a
+      <a>header</a> named <code><a>EPR</a></code>, then:
+
+      <ol>
+        <li>
+          Let <var>manifest URL</var> be the manifest URL provided by 
+          [[MANIFEST]].
+        </li>
+        <li>
+          Let <var>request</var> be a <a>request</a> whose
+          <a for="request">method</a> is <code>GET</code>,
+          <a for="request">URL</a> is <var>manifest URL</var>,
+          <a for="request">context frame type</a> is <code>none</code>,
+          <a for="request">context</a> is <code>manifest</code>, and
+          <a for="request">credentials mode</a> is <code>omit</code>.
+        </li>
+        <li>
+          <a>Fetch</a> <var>request</var>.
+        </li>
+        <li>
+          To <a>process response</a> for the <a>response</a> <var>manifest
+          response</var>:
+
+          <ol>
+            <li>
+              Store the manifest in the user agent's <a>EPR Store</a>, keyed
+              to <var>response</var>'s <a for="response">URL</a>'s
+              <a>origin</a>.
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+  <h3 id="matching">
+    Does <var>request</var> match <var>rule</var>?
+  </h3>
+
+  A <a>request</a> (<var>request</var>) is said to <dfn>match</dfn> a
+  <a>rule</a> (<var>rule</var>) if the following algorithm returns
+  <code>Matches</code>:
+
+  <ol>
+    <li>
+      If <var>request</var> is a <a>connection request</a>, and
+      "<code>connection</code>" is not contained in <var>rule</var>'s
+      {{EPRRule/types}} list, return <code>Does Not Match</code>.
+    </li>
+    <li>
+      If <var>request</var> is a <a>navigational request</a>, and
+      "<code>navigational</code>" is not contained in <var>rule</var>'s
+      {{EPRRule/types}} list, return <code>Does Not Match</code>.
+    </li>
+    <li>
+      If <var>request</var> is a <a>subresource request</a>, and
+      "<code>subresource</code>" is not contained in <var>rule</var>'s
+      {{EPRRule/types}} list, return <code>Does Not Match</code>.
+    </li>
+    <li>
+      If <var>rule</var> has a {{EPRRule/path}} property whose value is
+      neither <code>null</code> nor <code>undefined</code>:
+
+      <ol>
+        <li>
+          Let <var>rule path</var> be <var>rule</var>'s {{EPRRule/path}}.
+        </li>
+        <li>
+          Let <var>exact match</var> be <code>false</code> if the final
+          character of <var>rule path</var> is the U+002F SOLIDUS character
+          (<code>/</code>), and <code>true</code> otherwise.
+        </li>
+        <li>
+          Let <var>rule path list</var> be the result of splitting <var>rule
+          path</var> on the U+002F SOLIDUS character (<code>/</code>).
+        </li>
+        <li>
+          If <var>rule path list</var>'s length is greater than <var>url
+          path list</var>'s length, return <code>Does Not Match</code>.
+        </li>
+        <li>
+          For each <var>entry</var> in <var>rule path list</var>:
+
+          <ol>
+            <li>
+              <a>Percent decode</a> <var>entry</var>.
+            </li>
+            <li>
+              <a>Percent decode</a> the first item in <var>url path list</var>.
+            </li>
+            <li>
+              If <var>entry</var> is not an <a>ASCII case-insensitive
+              match</a> for the first item in <var>url path list</var>, return
+              <code>Does Not Match</code>
+            </li>
+            <li>
+              Pop the first item in <var>url path list</var> off the list.
+            </li>
+          </ol>
+        </li>
+        <li>
+          If <var>exact match</var> is <code>true</code>, and <var>url path
+          list</var> is not empty, return <code>Does Not Match</code>
+        </li>
+      </ol>
+    </li>
+    <li>
+      If <var>rule</var> has a {{EPRRule/regex}} property whose value is
+      neither <code>null</code> nor <code>undefined</code>:
+
+      <ol>
+        <li>
+          Let <var>rule regex</var> be <var>rule</var>'s {{EPRRule/regex}}.
+        </li>
+        <li>
+          Let <var>url path</var> be the empty string, and for each
+          <var>component</var> in <var>request</var>'s
+          <a for="request">URL</a>'s <a for="URL">path</a>:
+
+          <ol>
+            <li>
+              Append the U+002F SOLIDUS character (<code>/</code>) to
+              <var>url path</var>.
+            </li>
+            <li>
+              Append <var>component</var> to <var>url path</var>.
+            </li>
+          </ol>
+        </li>
+        <li>
+          If <var>url path</var> does not <em>regex match</em> (TODO) <var>rule
+          regex</var>, return <code>Does Not Match</code>.
+
+          ISSUE: Need to have spec language for this. There's surely a regex
+          spec somewhere, right?
+          DR: Can we just reference the ECMAScript spec?
+        </li>
+      </ol>
+    </li>
+    <li>
+      If <var>rule</var>'s {{EPRRule/allowData}} is <code>false</code>, then
+      return <code>Does Not Match</code> if any of the following statements
+      are true:
+
+      <ol>
+        <li>
+          <var>request</var>'s <a for="request">URL</a>'s
+          <a for="URL">fragment</a> property is not <code>null</code>.
+        </li>
+        <li>
+          <var>request</var>'s <a for="request">URL</a>'s
+          <a for="URL">query</a> property is not <code>null</code>.
+        </li>
+        <li>
+          <var>request</var>'s <a for="request">body</a> property is not
+          <code>null</code>.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Return <code>Matches</code>.
+    </li>
+  </ol>
+
+  <h3 id="reporting">
+    Report <var>request</var> as an entrypoint violation
+  </h3>
+
+  ISSUE: We need to define violation reports. Steal something from CSP.
+  
+  Proposed format:
+  
+  {
+    "epr-report": {
+      "policy-fetch-time": Thu Apr 16 2015 14:23:46 GMT-0700 (PDT)
+      "affected-uri": "http://example.org/page.html",
+      "referrer": "http://evil.example.com/",
+      "type": "navigational",
+      "applied-behavior": "allowStrippedGET",
+      "redirectedTo": ""
+    }
+  }
+  
+</section>
+
+<!--
+████    ███    ██    ██    ███   
+ ██    ██ ██   ███   ██   ██ ██  
+ ██   ██   ██  ████  ██  ██   ██ 
+ ██  ██     ██ ██ ██ ██ ██     ██
+ ██  █████████ ██  ████ █████████
+ ██  ██     ██ ██   ███ ██     ██
+████ ██     ██ ██    ██ ██     ██
+-->
+<section>
+  <h2 id="iana-considerations">IANA Considerations</h2>
+
+  <h3 id="iana-https">
+    The <code>EPR</code> HTTP Request Header Field
+  </h3>
+  The permanent message header field registry should be updated with the
+  following registration [[!RFC3864]]:
+
+  <dl>
+    <dt>Header field name</dt>
+    <dd>EPR</dd>
+
+    <dt>Applicable protocol</dt>
+    <dd>http</dd>
+
+    <dt>Status</dt>
+    <dd>standard</dd>
+
+    <dt>Author/Change controller</dt>
+    <dd>W3C</dd>
+
+    <dt>Specification document</dt>
+    <dd>This specification (See [[#epr-header]])</dd>
+  </dl>
+
+<!--
+████████ ██     ██    ███    ██    ██ ██    ██  ██████ 
+   ██    ██     ██   ██ ██   ███   ██ ██   ██  ██    ██
+   ██    ██     ██  ██   ██  ████  ██ ██  ██   ██      
+   ██    █████████ ██     ██ ██ ██ ██ █████     ██████ 
+   ██    ██     ██ █████████ ██  ████ ██  ██         ██
+   ██    ██     ██ ██     ██ ██   ███ ██   ██  ██    ██
+   ██    ██     ██ ██     ██ ██    ██ ██    ██  ██████ 
+-->
+<section>
+  <h2 id="acknowledgements">Acknowledgements</h2>
+
+  Entry point regulation is an implementation of concepts introduced by Charlie
+  Reis et al. in section 5 of [[ISOLATION]].
+</section>

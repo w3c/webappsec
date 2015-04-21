@@ -112,24 +112,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     text: port; for: URL; url: concept-url-port
 </pre>
 
-<pre class="biblio">
-{
-  "CREDENTIALS-CG-USE-CASES": {
-    "authors": [ "Manu Sporny" ],
-    "href": "http://opencreds.org/specs/source/use-cases/",
-    "title": "Credentials Community Group Use Cases"
-  },
-  "WEB-PAYMENTS-USE-CASES": {
-    "authors": [ "Manu Sporny", "Ian Jacobs" ],
-    "href": "http://www.w3.org/TR/web-payments-use-cases/",
-    "title": "Web Payments Use Cases 1.0",
-    "status": "FPWD",
-    "publisher": "W3C"
-  }
-}
-</pre>
-
-
 <!--
 ████ ██    ██ ████████ ████████   ███████
  ██  ███   ██    ██    ██     ██ ██     ██
@@ -289,7 +271,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
           "<a idl>types</a>": [ "federated" ],
           "<a idl>options</a>": {
-              "<a idl>federations</a>": [ "https://federation.com" ]
+              "<a idl>providers</a>": [ "https://federation.com" ]
           }
         }).then(
             function(credential) {
@@ -297,7 +279,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 return;
 
               if (credential.type == "FederatedCredential") {
-                switch (credential.<a idl for="FederatedCredential">federation</a>) {
+                switch (credential.<a idl for="FederatedCredential">provider</a>) {
                 case "https://www.facebook.com/":
                   // Use Facebook's SDK, a la https://developers.facebook.com/docs/facebook-login/login-flow-for-web/#logindialog
                   FB.login(function (response) {
@@ -360,7 +342,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           navigator.<a attribute>credentials</a>.<a idl lt="store()">store</a>(
             new <a idl>FederatedCredential</a>({
               "<a idl for="CredentialData">id</a>": "username",
-              "<a idl for="FederatedCredentialData">federation</a>": "https://federation.com"
+              "<a idl for="FederatedCredentialData">provider</a>": "https://federation.com"
             })
           );
         }
@@ -545,7 +527,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   {{Credential}} objects implement {{Transferable}}, and MUST support the
   the <a>structured clone</a> algorithm by defining a cloning mechanism.
 
-  ISSUE: Define cloning algorithms.
+  ISSUE(w3c/webappsec#287): Define cloning algorithms.
 
   <pre class="idl">
     [NoInterfaceObject]
@@ -566,10 +548,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       A URL pointing to an image for the credential. This URL MUST NOT be an
       <a><i lang="la">a priori</i> insecure URL</a>.
 
-      ISSUE: How do we make this responsive? Adopt [[MANIFEST]]'s icon syntax?
-
       ISSUE(w3c/webappsec#247): Anne suggests that this might be better modeled
-      as an <code>ImageBitmap</code> or <code>blob:</code>.
+      as an <code>ImageBitmap</code> or <code>blob:</code>. We also need to
+      figure out responsiveness. Perhaps [[MANIFEST]]'s format?
     </dd>
     <dt><code><dfn attribute>[[origin]]</dfn></code></dt>
     <dd>
@@ -603,13 +584,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       user into a website. The user agent MUST execute the algorithm described
       in [[#send-passwordcredential]] when this method is executed.
 
-      ISSUE: Do we need the ability to pass in more information than just a URL?
-      Perhaps a dictionary of key/value pairs to be appended to the
-      username/password pair?
+      ISSUE(w3c/webappsec#241): We need the ability to add additional
+      information to the request (CSRF tokens, etc).
 
-      ISSUE: Probably not something for v1, but an interesting option would be
-      to provide a hash function here that the user agent would apply to the
-      password before sending it over the wire.
+      ISSUE(w3c/webappsec#288): Probably not something for v1, but an
+      interesting option would be to provide a hash function here that the user
+      agent would apply to the password before sending it over the wire.
     </dd>
     <dt>{{[[type]]}}</dt>
     <dd>
@@ -634,19 +614,27 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
     dictionary FederatedCredentialData : CredentialData {
-      USVString federation;
+      USVString provider;
+      DOMString? protocol;
     };
 
     [Constructor(FederatedCredentialData data), Exposed=Window]
     interface FederatedCredential : LocallyStoredCredential {
-      readonly attribute USVString federation;
+      readonly attribute USVString provider;
+      readonly attribute DOMString? protocol;
     };
   </pre>
   <dl dfn-for="FederatedCredential">
-    <dt><dfn attribute>federation</dfn></dt>
+    <dt><dfn attribute>provider</dfn></dt>
     <dd>
-      The credential's federation. For details regarding valid formats, see
-      [[#identifying-federations]]
+      The credential's <a>federated identity provider</a>. For details regarding
+      valid formats, see [[#identifying-federations]].
+    </dd>
+    <dt><dfn attribute>protocol</dfn></dt>
+    <dd>
+      The credential's <a>federated identity provider</a>'s protocol (e.g.
+      "openidconnect"). If this value is <code>null</code>, then the protocol
+      can be inferred from the {{FederatedCredential/provider}}.
     </dd>
     <dt>{{[[type]]}}</dt>
     <dd>
@@ -665,17 +653,45 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <ol>
     <li>
-      If <var>options</var> has no property named <code>federations</code>, or
-      if the value of <var>options</var>' <code>federation</code> is not a
-      sequence of {{USVString}}, return <code>Does Not Match</code>.
+      If <var>options</var> has a
+      {{FederatedCredentialRequestOptions/providers}} property:
+
+      <ol>
+        <li>
+          For each <var>provider</var> in <var>options</var>'
+          <code>providers</code> list:
+
+          <ol>
+            <li>
+              Return <code>Matches</code> if <var>credential</var>'s
+              {{FederatedCredential/provider}} is a case-sensitive match for
+              <var>provider</var>.
+            </li>
+          </ol>
+        </li>
+      </ol>
     </li>
     <li>
-      If <var>credential</var>'s {{FederatedCredential/federation}} is not
-      a case-sensitive match for one or more values in <var>options</var>'s
-      <code>federation</code> sequence, return <code>Does Not Match</code>.
+      If <var>options</var> has a
+      {{FederatedCredentialRequestOptions/protocols}} property:
+
+      <ol>
+        <li>
+          For each <var>protocol</var> in <var>options</var>'
+          {{FederatedCredentialRequestOptions/protocols}} list:
+
+          <ol>
+            <li>
+              Return <code>Matches</code> if <var>credential</var>'s
+              {{FederatedCredential/protocol}} is a case-insensitive match for
+              <var>protocol</var>.
+            </li>
+          </ol>
+        </li>
+      </ol>
     </li>
     <li>
-      Return <code>Matches</code>.
+      Return <code>Does Not Match</code>.
     </li>
   </ol>
 
@@ -732,9 +748,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  ISSUE: We should support explicit sign-up via {{PasswordCredential}}s with
-  generated passwords. Perhaps something similar to iOS8's
-  <code>SecCreateSharedWebCredentialPassword</code>.
+  ISSUE(w3c/webappsec#250): We should support explicit sign-up via
+  {{PasswordCredential}}s with generated passwords. Perhaps something similar to
+  iOS8's <code>SecCreateSharedWebCredentialPassword</code>.
 
   <h4 id="interfaces-request-options">
     <code>get()</code> Parameters
@@ -751,7 +767,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <pre class="idl">
     dictionary FederatedCredentialRequestOptions {
-      sequence&lt;USVString&gt; federations;
+      sequence&lt;USVString&gt; providers;
+      sequence&lt;DOMString&gt; protocols;
     };
 
     typedef FederatedCredentialRequestOptions CredentialRequestOptions;
@@ -763,7 +780,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
   </pre>
   <dl dfn-for="FederatedCredentialRequestOptions">
-    <dt><dfn dict-member>federations</dfn></dt>
+    <dt><dfn dict-member>providers</dfn></dt>
     <dd>
       An array of federation identifiers. For details regarding valid formats
       see [[#identifying-federations]].
@@ -803,7 +820,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
         "<a idl>types</a>": [ "federated" ],
         "<a idl>options</a>": {
-            "<a idl>federations</a>": [ "https://identity.example.com/" ]
+            "<a idl>providers</a>": [ "https://identity.example.com/" ]
         }
       }).then(function (credential) {
         // ...
@@ -819,7 +836,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
         "<a idl>types</a>": [ "federated" ],
         "<a idl>options</a>": {
-            "<a idl>federations</a>": [ "https://identity.example.com/" ]
+            "<a idl>providers</a>": [ "https://identity.example.com/" ]
         },
         "<a idl>suppressUI</a>": true
       }).then(function (credential) {
@@ -828,7 +845,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </pre>
   </div>
 
-  <h4 id="identifying-federations">Identifying Federations</h4>
+  <h4 id="identifying-federations">Identifying providers</h4>
 
   Every site should use the same identifier when referring to a specific
   <a>federated identity provider</a>. For example,
@@ -840,8 +857,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   For consistency, federations passed into the APIs defined in this document
   (e.g. {{FederatedCredentialRequestOptions}}'s
-  {{FederatedCredentialRequestOptions/federations}} array, or
-  {{FederatedCredential}}'s {{FederatedCredential/federation}} property)
+  {{FederatedCredentialRequestOptions/providers}} array, or
+  {{FederatedCredential}}'s {{FederatedCredential/provider}} property)
   MUST be identified by the <a>ASCII serialization</a> of the origin the
   provider uses for sign in. That is, Facebook would be represented by
   <code>https://www.facebook.com</code> and Google by
@@ -910,9 +927,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Let <var>type</var> be lowest common ancestor interface of the types
       referenced in <var>request</var>'s {{CredentialRequest/types}} property.
 
-      ISSUE: This is terribly hand-wavey. The intent is clear, but I need to do
-      the work to walk through the list of DOMStrings and convert them to
-      interfaces and etc. Busywork for later.
+      ISSUE(w3c/webappsec#289): This is terribly hand-wavey. The intent is
+      clear, but I need to do the work to walk through the list of DOMStrings
+      and convert them to interfaces and etc. Busywork for later.
     </li>
     <li>
       Return a <code>Promise</code> rejected with <code>TypeMismatchError</code>
@@ -974,12 +991,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  ISSUE: How do we deal with a future in which {{LocallyStoredCredential}} isn't
-  the only type? For example, how could an author pull some "RemoteCredential"
-  that required interaction with a third-party, but fall back to a
-  {{PasswordCredential}}? For the moment, we're resolving this by rejecting the
-  promise if the types listed in {{CredentialRequest/types}} aren't all
-  instances of the same type, but that seems like something we'd want to fix.
+  ISSUE(w3c/webappsec#256): How do we deal with a future in which
+  {{LocallyStoredCredential}} isn't the only type? For example, how could an
+  author pull some "RemoteCredential" that required interaction with a
+  third-party, but fall back to a {{PasswordCredential}}? For the moment, we're
+  resolving this by rejecting the promise if the types listed in
+  {{CredentialRequest/types}} aren't all instances of the same type, but that
+  seems like something we'd want to fix.
 
   <h4 id="store-credential">
     Store a <code>Credential</code>
@@ -1033,17 +1051,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         <dd>
           <ol>
             <li>
-              If this algorithm would not be <a>allowed to show a popup</a>,
-              then reject <var>promise</var> with a <code>SecurityError</code>
-              and terminate this algorithm.
-
-              Note: This boils down to requiring a user gesture for {{store()}}
-              before showing the user any UI.
-
-              ISSUE: Do we need this? There is risk associated with {{get()}},
-              less clear that the same applies to {{store()}}
-            </li>
-            <li>
               Resolve <var>promise</var> with the result of executing
               [[#store-locallystoredcredential]],
               passing in <var>credential</var> and <var>origin</var>.
@@ -1056,26 +1063,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           When new credential types are defined in the future, they'll go here.
         </dd>
       </dl>
-    </li>
-  </ol>
-
-  <h4 id="is-match">
-    Does <var>origin A</var> match <var>origin B</var>?
-  </h4>
-
-  <ol>
-    <li>
-      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
-      <code>Exact Match</code>.
-    </li>
-    <li>
-      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
-      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
-      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
-      domain</a>, then return <code>Fuzzy Match</code>.
-    </li>
-    <li>
-      Return <code>No Match</code>
     </li>
   </ol>
 
@@ -1233,13 +1220,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <ol>
         <li>
           [[#is-match]] returns <code>No Match</code> when executed upon
-          <var>endpoint</var>'s {{URL/origin}} and <var>credential</var>'s
-          {{[[origin]]}} slot
+          <var>credential</var> and <var>endpoint</var>'s {{URL/origin}}.
         </li>
         <li>
           [[#is-match]] returns <code>No Match</code> when executed upon
-          <var>environment</var>'s <a>origin</a> and <var>credential</var>'s
-          {{[[origin]]}} slot
+          <var>credential</var> and <var>environment</var>'s <a>origin</a>.
         </li>
         <li>
           <var>environment</var>'s <a>responsible browsing context</a> is not a
@@ -1368,9 +1353,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
               If the user agent's credential manager does not contain a
               {{FederatedCredential}} <var>storedCredential</var> whose
               {{Credential/id}} attribute is <var>credential</var>'s
-              {{Credential/id}} and whose {{FederatedCredential/federation}}
+              {{Credential/id}} and whose {{FederatedCredential/provider}}
               attribute is <var>credential</var>'s
-              {{FederatedCredential/federation}}, then:
+              {{FederatedCredential/provider}}, then:
 
               <ol>
                 <li>
@@ -1411,6 +1396,30 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
     <li>
       Resolve <var>promise</var> with <code>undefined</code>.
+    </li>
+  </ol>
+
+  <h4 id="is-match">
+    Does <var>credential</var> match <var>origin B</var>?
+  </h4>
+
+  <ol>
+    <li>
+      Let <var>origin A</var> be the value of <var>credential</var>'s
+      {{LocallyStoredCredential/[[origin]]}} slot.
+    </li>
+    <li>
+      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
+      <code>Exact Match</code>.
+    </li>
+    <li>
+      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
+      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
+      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
+      domain</a>, then return <code>Fuzzy Match</code>.
+    </li>
+    <li>
+      Return <code>No Match</code>
     </li>
   </ol>
 </section>
@@ -1544,12 +1553,85 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h4 id="synthesis">Synthesizing Credentials</h4>
 
-  In response to a call to {{get()}} a user agent MAY offer a user the ability
+  In response to a call to {{get()}} a user agent can offer a user the ability
   to create a {{Credential}} on the fly, rather than returning an empty set.
   Since credentials suggested in the <a>credential chooser</a> are never exposed
   to the web unless the user explicitly selects them, the user agent is free
   to use any of a number of heuristics to help a user get signed-into/-up for
   a website.
+
+  Credentials SHOULD be synthesized to populate a <a>chooser</a> based on the
+  following heuristics:
+
+  <ol>
+    <li>
+      Let <var>synthesized</var> be an empty list.
+    </li>
+    <li>
+      Switch on the interface whose {{Credential/type}} property matches one of
+      the items in the {{CredentialRequest}} {{CredentialRequest/types}}
+      sequence, and execute the associated steps:
+
+      <dl>
+        <dt>{{FederatedCredential}}</dt>
+        <dd>
+          When executing the [[#gather-locallystoredcredentials]] algorithm, a
+          user agent SHOULD populate the <a>chooser</a> with options based on
+          the following heuristic:
+
+          <ol>
+            <li>
+              Let <var>providers</var> be the value of <var>options</var>'
+              <var>providers</var> property.
+            </li>
+            <li>
+              For each {{PasswordCredential}} <var>credential</var> in the
+              <a>credential store</a>:
+
+              <ol>
+                <li>
+                  For each <var>provider</var> in <var>options</var>'
+                  {{FederatedCredentialRequestOptions/providers}} property:
+
+                  <ol>
+                    <li>
+                      If [[#is-match]] returns <code>Exact Match</code> or
+                      <code>Fuzzy Match</code> when executed upon
+                      <var>credential</var> and <var>provider</var>:
+
+                      <ol>
+                        <li>
+                          Create a new {{FederatedCredential}} object
+                          <var>new</var> whose {{[[origin]]}} slot is set to
+                          <var>origin</var>, {{Credential/id}} is set to
+                          <var>credential</var>'s {{Credential/id}},
+                          {{FederatedCredential/provider}} is set to
+                          <var>provider</var>.
+                        </li>
+                        <li>
+                          Append <var>new</var> to <var>synthesized</var>.
+                        </li>
+                      </ol>
+                    </li>
+                  </ol>
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </dd>
+        <dt><em>This is an extension point.</em></dt>
+        <dd>
+          When new credential types are defined in the future, they'll go here.
+        </dd>
+      </dl>
+    </li>
+    <li>
+      Return <var>synthesized</var>.
+    </li>
+  </ol>
+
+  User agents MAY employ additional heuristics (based, for instance, on a user's
+  browsing history, crowdsourcing, etc) to further populate the <a>chooser</a>.
 
   <div class="example">
     Assume for a moment that <code>https://example.com/</code> is an amazing new
@@ -1573,7 +1655,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     In this way, <code>https://example.com/</code> can support dozens of
     providers as arguments to {{get()}} (via
     {{FederatedCredentialRequestOptions}}'s
-    {{FederatedCredentialRequestOptions/federations}} property), and the user
+    {{FederatedCredentialRequestOptions/providers}} property), and the user
     agent can cull that list down to the federations with which the user
     regularly interacts (or which have been previously used as
     {{FederatedCredential}}s, or any of a number of other heuristics).
@@ -1671,8 +1753,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   See the algorithms defined in [[#request-credential]] and [[#store-credential]]
   for details.
 
-  ISSUE: Is this a meaningful restriction for Service Workers? Probably not.
-
   <h3 id="security-insecure-origins">Insecure Sites</h3>
 
   User agents MUST NOT expose credential information via the APIs defined here
@@ -1720,7 +1800,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   This could allow a malicious website to determine if a user has credentials
   saved for particular federated identity providers by repeatedly calling
   {{get()}} with a single item in the
-  {{FederatedCredentialRequestOptions/federations}} array. The risk is mitigated
+  {{FederatedCredentialRequestOptions/providers}} array. The risk is mitigated
   by the fact that a user-mediated {{get()}} is tied to a user gesture, and the
   user would, sooner or later, be prompted to provide credentials to the site,
   which would certainly raise her suspicions as to its behavior.
@@ -1766,18 +1846,18 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <em>This section is non-normative.</em>
 
-  ISSUE: Add some thoughts here about when and how the API should be used,
-  especially with regard to {{suppressUI}}.
+  ISSUE(w3c/webappsec#290): Add some thoughts here about when and how the API
+  should be used, especially with regard to {{suppressUI}}.
 
   <h3 id="implementation-extension">Extension Points</h3>
 
-  As noted in [[#future-work-other-groups]], there is known interest in
-  extending the API defined here to serve use cases beyond those this
-  document addresses. To that end, the API is fairly generic, with several
-  explicit extension points. If we wished to add a new credential type, how
-  would we spell it out?
+  As noted in [[#future-work]], there is known interest in extending the API
+  defined here to serve use cases beyond those this document addresses. To
+  that end, the API is fairly generic, with several explicit extension points.
 
   <div class="example">
+    If we wished to add a new credential type, how would we spell it out?
+
     <ol>
       <li>
         Define a new <code>ExampleCredential</code> that inherits from
@@ -1870,19 +1950,28 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   Baby steps.
 
-  <h3 id="future-work-other-groups">Other Groups</h3>
+  <div class="issue">
+    Groups like the
+    <a href="http://www.w3.org/Payments/IG/">Web Payments IG</a>
+    and the
+    <a href="https://www.w3.org/community/credentials/">Credentials CG</a>
+    have expressed interest in extending the API defined in this document in
+    order to address use cases beyond those outlined in [[#use-cases]]. They've
+    documented these use cases in detail in
+    <a href="http://www.w3.org/TR/web-payments-use-cases/">Web Payments Use Cases 1.0</a>
+    and
+    <a href="http://opencreds.org/specs/source/use-cases/">Credentials CG Use Cases</a>,
+    and anticipate extending the API in a separate document to solve a different
+    set of problems than WebAppSec is currently chartered to deal with.  We
+    should keep track of this work as it progresses and make appropriate
+    references to any technical reports which may assist in understanding and
+    implementing this report, as appropriate, when this document is ready to
+    transition to Recommendation status.
 
-  Groups like the <a href="http://www.w3.org/Payments/IG/">Web Payments IG</a>
-  and the <a href="https://www.w3.org/community/credentials/">Credentials CG</a>
-  have expressed interest in extending the API defined in this document in order
-  to address use cases beyond those outlined in [[#use-cases]]. They've
-  documented these use cases in detail in [[WEB-PAYMENTS-USE-CASES]] and
-  [[CREDENTIALS-CG-USE-CASES]], and anticipate extending the API in a separate
-  document to solve a different set of problems than WebAppSec is currently
-  chartered to deal with.
-
-  ISSUE: It's not yet clear whether the API proposed in this document allows
-  these and other groups to elegantly address the problems they're interested
-  in solving. We may wish to adjust portions of the API before advancing this
-  document to REC in order to ensure clean extensibility into these other areas.
+    It's not yet clear whether the API proposed in this document allows these
+    and other groups to elegantly address the problems they're interested in
+    solving. We may wish to adjust portions of the API before advancing this
+    document to REC in order to ensure clean extensibility into these other
+    areas.
+  </div>
 </section>
