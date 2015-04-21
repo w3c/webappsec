@@ -969,11 +969,13 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
   
     <pre class="idl">dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-global-name="" id="dictdef-federatedcredentialdata">FederatedCredentialData<a class="self-link" href="#dictdef-federatedcredentialdata"></a></dfn> : <a data-link-type="idl-name" href="#dictdef-credentialdata">CredentialData</a> {
   USVString <dfn class="idl-code" data-dfn-for="FederatedCredentialData" data-dfn-type="dict-member" data-export="" data-global-name="FederatedCredentialData<dictionary>/provider<dict-member>" data-type="USVString " id="dom-federatedcredentialdata-provider">provider<a class="self-link" href="#dom-federatedcredentialdata-provider"></a></dfn>;
+  DOMString? <dfn class="idl-code" data-dfn-for="FederatedCredentialData" data-dfn-type="dict-member" data-export="" data-global-name="FederatedCredentialData<dictionary>/protocol<dict-member>" data-type="DOMString? " id="dom-federatedcredentialdata-protocol">protocol<a class="self-link" href="#dom-federatedcredentialdata-protocol"></a></dfn>;
 };
 
 [<dfn class="idl-code" data-dfn-for="FederatedCredential" data-dfn-type="constructor" data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential(data)<constructor>" data-lt="FederatedCredential(data)" id="dom-federatedcredential-federatedcredentialdata">Constructor<a class="self-link" href="#dom-federatedcredential-federatedcredentialdata"></a></dfn>(<a data-link-type="idl-name" href="#dictdef-federatedcredentialdata">FederatedCredentialData</a> <dfn class="idl-code" data-dfn-for="FederatedCredential/FederatedCredential(data)" data-dfn-type="argument" data-export="" data-global-name="FederatedCredential<interface>/FederatedCredential(data)<method>/data<argument>" id="dom-federatedcredential-federatedcredentialdata-data">data<a class="self-link" href="#dom-federatedcredential-federatedcredentialdata-data"></a></dfn>), Exposed=Window]
 interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-global-name="" id="federatedcredential">FederatedCredential<a class="self-link" href="#federatedcredential"></a></dfn> : <a data-link-type="idl-name" href="#locallystoredcredential">LocallyStoredCredential</a> {
   readonly attribute USVString <a class="idl-code" data-global-name="FederatedCredential<interface>/provider<attribute>" data-link-type="attribute" data-readonly="" data-type="USVString " href="#dom-federatedcredential-provider">provider</a>;
+  readonly attribute DOMString? <a class="idl-code" data-global-name="FederatedCredential<interface>/protocol<attribute>" data-link-type="attribute" data-readonly="" data-type="DOMString? " href="#dom-federatedcredential-protocol">protocol</a>;
 };
 </pre>
   
@@ -985,6 +987,16 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
      <dd>
       The credential’s <a data-link-type="dfn" href="#federated-identity-provider">federated identity provider</a>. For details regarding
       valid formats, see <a href="#identifying-federations">§3.2.2 Identifying providers</a>.
+    
+     
+    
+     <dt><dfn class="idl-code" data-dfn-for="FederatedCredential" data-dfn-type="attribute" data-export="" id="dom-federatedcredential-protocol">protocol<a class="self-link" href="#dom-federatedcredential-protocol"></a></dfn>, <span> of type <a data-link-type="idl-name" href="https://heycam.github.io/webidl/#idl-DOMString">DOMString</a>, readonly, nullable</span>
+     
+    
+     <dd>
+      The credential’s <a data-link-type="dfn" href="#federated-identity-provider">federated identity provider</a>’s protocol (e.g.
+      "openidconnect"). If this value is <code>null</code>, then the protocol
+      can be inferred from the <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-provider">provider</a></code>.
     
      
     
@@ -1013,21 +1025,69 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
     <ol>
     
      <li>
-      If <var>options</var> has no property named <code>providers</code>, or
-      if the value of <var>options</var>' <code>provider</code> is not a
-      sequence of <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-USVString">USVString</a></code>, return <code>Does Not Match</code>.
+      If <var>options</var> has a
+      <code class="idl"><a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-providers">providers</a></code> property:
+
+      
+      <ol>
+        
+       <li>
+          For each <var>provider</var> in <var>options</var>'
+          <code>providers</code> list:
+
+          
+        <ol>
+            
+         <li>
+              Return <code>Matches</code> if <var>credential</var>’s
+              <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-provider">provider</a></code> is a case-sensitive match for
+              <var>provider</var>.
+            
+         
+          
+        </ol>
+        
+        
+       
+      
+      </ol>
+      
     
      
     
      <li>
-      If <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-provider">provider</a></code> is not
-      a case-sensitive match for one or more values in <var>options</var>’s
-      <code>provider</code> sequence, return <code>Does Not Match</code>.
+      If <var>options</var> has a
+      <code class="idl"><a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-protocols">protocols</a></code> property:
+
+      
+      <ol>
+        
+       <li>
+          For each <var>protocol</var> in <var>options</var>'
+          <code class="idl"><a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-protocols">protocols</a></code> list:
+
+          
+        <ol>
+            
+         <li>
+              Return <code>Matches</code> if <var>credential</var>’s
+              <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-protocol">protocol</a></code> is a case-insensitive match for
+              <var>protocol</var>.
+            
+         
+          
+        </ol>
+        
+        
+       
+      
+      </ol>
+      
     
      
     
      <li>
-      Return <code>Matches</code>.
+      Return <code>Does Not Match</code>.
     
      
   
@@ -1138,6 +1198,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" data-gl
   
     <pre class="idl">dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-global-name="" id="dictdef-federatedcredentialrequestoptions">FederatedCredentialRequestOptions<a class="self-link" href="#dictdef-federatedcredentialrequestoptions"></a></dfn> {
   sequence&lt;USVString> <a class="idl-code" data-global-name="FederatedCredentialRequestOptions<dictionary>/providers<dict-member>" data-link-type="dict-member" data-type="sequence<USVString> " href="#dom-federatedcredentialrequestoptions-providers">providers</a>;
+  sequence&lt;DOMString> <dfn class="idl-code" data-dfn-for="FederatedCredentialRequestOptions" data-dfn-type="dict-member" data-export="" data-global-name="FederatedCredentialRequestOptions<dictionary>/protocols<dict-member>" data-type="sequence<DOMString> " id="dom-federatedcredentialrequestoptions-protocols">protocols<a class="self-link" href="#dom-federatedcredentialrequestoptions-protocols"></a></dfn>;
 };
 
 typedef <a data-link-type="idl-name" href="#dictdef-federatedcredentialrequestoptions">FederatedCredentialRequestOptions</a> <dfn class="idl-code" data-dfn-type="typedef" data-export="" data-global-name="" id="typedefdef-credentialrequestoptions">CredentialRequestOptions<a class="self-link" href="#typedefdef-credentialrequestoptions"></a></dfn>;
@@ -2944,6 +3005,12 @@ typedef (FederatedCredentialRequestOptions or ExampleCredentialRequestOptions) C
    <li>PasswordCredential(data), <a href="#dom-passwordcredential-passwordcredentialdata">3.1.2</a>
    <li>PasswordCredentialData, <a href="#dictdef-passwordcredentialdata">3.1.2</a>
    <li>Password Credentials, <a href="#password-credentials">2</a>
+   <li>protocol
+    <ul>
+     <li>dict-member for FederatedCredentialData, <a href="#dom-federatedcredentialdata-protocol">3.1.3</a>
+     <li>attribute for FederatedCredential, <a href="#dom-federatedcredential-protocol">3.1.3</a>
+    </ul>
+   <li>protocols, <a href="#dom-federatedcredentialrequestoptions-protocols">3.2.1</a>
    <li>provider
     <ul>
      <li>dict-member for FederatedCredentialData, <a href="#dom-federatedcredentialdata-provider">3.1.3</a>
@@ -3104,11 +3171,13 @@ interface <a data-global-name="" href="#passwordcredential">PasswordCredential</
 
 dictionary <a data-global-name="" href="#dictdef-federatedcredentialdata">FederatedCredentialData</a> : <a data-link-type="idl-name" href="#dictdef-credentialdata">CredentialData</a> {
   USVString <a data-global-name="FederatedCredentialData<dictionary>/provider<dict-member>" data-type="USVString " href="#dom-federatedcredentialdata-provider">provider</a>;
+  DOMString? <a data-global-name="FederatedCredentialData<dictionary>/protocol<dict-member>" data-type="DOMString? " href="#dom-federatedcredentialdata-protocol">protocol</a>;
 };
 
 [<a data-global-name="FederatedCredential<interface>/FederatedCredential(data)<constructor>" href="#dom-federatedcredential-federatedcredentialdata">Constructor</a>(<a data-link-type="idl-name" href="#dictdef-federatedcredentialdata">FederatedCredentialData</a> <a data-global-name="FederatedCredential<interface>/FederatedCredential(data)<method>/data<argument>" href="#dom-federatedcredential-federatedcredentialdata-data">data</a>), Exposed=Window]
 interface <a data-global-name="" href="#federatedcredential">FederatedCredential</a> : <a data-link-type="idl-name" href="#locallystoredcredential">LocallyStoredCredential</a> {
   readonly attribute USVString <a class="idl-code" data-global-name="FederatedCredential<interface>/provider<attribute>" data-link-type="attribute" data-readonly="" data-type="USVString " href="#dom-federatedcredential-provider">provider</a>;
+  readonly attribute DOMString? <a class="idl-code" data-global-name="FederatedCredential<interface>/protocol<attribute>" data-link-type="attribute" data-readonly="" data-type="DOMString? " href="#dom-federatedcredential-protocol">protocol</a>;
 };
 
 partial interface <a class="idl-code" data-link-type="interface" href="http://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a> {
@@ -3123,6 +3192,7 @@ interface <a data-global-name="" href="#credentialcontainer">CredentialContainer
 
 dictionary <a data-global-name="" href="#dictdef-federatedcredentialrequestoptions">FederatedCredentialRequestOptions</a> {
   sequence&lt;USVString> <a class="idl-code" data-global-name="FederatedCredentialRequestOptions<dictionary>/providers<dict-member>" data-link-type="dict-member" data-type="sequence<USVString> " href="#dom-federatedcredentialrequestoptions-providers">providers</a>;
+  sequence&lt;DOMString> <a data-global-name="FederatedCredentialRequestOptions<dictionary>/protocols<dict-member>" data-type="sequence<DOMString> " href="#dom-federatedcredentialrequestoptions-protocols">protocols</a>;
 };
 
 typedef <a data-link-type="idl-name" href="#dictdef-federatedcredentialrequestoptions">FederatedCredentialRequestOptions</a> <a data-global-name="" href="#typedefdef-credentialrequestoptions">CredentialRequestOptions</a>;

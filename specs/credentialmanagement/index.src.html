@@ -617,11 +617,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <pre class="idl">
     dictionary FederatedCredentialData : CredentialData {
       USVString provider;
+      DOMString? protocol;
     };
 
     [Constructor(FederatedCredentialData data), Exposed=Window]
     interface FederatedCredential : LocallyStoredCredential {
       readonly attribute USVString provider;
+      readonly attribute DOMString? protocol;
     };
   </pre>
   <dl dfn-for="FederatedCredential">
@@ -629,6 +631,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <dd>
       The credential's <a>federated identity provider</a>. For details regarding
       valid formats, see [[#identifying-federations]].
+    </dd>
+    <dt><dfn attribute>protocol</dfn></dt>
+    <dd>
+      The credential's <a>federated identity provider</a>'s protocol (e.g.
+      "openidconnect"). If this value is <code>null</code>, then the protocol
+      can be inferred from the {{FederatedCredential/provider}}.
     </dd>
     <dt>{{[[type]]}}</dt>
     <dd>
@@ -647,17 +655,45 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <ol>
     <li>
-      If <var>options</var> has no property named <code>providers</code>, or
-      if the value of <var>options</var>' <code>provider</code> is not a
-      sequence of {{USVString}}, return <code>Does Not Match</code>.
+      If <var>options</var> has a
+      {{FederatedCredentialRequestOptions/providers}} property:
+
+      <ol>
+        <li>
+          For each <var>provider</var> in <var>options</var>'
+          <code>providers</code> list:
+
+          <ol>
+            <li>
+              Return <code>Matches</code> if <var>credential</var>'s
+              {{FederatedCredential/provider}} is a case-sensitive match for
+              <var>provider</var>.
+            </li>
+          </ol>
+        </li>
+      </ol>
     </li>
     <li>
-      If <var>credential</var>'s {{FederatedCredential/provider}} is not
-      a case-sensitive match for one or more values in <var>options</var>'s
-      <code>provider</code> sequence, return <code>Does Not Match</code>.
+      If <var>options</var> has a
+      {{FederatedCredentialRequestOptions/protocols}} property:
+
+      <ol>
+        <li>
+          For each <var>protocol</var> in <var>options</var>'
+          {{FederatedCredentialRequestOptions/protocols}} list:
+
+          <ol>
+            <li>
+              Return <code>Matches</code> if <var>credential</var>'s
+              {{FederatedCredential/protocol}} is a case-insensitive match for
+              <var>protocol</var>.
+            </li>
+          </ol>
+        </li>
+      </ol>
     </li>
     <li>
-      Return <code>Matches</code>.
+      Return <code>Does Not Match</code>.
     </li>
   </ol>
 
@@ -734,6 +770,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <pre class="idl">
     dictionary FederatedCredentialRequestOptions {
       sequence&lt;USVString&gt; providers;
+      sequence&lt;DOMString&gt; protocols;
     };
 
     typedef FederatedCredentialRequestOptions CredentialRequestOptions;
