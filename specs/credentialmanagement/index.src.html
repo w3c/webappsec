@@ -1030,26 +1030,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h4 id="is-match">
-    Does <var>origin A</var> match <var>origin B</var>?
-  </h4>
-
-  <ol>
-    <li>
-      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
-      <code>Exact Match</code>.
-    </li>
-    <li>
-      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
-      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
-      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
-      domain</a>, then return <code>Fuzzy Match</code>.
-    </li>
-    <li>
-      Return <code>No Match</code>
-    </li>
-  </ol>
-
   <h3 id="processing-locallystored">
     Processing <code>LocallyStoredCredential</code>s
   </h3>
@@ -1204,13 +1184,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <ol>
         <li>
           [[#is-match]] returns <code>No Match</code> when executed upon
-          <var>endpoint</var>'s {{URL/origin}} and <var>credential</var>'s
-          {{[[origin]]}} slot
+          <var>credential</var> and <var>endpoint</var>'s {{URL/origin}}.
         </li>
         <li>
           [[#is-match]] returns <code>No Match</code> when executed upon
-          <var>environment</var>'s <a>origin</a> and <var>credential</var>'s
-          {{[[origin]]}} slot
+          <var>credential</var> and <var>environment</var>'s <a>origin</a>.
         </li>
         <li>
           <var>environment</var>'s <a>responsible browsing context</a> is not a
@@ -1384,6 +1362,30 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Resolve <var>promise</var> with <code>undefined</code>.
     </li>
   </ol>
+
+  <h4 id="is-match">
+    Does <var>credential</var> match <var>origin B</var>?
+  </h4>
+
+  <ol>
+    <li>
+      Let <var>origin A</var> be the value of <var>credential</var>'s
+      {{LocallyStoredCredential/[[origin]]}} slot.
+    </li>
+    <li>
+      If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
+      <code>Exact Match</code>.
+    </li>
+    <li>
+      If <var>origin A</var>'s {{URL/scheme}} is <var>origin B</var>'s
+      {{URL/scheme}}, and <var>origin A</var>'s {{URL/host}}'s <a>registerable
+      domain</a> is <var>origin B</var>'s {{URL/host}}'s <a>registerable
+      domain</a>, then return <code>Fuzzy Match</code>.
+    </li>
+    <li>
+      Return <code>No Match</code>
+    </li>
+  </ol>
 </section>
 
 <!--
@@ -1515,12 +1517,85 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h4 id="synthesis">Synthesizing Credentials</h4>
 
-  In response to a call to {{get()}} a user agent MAY offer a user the ability
+  In response to a call to {{get()}} a user agent can offer a user the ability
   to create a {{Credential}} on the fly, rather than returning an empty set.
   Since credentials suggested in the <a>credential chooser</a> are never exposed
   to the web unless the user explicitly selects them, the user agent is free
   to use any of a number of heuristics to help a user get signed-into/-up for
   a website.
+
+  Credentials SHOULD be synthesized to populate a <a>chooser</a> based on the
+  following heuristics:
+
+  <ol>
+    <li>
+      Let <var>synthesized</var> be an empty list.
+    </li>
+    <li>
+      Switch on the interface whose {{Credential/type}} property matches one of
+      the items in the {{CredentialRequest}} {{CredentialRequest/types}}
+      sequence, and execute the associated steps:
+
+      <dl>
+        <dt>{{FederatedCredential}}</dt>
+        <dd>
+          When executing the [[#gather-locallystoredcredentials]] algorithm, a
+          user agent SHOULD populate the <a>chooser</a> with options based on
+          the following heuristic:
+
+          <ol>
+            <li>
+              Let <var>federations</var> be the value of <var>options</var>'
+              <var>federations</var> property.
+            </li>
+            <li>
+              For each {{PasswordCredential}} <var>credential</var> in the
+              <a>credential store</a>:
+
+              <ol>
+                <li>
+                  For each <var>federation</var> in <var>options</var>'
+                  {{FederatedCredentialRequestOptions/federations}} property:
+
+                  <ol>
+                    <li>
+                      If [[#is-match]] returns <code>Exact Match</code> or
+                      <code>Fuzzy Match</code> when executed upon
+                      <var>credential</var> and <var>federation</var>:
+
+                      <ol>
+                        <li>
+                          Create a new {{FederatedCredential}} object
+                          <var>new</var> whose {{[[origin]]}} slot is set to
+                          <var>origin</var>, {{Credential/id}} is set to
+                          <var>credential</var>'s {{Credential/id}},
+                          {{FederatedCredential/federation}} is set to
+                          <var>federation</var>.
+                        </li>
+                        <li>
+                          Append <var>new</var> to <var>synthesized</var>.
+                        </li>
+                      </ol>
+                    </li>
+                  </ol>
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </dd>
+        <dt><em>This is an extension point.</em></dt>
+        <dd>
+          When new credential types are defined in the future, they'll go here.
+        </dd>
+      </dl>
+    </li>
+    <li>
+      Return <var>synthesized</var>.
+    </li>
+  </ol>
+
+  User agents MAY employ additional heuristics (based, for instance, on a user's
+  browsing history, crowdsourcing, etc) to further populate the <a>chooser</a>.
 
   <div class="example">
     Assume for a moment that <code>https://example.com/</code> is an amazing new
