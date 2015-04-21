@@ -271,7 +271,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
           "<a idl>types</a>": [ "federated" ],
           "<a idl>options</a>": {
-              "<a idl>federations</a>": [ "https://federation.com" ]
+              "<a idl>providers</a>": [ "https://federation.com" ]
           }
         }).then(
             function(credential) {
@@ -279,7 +279,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 return;
 
               if (credential.type == "FederatedCredential") {
-                switch (credential.<a idl for="FederatedCredential">federation</a>) {
+                switch (credential.<a idl for="FederatedCredential">provider</a>) {
                 case "https://www.facebook.com/":
                   // Use Facebook's SDK, a la https://developers.facebook.com/docs/facebook-login/login-flow-for-web/#logindialog
                   FB.login(function (response) {
@@ -342,7 +342,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           navigator.<a attribute>credentials</a>.<a idl lt="store()">store</a>(
             new <a idl>FederatedCredential</a>({
               "<a idl for="CredentialData">id</a>": "username",
-              "<a idl for="FederatedCredentialData">federation</a>": "https://federation.com"
+              "<a idl for="FederatedCredentialData">provider</a>": "https://federation.com"
             })
           );
         }
@@ -616,19 +616,19 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
     dictionary FederatedCredentialData : CredentialData {
-      USVString federation;
+      USVString provider;
     };
 
     [Constructor(FederatedCredentialData data), Exposed=Window]
     interface FederatedCredential : LocallyStoredCredential {
-      readonly attribute USVString federation;
+      readonly attribute USVString provider;
     };
   </pre>
   <dl dfn-for="FederatedCredential">
-    <dt><dfn attribute>federation</dfn></dt>
+    <dt><dfn attribute>provider</dfn></dt>
     <dd>
-      The credential's federation. For details regarding valid formats, see
-      [[#identifying-federations]]
+      The credential's <a>federated identity provider</a>. For details regarding
+      valid formats, see [[#identifying-federations]].
     </dd>
     <dt>{{[[type]]}}</dt>
     <dd>
@@ -647,14 +647,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <ol>
     <li>
-      If <var>options</var> has no property named <code>federations</code>, or
-      if the value of <var>options</var>' <code>federation</code> is not a
+      If <var>options</var> has no property named <code>providers</code>, or
+      if the value of <var>options</var>' <code>provider</code> is not a
       sequence of {{USVString}}, return <code>Does Not Match</code>.
     </li>
     <li>
-      If <var>credential</var>'s {{FederatedCredential/federation}} is not
+      If <var>credential</var>'s {{FederatedCredential/provider}} is not
       a case-sensitive match for one or more values in <var>options</var>'s
-      <code>federation</code> sequence, return <code>Does Not Match</code>.
+      <code>provider</code> sequence, return <code>Does Not Match</code>.
     </li>
     <li>
       Return <code>Matches</code>.
@@ -733,7 +733,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <pre class="idl">
     dictionary FederatedCredentialRequestOptions {
-      sequence&lt;USVString&gt; federations;
+      sequence&lt;USVString&gt; providers;
     };
 
     typedef FederatedCredentialRequestOptions CredentialRequestOptions;
@@ -745,7 +745,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
   </pre>
   <dl dfn-for="FederatedCredentialRequestOptions">
-    <dt><dfn dict-member>federations</dfn></dt>
+    <dt><dfn dict-member>providers</dfn></dt>
     <dd>
       An array of federation identifiers. For details regarding valid formats
       see [[#identifying-federations]].
@@ -785,7 +785,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
         "<a idl>types</a>": [ "federated" ],
         "<a idl>options</a>": {
-            "<a idl>federations</a>": [ "https://identity.example.com/" ]
+            "<a idl>providers</a>": [ "https://identity.example.com/" ]
         }
       }).then(function (credential) {
         // ...
@@ -801,7 +801,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
         "<a idl>types</a>": [ "federated" ],
         "<a idl>options</a>": {
-            "<a idl>federations</a>": [ "https://identity.example.com/" ]
+            "<a idl>providers</a>": [ "https://identity.example.com/" ]
         },
         "<a idl>suppressUI</a>": true
       }).then(function (credential) {
@@ -810,7 +810,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </pre>
   </div>
 
-  <h4 id="identifying-federations">Identifying Federations</h4>
+  <h4 id="identifying-federations">Identifying providers</h4>
 
   Every site should use the same identifier when referring to a specific
   <a>federated identity provider</a>. For example,
@@ -822,8 +822,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   For consistency, federations passed into the APIs defined in this document
   (e.g. {{FederatedCredentialRequestOptions}}'s
-  {{FederatedCredentialRequestOptions/federations}} array, or
-  {{FederatedCredential}}'s {{FederatedCredential/federation}} property)
+  {{FederatedCredentialRequestOptions/providers}} array, or
+  {{FederatedCredential}}'s {{FederatedCredential/provider}} property)
   MUST be identified by the <a>ASCII serialization</a> of the origin the
   provider uses for sign in. That is, Facebook would be represented by
   <code>https://www.facebook.com</code> and Google by
@@ -1317,9 +1317,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
               If the user agent's credential manager does not contain a
               {{FederatedCredential}} <var>storedCredential</var> whose
               {{Credential/id}} attribute is <var>credential</var>'s
-              {{Credential/id}} and whose {{FederatedCredential/federation}}
+              {{Credential/id}} and whose {{FederatedCredential/provider}}
               attribute is <var>credential</var>'s
-              {{FederatedCredential/federation}}, then:
+              {{FederatedCredential/provider}}, then:
 
               <ol>
                 <li>
@@ -1545,8 +1545,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
           <ol>
             <li>
-              Let <var>federations</var> be the value of <var>options</var>'
-              <var>federations</var> property.
+              Let <var>providers</var> be the value of <var>options</var>'
+              <var>providers</var> property.
             </li>
             <li>
               For each {{PasswordCredential}} <var>credential</var> in the
@@ -1554,14 +1554,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
               <ol>
                 <li>
-                  For each <var>federation</var> in <var>options</var>'
-                  {{FederatedCredentialRequestOptions/federations}} property:
+                  For each <var>provider</var> in <var>options</var>'
+                  {{FederatedCredentialRequestOptions/providers}} property:
 
                   <ol>
                     <li>
                       If [[#is-match]] returns <code>Exact Match</code> or
                       <code>Fuzzy Match</code> when executed upon
-                      <var>credential</var> and <var>federation</var>:
+                      <var>credential</var> and <var>provider</var>:
 
                       <ol>
                         <li>
@@ -1569,8 +1569,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                           <var>new</var> whose {{[[origin]]}} slot is set to
                           <var>origin</var>, {{Credential/id}} is set to
                           <var>credential</var>'s {{Credential/id}},
-                          {{FederatedCredential/federation}} is set to
-                          <var>federation</var>.
+                          {{FederatedCredential/provider}} is set to
+                          <var>provider</var>.
                         </li>
                         <li>
                           Append <var>new</var> to <var>synthesized</var>.
@@ -1619,7 +1619,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     In this way, <code>https://example.com/</code> can support dozens of
     providers as arguments to {{get()}} (via
     {{FederatedCredentialRequestOptions}}'s
-    {{FederatedCredentialRequestOptions/federations}} property), and the user
+    {{FederatedCredentialRequestOptions/providers}} property), and the user
     agent can cull that list down to the federations with which the user
     regularly interacts (or which have been previously used as
     {{FederatedCredential}}s, or any of a number of other heuristics).
@@ -1766,7 +1766,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   This could allow a malicious website to determine if a user has credentials
   saved for particular federated identity providers by repeatedly calling
   {{get()}} with a single item in the
-  {{FederatedCredentialRequestOptions/federations}} array. The risk is mitigated
+  {{FederatedCredentialRequestOptions/providers}} array. The risk is mitigated
   by the fact that a user-mediated {{get()}} is tied to a user gesture, and the
   user would, sooner or later, be prompted to provide credentials to the site,
   which would certainly raise her suspicions as to its behavior.
