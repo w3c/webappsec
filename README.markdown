@@ -19,6 +19,10 @@ Web Application Security Working Group
         * Source: <https://github.com/w3c/webappsec/tree/master/specs/credentialmanagement/>
     * Use Cases: <https://w3c.github.io/webappsec/usecases/credentialmanagement/>
 
+* Entry Point Regulation:
+    * Editor's draft: <https://w3c.github.io/webappsec/specs/epr/>
+        * Source: <https://github.com/w3c/webappsec/tree/master/specs/epr/>
+
 * Mixed Content:
     * Editor's Draft: <https://w3c.github.io/webappsec/specs/mixedcontent/>
         * Source: <https://github.com/w3c/webappsec/tree/master/specs/mixedcontent>
