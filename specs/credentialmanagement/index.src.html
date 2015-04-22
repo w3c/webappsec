@@ -238,7 +238,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <div class="example">
       <pre>
         navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
-          "<a idl>types</a>": [ "password" ]
+          "<a idl>filters</a>": { "password" : {} }
         }).then(
             function(credential) {
               if (!credential) {
@@ -248,7 +248,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 // really be progressive enhancement on top of an existing form).
                 return;
               }
-              if (credential.type == "PasswordCredential") {
+              if (credential.type == "password") {
                 credential.<a method lt="send()">send</a>("https://example.com/loginEndpoint")
                   .then(function (response) {
                     // Notify the user that signin succeeded! Do amazing, signed-in things!
@@ -269,16 +269,17 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <div class="example">
       <pre>
         navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
-          "<a idl>types</a>": [ "federated" ],
-          "<a idl>options</a>": {
-              "<a idl>providers</a>": [ "https://federation.com" ]
+          "<a idl for="CredentialRequest">filters</a>": {
+              "federated": {
+                  "providers" : [ "https://federation.com" , "https://accounts.google.com/" ]
+              }
           }
         }).then(
             function(credential) {
               if (!credential)
                 return;
 
-              if (credential.type == "FederatedCredential") {
+              if (credential.type == "federated") {
                 switch (credential.<a idl for="FederatedCredential">provider</a>) {
                 case "https://www.facebook.com/":
                   // Use Facebook's SDK, a la https://developers.facebook.com/docs/facebook-login/login-flow-for-web/#logindialog
@@ -306,9 +307,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </pre>
 
       Note: This API does not go out to the identity provider to grab a token,
-      or authenticate the user in any way. It provides a hint to the website as
-      to which identity provider the user prefers to use, and little more. See
-      [[#future-work]] for directions future versions of this API could take.
+      or authenticate the user in any way against a federated identity provider.
+      It provides a hint to the website as to which identity provider the user
+      prefers to use, and little more. See [[#future-work]] for directions future
+      versions of this API could take.
     </div>
 
     <h4 id="examples-post-signin">Post-sign-in Confirmation</h4>
@@ -329,6 +331,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         credential.send("https://example.com/sign-in/")
           .then(function (response) {
             if (response.status == 200)
+              // Inspect response to determine if this was a successful login then...
               navigator.<a attribute>credentials</a>.<a idl lt="store()">store</a>(credential);
           });
       </pre>
@@ -426,7 +429,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       authentication.
 
       Note: These two types are, of course, not exhaustive. Future versions of
-      this and other documents will likely define other types of credentials.
+      this and other documents will likely define other types of credentials and the
+      API allows developers to define their own custom credential types in script.
     </dd>
 
     <dt>
@@ -453,8 +457,15 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <dd>
       A <strong>federated identity provider</strong> is an entity which a
       website trusts to correctly authenticate a user, and which provides an
-      API for that purpose. OAuth2 [[RFC6749]] is an example of such an API,
-      used by a number of providers.
+      API for that purpose. OAuth2 [[RFC6749]] is an example of a framework that
+      defines such an API, used by a number of providers.
+    </dd>
+    <dd>
+      Many federated identity providers expose their services using standardised
+      protocols such as OAuth2 but others may use proprietary or customised protocols.
+      It is possible therefor for a relying party to support any provider that follows
+      a particular standardised protocol or protocols, to support an explicit list of
+      providers or a combination of explicit providers and standard protocols.
     </dd>
   </dl>
 </section>
@@ -495,16 +506,17 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     interface Credential {
       readonly attribute DOMString id;
       readonly attribute DOMString type;
+      boolean isMatch (any filter);
     };
     Credential implements Transferable;
   </pre>
   <dl dfn-for="Credential">
-    <dt><dfn attribute>id</dfn></dt>
+    <dt><dfn attribute for="Credential">id</dfn></dt>
     <dd>
       The credential's identifier. This might be a GUID, username, or email
       address, for instance.
     </dd>
-    <dt><dfn attribute>type</dfn></dt>
+    <dt><dfn attribute for="Credential">type</dfn></dt>
     <dd>
       The credential's type. This attribute's getter returns the value of the
       credential's {{[[type]]}} slot.
@@ -515,12 +527,24 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <code>password</code>, and {{FederatedCredential}} objects have a
       {{[[type]]}} of <code>federated</code>.
     </dd>
-    <dt><code><dfn attribute>[[type]]</dfn></code></dt>
+    <dt><code><dfn attribute for="Credential">[[type]]</dfn></code></dt>
     <dd>
       All {{Credential}} objects have an internal slot named
       <code>[[type]]</code>, which unsurprisingly contains a string representing
       the type of the credential. This property is exposed to the web via the
       {{Credential/type}} attribute.
+    </dd>
+    <dt><code><dfn method for="Credential">isMatch()</dfn></code></dt>
+    <dd>
+      {{Credential}} objects provide filter matching logic within the
+      <code>isMatch()</code> function. This hook allows different {{Credential}}
+      types to define how they will match the values from the {{CredentialRequestFilters}}
+      passed into the {{CredentialContainer/get()}} function. The base class implementation returns
+      <code>true</code>.
+    </dd>
+    <dd>
+      Custom {{Credential}} interfaces defined in script can override this method as a way of influencing
+      the matching algorithm for custom classes.
     </dd>
   </dl>
 
@@ -560,10 +584,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
   </dl>
 
-  All {{LocallyStoredCredential}} objects MUST define an <dfn>options matching
-  algorithm</dfn> which returns <code>Match</code> if the object matches an
-  {{CredentialRequest/options}} dictionary, and <code>Does Not Match</code>
-  otherwise.
+  All {{LocallyStoredCredential}} objects MUST define a <dfn>filter matching
+  algorithm</dfn> in the body of the {{Credential/isMatch()}} function.
+  The algorithm must return <code>true</code> if there is a Match otherwise <code>false</code>
+  if the {{Credential}} Does Not Match.
 
   <h4 id="interfaces-credential-types-passwordcredential"><code>PasswordCredential</code></h4>
   <pre class="idl">
@@ -608,8 +632,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     Matching Algorithm
   </h5>
 
-  {{PasswordCredential}} objects' <a>options matching algorithm</a> always
-  returns <code>Match</code>.
+  {{PasswordCredential}} objects' <a>filter matching algorithm</a> always
+  returns <code>true</code> (Match).
 
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
@@ -618,10 +642,16 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       DOMString? protocol;
     };
 
+    dictionary FederatedCredentialFilter {
+      sequence&lt;USVString&gt; providers;
+      sequence&lt;DOMString&gt; protocols;
+    };
+
     [Constructor(FederatedCredentialData data), Exposed=Window]
     interface FederatedCredential : LocallyStoredCredential {
       readonly attribute USVString provider;
       readonly attribute DOMString? protocol;
+      boolean isMatch ( FederatedCredentialFilter filter );
     };
   </pre>
   <dl dfn-for="FederatedCredential">
@@ -636,6 +666,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       "openidconnect"). If this value is <code>null</code>, then the protocol
       can be inferred from the {{FederatedCredential/provider}}.
     </dd>
+    <dt><dfn method>isMatch()</dfn></dt>
+    <dd>
+      All {{FederatedCredential}} objects expect a {{FederatedCredentialFilter}} as the argument
+      passed to their {{Credential/isMatch()}} function.
+    </dd>
     <dt>{{[[type]]}}</dt>
     <dd>
       All {{FederatedCredential}} objects have their {{[[type]]}}
@@ -647,23 +682,23 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     Matching Algorithm
   </h5>
 
-  {{FederatedCredential}} objects' <a>options matching algorithm</a> is as
+  {{FederatedCredential}} objects' <a>filter matching algorithm</a> is as
   follows. Given a {{FederatedCredential}} (<var>credential</var>) and a
-  {{CredentialRequest/options}} (<var>options</var>):
+  {{FederatedCredentialFilter}} (<var>filter</var>):
 
   <ol>
     <li>
-      If <var>options</var> has a
-      {{FederatedCredentialRequestOptions/providers}} property:
+      If <var>filter</var> has a
+      {{FederatedCredentialFilter/providers}} property:
 
       <ol>
         <li>
-          For each <var>provider</var> in <var>options</var>'
+          For each <var>provider</var> in <var>filter</var>'s
           <code>providers</code> list:
 
           <ol>
             <li>
-              Return <code>Matches</code> if <var>credential</var>'s
+              Return <code>true</code> if <var>credential</var>'s
               {{FederatedCredential/provider}} is a case-sensitive match for
               <var>provider</var>.
             </li>
@@ -672,17 +707,17 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </ol>
     </li>
     <li>
-      If <var>options</var> has a
-      {{FederatedCredentialRequestOptions/protocols}} property:
+      If <var>filter</var> has a
+      {{FederatedCredentialFilter/protocols}} property:
 
       <ol>
         <li>
-          For each <var>protocol</var> in <var>options</var>'
-          {{FederatedCredentialRequestOptions/protocols}} list:
+          For each <var>protocol</var> in <var>filter</var>'s
+          {{FederatedCredentialFilter/protocols}} list:
 
           <ol>
             <li>
-              Return <code>Matches</code> if <var>credential</var>'s
+              Return <code>true</code> if <var>credential</var>'s
               {{FederatedCredential/protocol}} is a case-insensitive match for
               <var>protocol</var>.
             </li>
@@ -691,7 +726,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </ol>
     </li>
     <li>
-      Return <code>Does Not Match</code>.
+      Return <code>false</code> (<code>Does Not Match</code>).
     </li>
   </ol>
 
@@ -760,39 +795,50 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   {{CredentialContainer/get()}}, the caller specifies a few parameters in a
   {{CredentialRequest}} dictionary.
 
-  Note: The {{CredentialRequestOptions}} typedef is an extension point. If and
-  when new types of credentials are introduced that require options, their
-  dictionary types will be added to the typedef so they can be passed into the
-  request.
-
   <pre class="idl">
-    dictionary FederatedCredentialRequestOptions {
-      sequence&lt;USVString&gt; providers;
-      sequence&lt;DOMString&gt; protocols;
+    interface CredentialFilterMap {
+      readonly attribute unsigned long size;
+
+      getter any get(DOMString credentialType);
+      setter creator void set(DOMString credentialType, any value);
+      deleter void remove(DOMString type);
     };
 
-    typedef FederatedCredentialRequestOptions CredentialRequestOptions;
+    typedef CredentialFilterMap CredentialRequestFilters;
 
     dictionary CredentialRequest {
-      CredentialRequestOptions options;
+      CredentialRequestFilters filters;
       boolean suppressUI = false;
-      sequence&lt;DOMString&gt; types;
     };
+
   </pre>
-  <dl dfn-for="FederatedCredentialRequestOptions">
-    <dt><dfn dict-member>providers</dfn></dt>
-    <dd>
-      An array of federation identifiers. For details regarding valid formats
-      see [[#identifying-federations]].
-    </dd>
   </dl>
   <dl dfn-for="CredentialRequest">
-    <dt><dfn dict-member>types</dfn></dt>
+    <dt><dfn dict-member>filters</dfn></dt>
     <dd>
-      A sequence of strings specifying the types of {{Credential}} objects which
-      the caller wishes to obtain. An empty sequence signifies that the caller
-      will accept any credential type. For processing details, see the algorithm
-      defined in [[#request-credential]].
+      A map containing a set of parameters which will be used to select
+      a particular {{Credential}} to return.
+    </dd>
+    <dd>
+      Each key in the map should correspond to the value of the
+      {{Credential/type}} property of any {{Credential}} type that
+      should be returned.
+    </dd>
+    <dd>
+      For each possible credential that can be returned:
+      <ol>
+        <li>If the {{Credential/type}} is not a defined key then the {{Credential}}
+          is immediatley excluded.</li>
+        <li>If the {{Credential/type}} is a defined key then let V be the value in
+          the map stored under that key. Call {{Credential/isMatch()}} passing V
+          as the only argument. If the the function returns <code>false</code> then exclude
+          the {{Credential}}. </li>
+      </ol>
+      Built-in {{Credential}} types define an <a>filter matching algorithm</a> for that credential type.
+    </dd>
+    <dd>
+      Custom {{Credential}} types can be defined in ECMAScript that override the default {{Credential/filter}}
+      function and thereby provide custom matching logic.
     </dd>
     <dt><dfn dict-member>suppressUI</dfn></dt>
     <dd>
@@ -803,12 +849,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       <code>undefined</code>. For processing details, see the algorithm defined
       in [[#request-credential]].
     </dd>
-    <dt><dfn dict-member>options</dfn></dt>
-    <dd>
-      An dictionary containing a set of parameters which will be used to select
-      a particular {{Credential}} to return. This process is described in each
-      {{Credential}} type's <a>options matching algorithm</a>.
-    </dd>
   </dl>
 
   <div class="example">
@@ -818,9 +858,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <pre>
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
-        "<a idl>types</a>": [ "federated" ],
-        "<a idl>options</a>": {
-            "<a idl>providers</a>": [ "https://identity.example.com/" ]
+        "<a idl>filters</a>": {
+            "federated" : {
+                "<a idl>providers</a>": [ "https://identity.example.com/" ]
+            }
         }
       }).then(function (credential) {
         // ...
@@ -834,9 +875,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <pre>
       navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>({
-        "<a idl>types</a>": [ "federated" ],
-        "<a idl>options</a>": {
-            "<a idl>providers</a>": [ "https://identity.example.com/" ]
+        "<a idl>filters</a>": {
+            "federated" : {
+                "<a idl>providers</a>": [ "https://identity.example.com/" ]
+            }
         },
         "<a idl>suppressUI</a>": true
       }).then(function (credential) {
@@ -856,8 +898,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   agents to be helpful.
 
   For consistency, federations passed into the APIs defined in this document
-  (e.g. {{FederatedCredentialRequestOptions}}'s
-  {{FederatedCredentialRequestOptions/providers}} array, or
+  (e.g. {{FederatedCredentialFilter}}'s
+  {{FederatedCredentialFilter/providers}} array, or
   {{FederatedCredential}}'s {{FederatedCredential/provider}} property)
   MUST be identified by the <a>ASCII serialization</a> of the origin the
   provider uses for sign in. That is, Facebook would be represented by
@@ -924,18 +966,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </ol>
     </li>
     <li>
-      Let <var>type</var> be lowest common ancestor interface of the types
-      referenced in <var>request</var>'s {{CredentialRequest/types}} property.
-
-      ISSUE(w3c/webappsec#289): This is terribly hand-wavey. The intent is
-      clear, but I need to do the work to walk through the list of DOMStrings
-      and convert them to interfaces and etc. Busywork for later.
-    </li>
-    <li>
-      Return a <code>Promise</code> rejected with <code>TypeMismatchError</code>
-      if <var>type</var> is {{Credential}}.
-    </li>
-    <li>
       Let <var>promise</var> be a newly created <code>Promise</code> object.
     </li>
     <li>
@@ -951,9 +981,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
             <li>
               Let <var>result</var> be the result of executing
               [[#request-locallystoredcredential-without-mediation]],
-              passing in <var>origin</var>, <var>request</var>'s
-              {{CredentialRequest/types}} property, and
-              <var>request</var>'s {{CredentialRequest/options}} property.
+              passing in <var>origin</var> and
+              <var>request</var>'s {{CredentialRequest/filters}} property.
             </li>
             <li>
               If <var>result</var> is not <code>null</code>, resolve
@@ -976,9 +1005,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
             <li>
               Resolve <var>promise</var> with the result of executing
               [[#request-locallystoredcredential-with-mediation]],
-              passing in <var>origin</var>, <var>request</var>'
-              {{CredentialRequest/types}} property, and
-              <var>request</var>' {{CredentialRequest/options}} property.
+              passing in <var>origin</var> and
+              <var>request</var>' {{CredentialRequest/filters}} property.
             </li>
           </ol>
         </dd>
@@ -1074,9 +1102,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     Gather <code>LocallyStoredCredential</code>s
   </h4>
 
-  Given an <a>origin</a> (<var>origin</var>), and a sequence of {{DOMString}}
-  (<var>types</var>), and an {{CredentialRequest/options}} dictionary
-  (<var>options</var>), this algorithm returns a sequence of
+  Given an <a>origin</a> (<var>origin</var>) and {{CredentialRequest/filters}} map
+  (<var>filters</var>), this algorithm returns a sequence of
   {{LocallyStoredCredential}} from the user agent's <a>credential store</a>
   which are potential candidates:
 
@@ -1094,13 +1121,26 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       based on vendor-specific heuristics (as described in [[#synthesis]]).
     </li>
     <li>
-      Remove any items from <var>credentials</var> whose {{Credential/type}}
-      property is not a case-sensitive match for a value in <var>types</var>.
-    </li>
-    <li>
-      Remove any items from <var>credentials</var> whose <a>options matching
-      algorithm</a> returns <code>Does Not Match</code> when executed on
-      <var>options</var>.
+      For each {{Credential}} in <var>credentials</var>, let <var>type</var> be
+      the value of the {{Credential/type}} property of the {{Credential}}.
+      <ol>
+        <li>Let <var>filter</var> be the value returned by calling {{CredentialFilterMap/get()}}
+          and passing <var>type</var> as the argument <code>credentialType</code>.
+          <ol>
+            <li>
+              If <var>filter</var> is <strong>undefined</strong> remove the {{Credential}} from
+              <var>credentials</var> and process the next {{Credential}}.
+            </li>
+            <li>
+              Call {{Credential/isMatch()}} passing <var>filter</var> as the only parameter.
+            </li>
+            <li>
+              If the function returns <code>false</code> remove the {{Credential}} from
+              <var>credentials</var> and process the next {{Credential}}.
+            </li>
+          </ol>
+        </li>
+      </ol>
     </li>
     <li>
       Return <var>credentials</var>.
@@ -1111,9 +1151,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     Request a <code>LocallyStoredCredential</code> <em>without</em> user mediation
   </h4>
 
-  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
-  type names (<var>types</var>) and an {{CredentialRequest/options}} dictionary
-  (<var>options</var>), and returns either a single {{LocallyStoredCredential}}
+  This algorithm accepts an <a>origin</a> (<var>origin</var>) and {{CredentialRequest/filters}}
+  map (<var>filters</var>), and returns either a single {{LocallyStoredCredential}}
   object <strong>if and only if</strong> one can be provided without user
   mediation, or <code>null</code> if not.
 
@@ -1128,8 +1167,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
     <li>
       Let <var>credentials</var> be the result of executing
-      [[#gather-locallystoredcredentials]] on <var>origin</var>,
-      <var>types</var>, and <var>options</var>.
+      [[#gather-locallystoredcredentials]] on <var>origin</var>
+      and <var>filters</var>.
     </li>
     <li>
       If <var>credentials</var> is empty, or contains more than one
@@ -1156,16 +1195,15 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     Request a <code>LocallyStoredCredential</code> with user mediation
   </h4>
 
-  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
-  type names (<var>types</var>) and an {{CredentialRequest/options}} dictionary
-  (<var>options</var>), and returns either a single {{LocallyStoredCredential}}
+  This algorithm accepts an <a>origin</a> (<var>origin</var>) and {{CredentialRequest/filters}}
+  map (<var>filters</var>), and returns either a single {{LocallyStoredCredential}}
   object, or <code>null</code> if none can be provided.
 
   <ol>
     <li>
       Let <var>credentials</var> be the result of executing
-      [[#gather-locallystoredcredentials]] on <var>origin</var>,
-      <var>types</var>, and <var>options</var>.
+      [[#gather-locallystoredcredentials]] on <var>origin</var>
+      and <var>filters</var>.
     </li>
       This requirement only applies if we would show UI to the user.
       If she's elected to allow credentials to be provided without user
@@ -1482,7 +1520,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   {{Credential}} objects from that origin MAY be provided to pages from that
   origin without user interaction. The user will be signed-in to that origin
   persistently, which, on the one hand, is desirable from the perspective of
-  usability and convinience, but which might nevertheless surprise the user.
+  usability and convenience, but which might nevertheless surprise the user.
 
   If the user agent syncs the state of a {{Credential}} between devices, an
   origin could explicitly tie the devices together in a way which might surprise
@@ -1569,8 +1607,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
     <li>
       Switch on the interface whose {{Credential/type}} property matches one of
-      the items in the {{CredentialRequest}} {{CredentialRequest/types}}
-      sequence, and execute the associated steps:
+      the keys in the {{CredentialRequest}}'s {{CredentialRequest/filters}}
+      map, and execute the associated steps:
 
       <dl>
         <dt>{{FederatedCredential}}</dt>
@@ -1581,7 +1619,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
           <ol>
             <li>
-              Let <var>providers</var> be the value of <var>options</var>'
+              Let <var>providers</var> be the value of <var>filter</var>'s
               <var>providers</var> property.
             </li>
             <li>
@@ -1590,8 +1628,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
               <ol>
                 <li>
-                  For each <var>provider</var> in <var>options</var>'
-                  {{FederatedCredentialRequestOptions/providers}} property:
+                  For each <var>provider</var> in <var>filters</var>'
+                  {{FederatedCredentialFilter/providers}} property:
 
                   <ol>
                     <li>
@@ -1640,7 +1678,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     being a bit counterproductive, as the site needs to display a list of dozens
     of providers, hoping that users will see an icon they remember.
 
-    A call to {{get()}} will end up with an empty list of {{Credential}} objects
+    A call to {{CredentialContainer/get()}} will end up with an empty list of {{Credential}} objects
     for new users, as they won't have any <code>https://example.com/</code>
     credentials. They might, however, have a {{PasswordCredential}} stored for
     the exciting social media site <code>https://federation.com/</code>, which
@@ -1653,9 +1691,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     it to the user as a sign-up options in a <a>chooser</a>.
 
     In this way, <code>https://example.com/</code> can support dozens of
-    providers as arguments to {{get()}} (via
-    {{FederatedCredentialRequestOptions}}'s
-    {{FederatedCredentialRequestOptions/providers}} property), and the user
+    providers as arguments to {{CredentialContainer/get()}} (via
+    {{FederatedCredentialFilter}}'s
+    {{FederatedCredentialFilter/providers}} property), and the user
     agent can cull that list down to the federations with which the user
     regularly interacts (or which have been previously used as
     {{FederatedCredential}}s, or any of a number of other heuristics).
@@ -1792,16 +1830,16 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="privacy-timing-attacks">Timing Attacks</h3>
 
-  If the user has no credentials for an origin, a call to {{get()}} will
+  If the user has no credentials for an origin, a call to {{CredentialContainer/get()}} will
   resolve very quickly indeed. A malicious website could distinguish between
   a user with no credentials and a user with credentials who chooses not to
   share them.
 
   This could allow a malicious website to determine if a user has credentials
   saved for particular federated identity providers by repeatedly calling
-  {{get()}} with a single item in the
-  {{FederatedCredentialRequestOptions/providers}} array. The risk is mitigated
-  by the fact that a user-mediated {{get()}} is tied to a user gesture, and the
+  {{CredentialContainer/get()}} with a single item in the
+  {{FederatedCredentialFilter/providers}} array. The risk is mitigated
+  by the fact that a user-mediated {{CredentialContainer/get()}} is tied to a user gesture, and the
   user would, sooner or later, be prompted to provide credentials to the site,
   which would certainly raise her suspicions as to its behavior.
 
@@ -1866,19 +1904,23 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
         <pre>
           interface ExampleCredential : Credential {
             // Definition goes here.
+
           };
         </pre>
       </li>
       <li>
-        Define the options that the new credential type requires, and add them
-        to the {{CredentialRequestOptions}} typedef:
+        Define a strongly typed filter for the new credential type, and override the isMatch()
+        function:
 
         <pre>
-          dictionary ExampleCredentialRequestOptions {
+          dictionary ExampleCredentialFilter {
             // Definition goes here.
           };
 
-          typedef (FederatedCredentialRequestOptions or ExampleCredentialRequestOptions) CredentialRequestOptions;
+          partial interface ExampleCredential {
+            boolean isMatch( ExampleCredentialFilter filter);
+          };
+
         </pre>
       </li>
       <li>
