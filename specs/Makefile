@@ -41,7 +41,7 @@ credentialmanagement/index.html: credentialmanagement/index.src.html biblio.json
 	bikeshed -f spec ./credentialmanagement/index.src.html
 
 credentialmanagement/published/2015-04-FPWD.html: credentialmanagement/index.src.html biblio.json
-	bikeshed -f spec --md-status=FPWD ./credentialmanagement/index.src.html ./credentialmanagement/published/2015-04-FPWD.html
+	bikeshed -f spec --md-status=FPWD --md-date=2015-04-28 ./credentialmanagement/index.src.html ./credentialmanagement/published/2015-04-FPWD.html
 
 epr/index.html: epr/index.src.html biblio.json
 	bikeshed -f spec ./epr/index.src.html
