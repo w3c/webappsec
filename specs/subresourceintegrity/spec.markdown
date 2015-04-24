@@ -748,6 +748,21 @@ will likely be difficult to avoid (image's `naturalHeight` and
 `naturalWidth` for instance).
 </section><!-- /Security::cross-origin -->
 
+<section>
+### Behavior of chameleon resources
+
+Resources may still exhibit differing behavior due to out-of-bound data
+like its media type, HTTP headers, or origin. Particularly, a "chameleon"
+resource is one that is valid under multiple media types. For example, a
+CSS document, validated as such to the server's satisfaction, might still be
+crafted with malicious effects that are triggered if interperted as
+application/javascript.
+
+Servers SHOULD NOT rely on "integrity" to ensure the safe behavior of
+user-generated content stored on untrusted/third party servers, even if
+the document is sanity/validity checked.
+</section><!-- /Security::behavior -->
+
 </section><!-- /Security -->
 
 <section>
