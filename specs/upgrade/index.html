@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Upgrade Insecure Requests</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-03-30">30 March 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-04-24">24 April 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -79,6 +79,8 @@
      <dd><a class="u-url" href="https://w3c.github.io/webappsec/specs/upgrade/">https://w3c.github.io/webappsec/specs/upgrade/</a>
      <dt>Latest version:
      <dd><a href="http://www.w3.org/TR/upgrade-insecure-requests/">http://www.w3.org/TR/upgrade-insecure-requests/</a>
+     <dt>Previous Versions:
+     <dd><a href="http://www.w3.org/TR/2015/WD-upgrade-insecure-requests-20150226/" rel="previous">http://www.w3.org/TR/2015/WD-upgrade-insecure-requests-20150226/</a>
      <dt>Feedback:
      <dd><span><a href="mailto:public-webappsec@w3.org?subject=%5Bupgrade-insecure-requests%5D%20feedback">public-webappsec@w3.org</a> with subject line “<kbd>[upgrade-insecure-requests] <var>… message topic …</var></kbd>” (<a href="http://lists.w3.org/Archives/Public/public-webappsec/" rel="discussion">archives</a>)</span>
      <dt>Issue Tracking:
@@ -347,7 +349,7 @@ secure transport before fetching them.</p>
     <h3 class="heading settled" data-level="1.2" id="examples"><span class="secno">1.2. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h3>
 
   
-    <div class="example" id="example-29368254"><a class="self-link" href="#example-29368254"></a>
+    <div class="example" id="example-35db2d27"><a class="self-link" href="#example-35db2d27"></a>
     Megacorp, Inc. wishes to migrate <code>http://example.com/</code> to
     <code>https://example.com</code>. They set up their servers
     to make their own resources available over HTTPS, and work with partners in
@@ -378,6 +380,7 @@ secure transport before fetching them.</p>
 
     
      <pre>&lt;img src="http://example.com/image.png">
+&lt;img src="http://not-example.com/image.png">
 </pre>
      
 
@@ -387,13 +390,15 @@ secure transport before fetching them.</p>
 
     
      <pre>&lt;img src="https://example.com/image.png">
+&lt;img src="https://not-example.com/image.png">
 </pre>
      
 
 
      <p>The URL will be rewritten before the request is made, meaning that no
     insecure requests will hit the network. Users will be safer, and Megacorp’s
-    administrators will be happier.</p>
+    administrators will be happier, as all subresource requests will be
+    transparently upgraded with no effort on their part.</p>
      
   
     </div>
@@ -619,10 +624,11 @@ secure transport before fetching them.</p>
 
      <dd data-md="">
       <p>A <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request">Request</a></code> is said to be <strong>safely upgradable</strong> if the
-  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a> which will be returned does not depend on
-  the <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> mechanism described in
-  this document, or if the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request">Request</a></code>'s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-header-list">header-list</a></code> contains an
-  <code><a data-link-type="dfn" href="#https-http-request-header-field">HTTPS</a></code> header field with a value of <code>1</code>.</p>
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representation</a> which will be returned does not require the
+  <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> mechanism described in this
+  document to avoid breakage, or if the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request">Request</a></code>'s
+  <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-request-header-list">header-list</a></code> contains an <code><a data-link-type="dfn" href="#https-http-request-header-field">HTTPS</a></code> header field
+  with a value of <code>1</code>.</p>
       
 
 
@@ -632,10 +638,10 @@ secure transport before fetching them.</p>
 
      <dd data-md="">
       <p>An <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is said to be <strong>HSTS-safe</strong> if no
-  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representations</a> it returns depend on the
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representations</a> it returns requires the the
   <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> mechanism described in
-  this document, and if all <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representations</a> it returns
-  can be served over HTTPS.</p>
+  this document to avoid breakage, and if all <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representations</a>
+  it returns can be served over HTTPS.</p>
       
 
 
@@ -652,10 +658,10 @@ secure transport before fetching them.</p>
 
      <dd data-md="">
       <p>An <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is said to be <strong>conditionally HSTS-safe</strong>
-  if one or more <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representations</a> it returns depend on the
+  if one or more <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representations</a> it returns requires the
   <code><a data-link-type="dfn" href="#upgrade_insecure_requests">upgrade-insecure-requests</a></code> mechanism described in
-  this document, and if all <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representations</a> it returns
-  can be served over HTTPS.</p>
+  this document to avoid breakage, and if all <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7231#section-3">resource representations</a> it
+  returns can be served over HTTPS.</p>
       
 
 
