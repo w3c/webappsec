@@ -527,7 +527,7 @@ value each element's `integrity` content attribute is added to the
 
 A future revision of this specification is likely to include SRI support
 for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
-`link`, `object`, `script`, `source`, -`track`, and `video` elements.
+`link`, `object`, `script`, `source`, `track`, and `video` elements.
 {:.note}
 
 </section>
@@ -557,7 +557,7 @@ applied only to the `hash-expression` that immediately precedes it.
 
 <div class="note">
 At the moment, no `option-expression`s are defined. However, future versions of
-the spec make define options, such as MIME types [[!MIMETYPE]].
+the spec may define options, such as MIME types [[!MIMETYPE]].
 </div>
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
