@@ -50,9 +50,8 @@ This example can be communicated to a user agent by adding the hash to a
 {:.example.highlight}
 
 Scripts, of course, are not the only resource type which would benefit
-from integrity validation. The scheme specified here applies to all HTML
-elements which trigger fetches, as well as to fetches triggered from CSS
-and JavaScript.
+from integrity validation. The scheme specified here also applies to `link`
+and future versions of the specification are likely to expand this coverage.
 
 [HSTS]: http://tools.ietf.org/html/rfc6797
 [pinned public keys]: http://tools.ietf.org/html/draft-ietf-websec-key-pinning
@@ -288,9 +287,8 @@ collision-resistant.  For example, `getPrioritizedHashFunction('SHA-256',
 1.  Let <var>result</var> be the result of [applying <var>algorithm</var>][apply-algorithm]
     to the [representation data][representationdata] without any content-codings
     applied, except when the user agent intends to consumes the content with
-    content-encodings applied (e.g., saving a gzip’d file to disk). In the
-    latter case, let <var>result</var> be the result of applying
-    <var>algorithm</var> to the [representation data][representationdata].
+    content-encodings applied. In the latter case, let <var>result</var> be
+    the result of applying <var>algorithm</var> to the [representation data][representationdata].
 2.  Let <var>encodedResult</var> be result of base64-encoding
     <var>result</var>.
 3.  Return <var>encodedResult</var>.
@@ -517,9 +515,8 @@ to enable the rest of this specification's work [[!FETCH]]:
 
 A variety of HTML elements result in requests for resources that are to be
 embedded into the document, or executed in its context. To support integrity
-metadata for each of these, and new elements that are added in the future,
-a new `integrity` attribute is added to the list of content attributes for
-the `link` and `script` elements.
+metadata for some of these elements, a new `integrity` attribute is added to
+the list of content attributes for the `link` and `script` elements.
 
 A corresponding `integrity` IDL attribute which [reflects][reflect] the
 value each element's `integrity` content attribute is added to the
@@ -744,8 +741,7 @@ to load the document.
 
 User agents SHOULD mitigate the risk by refusing to fire `error` events
 on elements which loaded cross-origin resources, but some side-channels
-will likely be difficult to avoid (image's `naturalHeight` and
-`naturalWidth` for instance).
+will likely be difficult to avoid.
 </section><!-- /Security::cross-origin -->
 
 </section><!-- /Security -->
