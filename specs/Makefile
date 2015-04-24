@@ -17,9 +17,9 @@ EPR: epr/index.html
 MIX: mixedcontent/index.html
 MIX-CR: mixedcontent/published/2015-02-CR.html
 POWER: powerfulfeatures/index.html
+POWER-WD: powerfulfeatures/published/WD.html
 REFERRER: referrer-policy/index.html
 UPGRADE: upgrade/index.html
-UPGRADE-FPWD: upgrade/published/2015-02-FPWD.html
 UPGRADE-WD: upgrade/published/WD.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
@@ -58,11 +58,11 @@ referrer-policy/index.html: referrer-policy/index.src.html biblio.json
 powerfulfeatures/index.html: powerfulfeatures/index.src.html biblio.json
 	bikeshed -f spec ./powerfulfeatures/index.src.html
 
+powerfulfeatures/published/WD.html: powerfulfeatures/index.src.html biblio.json
+	bikeshed -f spec --md-status=WD ./powerfulfeatures/index.src.html ./powerfulfeatures/published/WD.html
+
 upgrade/index.html: upgrade/index.src.html biblio.json
 	bikeshed -f spec ./upgrade/index.src.html
-
-upgrade/published/2015-02-FPWD.html: upgrade/index.src.html
-	bikeshed -f spec --md-status=FPWD --md-date=2015-02-26 ./upgrade/index.src.html ./upgrade/published/2015-02-FPWD.html
 
 upgrade/published/WD.html: upgrade/index.src.html
 	bikeshed -f spec --md-status=WD ./upgrade/index.src.html ./upgrade/published/WD.html
