@@ -24,7 +24,7 @@ Delivering resources over a secure channel mitigates some of this risk: with
 TLS, [HSTS][], and [pinned public keys][], a user agent can be fairly certain
 that it is indeed speaking with the server it believes it's talking to. These
 mechanisms, however, authenticate _only_ the server, _not_ the content. An
-attacker (or admin!) with access to the server can manipulate content with
+attacker (or administrator) with access to the server can manipulate content with
 impunity. Ideally, authors would not only be able to pin the keys of a
 server, but also pin the _content_, ensuring that an exact representation of
 a resource, and _only_ that representation, loads and executes.
@@ -81,7 +81,7 @@ and future versions of the specification are likely to expand this coverage.
     for her globally-distributed users. She wishes to ensure, however, that
     the CDN's servers deliver _only_ the code she expects them to deliver. She
     can mitigate the risk that CDN compromise (or unexpectedly malicious
-    behavior) would change her code in unfortunate ways by adding
+    behavior) would change her site in unfortunate ways by adding
     [integrity metadata][] to the `link` element included on her page:
 
         <link rel="stylesheet" href="https://site53.cdn.net/style.css"
@@ -271,7 +271,7 @@ hash functions and return the empty string if the priority is equal. That is, if
 a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
 b)</dfn> it would return the hash function the user agent considers the most
 collision-resistant.  For example, `getPrioritizedHashFunction('SHA-256',
-'SHA-512')` would return `SHA-512` and `getPrioritizedHashFunction('SHA-256',
+'SHA-512')` would return `'SHA-512'` and `getPrioritizedHashFunction('SHA-256',
 'SHA-256')` would return the empty string.
 
 </section><!-- /Framework::Cryptographic hash functions::Priority -->
@@ -522,7 +522,7 @@ A corresponding `integrity` IDL attribute which [reflects][reflect] the
 value each element's `integrity` content attribute is added to the
 `HTMLLinkElement` and `HTMLScriptElement` interfaces.
 
-A future revision of this specification is likely to include SRI support
+A future revision of this specification is likely to include integrity support
 for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
 `link`, `object`, `script`, `source`, `track`, and `video` elements.
 {:.note}
@@ -714,7 +714,7 @@ Digests are only as strong as the hash function used to generate them. User
 agents SHOULD refuse to support known-weak hashing functions like MD5 or SHA-1,
 and SHOULD restrict supported hashing functions to those known to be
 collision-resistant. At the time of writing, SHA-256 is a good baseline.
-Moreover, user agents SHOULD reevaluate their supported hashing functions
+Moreover, user agents SHOULD re-evaluate their supported hash functions
 on a regular basis, and deprecate support for those functions shown to be
 insecure.
 </section><!-- /Security::Hash collision -->
@@ -724,7 +724,7 @@ insecure.
 
 Attackers can determine whether some cross-origin resource has certain
 content by attempting to load it with a known digest, and watching for
-load failure. If the load fails, the attacker can surmise that the
+load failures. If the load fails, the attacker can surmise that the
 resource didn't match the hash, and thereby gain some insight into its
 contents. This might reveal, for example, whether or not a user is
 logged into a particular service.
