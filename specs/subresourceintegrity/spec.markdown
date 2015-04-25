@@ -335,10 +335,6 @@ contains these headers, it is ineligible for integrity validation:
 *   `Refresh` can cause IFrame contents to transparently redirect to an
     unintended target, bypassing the integrity check.
 
-Consider the impact of other headers: `Content-Length`, `Content-Range`,
-etc. Is there danger there?
-{:.issue data-number="3"}
-  
 The following algorithm details these restrictions:
 
 1.  Let <var>request</var> be the request that fetched
