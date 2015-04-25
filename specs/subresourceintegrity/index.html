@@ -148,7 +148,7 @@ has the ability to inject arbitrary content.</p>
 TLS, <a href="http://tools.ietf.org/html/rfc6797">HSTS</a>, and <a href="http://tools.ietf.org/html/draft-ietf-websec-key-pinning">pinned public keys</a>, a user agent can be fairly certain
 that it is indeed speaking with the server it believes it’s talking to. These
 mechanisms, however, authenticate <em>only</em> the server, <em>not</em> the content. An
-attacker (or admin!) with access to the server can manipulate content with
+attacker (or administrator) with access to the server can manipulate content with
 impunity. Ideally, authors would not only be able to pin the keys of a
 server, but also pin the <em>content</em>, ensuring that an exact representation of
 a resource, and <em>only</em> that representation, loads and executes.</p>
@@ -169,13 +169,13 @@ substitute malicious content.</p>
 <code>script</code> element, like so:</p>
 
   <pre><code>&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"
-        integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="&gt;
+        integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="
+        crossorigin="anonymous"&gt;
 </code></pre>
 
   <p>Scripts, of course, are not the only resource type which would benefit
-from integrity validation. The scheme specified here applies to all HTML
-elements which trigger fetches, as well as to fetches triggered from CSS
-and JavaScript.</p>
+from integrity validation. The scheme specified here also applies to <code>link</code>
+and future versions of the specification are likely to expand this coverage.</p>
 
   <section>
     <h3 id="goals">Goals</h3>
@@ -210,11 +210,12 @@ would inform the author that an invalid resource was downloaded.</p>
 for her globally-distributed users. She wishes to ensure, however, that
 the CDN’s servers deliver <em>only</em> the code she expects them to deliver. She
 can mitigate the risk that CDN compromise (or unexpectedly malicious
-behavior) would change her code in unfortunate ways by adding
+behavior) would change her site in unfortunate ways by adding
 <a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>link</code> element included on her page:</p>
 
           <pre class="example highlight"><code>&lt;link rel="stylesheet" href="https://site53.cdn.net/style.css"
-      integrity="sha256-SDfwewFAE...wefjijfE"&gt;
+      integrity="sha256-SDfwewFAE...wefjijfE"
+      crossorigin="anonymous"&gt;
 </code></pre>
         </li>
         <li>
@@ -225,7 +226,8 @@ the code she’s carefully reviewed is executed. She can do so by generating
 adding it to the <code>script</code> element she includes on her page:</p>
 
           <pre class="example highlight"><code>&lt;script src="https://analytics-r-us.com/v1.0/include.js"
-        integrity="sha256-SDfwewFAE...wefjijfE"&gt;&lt;/script&gt;
+        integrity="sha256-SDfwewFAE...wefjijfE"
+        crossorigin="anonymous"&gt;&lt;/script&gt;
 </code></pre>
         </li>
         <li>
@@ -364,8 +366,8 @@ sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgR
 
       <pre><code>&lt;script src="hello_world.js"
    integrity="sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-              sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
-    "&gt;&lt;/script&gt;
+              sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg=="
+   crossorigin="anonymous"&gt;&lt;/script&gt;
 </code></pre>
 
       <p>In this case, the user agent will choose the strongest hash function in the
@@ -393,7 +395,7 @@ hash functions and return the empty string if the priority is equal. That is, if
 a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
 b)</dfn> it would return the hash function the user agent considers the most
 collision-resistant.  For example, <code>getPrioritizedHashFunction('SHA-256',
-'SHA-512')</code> would return <code>SHA-512</code> and <code>getPrioritizedHashFunction('SHA-256',
+'SHA-512')</code> would return <code>'SHA-512'</code> and <code>getPrioritizedHashFunction('SHA-256',
 'SHA-256')</code> would return the empty string.</p>
 
     </section>
@@ -412,9 +414,8 @@ collision-resistant.  For example, <code>getPrioritizedHashFunction('SHA-256',
         <li>Let <var>result</var> be the result of <a href="#apply-algorithm-to-resource">applying <var>algorithm</var></a>
 to the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a> without any content-codings
 applied, except when the user agent intends to consumes the content with
-content-encodings applied (e.g., saving a gzip’d file to disk). In the
-latter case, let <var>result</var> be the result of applying
-<var>algorithm</var> to the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a>.</li>
+content-encodings applied. In the latter case, let <var>result</var> be
+the result of applying <var>algorithm</var> to the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a>.</li>
         <li>Let <var>encodedResult</var> be result of base64-encoding
 <var>result</var>.</li>
         <li>Return <var>encodedResult</var>.</li>
@@ -571,7 +572,8 @@ functions. For example, a developer might write a <code>script</code> element su
 
       <pre><code>&lt;script src="https://foobar.com/content-changes.js"
         integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=
-                   sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng="&gt;
+                   sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng="
+        crossorigin="anonymous"&gt;&lt;/script&gt;
 </code></pre>
 
       <p>which would allow the user agent to accept two different content payloads, one
@@ -664,17 +666,16 @@ and skip directly to firing the event.</p>
 
     <p>A variety of HTML elements result in requests for resources that are to be
 embedded into the document, or executed in its context. To support integrity
-metadata for each of these, and new elements that are added in the future,
-a new <code>integrity</code> attribute is added to the list of content attributes for
-the <code>link</code> and <code>script</code> elements.</p>
+metadata for some of these elements, a new <code>integrity</code> attribute is added to
+the list of content attributes for the <code>link</code> and <code>script</code> elements.</p>
 
     <p>A corresponding <code>integrity</code> IDL attribute which <a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflects</a> the
 value each element’s <code>integrity</code> content attribute is added to the
 <code>HTMLLinkElement</code> and <code>HTMLScriptElement</code> interfaces.</p>
 
-    <p class="note">A future revision of this specification is likely to include SRI support
+    <p class="note">A future revision of this specification is likely to include integrity support
 for all possible subresources, i.e., <code>a</code>, <code>audio</code>, <code>embed</code>, <code>iframe</code>, <code>img</code>,
-<code>link</code>, <code>object</code>, <code>script</code>, <code>source</code>, -<code>track</code>, and <code>video</code> elements.</p>
+<code>link</code>, <code>object</code>, <code>script</code>, <code>source</code>, <code>track</code>, and <code>video</code> elements.</p>
 
   </section>
 
@@ -704,7 +705,7 @@ applied only to the <code>hash-expression</code> that immediately precedes it.</
 
     <div class="note">
       <p>At the moment, no <code>option-expression</code>s are defined. However, future versions of
-the spec make define options, such as MIME types [[!MIMETYPE]].</p>
+the spec may define options, such as MIME types [[!MIMETYPE]].</p>
     </div>
 
   </section>
@@ -876,7 +877,7 @@ document</a>. See also <a href="https://w3ctag.github.io/web-https/">securing th
 agents SHOULD refuse to support known-weak hashing functions like MD5 or SHA-1,
 and SHOULD restrict supported hashing functions to those known to be
 collision-resistant. At the time of writing, SHA-256 is a good baseline.
-Moreover, user agents SHOULD reevaluate their supported hashing functions
+Moreover, user agents SHOULD re-evaluate their supported hash functions
 on a regular basis, and deprecate support for those functions shown to be
 insecure.</p>
   </section>
@@ -887,7 +888,7 @@ insecure.</p>
 
     <p>Attackers can determine whether some cross-origin resource has certain
 content by attempting to load it with a known digest, and watching for
-load failure. If the load fails, the attacker can surmise that the
+load failures. If the load fails, the attacker can surmise that the
 resource didn’t match the hash, and thereby gain some insight into its
 contents. This might reveal, for example, whether or not a user is
 logged into a particular service.</p>
@@ -904,8 +905,7 @@ to load the document.</p>
 
     <p>User agents SHOULD mitigate the risk by refusing to fire <code>error</code> events
 on elements which loaded cross-origin resources, but some side-channels
-will likely be difficult to avoid (image’s <code>naturalHeight</code> and
-<code>naturalWidth</code> for instance).</p>
+will likely be difficult to avoid.</p>
   </section>
   <!-- /Security::cross-origin -->
 
