@@ -99,7 +99,7 @@ and future versions of the specification are likely to expand this coverage.
     {:.example.highlight}
 
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
-    HTML (for example, Chrome's New Tab Page) aren't manipulated before display.
+    HTML (for example, a browser's New Tab page) aren't manipulated before display.
     [Integrity metadata][] mitigates the risk that altered JavaScript will run
     in these page's high-privilege context.
 
