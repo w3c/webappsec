@@ -664,10 +664,6 @@ support this latter option, user agents MUST send a
 associated integrity metadata (see item 3 in the "[Modifications to
 Fetch][]" section).
 
-Think about how integrity checks would effect `vary` headers
-in general.
-{:.issue data-number="17"}
-
 [cachecontrol]: http://tools.ietf.org/html/rfc7234#section-5.2
 [notransform]: http://tools.ietf.org/html/rfc7234#section-5.2.1.6
 [Modifications to Fetch]: #modifications-to-fetch
