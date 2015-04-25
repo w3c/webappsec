@@ -646,19 +646,6 @@ Insert the following steps after step 5 of step 14 of HTML5's
 
 </section><!-- /Framework::HTML::Elements -->
 
-<section>
-### Verification of CSS-loaded subresources
-
-Tab and Anne are poking at adding `fetch()` to some spec somewhere
-which would allow CSS files to specify various arguments to the fetch
-algorithm while requesting resources. Detail on the proposal is at
-<https://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html>.
-Once that is specified, we can proceed defining an `integrity` argument
-that would allow integrity checks in CSS.
-{:.issue data-number="13"}
-
-</section><!-- /Framework::CSS -->
-
 </section><!-- /Framework -->
 
 <section>
