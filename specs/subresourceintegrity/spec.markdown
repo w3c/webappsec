@@ -338,10 +338,6 @@ contains these headers, it is ineligible for integrity validation:
 *   `Refresh` can cause IFrame contents to transparently redirect to an
     unintended target, bypassing the integrity check.
 
-Consider the impact of other headers: `Content-Length`, `Content-Range`,
-etc. Is there danger there?
-{:.issue data-number="3"}
-  
 The following algorithm details these restrictions:
 
 1.  Let <var>request</var> be the request that fetched
@@ -650,19 +646,6 @@ Insert the following steps after step 5 of step 14 of HTML5's
 
 </section><!-- /Framework::HTML::Elements -->
 
-<section>
-### Verification of CSS-loaded subresources
-
-Tab and Anne are poking at adding `fetch()` to some spec somewhere
-which would allow CSS files to specify various arguments to the fetch
-algorithm while requesting resources. Detail on the proposal is at
-<https://lists.w3.org/Archives/Public/public-webappsec/2014Jan/0129.html>.
-Once that is specified, we can proceed defining an `integrity` argument
-that would allow integrity checks in CSS.
-{:.issue data-number="13"}
-
-</section><!-- /Framework::CSS -->
-
 </section><!-- /Framework -->
 
 <section>
@@ -680,10 +663,6 @@ support this latter option, user agents MUST send a
 [`no-transform`][notransform] when requesting a resource with
 associated integrity metadata (see item 3 in the "[Modifications to
 Fetch][]" section).
-
-Think about how integrity checks would effect `vary` headers
-in general.
-{:.issue data-number="17"}
 
 [cachecontrol]: http://tools.ietf.org/html/rfc7234#section-5.2
 [notransform]: http://tools.ietf.org/html/rfc7234#section-5.2.1.6
