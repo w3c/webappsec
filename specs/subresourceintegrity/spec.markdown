@@ -617,9 +617,7 @@ the element:
 1.  If the response's integrity state is `corrupt`:
     1.  Abort the `load` event, and treat the resource as having failed
         to load.
-    2.  If <var>resource</var> is [same origin][] with the origin of
-        the `link` element's Document, then [queue a task][] to
-        [fire a simple event][] named `error` at the `link` element.
+    2.  [Fire a simple event][] named `error` at the `link` element.
 
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
 [same origin]: http://tools.ietf.org/html/rfc6454#section-5
@@ -639,16 +637,14 @@ Insert the following steps after step 5 of step 14 of HTML5's
 
 8.  Once the [fetching algorithm][] has completed:
     2.  If the response's integrity state is `corrupt`:
-        1.  If <var>resource</var> is [same origin][] with the `script`
-            element's Document's origin, then [queue a task][] to
-            [fire a simple event][] named `error` at the element, and
-            abort these steps.
+        1.  [Fire a simple event][] named `error` at the `script`
+            element, and abort these steps.
 {:start="6"}
 
 [prepare]: http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script
 [fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#fetch
 [queue a task]: http://www.w3.org/TR/html5/webappapis.html#queue-a-task
-[fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
+[Fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
 [bz]: http://lists.w3.org/Archives/Public/public-webappsec/2013Dec/0048.html
 </section><!-- /Framework::HTML::Elements::script -->
 
@@ -744,8 +740,8 @@ common usernames, and specify those hashes while repeatedly attempting
 to load the document.
 
 User agents SHOULD mitigate the risk by refusing to fire `error` events
-on elements which loaded cross-origin resources, but some side-channels
-will likely be difficult to avoid.
+on elements which loaded non-CORS cross-origin resources, but
+some side-channels will likely be difficult to avoid.
 </section><!-- /Security::cross-origin -->
 
 </section><!-- /Security -->
