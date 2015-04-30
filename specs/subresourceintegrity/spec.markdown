@@ -609,13 +609,9 @@ insert the following step between steps 1 and 2:
     of the element's `integrity` attribute.
 {:start="2"}
 
-Additionally, perform the following steps before firing a `load` event at
-the element:
-
-1.  If the response's integrity state is `corrupt`:
-    1.  Abort the `load` event, and treat the resource as having failed
-        to load.
-    2.  [Fire a simple event][] named `error` at the `link` element.
+Additionally, in the paragraph specifying when to fire a `load` event, add
+"response with a `corrupt` integrity state" to the list of load failure
+reasons which are considered network errors.
 
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
 </section><!-- /Framework::HTML::link -->
