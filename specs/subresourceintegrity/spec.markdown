@@ -295,7 +295,7 @@ collision-resistant.  For example, `getPrioritizedHashFunction('SHA-256',
 
 1.  Let <var>result</var> be the result of [applying <var>algorithm</var>][apply-algorithm]
     to the [representation data][representationdata] without any content-codings
-    applied, except when the user agent intends to consumes the content with
+    applied, except when the user agent intends to consume the content with
     content-encodings applied. In the latter case, let <var>result</var> be
     the result of applying <var>algorithm</var> to the [representation data][representationdata].
 2.  Let <var>encodedResult</var> be result of base64-encoding
@@ -729,7 +729,7 @@ some side-channels will likely be difficult to avoid.
 <section>
 ## Acknowledgements
 
-None of this is new. Much of the content here is inspired heavily by Gervase
+Much of the content here is inspired heavily by Gervase
 Markham's [Link Fingerprints][] concept, as well as WHATWG's [Link Hashes][].
 
 A special thanks to Mike West of Google, Inc. for his invaluable contributions
