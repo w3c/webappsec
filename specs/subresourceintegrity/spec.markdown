@@ -637,7 +637,7 @@ Insert the following step after step 14.5 of HTML5's
 {:start="6"}
 
 [prepare]: http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script
-[fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#fetch
+[fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#potentially-cors-enabled-fetch
 [queue a task]: http://www.w3.org/TR/html5/webappapis.html#queue-a-task
 [Fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
 </section><!-- /Framework::HTML::Elements::script -->
