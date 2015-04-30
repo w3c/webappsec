@@ -624,8 +624,8 @@ the element:
 
 Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
 
-1.  Set the [integrity metadata][] of the request to the value
-    of the element's `integrity` attribute.
+1.  Let <var>src</var> be the value of the element's `src` attribute and
+    <var>integrity</var> be the value of the element's `integrity` attribute.
 
 Insert the following step after step 14.5 of HTML5's
 ["prepare a script" algorithm][prepare]:
