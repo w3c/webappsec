@@ -630,16 +630,16 @@ Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
 Insert the following step after step 14.5 of HTML5's
 ["prepare a script" algorithm][prepare]:
 
-8.  Once the [fetching algorithm][] has completed:
-    2.  If the response's integrity state is `corrupt`:
-        1.  [Fire a simple event][] named `error` at the `script`
-            element, and abort these steps.
+1.  Once the [fetching algorithm][] has completed, if the response's
+    integrity state is `corrupt`, [queue a task][] to
+    [fire a simple event][] named `error` at the element, and abort these
+    steps.
 {:start="6"}
 
 [prepare]: http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script
 [fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#potentially-cors-enabled-fetch
+[fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
 [queue a task]: http://www.w3.org/TR/html5/webappapis.html#queue-a-task
-[Fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
 </section><!-- /Framework::HTML::Elements::script -->
 
 </section><!-- /Framework::HTML::Elements -->
