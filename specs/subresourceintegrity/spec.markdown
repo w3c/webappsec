@@ -640,7 +640,6 @@ Insert the following step after step 14.5 of HTML5's
 [fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#fetch
 [queue a task]: http://www.w3.org/TR/html5/webappapis.html#queue-a-task
 [Fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
-[bz]: http://lists.w3.org/Archives/Public/public-webappsec/2013Dec/0048.html
 </section><!-- /Framework::HTML::Elements::script -->
 
 </section><!-- /Framework::HTML::Elements -->
