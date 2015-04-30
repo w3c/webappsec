@@ -602,10 +602,12 @@ failed resource with a different one.
 ###### The `link` element for stylesheets
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
-`link` element that has a `rel` attribute with the value of `stylesheet`:
+`link` element that has a `rel` attribute with the value of `stylesheet`,
+insert the following step between steps 1 and 2:
 
 1.  Set the [integrity metadata][] of the request to the value
     of the element's `integrity` attribute.
+{:start="2"}
 
 Additionally, perform the following steps before firing a `load` event at
 the element:
