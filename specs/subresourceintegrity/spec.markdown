@@ -618,7 +618,6 @@ the element:
     2.  [Fire a simple event][] named `error` at the `link` element.
 
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
-[same origin]: http://tools.ietf.org/html/rfc6454#section-5
 </section><!-- /Framework::HTML::link -->
 
 <section>
