@@ -193,9 +193,15 @@ metadata</dfn>, which consists of the following pieces of information:
 
 * cryptographic hash function ("alg")
 * [digest][] ("val")
+* options ("opt")
 
 The hash function and digest MUST be provided in order to validate a
 resource's integrity.
+
+<div class="note">
+At the moment, no options are defined. However, future versions of
+the spec may define options, such as MIME types [[!MIMETYPE]].
+</div>
 
 This metadata MUST be encoded in the same format as the `hash-source`
 in [section 4.2 of the Content Security Policy Level 2 specification][csp2-section42].
@@ -551,11 +557,6 @@ The `integrity` IDL attribute must [reflect][] the `integrity` content attribute
 
 `option-expression`s are associated on a per `hash-expression` basis and are
 applied only to the `hash-expression` that immediately precedes it.
-
-<div class="note">
-At the moment, no `option-expression`s are defined. However, future versions of
-the spec may define options, such as MIME types [[!MIMETYPE]].
-</div>
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
 </section><!-- /Framework::HTML::integrity -->
