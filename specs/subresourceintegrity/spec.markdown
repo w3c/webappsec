@@ -32,9 +32,9 @@ a resource, and _only_ that representation, loads and executes.
 This document specifies such a validation scheme, extending several HTML
 elements with an `integrity` attribute that contains a cryptographic hash of
 the representation of the resource the author expects to load. For instance,
-an author may wish to load jQuery from a shared server rather than hosting it
+an author may wish to load some framework from a shared server rather than hosting it
 on their own origin. Specifying that the _expected_ SHA-256 hash of
-`https://code.jquery.com/jquery-1.10.2.min.js`
+`https://example.com/example-framework.js`
 is `C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=` means
 that the user agent can verify that the data it loads from that URL matches
 that expected hash before executing the JavaScript it contains. This
@@ -44,7 +44,7 @@ substitute malicious content.
 This example can be communicated to a user agent by adding the hash to a
 `script` element, like so:
 
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"
+    <script src="https://example.com/example-framework.js"
             integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="
             crossorigin="anonymous">
 
