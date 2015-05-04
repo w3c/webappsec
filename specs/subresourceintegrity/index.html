@@ -156,9 +156,9 @@ a resource, and <em>only</em> that representation, loads and executes.</p>
   <p>This document specifies such a validation scheme, extending several HTML
 elements with an <code>integrity</code> attribute that contains a cryptographic hash of
 the representation of the resource the author expects to load. For instance,
-an author may wish to load jQuery from a shared server rather than hosting it
+an author may wish to load some framework from a shared server rather than hosting it
 on their own origin. Specifying that the <em>expected</em> SHA-256 hash of
-<code>https://code.jquery.com/jquery-1.10.2.min.js</code>
+<code>https://example.com/example-framework.js</code>
 is <code>C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=</code> means
 that the user agent can verify that the data it loads from that URL matches
 that expected hash before executing the JavaScript it contains. This
@@ -168,7 +168,7 @@ substitute malicious content.</p>
   <p>This example can be communicated to a user agent by adding the hash to a
 <code>script</code> element, like so:</p>
 
-  <pre><code>&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"
+  <pre><code>&lt;script src="https://example.com/example-framework.js"
         integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="
         crossorigin="anonymous"&gt;&lt;/script&gt;
 </code></pre>
@@ -207,11 +207,11 @@ would inform the author that an invalid resource was downloaded.</p>
       <ul>
         <li>
           <p>An author wishes to use a content delivery network to improve performance
-for her globally-distributed users. She wishes to ensure, however, that
-the CDN’s servers deliver <em>only</em> the code she expects them to deliver. She
-can mitigate the risk that CDN compromise (or unexpectedly malicious
-behavior) would change her site in unfortunate ways by adding
-<a href="#dfn-integrity-metadata">integrity metadata</a> to the <code>link</code> element included on her page:</p>
+for globally-distributed users. It is important, however, to ensure that
+the CDN’s servers deliver <em>only</em> the code the author expects them to
+deliver. To mitigate the risk that a CDN compromise (or unexpectedly malicious
+behavior) would change that site in unfortunate ways, the following
+<a href="#dfn-integrity-metadata">integrity metadata</a> is added to the <code>link</code> element included on the page:</p>
 
           <pre class="example highlight"><code>&lt;link rel="stylesheet" href="https://site53.cdn.net/style.css"
       integrity="sha256-SDfwewFAE...wefjijfE"
@@ -220,10 +220,9 @@ behavior) would change her site in unfortunate ways by adding
         </li>
         <li>
           <p>An author wants to include JavaScript provided by a third-party
-analytics service on her site. She wants, however, to ensure that only
-the code she’s carefully reviewed is executed. She can do so by generating
-<a href="#dfn-integrity-metadata">integrity metadata</a> for the script she’s planning on including, and
-adding it to the <code>script</code> element she includes on her page:</p>
+analytics service. To ensure that only the code that has been carefully
+reviewed is executed, the author generates <a href="#dfn-integrity-metadata">integrity metadata</a> for
+the script, and adds it to the <code>script</code> element:</p>
 
           <pre class="example highlight"><code>&lt;script src="https://analytics-r-us.com/v1.0/include.js"
         integrity="sha256-SDfwewFAE...wefjijfE"
@@ -234,15 +233,9 @@ adding it to the <code>script</code> element she includes on her page:</p>
           <p>A user agent wishes to ensure that pieces of its UI which are rendered via
 HTML (for example, a browser’s New Tab page) aren’t manipulated before display.
 <a href="#dfn-integrity-metadata">Integrity metadata</a> mitigates the risk that altered JavaScript will run
-in these page’s high-privilege context.</p>
-        </li>
-        <li>
-          <p>The author of a mash-up wants to make sure her creation remains in a working
-state. Adding <a href="#dfn-integrity-metadata">integrity metadata</a> to external subresources defines an
-expected revision of the included files.</p>
+in these pages’ high-privilege contexts.</p>
         </li>
       </ul>
-
     </section>
     <!-- Introduction::UseCases::Integrity -->
   </section>
@@ -292,7 +285,7 @@ specified in RFC 5234. [[!ABNF]]</p>
 
     <p>The <dfn>SHA-256</dfn>, <dfn>SHA-384</dfn>, and <dfn>SHA-512</dfn> are part
 of the <dfn>SHA-2</dfn> set of cryptographic hash functions defined by the
-NIST in <a href="http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf">“Descriptions of SHA-256, SHA-384, and SHA-512”</a>.</p>
+NIST in <a href="http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf">“FIPS PUB 180-4: Secure Hash Standard (SHS)”</a>.</p>
 
   </section>
 </section>
@@ -362,7 +355,7 @@ resource’s <a href="#dfn-integrity-metadata">integrity metadata</a>, and MAY s
       <p>Multiple sets of <a href="#dfn-integrity-metadata">integrity metadata</a> may be associated with a single
 resource in order to provide agility in the face of future discoveries.
 For example, the “Hello, world.” resource described above may be described
-either of the following hash expressions:</p>
+by either of the following hash expressions:</p>
 
       <pre class="example highlight"><code>sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
 sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
@@ -419,7 +412,7 @@ collision-resistant.  For example, <code>getPrioritizedHashFunction('SHA-256',
       <ol>
         <li>Let <var>result</var> be the result of <a href="#apply-algorithm-to-resource">applying <var>algorithm</var></a>
 to the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a> without any content-codings
-applied, except when the user agent intends to consumes the content with
+applied, except when the user agent intends to consume the content with
 content-encodings applied. In the latter case, let <var>result</var> be
 the result of applying <var>algorithm</var> to the <a href="http://tools.ietf.org/html/rfc7231#section-3">representation data</a>.</li>
         <li>Let <var>encodedResult</var> be result of base64-encoding
@@ -437,7 +430,7 @@ brute-forcing values via integrity checks, resources are only eligible for such
 checks if they are same-origin or are the result of explicit access granted to
 the loading origin via CORS. [[!CORS]]</p>
 
-      <p class="note">As noted in <a href="uri-origin">RFC6454, section 4</a>, some user agents use
+      <p class="note">As noted in <a href="http://tools.ietf.org/html/rfc6454#section-4">RFC6454, section 4</a>, some user agents use
 globally unique identifiers for each file URI. This means that
 resources accessed over a <code>file</code> scheme URL are unlikely to be
 eligible for integrity checks.</p>
@@ -893,8 +886,8 @@ some side-channels will likely be difficult to avoid.</p>
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>
 
-  <p>None of this is new. Much of the content here is inspired heavily by Gervase
-Markham’s <a href="http://www.gerv.net/security/link-fingerprints/">Link Fingerprints</a> concept, as well as WHATWG’s <a href="http://wiki.whatwg.org/wiki/Link_Hashes">Link Hashes</a>.</p>
+  <p>Much of the content here is inspired heavily by Gervase
+Markham’s <a href="http://www.gerv.net/security/link-fingerprints/">Link Fingerprints</a> concept, as well as WHATWG’s <a href="https://wiki.whatwg.org/wiki/Link_Hashes">Link Hashes</a>.</p>
 
   <p>A special thanks to Mike West of Google, Inc. for his invaluable contributions
 to the initial version of this spec.</p>
