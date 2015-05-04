@@ -164,10 +164,10 @@ specified in RFC 5234. [[!ABNF]]
 
 The <dfn>SHA-256</dfn>, <dfn>SHA-384</dfn>, and <dfn>SHA-512</dfn> are part
 of the <dfn>SHA-2</dfn> set of cryptographic hash functions defined by the
-NIST in ["Descriptions of SHA-256, SHA-384, and SHA-512"][sha].
+NIST in ["FIPS PUB 180-4: Secure Hash Standard (SHS)"][shs].
 
 [abnf-b1]: http://tools.ietf.org/html/rfc5234#appendix-B.1
-[sha]: http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf
+[shs]: http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf
 </section>
 </section>
 
