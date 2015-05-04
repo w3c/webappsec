@@ -46,7 +46,7 @@ This example can be communicated to a user agent by adding the hash to a
 
     <script src="https://example.com/example-framework.js"
             integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="
-            crossorigin="anonymous">
+            crossorigin="anonymous"></script>
 
 {:.example.highlight}
 
