@@ -104,11 +104,6 @@ and future versions of the specification are likely to expand this coverage.
     HTML (for example, a browser's New Tab page) aren't manipulated before display.
     [Integrity metadata][] mitigates the risk that altered JavaScript will run
     in these page's high-privilege context.
-
-*   The author of a mash-up wants to make sure it remains in a working
-    state. Adding [integrity metadata][] to external subresources defines an
-    expected revision of the included files.
-
 </section><!-- Introduction::UseCases::Integrity -->
 </section><!-- /Introduction::Use Cases -->
 </section><!-- /Introduction -->
