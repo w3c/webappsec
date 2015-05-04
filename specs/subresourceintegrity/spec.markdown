@@ -552,6 +552,9 @@ The `integrity` IDL attribute must [reflect][] the `integrity` content attribute
 `option-expression`s are associated on a per `hash-expression` basis and are
 applied only to the `hash-expression` that immediately precedes it.
 
+In order for user agents to remain fully forwards compatible with future
+options, the user agent MUST ignore all unrecognized  `option-expression`s
+
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
 </section><!-- /Framework::HTML::integrity -->
 
