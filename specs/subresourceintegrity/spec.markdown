@@ -103,7 +103,7 @@ and future versions of the specification are likely to expand this coverage.
 *   A user agent wishes to ensure that pieces of its UI which are rendered via
     HTML (for example, a browser's New Tab page) aren't manipulated before display.
     [Integrity metadata][] mitigates the risk that altered JavaScript will run
-    in these page's high-privilege context.
+    in these pages' high-privilege contexts.
 </section><!-- Introduction::UseCases::Integrity -->
 </section><!-- /Introduction::Use Cases -->
 </section><!-- /Introduction -->
@@ -237,7 +237,7 @@ resource's [integrity metadata][], and MAY support additional hash functions.
 Multiple sets of [integrity metadata][] may be associated with a single
 resource in order to provide agility in the face of future discoveries.
 For example, the "Hello, world." resource described above may be described
-either of the following hash expressions:
+by either of the following hash expressions:
 
     sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
     sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
@@ -307,7 +307,7 @@ brute-forcing values via integrity checks, resources are only eligible for such
 checks if they are same-origin or are the result of explicit access granted to
 the loading origin via CORS. [[!CORS]]
 
-As noted in [RFC6454, section 4](uri-origin), some user agents use
+As noted in [RFC6454, section 4][uri-origin], some user agents use
 globally unique identifiers for each file URI. This means that
 resources accessed over a `file` scheme URL are unlikely to be
 eligible for integrity checks.
@@ -730,5 +730,5 @@ A special thanks to Mike West of Google, Inc. for his invaluable contributions
 to the initial version of this spec.
 
 [Link Fingerprints]: http://www.gerv.net/security/link-fingerprints/
-[Link Hashes]: http://wiki.whatwg.org/wiki/Link_Hashes
+[Link Hashes]: https://wiki.whatwg.org/wiki/Link_Hashes
 </section>
