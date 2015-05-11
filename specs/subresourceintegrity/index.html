@@ -261,11 +261,10 @@ executing a cryptographic hash function on an arbitrary block of data.</p>
     <p>The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]</p>
 
-    <p>The terms <dfn>privileged document</dfn>, <dfn>unprivileged document</dfn>, and
-<dfn>privileged context</dfn> are defined in <a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#terms">section 2 of the Privileged
-Contexts</a> specification. An example of a privileged document is a
-document loaded over HTTPS. An example of an unprivileged document and an
-unprivileged context are a document loaded over HTTP.</p>
+    <p>The terms <dfn>secure document</dfn> and
+<dfn>secure context</dfn> are defined in <a href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#terms">section 2 of the Secure
+Contexts</a> specification. An example of a secure document is a
+document loaded over HTTPS. A counterexample is a document loaded over HTTP.</p>
 
     <p>A <dfn>potentially secure origin</dfn> is defined in <a href="https://www.w3.org/TR/mixed-content/#potentially-secure-origin">section 2 of the Mixed
 Content</a> specification. An example of a potentially secure origin
@@ -435,15 +434,15 @@ globally unique identifiers for each file URI. This means that
 resources accessed over a <code>file</code> scheme URL are unlikely to be
 eligible for integrity checks.</p>
 
-      <p>One should note that being a <a href="#dfn-privileged-document">privileged document</a> (e.g. a document delivered
+      <p>One should note that being a <a href="#dfn-secure-document">secure document</a> (e.g. a document delivered
 over HTTPS) is not necessary for the use of integrity validation. Because
 resource integrity is only an application level security tool, and it does not
-change the security state of the user agent, a privileged document is
-unnecessary. However, if integrity is used in an <a href="#dfn-unprivileged-document">unprivileged document</a> (e.g.
+change the security state of the user agent, a <a href="#dfn-secure-document">secure document</a> is
+unnecessary. However, if integrity is used in other than a <a href="#dfn-secure-document">secure document</a> (e.g.
 a document delivered over HTTP), authors should be aware that the integrity
 provides <em>no security guarantees at all</em>. For this reason, authors should
 only deliver integrity metadata on a <a href="#dfn-potentially-secure-origin">potentially secure origin</a>.  See
-<a href="#unprivileged-contexts-remain-unprivileged-1">Unprivileged contexts remain unprivileged</a> for more discussion.</p>
+<a href="#non-secure-contexts-remain-non-secure-1">Non-secure contexts remain non-secure</a> for more discussion.</p>
 
       <p>Certain HTTP headers can also change the way the resource behaves in
 ways which integrity checking cannot account for. If the resource
@@ -684,11 +683,7 @@ valid metadata as described by the following ABNF grammar:</p>
 
     <pre><code>integrity-metadata = *WSP hash-with-options *( 1*WSP hash-with-options ) *WSP / *WSP
 hash-with-options  = hash-expression *("?" option-expression)
-option-expression  = option-name "=" option-value
-option-name        = 1*option-name-char
-option-name-char   = ALPHA / DIGIT / "-"
-option-value       = *option-value-char
-option-value-char  = ALPHA / DIGIT / "!" / "#" / "$" / "%" / "&amp;" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / "/"
+option-expression  = *VCHAR
 hash-algo          = &lt;hash-algo production from [Content Security Policy Level 2, section 4.2]&gt;
 base64-value       = &lt;base64-value production from [Content Security Policy Level 2, section 4.2]&gt;
 hash-expression    = hash-algo "-" base64-value
@@ -701,6 +696,11 @@ applied only to the <code>hash-expression</code> that immediately precedes it.</
 
     <p>In order for user agents to remain fully forwards compatible with future
 options, the user agent MUST ignore all unrecognized  <code>option-expression</code>s</p>
+
+    <p class="note">Note that while the <code>option-expression</code> has been reserved in the syntax, no
+options have been defined. It is likely that a future version of the spec will
+define a more specific syntax for options, so the syntax is defined as broadly
+as possible for now.</p>
 
   </section>
   <!-- /Framework::HTML::integrity -->
@@ -831,14 +831,14 @@ Fetch</a>” section).</p>
   <h2 id="security-considerations">Security Considerations</h2>
 
   <section>
-    <h3 id="unprivileged-contexts-remain-unprivileged">Unprivileged contexts remain unprivileged</h3>
+    <h3 id="non-secure-contexts-remain-non-secure">Non-secure contexts remain non-secure</h3>
 
-    <p><a href="#dfn-integrity-metadata">Integrity metadata</a> delivered to an <a href="#dfn-unprivileged-context">unprivileged context</a>, such as an
-<a href="#dfn-unprivileged-document">unprivileged document</a>, only protects an origin against a compromise of the
+    <p><a href="#dfn-integrity-metadata">Integrity metadata</a> delivered to a context that is not a <a href="#dfn-secure-context">secure context</a>,
+such as an only protects an origin against a compromise of the
 server where an external resources is hosted. Network attackers can alter the
 digest in-flight (or remove it entirely, or do absolutely anything else to the
 document), just as they could alter the resource the hash is meant to validate.
-Thus, authors SHOULD deliver integrity metadata only to a <a href="#dfn-privileged-document">privileged
+Thus, authors SHOULD deliver integrity metadata only to a <a href="#dfn-secure-document">secure
 document</a>. See also <a href="https://w3ctag.github.io/web-https/">securing the web</a>.</p>
 
   </section>

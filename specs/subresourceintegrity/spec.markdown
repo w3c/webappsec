@@ -536,11 +536,7 @@ valid metadata as described by the following ABNF grammar:
 
     integrity-metadata = *WSP hash-with-options *( 1*WSP hash-with-options ) *WSP / *WSP
     hash-with-options  = hash-expression *("?" option-expression)
-    option-expression  = option-name "=" option-value
-    option-name        = 1*option-name-char
-    option-name-char   = ALPHA / DIGIT / "-"
-    option-value       = *option-value-char
-    option-value-char  = ALPHA / DIGIT / "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / "/"
+    option-expression  = *VCHAR
     hash-algo          = <hash-algo production from [Content Security Policy Level 2, section 4.2]>
     base64-value       = <base64-value production from [Content Security Policy Level 2, section 4.2]>
     hash-expression    = hash-algo "-" base64-value
@@ -552,6 +548,12 @@ applied only to the `hash-expression` that immediately precedes it.
 
 In order for user agents to remain fully forwards compatible with future
 options, the user agent MUST ignore all unrecognized  `option-expression`s
+
+Note that while the `option-expression` has been reserved in the syntax, no
+options have been defined. It is likely that a future version of the spec will
+define a more specific syntax for options, so the syntax is defined as broadly
+as possible for now.
+{:.note}
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
 </section><!-- /Framework::HTML::integrity -->
