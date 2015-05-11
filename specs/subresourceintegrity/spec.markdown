@@ -157,16 +157,26 @@ A <dfn>base64 encoding</dfn> is defined in [RFC 4648, section 4][base64].
 
 [base64]: http://tools.ietf.org/html/rfc4648#section-4
 
-The Augmented Backus-Naur Form (ABNF) notation used in this document is
-specified in RFC 5234. [[!ABNF]]
-
 The <dfn>SHA-256</dfn>, <dfn>SHA-384</dfn>, and <dfn>SHA-512</dfn> are part
 of the <dfn>SHA-2</dfn> set of cryptographic hash functions defined by the
 NIST in ["FIPS PUB 180-4: Secure Hash Standard (SHS)"][shs].
 
-[abnf-b1]: http://tools.ietf.org/html/rfc5234#appendix-B.1
 [shs]: http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf
 </section>
+
+<section>
+### Grammatical Concepts
+
+The Augmented Backus-Naur Form (ABNF) notation used in this document is
+specified in RFC5234. [[!ABNF]]
+
+The following core rules are included by reference, as defined in
+[Appendix B.1][abnf-b1] of [[!ABNF]]: <code><dfn>WSP</dfn></code> (white space)
+and <code><dfn>VCHAR</dfn></code> (printing characters).
+
+[abnf-b1]: https://tools.ietf.org/html/rfc5234#appendix-B.1
+</section>
+
 </section>
 
 <section>
