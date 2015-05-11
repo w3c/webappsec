@@ -551,8 +551,8 @@ options, the user agent MUST ignore all unrecognized  `option-expression`s
 
 Note that while the `option-expression` has been reserved in the syntax, no
 options have been defined. It is likely that a future version of the spec will
-define a more specific syntax for options, so the syntax is defined as broadly
-as possible for now.
+define a more specific syntax for options, so it is defined here as broadly
+as possible.
 {:.note}
 
 [reflect]: http://www.w3.org/TR/html5/infrastructure.html#reflect
