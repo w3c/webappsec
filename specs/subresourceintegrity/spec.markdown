@@ -679,8 +679,14 @@ document), just as they could alter the resource the hash is meant to validate.
 Thus, authors SHOULD deliver integrity metadata only to a [secure
 document][]. See also [securing the web][].
 
+Similarly, since integrity checks do not provide any privacy guarantees,
+[Integrity metadata][] MUST NOT affect the return values of the Mixed Content
+algorithms as defined in [section 5 of the Mixed Content][mixedcontent]
+specification.
+
 [Securing the Web]: https://w3ctag.github.io/web-https/
-</section><!-- /Security::Insecure channels -->
+[mixedcontent]: http://www.w3.org/TR/mixed-content/#algorithms
+</section><!-- /Security::Non-secure contexts remain non-secure -->
 
 <section>
 ### Hash collision attacks
