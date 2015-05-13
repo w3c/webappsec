@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  
+  
+  <title>Clear Browsing Data</title>
+  
+  
+  <link href="../default.css" rel="stylesheet" type="text/css">
+  
+  
+  <style>
+  body {
+    background: url("https://www.w3.org/StyleSheets/TR/logo-ED") top left no-repeat white;
+    background-attachment: fixed;
+    color: black;
+    font-family: sans-serif;
+    margin: 0 auto;
+    max-width: 50em;
+    padding: 2em 1em 2em 70px;
+  }
+  :link { color: #00C; background: transparent }
+  :visited { color: #609; background: transparent }
+  a[href]:active { color: #C00; background: transparent }
+  a[href]:hover { background: #ffa }
+
+  a[href] img { border-style: none }
+
+  h1, h2, h3, h4, h5, h6 { text-align: left }
+  h1, h2, h3 { color: #005A9C; }
+  h1 { font: 170% sans-serif }
+  h2 { font: 140% sans-serif }
+  h3 { font: 120% sans-serif }
+  h4 { font: bold 100% sans-serif }
+  h5 { font: italic 100% sans-serif }
+  h6 { font: small-caps 100% sans-serif }
+
+  .hide { display: none }
+
+  div.head { margin-bottom: 1em }
+  div.head h1 { margin-top: 2em; clear: both }
+  div.head table { margin-left: 2em; margin-top: 2em }
+
+  p.copyright { font-size: small }
+  p.copyright small { font-size: small }
+
+  pre { margin-left: 2em }
+  dt { font-weight: bold }
+
+  ul.toc, ol.toc {
+    list-style: none;
+  }
+  </style>
+  
+
+  <meta content="Bikeshed 1.0.0" name="generator">
+ </head>
+ 
+
+ <body class="h-entry">
+
+  <div class="head">
+  
+   <p data-fill-with="logo"><a class="logo" href="http://www.w3.org/">
+    <img alt="W3C" height="48" src="https://www.w3.org/Icons/w3c_home" width="72">
+</a>
+</p>
+  
+   <h1 class="p-name no-ref" id="title">Clear Browsing Data</h1>
+  
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft
+    <time class="dt-updated" datetime="2015-05-13">13 May 2015</time></span></h2>
+  
+   <div data-fill-with="spec-metadata">
+    <dl>
+     <dt>This version:
+     <dd><a class="u-url" href="https://w3c.github.io/webappsec/specs/clear-browsing-data/">https://w3c.github.io/webappsec/specs/clear-browsing-data/</a>
+     <dt>Latest version:
+     <dd><a href="http://www.w3.org/TR/clear-browsing-data/">http://www.w3.org/TR/clear-browsing-data/</a>
+     <dt>Feedback:
+     <dd><span><a href="mailto:public-webappsec@w3.org?subject=%5Bclear-browsing-data%5D%20feedback">public-webappsec@w3.org</a> with subject line “<kbd>[clear-browsing-data] <var>… message topic …</var></kbd>” (<a href="http://lists.w3.org/Archives/Public/public-webappsec/" rel="discussion">archives</a>)</span>
+     <dt>Issue Tracking:
+     <dd><a href="#issues-index">Inline In Spec</a>
+     <dt class="editor">Editor:
+     <dd class="editor p-author h-card vcard" data-editor-id="56384"><a class="p-name fn u-email email" href="mailto:mkwst@google.com">Mike West</a> (<span class="p-org org">Google Inc.</span>)
+     <dt>Bug Reports:
+     <dd><span><a href="https://github.com/w3c/webappsec/issues/new?title=CLEAR:%20">via the w3c/webappsec repository on GitHub</a></span>
+    </dl>
+   </div>
+  
+   <div data-fill-with="warning"></div>
+  
+   <p class="copyright" data-fill-with="copyright">©2015, Google.</p>
+  
+   <hr title="Separator for header">
+</div>
+
+
+  <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
+
+  <div class="p-summary" data-fill-with="abstract">
+   <p>This document defines an imperative mechanism which allows web developers to
+
+instruct a user agent to clear a user’s locally stored browsing data for a
+host and its subdomains.</p>
+
+</div>
+
+
+  <h2 class="no-num no-toc no-ref heading settled" id="status"><span class="content">Status of this document</span></h2>
+
+  <div data-fill-with="status">
+   <p>
+	This is a public copy of the editors’ draft.
+	It is provided for discussion only and may change at any moment.
+	Its publication here does not imply endorsement of its contents by W3C.
+	Don’t cite this document other than as work in progress.
+
+</p>
+   <p>
+  <strong>Changes to this document may be tracked at
+  <a href="https://github.com/w3c/webappsec">https://github.com/w3c/webappsec</a>.</strong>
+
+</p>
+   <p>
+	The (<a href="http://lists.w3.org/Archives/Public/public-webappsec/">archived</a>) public mailing list
+	<a href="mailto:public-webappsec@w3.org?Subject=%5Bclear-browsing-data%5D%20PUT%20SUBJECT%20HERE">public-webappsec@w3.org</a>
+	(see <a href="http://www.w3.org/Mail/Request">instructions</a>)
+	is preferred for discussion of this specification.
+	When sending e-mail,
+	please put the text “clear-browsing-data” in the subject,
+	preferably like this:
+	“[clear-browsing-data] <em>…summary of comment…</em>”
+
+</p>
+   <p>
+	This document was produced by the
+  <a href="http://www.w3.org/2011/webappsec/">Web Application Security Working Group</a>.
+
+</p>
+   <p>
+	This document was produced by a group operating under
+	the <a href="http://www.w3.org/Consortium/Patent-Policy-20040205/">5 February 2004 W3C Patent Policy</a>.
+	W3C maintains a <a href="http://www.w3.org/2004/01/pp-impl/49309/status" rel="disclosure">public list of any patent disclosures</a>
+	made in connection with the deliverables of the group;
+	that page also includes instructions for disclosing a patent.
+	An individual who has actual knowledge of a patent which the individual believes contains <a href="http://www.w3.org/Consortium/Patent-Policy-20040205/#def-essential">Essential Claim(s)</a>
+	must disclose the information in accordance with <a href="http://www.w3.org/Consortium/Patent-Policy-20040205/#sec-Disclosure">section 6 of the W3C Patent Policy</a>.
+
+</p>
+   <p>
+  This document is governed by the <a href="http://www.w3.org/2014/Process-20140801/" id="w3c_process_revision">1 August 2014 W3C Process Document</a>.
+
+</p></div>
+
+  <div data-fill-with="at-risk"></div>
+
+
+  <h2 class="no-num no-toc no-ref heading settled" id="contents"><span class="content">Table of Contents</span></h2>
+
+  <div data-fill-with="table-of-contents" role="navigation">
+   <ul class="toc" role="directory">
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
+     <ul class="toc">
+      <li><a href="#examples"><span class="secno">1.1</span> <span class="content">Examples</span></a>
+      <li><a href="#goals"><span class="secno">1.2</span> <span class="content">Goals</span></a>
+     </ul>
+    <li><a href="#clearing"><span class="secno">2</span> <span class="content">Clearing Browsing Data</span></a>
+     <ul class="toc">
+      <li><a href="#header"><span class="secno">2.1</span> <span class="content">
+    The <code>Clear-Browsing-Data</code> HTTP Response Header Field
+  </span></a>
+     </ul>
+    <li><a href="#iana-considerations"><span class="secno">3</span> <span class="content">IANA Considerations</span></a>
+     <ul class="toc">
+      <li><a href="#iana-https"><span class="secno">3.1</span> <span class="content">
+    HTTPS
+  </span></a>
+     </ul>
+    <li><a href="#acknowledgements"><span class="secno">4</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#conformance"><span class="secno"></span> <span class="content">Conformance</span></a>
+     <ul class="toc">
+      <li><a href="#conventions"><span class="secno"></span> <span class="content">Document conventions</span></a>
+      <li><a href="#conformant-algorithms"><span class="secno"></span> <span class="content">Conformant Algorithms</span></a>
+      <li><a href="#conformance-classes"><span class="secno"></span> <span class="content">Conformance Classes</span></a>
+     </ul>
+    <li><a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
+     <ul class="toc">
+      <li><a href="#index-defined-here"><span class="secno"></span> <span class="content">Terms defined by this specification</span></a>
+      <li><a href="#index-defined-elsewhere"><span class="secno"></span> <span class="content">Terms defined by reference</span></a>
+     </ul>
+    <li><a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+     <ul class="toc">
+      <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
+      <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
+     </ul>
+    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
+   </ul></div>
+
+  <main>
+
+
+
+
+
+
+
+
+   <section>
+  
+    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+
+
+    <p><em>This section is not normative.</em></p>
+
+
+    <p>Web applications store data locally on a user’s computer in order to provide
+  functionality while the user is offline, and to increase performance when the
+  user is online. These local caches have significant advantages for both users
+  and developers, but present risks as well.</p>
+
+
+    <p>A user’s data is both sensitive and valuable; web developers ought to take
+  reasonable steps to protect it. One such step would be to encrypt data before
+  storing it. Another would be to remove data from the user’s machine when it is
+  no longer necessary (for example, when the user signs out of the application,
+  or deletes their account).</p>
+
+
+    <p>Site authors can remove data from a number of storage mechanisms via
+  JavaScript, but others are difficult to deal with reliably. Consider cookies,
+  for instance, which can be partially cleared via JavaScript access to
+  <code>document.cookie</code>. <code>HttpOnly</code> cookies, however, can only
+  be removed via a number of <code>Set-Cookie</code> headers in an HTTP
+  response. This, of course, requires exhaustive knowledge of all the cookies
+  set for a host, which can be complicated to ascertain. Cache is still harder;
+  no imperative interface to a browser’s network cache exists, period.</p>
+
+
+    <p>This document defines a new mechanism to deal with removing data from these
+  and other types of local storage, giving web developers the ability to clear
+  out a user’s local cache of data via either the <a data-link-type="dfn" href="#clear_browsing_data">Clear-Browsing-Data</a>
+  HTTP response header, or the TBD JavaScript API.</p>
+
+  
+    <h3 class="heading settled" data-level="1.1" id="examples"><span class="secno">1.1. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h3>
+
+
+    <p>A user signs out of Super Secret Social Network via a CSRF-protected POST to
+  <code>https://supersecretsocialnetwork.com/logout</code>, and the site author
+  wishes to ensure that locally stored data is removed as a result.</p>
+
+
+    <p>They can do so by sending the following HTTP header in the response:</p>
+
+  
+    <pre><a data-link-type="dfn" href="#clear_browsing_data">Clear-Browsing-Data</a>: *
+</pre>
+
+  
+    <h3 class="heading settled" data-level="1.2" id="goals"><span class="secno">1.2. </span><span class="content">Goals</span><a class="self-link" href="#goals"></a></h3>
+
+
+    <p>Generally, the goal is to allow web developers more control over the data
+  stored locally by a user agent for their origins. In particular, developers
+  should be able to reliably ensure the following:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>Data stored in an origin’s client-side storage mechanisms like <a data-link-type="biblio" href="#biblio-indexeddb">[INDEXEDDB]</a>,
+  WebSQL, Filesystem, <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a></code>, and <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a></code> is cleared.</p>
+      
+
+     <li data-md="">
+      <p>Cookies for an origin’s host are removed.</p>
+      
+
+     <li data-md="">
+      <p>Web Workers (dedicated and shared) running for an origin are terminated.</p>
+      
+
+     <li data-md="">
+      <p>Service Workers registered for an origin are terminated and deregistered.</p>
+      
+
+     <li data-md="">
+      <p>Resources from an origin are removed from the user agent’s local cache.</p>
+      
+
+     <li data-md="">
+      <p>All of the above can be propagated to an origin’s host’s subdomains.</p>
+      
+
+     <li data-md="">
+      <p>All of the above can be propagated to the HTTP version of an HTTPS origin.</p>
+      
+</ol>
+
+    <p class="issue" id="issue-9100bd61"><a class="self-link" href="#issue-9100bd61"></a>With regard to #5, how specific do I need to be? How well is any cache
+  specified?</p>
+
+
+    <p class="issue" id="issue-7439f649"><a class="self-link" href="#issue-7439f649"></a>What about opt-out cookies and the like? Do we need some sort of
+  whitelisting mechainsm? Hope not!</p>
+</section>
+
+
+   <section>
+  
+    <h2 class="heading settled" data-level="2" id="clearing"><span class="secno">2. </span><span class="content">Clearing Browsing Data</span><a class="self-link" href="#clearing"></a></h2>
+
+
+    <p>Developers may instruct a user agent to clear various types of browsing data
+  in two ways: an HTTP response header, and a JavaScript API:</p>
+
+  
+    <h3 class="heading settled" data-level="2.1" id="header"><span class="secno">2.1. </span><span class="content">
+    The <code>Clear-Browsing-Data</code> HTTP Response Header Field
+  </span><a class="self-link" href="#header"></a></h3>
+
+
+    <p>The <dfn data-dfn-type="dfn" data-noexport="" id="clear_browsing_data"><code>Clear-Browsing-Data</code><a class="self-link" href="#clear_browsing_data"></a></dfn> HTTP response header field
+  sends a signal to the user agent that it ought to remove all browsing data
+  of a certain set of types. The header is represented by the following ABNF:</p>
+
+  
+    <pre>"Clear-Browsing-Data:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#data_type_list">data-type-list</a> *[ ";" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#extension">extension</a> *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> ]  *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
+
+<dfn data-dfn-type="dfn" data-noexport="" id="data_type_list">data-type-list<a class="self-link" href="#data_type_list"></a></dfn> = "*" / ( <a data-link-type="dfn" href="#data_type">data-type</a> *( " " <a data-link-type="dfn" href="#data_type">data-type</a> ) )
+<dfn data-dfn-type="dfn" data-noexport="" id="data_type">data-type<a class="self-link" href="#data_type"></a></dfn> = "cookie" / "dom" / "cache"
+<dfn data-dfn-type="dfn" data-noexport="" id="extension">extension<a class="self-link" href="#extension"></a></dfn> = <a data-link-type="dfn" href="#subdomain_extension">subdomain-extension</a> / <a data-link-type="dfn" href="#unknown_extension">unknown-extension</a>
+<dfn data-dfn-type="dfn" data-noexport="" id="subdomain_extension">subdomain-extension<a class="self-link" href="#subdomain_extension"></a></dfn> = "includeSubdomains"
+<dfn data-dfn-type="dfn" data-noexport="" id="unknown_extension">unknown-extension<a class="self-link" href="#unknown_extension"></a></dfn> = *( <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> / &lt;<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">VCHAR</a> except ";" and ","> )
+</pre>
+
+
+    <p>The header’s value contains either the U+002A ASTERISK character
+  (<code>*</code>) or a list of type keywords, followed by a set of options.</p>
+
+
+    <p>The valid type keywords are:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p><code>cookie</code>, which implies that cookies for a host ought to be removed.</p>
+      
+
+     <li data-md="">
+      <p><code>dom</code>, which implies that all DOM-accessible storage for an origin ought to be cleared.</p>
+      
+
+     <li data-md="">
+      <p><code>cache</code>, which implies that all locally cached data for an origin ought to be cleared.</p>
+      
+</ol>
+
+    <p>User agent conformance details are detailed in TODO. Those steps represent the
+  following requirements when the header is present in a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>
+  (<var>response</var>):</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>User agents MUST ignore the <a data-link-type="dfn" href="#clear_browsing_data">Clear-Browsing-Data</a> header if it is
+  delivered along with a Response whose URL is <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i>
+  insecure</a>.</p>
+      
+
+
+     <li data-md="">
+      <p>If the value of the header contains "<code>*</code>" or
+  "<code>cookie</code>", then all cookies which would be sent along with
+  requests to the <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code> MUST be removed.</p>
+      
+
+
+      <p>If the <code>includeSubdomains</code> option is present, then all cookies
+  which would be sent along with requests to any host which is a subdomain
+  of <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      
+
+
+     <li data-md="">
+      <p>If the value of the header contains "<code>*</code>" or
+  "<code>dom</code>", then all DOM-accessible storage mechanisms
+  (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a></code>, <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a></code>, <a data-link-type="biblio" href="#biblio-indexeddb">[INDEXEDDB]</a>, <a data-link-type="biblio" href="#biblio-webdatabase">[WEBDATABASE]</a>,
+  etc) for <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be
+  cleared.</p>
+      
+
+
+      <p>If the <code>includeSubdomains</code> option is present, then all
+  DOM-accessible storage mechanisms for any <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> whose <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>
+  is a subdomain of <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>
+  MUST be cleared.</p>
+      
+
+</ol>
+
+    <section>
+
+
+     <section>
+  
+      <h2 class="heading settled" data-level="3" id="iana-considerations"><span class="secno">3. </span><span class="content">IANA Considerations</span><a class="self-link" href="#iana-considerations"></a></h2>
+
+
+      <p>The permanent message header field registry should be updated
+  with the following registration: <a data-link-type="biblio" href="#biblio-rfc3864">[RFC3864]</a></p>
+
+  
+      <h3 class="heading settled" data-level="3.1" id="iana-https"><span class="secno">3.1. </span><span class="content">
+    HTTPS
+  </span><a class="self-link" href="#iana-https"></a></h3>
+
+  
+      <dl>
+    
+       <dt>Header field name
+       
+    
+       <dd>Clear-Browsing-Data
+       
+
+    
+       <dt>Applicable protocol
+       
+    
+       <dd>http
+       
+
+    
+       <dt>Status
+       
+    
+       <dd>standard
+       
+
+    
+       <dt>Author/Change controller
+       
+    
+       <dd>W3C
+       
+
+    
+       <dt>Specification document
+       
+    
+       <dd>This specification (See <a href="#header">§2.1 
+    The Clear-Browsing-Data HTTP Response Header Field
+  </a>)
+       
+  
+      </dl>
+
+
+      <section>
+  
+       <h2 class="heading settled" data-level="4" id="acknowledgements"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+
+
+       <p>Michal Zalewski proposed a variant of this concept, and Mark Knichel helped
+  refine the details.</p>
+</section>
+
+</section></section></section></main>
+
+  <h2 class="no-ref no-num heading settled" id="conformance"><span class="content">Conformance</span><a class="self-link" href="#conformance"></a></h2>
+
+
+  <h3 class="no-ref no-num heading settled" id="conventions"><span class="content">Document conventions</span><a class="self-link" href="#conventions"></a></h3>
+
+    
+  <p>Conformance requirements are expressed with a combination of
+    descriptive assertions and RFC 2119 terminology. The key words "MUST",
+    "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+    "RECOMMENDED", "MAY", and "OPTIONAL" in the normative parts of this
+    document are to be interpreted as described in RFC 2119.
+    However, for readability, these words do not appear in all uppercase
+    letters in this specification.
+
+    </p>
+  <p>All of the text of this specification is normative except sections
+    explicitly marked as non-normative, examples, and notes. <a data-link-type="biblio" href="#biblio-rfc2119">[RFC2119]</a></p>
+
+    
+  <p>Examples in this specification are introduced with the words "for example"
+    or are set apart from the normative text with <code>class="example"</code>,
+    like this:
+
+    </p>
+  <div class="example" id="example-f839f6c8"><a class="self-link" href="#example-f839f6c8"></a>
+        
+   <p>This is an example of an informative example.</p>
+   
+    
+  </div>
+
+    
+  <p>Informative notes begin with the word "Note" and are set apart from the
+    normative text with <code>class="note"</code>, like this:
+
+    </p>
+  <p class="note" role="note">Note, this is an informative note.</p>
+
+
+  <h3 class="no-ref no-num heading settled" id="conformant-algorithms"><span class="content">Conformant Algorithms</span><a class="self-link" href="#conformant-algorithms"></a></h3>
+
+    
+  <p>Requirements phrased in the imperative as part of algorithms (such as
+    "strip any leading space characters" or "return false and abort these
+    steps") are to be interpreted with the meaning of the key word ("must",
+    "should", "may", etc) used in introducing the algorithm.</p>
+
+    
+  <p>Conformance requirements phrased as algorithms or specific steps can be
+    implemented in any manner, so long as the end result is equivalent. In
+    particular, the algorithms defined in this specification are intended to
+    be easy to understand and are not intended to be performant. Implementers
+    are encouraged to optimize.</p>
+
+
+  <h3 class="no-ref no-num heading settled" id="conformance-classes"><span class="content">Conformance Classes</span><a class="self-link" href="#conformance-classes"></a></h3>
+
+    
+  <p>A <dfn data-dfn-type="dfn" data-noexport="" id="conformant-user-agent">conformant user agent<a class="self-link" href="#conformant-user-agent"></a></dfn> must implement all the requirements
+    listed in this specification that are applicable to user agents.</p>
+
+    
+  <p>A <dfn data-dfn-type="dfn" data-noexport="" id="conformant-server">conformant server<a class="self-link" href="#conformant-server"></a></dfn> must implement all the requirements listed
+    in this specification that are applicable to servers.</p>
+
+
+
+
+  <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
+  <h3 class="no-num heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
+  <ul class="indexlist">
+   <li>Clear-Browsing-Data, <a href="#clear_browsing_data">2.1</a>
+   <li>conformant server, <a href="#conformant-server">Unnumbered section</a>
+   <li>conformant user agent, <a href="#conformant-user-agent">Unnumbered section</a>
+   <li>data-type, <a href="#data_type">2.1</a>
+   <li>data-type-list, <a href="#data_type_list">2.1</a>
+   <li>extension, <a href="#extension">2.1</a>
+   <li>subdomain-extension, <a href="#subdomain_extension">2.1</a>
+   <li>unknown-extension, <a href="#unknown_extension">2.1</a></ul>
+  <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
+  <ul class="indexlist">
+   <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
+    <ul>
+     <li><a href="https://fetch.spec.whatwg.org/#concept-response">response</a>
+     <li><a href="https://fetch.spec.whatwg.org/#concept-response-url">url</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-html">[HTML]</a> defines the following terms:
+    <ul>
+     <li><a href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a>
+     <li><a href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-mix">[MIX]</a> defines the following terms:
+    <ul>
+     <li><a href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url">a priori insecure</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc5234">[rfc5234]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">vchar</a>
+     <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">wsp</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc6454">[RFC6454]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-url">[URL]</a> defines the following terms:
+    <ul>
+     <li><a href="http://www.w3.org/TR/url/#concept-url-host">host</a>
+    </ul></ul>
+  <h2 class="no-num heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+  <h3 class="no-num heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
+  <dl>
+   <dt id="biblio-fetch"><a class="self-link" href="#biblio-fetch"></a>[FETCH]
+   <dd>Anne van Kesteren. <a href="https://fetch.spec.whatwg.org/">Fetch</a>. Living Standard. URL: <a href="https://fetch.spec.whatwg.org/">https://fetch.spec.whatwg.org/</a>
+   <dt id="biblio-html"><a class="self-link" href="#biblio-html"></a>[HTML]
+   <dd>Ian Hickson. <a href="https://html.spec.whatwg.org/">HTML</a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/">https://html.spec.whatwg.org/</a>
+   <dt id="biblio-mix"><a class="self-link" href="#biblio-mix"></a>[MIX]
+   <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">Mixed Content</a>. LCWD. URL: <a href="https://w3c.github.io/webappsec/specs/mixedcontent/">https://w3c.github.io/webappsec/specs/mixedcontent/</a>
+   <dt id="biblio-rfc3864"><a class="self-link" href="#biblio-rfc3864"></a>[RFC3864]
+   <dd>Graham Klyne; Mark Nottingham; Jeffrey C. Mogul. <a href="http://www.ietf.org/rfc/rfc3864.txt">Registration Procedures for Message Header Fields</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc3864.txt">http://www.ietf.org/rfc/rfc3864.txt</a>
+   <dt id="biblio-rfc6454"><a class="self-link" href="#biblio-rfc6454"></a>[RFC6454]
+   <dd>Adam Barth. <a href="http://www.ietf.org/rfc/rfc6454.txt">The Web Origin Concept</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6454.txt">http://www.ietf.org/rfc/rfc6454.txt</a>
+   <dt id="biblio-url"><a class="self-link" href="#biblio-url"></a>[URL]
+   <dd>Anne van Kesteren. <a href="https://url.spec.whatwg.org/">URL</a>. Living Standard. URL: <a href="https://url.spec.whatwg.org/">https://url.spec.whatwg.org/</a>
+   <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
+   <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a>
+   <dt id="biblio-rfc5234"><a class="self-link" href="#biblio-rfc5234"></a>[RFC5234]
+   <dd>D. Crocker, Ed.; P. Overell. <a href="http://www.ietf.org/rfc/rfc5234.txt">Augmented BNF for Syntax Specifications: ABNF</a>. January 2008. Internet Standard. URL: <a href="http://www.ietf.org/rfc/rfc5234.txt">http://www.ietf.org/rfc/rfc5234.txt</a></dl>
+  <h3 class="no-num heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
+  <dl>
+   <dt id="biblio-indexeddb"><a class="self-link" href="#biblio-indexeddb"></a>[IndexedDB]
+   <dd>Nikunj Mehta; et al. <a href="http://www.w3.org/TR/IndexedDB/">Indexed Database API</a>. 4 July 2013. CR. URL: <a href="http://www.w3.org/TR/IndexedDB/">http://www.w3.org/TR/IndexedDB/</a>
+   <dt id="biblio-webdatabase"><a class="self-link" href="#biblio-webdatabase"></a>[WEBDATABASE]
+   <dd>Ian Hickson. <a href="http://www.w3.org/TR/webdatabase/">Web SQL Database</a>. 18 November 2010. NOTE. URL: <a href="http://www.w3.org/TR/webdatabase/">http://www.w3.org/TR/webdatabase/</a></dl>
+  <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
+  <div style="counter-reset:issue">
+   <div class="issue">With regard to #5, how specific do I need to be? How well is any cache
+  specified?<a href="#issue-9100bd61"> ↵ </a></div>
+   <div class="issue">What about opt-out cookies and the like? Do we need some sort of
+  whitelisting mechainsm? Hope not!<a href="#issue-7439f649"> ↵ </a></div></div></body>
+</html>

@@ -1,0 +1,256 @@
+<h1>Clear Browsing Data</h1>
+<pre class="metadata">
+Status: ED
+Group: WebAppSec
+ED: https://w3c.github.io/webappsec/specs/clear-browsing-data/
+TR: http://www.w3.org/TR/clear-browsing-data/
+Shortname: clear-browsing-data
+Editor: Mike West 56384, Google Inc., mkwst@google.com
+Abstract:
+  This document defines an imperative mechanism which allows web developers to
+  instruct a user agent to clear a user's locally stored browsing data for a
+  host and its subdomains.
+Indent: 2
+Level: 1
+!Bug Reports: <a href="https://github.com/w3c/webappsec/issues/new?title=CLEAR:%20">via the w3c/webappsec repository on GitHub</a>
+</pre>
+<pre class="anchors">
+spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+    text: append; url: concept-header-list-append
+    text: response; url: concept-response
+  type: interface
+    text: Request; url: concept-request
+  type: attribute
+    text: url; for: Request; url: concept-request-url
+    text: url; for: Response; url: concept-response-url
+    text: client; for: Request; url: concept-request-client
+    text: context; for: Request; url: concept-request-context
+    text: context-frame-type; for: Request; url: concept-request-context-frame-type
+    text: header-list; for: Request; url: concept-request-header-list
+spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
+  type: dfn
+    urlPrefix: browsers.html
+      text: ancestor browsing context
+      text: browsing context
+      text: creating a new document object; url: create-a-document-object
+      text: nested browsing context
+    urlPrefix: webappapis.html
+      text: environment settings object; url: settings-object
+      text: incumbent settings object
+      text: responsible document
+      text: responsible browsing context
+      text: relevant settings object for a script
+spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
+  urlPRefix: webstorage.html
+    type: attribute
+      text: localStorage; for: WindowLocalStorage; url: dom-localstorage
+      text: sessionStorage; for: WindowSessionStorage; url: dom-sessionstorage
+  urlPrefix: workers.html
+    type: dfn
+      text: set up a worker environment settings object
+    type: interface
+      text: SharedWorker
+spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
+  type: dfn
+    text: embedding document
+    text: strict mode
+    text: block-all-mixed-content
+    url: a-priori-insecure-url
+      text: a priori insecure origin
+      text: a priori insecure url
+      text: a priori insecure
+    url: potentially-secure-origin
+      text: potentially secure origin
+      text: potentially secure url
+      text: potentially secure
+spec: URL; urlPrefix: http://www.w3.org/TR/url/
+  type: interface
+    text: URL; url: concept-url
+  type: attribute
+    text: host; for: URL; url: concept-url-host
+    text: path; for: URL; url: concept-url-path
+    text: port; for: URL; url: concept-url-port
+    text: scheme; for: URL; url: concept-url-scheme
+spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
+  type: interface
+    text: Worker
+spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
+  type: dfn
+    text: VCHAR; url: appendix-B.1
+    text: WSP; url: appendix-B.1
+spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
+  type: dfn
+    text: origin; url: section-3.2
+</pre>
+
+<div boilerplate="copyright">&copy;2015, Google.</div>
+
+<!--
+████ ██    ██ ████████ ████████   ███████
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████
+-->
+<section>
+  <h2 id="intro">Introduction</h2>
+
+  <em>This section is not normative.</em>
+
+  Web applications store data locally on a user's computer in order to provide
+  functionality while the user is offline, and to increase performance when the
+  user is online. These local caches have significant advantages for both users
+  and developers, but present risks as well.
+
+  A user's data is both sensitive and valuable; web developers ought to take
+  reasonable steps to protect it. One such step would be to encrypt data before
+  storing it. Another would be to remove data from the user's machine when it is
+  no longer necessary (for example, when the user signs out of the application,
+  or deletes their account).
+
+  Site authors can remove data from a number of storage mechanisms via
+  JavaScript, but others are difficult to deal with reliably. Consider cookies,
+  for instance, which can be partially cleared via JavaScript access to
+  <code>document.cookie</code>. <code>HttpOnly</code> cookies, however, can only
+  be removed via a number of <code>Set-Cookie</code> headers in an HTTP
+  response. This, of course, requires exhaustive knowledge of all the cookies
+  set for a host, which can be complicated to ascertain. Cache is still harder;
+  no imperative interface to a browser's network cache exists, period.
+
+  This document defines a new mechanism to deal with removing data from these
+  and other types of local storage, giving web developers the ability to clear
+  out a user's local cache of data via either the <a>Clear-Browsing-Data</a>
+  HTTP response header, or the TBD JavaScript API.
+
+  <h3 id="examples">Examples</h3>
+
+  A user signs out of Super Secret Social Network via a CSRF-protected POST to
+  <code>https://supersecretsocialnetwork.com/logout</code>, and the site author
+  wishes to ensure that locally stored data is removed as a result.
+
+  They can do so by sending the following HTTP header in the response:
+
+  <pre>
+    <a>Clear-Browsing-Data</a>: *
+  </pre>
+
+  <h3 id="goals">Goals</h3>
+
+  Generally, the goal is to allow web developers more control over the data
+  stored locally by a user agent for their origins. In particular, developers
+  should be able to reliably ensure the following:
+
+  1.  Data stored in an origin's client-side storage mechanisms like [[INDEXEDDB]],
+      WebSQL, Filesystem, {{localStorage}}, and {{sessionStorage}} is cleared.
+  2.  Cookies for an origin's host are removed.
+  3.  Web Workers (dedicated and shared) running for an origin are terminated.
+  4.  Service Workers registered for an origin are terminated and deregistered.
+  5.  Resources from an origin are removed from the user agent's local cache.
+  6.  All of the above can be propagated to an origin's host's subdomains.
+  7.  All of the above can be propagated to the HTTP version of an HTTPS origin.
+
+  ISSUE: With regard to #5, how specific do I need to be? How well is any cache
+  specified?
+
+  ISSUE: What about opt-out cookies and the like? Do we need some sort of
+  whitelisting mechainsm? Hope not!
+</section>
+
+<section>
+  <h2 id="clearing">Clearing Browsing Data</h2>
+
+  Developers may instruct a user agent to clear various types of browsing data
+  in two ways: an HTTP response header, and a JavaScript API:
+
+  <h3 id="header">
+    The <code>Clear-Browsing-Data</code> HTTP Response Header Field
+  </h3>
+
+  The <dfn><code>Clear-Browsing-Data</code></dfn> HTTP response header field
+  sends a signal to the user agent that it ought to remove all browsing data
+  of a certain set of types. The header is represented by the following ABNF:
+
+  <pre>
+    "Clear-Browsing-Data:" *<a>WSP</a> <a>data-type-list</a> *[ ";" *<a>WSP</a> <a>extension</a> *<a>WSP</a> ]  *<a>WSP</a>
+
+    <dfn>data-type-list</dfn> = "*" / ( <a>data-type</a> *( " " <a>data-type</a> ) )
+    <dfn>data-type</dfn> = "cookie" / "dom" / "cache"
+    <dfn>extension</dfn> = <a>subdomain-extension</a> / <a>unknown-extension</a>
+    <dfn>subdomain-extension</dfn> = "includeSubdomains"
+    <dfn>unknown-extension</dfn> = *( <a>WSP</a> / &lt;<a>VCHAR</a> except ";" and ","&gt; )
+  </pre>
+
+  The header's value contains either the U+002A ASTERISK character
+  (<code>*</code>) or a list of type keywords, followed by a set of options.
+
+  The valid type keywords are:
+
+  1.  <code>cookie</code>, which implies that cookies for a host ought to be removed.
+  2.  <code>dom</code>, which implies that all DOM-accessible storage for an origin ought to be cleared.
+  3.  <code>cache</code>, which implies that all locally cached data for an origin ought to be cleared.
+
+  User agent conformance details are detailed in TODO. Those steps represent the
+  following requirements when the header is present in a <a>response</a>
+  (<var>response</var>):
+
+  1.  User agents MUST ignore the <a>Clear-Browsing-Data</a> header if it is
+      delivered along with a Response whose URL is <a><i lang="la">a priori</i>
+      insecure</a>.
+
+  2.  If the value of the header contains "<code>*</code>" or
+      "<code>cookie</code>", then all cookies which would be sent along with
+      requests to the <var>response</var>'s {{Response/url}} MUST be removed.
+
+      If the <code>includeSubdomains</code> option is present, then all cookies
+      which would be sent along with requests to any host which is a subdomain
+      of <var>response</var>'s {{Response/url}}'s {{URL/host}} MUST be removed.
+      
+  3.  If the value of the header contains "<code>*</code>" or
+      "<code>dom</code>", then all DOM-accessible storage mechanisms
+      ({{localStorage}}, {{sessionStorage}}, [[INDEXEDDB]], [[WEBDATABASE]],
+      etc) for <var>response</var>'s {{Response/url}}'s <a>origin</a> MUST be
+      cleared.
+
+      If the <code>includeSubdomains</code> option is present, then all
+      DOM-accessible storage mechanisms for any <a>origin</a> whose {{URL/host}}
+      is a subdomain of <var>response</var>'s {{Response/url}}'s {{URL/host}}
+      MUST be cleared.
+<section>
+
+<section>
+  <h2 id="iana-considerations">IANA Considerations</h2>
+
+  The permanent message header field registry should be updated
+  with the following registration: [[!RFC3864]]
+
+  <h3 id="iana-https">
+    HTTPS
+  </h3>
+
+  <dl>
+    <dt>Header field name</dt>
+    <dd>Clear-Browsing-Data</dd>
+
+    <dt>Applicable protocol</dt>
+    <dd>http</dd>
+
+    <dt>Status</dt>
+    <dd>standard</dd>
+
+    <dt>Author/Change controller</dt>
+    <dd>W3C</dd>
+
+    <dt>Specification document</dt>
+    <dd>This specification (See [[#header]])</dd>
+  </dl>
+
+<section>
+  <h2 id="acknowledgements">Acknowledgements</h2>
+
+  Michal Zalewski proposed a variant of this concept, and Mark Knichel helped
+  refine the details. 
+</section>
