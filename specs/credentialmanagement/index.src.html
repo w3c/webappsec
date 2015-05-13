@@ -498,7 +498,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       USVString iconURL;
     };
 
-    [NoInterfaceObject]
     interface Credential {
       readonly attribute DOMString id;
       readonly attribute DOMString type;
@@ -537,12 +536,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   ISSUE(w3c/webappsec#287): Define cloning algorithms.
 
   <pre class="idl">
-    [NoInterfaceObject]
-    interface LocallyStoredCredential {
+    interface LocallyStoredCredential : Credential {
       readonly attribute DOMString name;
       readonly attribute USVString iconURL;
     };
-    LocallyStoredCredential implements Credential;
   </pre>
   <dl dfn-for="LocallyStoredCredential">
     <dt><dfn attribute>name</dfn></dt>
@@ -580,10 +577,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     [Constructor(PasswordCredentialData data), Exposed=Window]
-    interface PasswordCredential {
+    interface PasswordCredential : LocallyStoredCredential {
       Promise&lt;Response&gt; send(USVString url);
     };
-    PasswordCredential implements LocallyStoredCredential;
   </pre>
   <dl dfn-for="PasswordCredential">
     <dt><dfn method lt="send(url)">send(url)</dfn></dt>
@@ -628,11 +624,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     [Constructor(FederatedCredentialData data), Exposed=Window]
-    interface FederatedCredential {
+    interface FederatedCredential : LocallyStoredCredential {
       readonly attribute USVString provider;
       readonly attribute DOMString? protocol;
     };
-    FederatedCredential implements LocallyStoredCredential;
   </pre>
   <dl dfn-for="FederatedCredential">
     <dt><dfn attribute>provider</dfn></dt>
@@ -1304,8 +1299,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       {{LocallyStoredCredential/iconURL}} to the empty string.
     </li>
     <li>
-      Switch on <var>credential</var>'s interface, and execute the associated
-      steps:
+      Switch on <var>credential</var>'s primary interface, and execute the
+      associated steps:
 
       <dl>
         <dt>{{PasswordCredential}}</dt>
