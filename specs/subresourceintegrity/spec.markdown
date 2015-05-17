@@ -417,11 +417,11 @@ the user agent.
 #### Does <var>resource</var> match <var>metadataList</var>?
 
 1.  If <var>resource</var>'s URL's scheme is `about`, return `true`.
-2.  If [<var>resource</var> is not eligible for integrity
-    validation][eligible], return `false`.
-3.  Let <var>parsedMetadata</var> be the result of
+2.  Let <var>parsedMetadata</var> be the result of
     [parsing <var>metadataList</var>][parse].
-4.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
+3.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
+4.  If [<var>resource</var> is not eligible for integrity
+    validation][eligible], return `false`.
 5.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
 6.  For each <var>item</var> in <var>metadata</var>:
