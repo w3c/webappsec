@@ -208,7 +208,7 @@ the spec may define options, such as MIME types [[!MIMETYPE]].
 This metadata MUST be encoded in the same format as the `hash-source`
 in [section 4.2 of the Content Security Policy Level 2 specification][csp2-section42].
 
-For example, given a script resource containing only the string "alert('Hello, world.');",
+For example, given a script resource containing only the string \"alert(\'Hello, world.\');\",
 an author might choose [SHA-256][sha2] as a hash function.
 `qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=` is the base64-encoded
 digest that results. This can be encoded as follows:
