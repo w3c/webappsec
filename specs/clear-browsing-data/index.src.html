@@ -17,8 +17,10 @@ Level: 1
 spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
   type: dfn
     text: fetching
+    text: main fetch
     text: append; url: concept-header-list-append
     text: response; url: concept-response
+    text: header list; for: response; url: concept-header-list
   type: interface
     text: Request; url: concept-request
   type: attribute
@@ -79,9 +81,17 @@ spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
   type: dfn
     text: VCHAR; url: appendix-B.1
     text: WSP; url: appendix-B.1
+spec: RFC6265; urlPrefix: https://tools.ietf.org/html/rfc6265
+  type: dfn
+    text: canonicalized; url: section-5.1.2
+    text: cookie store; url: section-5.3
+    text: domain-match; url: section-5.1.3
 spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
   type: dfn
     text: origin; url: section-3.2
+spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
+  type: dfn
+    text: network cache; url: section-2
 </pre>
 
 <div boilerplate="copyright">&copy;2015, Google.</div>
@@ -145,18 +155,23 @@ spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
 
   1.  Data stored in an origin's client-side storage mechanisms like [[INDEXEDDB]],
       WebSQL, Filesystem, {{localStorage}}, and {{sessionStorage}} is cleared.
-  2.  Cookies for an origin's host are removed.
+  2.  Cookies for an origin's host are removed [[!RFC6265]].
   3.  Web Workers (dedicated and shared) running for an origin are terminated.
   4.  Service Workers registered for an origin are terminated and deregistered.
   5.  Resources from an origin are removed from the user agent's local cache.
   6.  All of the above can be propagated to an origin's host's subdomains.
   7.  All of the above can be propagated to the HTTP version of an HTTPS origin.
 
-  ISSUE: With regard to #5, how specific do I need to be? How well is any cache
-  specified?
+  <h3 id="questions">Questions</h3>
 
-  ISSUE: What about opt-out cookies and the like? Do we need some sort of
-  whitelisting mechainsm? Hope not!
+  1.  When should the clearing execute? Before <code>Set-Cookies</code> is
+      processed for a response, or after?
+
+  2.  How granular do we need to be? Based on discussion, it sounded like we
+      wish to distinguish between clearing cookies and clearing DOM-accessible
+      storage. Are those the only distinctions we care about?
+
+  3.  What do we do when multiple windows on an origin are open at once?
 </section>
 
 <section>
@@ -188,13 +203,21 @@ spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
 
   The valid type keywords are:
 
-  1.  <code>cookie</code>, which implies that cookies for a host ought to be removed.
-  2.  <code>dom</code>, which implies that all DOM-accessible storage for an origin ought to be cleared.
-  3.  <code>cache</code>, which implies that all locally cached data for an origin ought to be cleared.
+  1.  <code>cookie</code>, which implies that cookies for a host ought to be
+      removed.
 
-  User agent conformance details are detailed in TODO. Those steps represent the
-  following requirements when the header is present in a <a>response</a>
-  (<var>response</var>):
+  2.  <code>dom</code>, which implies that all DOM-accessible storage for an
+      origin ought to be cleared.
+
+  3.  <code>cache</code>, which implies that all locally cached data for an
+      origin ought to be cleared.
+
+  Invalid type keywords present in a header's value are simply ignored. Parsing
+  details can be found in [[#parsing]].
+
+  User agent conformance details are detailed in [[#clear]]. Those steps
+  represent the following requirements when the header is present in a
+  <a>response</a> (<var>response</var>):
 
   1.  User agents MUST ignore the <a>Clear-Browsing-Data</a> header if it is
       delivered along with a Response whose URL is <a><i lang="la">a priori</i>
@@ -207,7 +230,7 @@ spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
       If the <code>includeSubdomains</code> option is present, then all cookies
       which would be sent along with requests to any host which is a subdomain
       of <var>response</var>'s {{Response/url}}'s {{URL/host}} MUST be removed.
-      
+
   3.  If the value of the header contains "<code>*</code>" or
       "<code>dom</code>", then all DOM-accessible storage mechanisms
       ({{localStorage}}, {{sessionStorage}}, [[INDEXEDDB]], [[WEBDATABASE]],
@@ -218,7 +241,155 @@ spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
       DOM-accessible storage mechanisms for any <a>origin</a> whose {{URL/host}}
       is a subdomain of <var>response</var>'s {{Response/url}}'s {{URL/host}}
       MUST be cleared.
+
+  4.  If the value of the header contains "<code>*</code>" or
+      "<code>cache</code>", then all locally cached data for
+      <var>response</var>'s {{Response/url}}'s {{URL/host}} MUST be removed.
+
+      If the <code>includeSubdomains</code> option is present, then all locally
+      cached data for any host which is a subdomain of <var>response</var>'s
+      {{Response/url}}'s {{URL/host}} MUST be removed.
+
+  <h3 id="fetch-integration">Fetch Integration</h3>
+
+  ISSUE: Monkey patching! Talk with Anne.
+
+  If the <a><code>Clear-Browsing-Data</code></a> header is present in an HTTP
+  <a>response</a>, then data MUST be cleared before rendering the response to
+  the user. That is, before step #9 in the current <a>main fetch</a> algorithm,
+  execute the following step:
+
+  9.  If <var>response</var>'s <a>header list</a> contains a header named
+      <a><code>Clear-Browsing-Data</code></a>, then execute [[#clear]] on
+      <var>response</var>.
+
+  Issue: This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. That's probably what we want, but what about opt-out cookies?
 <section>
+
+<section>
+  <h2 id="algorithms">Algorithms</h2>
+
+  <h3 id="parsing">Parsing</h3>
+
+  <h4 id="get-types">
+    Which data types ought to be cleared for <var>response</var>
+  </h4>
+
+  TODO: Parse the <a><code>Clear-Browsing-Data</code></a> header. Return
+  a list of type names.
+
+  <h4 id="should-include-subdomains">
+    Should subdomains' browsing data be cleared for <var>response</var>
+  </h4>
+
+  TODO: Parse the <a><code>Clear-Browsing-Data</code></a> header. Return
+  either <dfn><code>Include Subdomains</code></dfn> or <dfn><code>Exclude
+  Subdomains</code></dfn>.
+
+  <h3 id="clear">
+    Clear browsing data for <var>response</var>
+  </h3>
+
+  Given a <a>response</a> (<var>response</var>), this algorithm parses the
+  <a><code>Clear-Browsing-Data</code></a> header to determine what needs to be
+  cleared, which origins are affected, and then executes those requests.
+
+  1.  Let <var>types</var> be the result of [[#get-types]] executed on
+      <var>response</var>.
+
+  2.  Let <var>subdomains</var> be the result of [[#should-include-subdomains]]
+      executed on <var>response</var>.
+
+  3.  If <var>types</var> contains "<code>cookie</code>", execute
+      [[#clear-cookies]] on <var>response</var>'s {{Response/url}}'s
+      <a>origin</a>, with <var>subdomains</var>.
+
+  4.  If <var>types</var> contains "<code>dom</code>", execute [[#clear-dom]]
+      on <var>response</var>'s {{Response/url}}'s <a>origin</a>, with
+      <var>subdomains</var>.
+
+  5.  If <var>types</var> contains "<code>cache</code>", execute
+      [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
+      <a>origin</a>, with <var>subdomains</var>.
+
+  <h4 id="clear-cache">
+    Clear cache for <var>origin</var> with <var>subdomain state</var>
+  </h4>
+
+  Given an <a>origin</a> (<var>origin</var>) and a <var>subdomain state</var>
+  of either <a><code>Include Subdomains</code></a> or <a><code>Exclude
+  Subdomains</code></a>, this algorithm removes data from the user agent's
+  local caches that matches the origin and subdomain state.
+
+  1.  Let <var>host</var> be <var>origin</var>'s {{URL/host}},
+      <a>canonicalized</a> as per Section 5.1.2 of [[!RFC6265]].
+
+  2.  If <var>subdomain state</var> is <a><code>Include Subdomains</code></a>,
+      then let <var>cache list</var> be the set of entries from the <a>network
+      cache</a> whose <code>target URI</code>'s {{URL/host}}
+      <a>domain-matches</a> <var>host</var> when <a>canonicalized</a> as per
+      Section 5.1.2 of [[!RFC6265]]
+
+  3.  Otherwise, <var>subdomain state</var> is <a><code>Exclude
+      Subdomains</code></a>, so let <var>cache list</var> be the set of
+      entries from the <a>network cache</a> whose <code>target URI</code>
+      {{URL/host}} is identical to <var>host</var> when <a>canonicalized</a> as
+      per Section 5.1.2 or [[!RFC6265]].
+
+  4.  Remove each <var>entry</var> in <var>cache list</var> from the <a>network
+      cache</a>.
+
+  5.  If a user agent implements caches beyond a pure <a>network cache</a>, it
+      MUST remove all entries from those caches which match <var>origin</var>
+      and <var>subdomain state</var>.
+
+      ISSUE: We're dealing with the network cache here, as defined in
+      [[!RFC7234]], but that's not nearly everything a user agent caches. How
+      hand-wavey with the vendor-specific section can we be? For instance,
+      Chrome clears out prerendered pages, script caches, WebGL shader caches,
+      WebRTC bits and pieces, address bar suggestion caches, various networking
+      bits that aren't representations (HSTS/HPKP, SCDH, etc.).
+
+  <h4 id="clear-cookies">
+    Clear cookies for <var>origin</var> with <var>subdomain state</var>
+  </h4>
+
+  Given an <a>origin</a> (<var>origin</var>) and a <var>subdomain state</var>
+  of either <a><code>Include Subdomains</code></a> or <a><code>Exclude
+  Subdomains</code></a>, this algorithm removes cookies from the user agent's
+  <a>cookie store</a> whose <code>domain</code> attribute matches the origin
+  and subdomain state.
+
+  Note: This algorithm assumes that the user agent has implemented a <a>cookie
+  store</a> (as discussed in Section 5.3 of [[!RFC6265]]), which offers the
+  ability to retrieve a list of cookies by host, and to remove individual
+  cookies.
+
+  1.  Let <var>host</var> be <var>origin</var>'s {{URL/host}},
+      <a>canonicalized</a> as per Section 5.1.2 of [[!RFC6265]].
+
+  2.  If <var>subdomain state</var> is <a><code>Include Subdomains</code></a>,
+      then let <var>cookie list</var> be the set of cookies from the <a>cookie
+      store</a> whose <code>domain</code> attribute <a>domain-matches</a>
+      <var>host</var>.
+
+  3.  Otherwise, <var>subdomain state</var> is <a><code>Exclude
+      Subdomains</code></a>, so let <var>cookie list</var> be the set of
+      cookies from the <a>cookie store</a> whose <code>domain</code> attribute
+      is identical to <var>host</var>.
+
+  4.  Remove each <var>cookie</var> in <var>cookie list</var> from the <a>cookie
+      store</a>.
+
+  <h4 id="clear-dom">
+    Clear DOM-accessible storage for <var>origin</var> with
+    <var>subdomains</var>
+  </h4>
+
+  ISSUE: Clear localStorage, sessionStorage, Indexed DB, WebSQL, Filesystems,
+  Dedicated Workers, Shared Workers, Service Workers, etc.
+</section>
 
 <section>
   <h2 id="iana-considerations">IANA Considerations</h2>
@@ -251,5 +422,5 @@ spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
   <h2 id="acknowledgements">Acknowledgements</h2>
 
   Michal Zalewski proposed a variant of this concept, and Mark Knichel helped
-  refine the details. 
+  refine the details.
 </section>

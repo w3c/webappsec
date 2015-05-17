@@ -561,8 +561,8 @@ span.issue, span.note {
   
    <h1 class="p-name no-ref" id="title">Clear Browsing Data</h1>
   
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">A Collection of Interesting Ideas
-    <time class="dt-updated" datetime="2015-05-13">13 May 2015</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">A Collection of Interesting Ideas,
+    <time class="dt-updated" datetime="2015-05-17">17 May 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -608,20 +608,49 @@ host and its subdomains.</p>
      <ul class="toc">
       <li><a href="#examples"><span class="secno">1.1</span> <span class="content">Examples</span></a>
       <li><a href="#goals"><span class="secno">1.2</span> <span class="content">Goals</span></a>
+      <li><a href="#questions"><span class="secno">1.3</span> <span class="content">Questions</span></a>
      </ul>
     <li><a href="#clearing"><span class="secno">2</span> <span class="content">Clearing Browsing Data</span></a>
      <ul class="toc">
       <li><a href="#header"><span class="secno">2.1</span> <span class="content">
     The <code>Clear-Browsing-Data</code> HTTP Response Header Field
   </span></a>
+      <li><a href="#fetch-integration"><span class="secno">2.2</span> <span class="content">Fetch Integration</span></a>
      </ul>
-    <li><a href="#iana-considerations"><span class="secno">3</span> <span class="content">IANA Considerations</span></a>
+    <li><a href="#algorithms"><span class="secno">3</span> <span class="content">Algorithms</span></a>
      <ul class="toc">
-      <li><a href="#iana-https"><span class="secno">3.1</span> <span class="content">
+      <li><a href="#parsing"><span class="secno">3.1</span> <span class="content">Parsing</span></a>
+       <ul class="toc">
+        <li><a href="#get-types"><span class="secno">3.1.1</span> <span class="content">
+    Which data types ought to be cleared for <var>response</var>
+  </span></a>
+        <li><a href="#should-include-subdomains"><span class="secno">3.1.2</span> <span class="content">
+    Should subdomains' browsing data be cleared for <var>response</var>
+  </span></a>
+       </ul>
+      <li><a href="#clear"><span class="secno">3.2</span> <span class="content">
+    Clear browsing data for <var>response</var>
+  </span></a>
+       <ul class="toc">
+        <li><a href="#clear-cache"><span class="secno">3.2.1</span> <span class="content">
+    Clear cache for <var>origin</var> with <var>subdomain state</var>
+  </span></a>
+        <li><a href="#clear-cookies"><span class="secno">3.2.2</span> <span class="content">
+    Clear cookies for <var>origin</var> with <var>subdomain state</var>
+  </span></a>
+        <li><a href="#clear-dom"><span class="secno">3.2.3</span> <span class="content">
+    Clear DOM-accessible storage for <var>origin</var> with
+    <var>subdomains</var>
+  </span></a>
+       </ul>
+     </ul>
+    <li><a href="#iana-considerations"><span class="secno">4</span> <span class="content">IANA Considerations</span></a>
+     <ul class="toc">
+      <li><a href="#iana-https"><span class="secno">4.1</span> <span class="content">
     HTTPS
   </span></a>
      </ul>
-    <li><a href="#acknowledgements"><span class="secno">4</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#acknowledgements"><span class="secno">5</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content">
 Conformance</span></a>
     <li><a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
@@ -713,7 +742,7 @@ Conformance</span></a>
       
 
      <li data-md="">
-      <p>Cookies for an origin’s host are removed.</p>
+      <p>Cookies for an origin’s host are removed <a data-link-type="biblio" href="#biblio-rfc6265">[RFC6265]</a>.</p>
       
 
      <li data-md="">
@@ -736,14 +765,28 @@ Conformance</span></a>
       <p>All of the above can be propagated to the HTTP version of an HTTPS origin.</p>
       
 </ol>
+  
+    <h3 class="heading settled" data-level="1.3" id="questions"><span class="secno">1.3. </span><span class="content">Questions</span><a class="self-link" href="#questions"></a></h3>
 
-    <p class="issue" id="issue-9100bd61"><a class="self-link" href="#issue-9100bd61"></a>With regard to #5, how specific do I need to be? How well is any cache
-  specified?</p>
+
+    <ol>
+     <li data-md="">
+      <p>When should the clearing execute? Before <code>Set-Cookies</code> is
+  processed for a response, or after?</p>
+      
 
 
-    <p class="issue" id="issue-7439f649"><a class="self-link" href="#issue-7439f649"></a>What about opt-out cookies and the like? Do we need some sort of
-  whitelisting mechainsm? Hope not!</p>
-</section>
+     <li data-md="">
+      <p>How granular do we need to be? Based on discussion, it sounded like we
+  wish to distinguish between clearing cookies and clearing DOM-accessible
+  storage. Are those the only distinctions we care about?</p>
+      
+
+
+     <li data-md="">
+      <p>What do we do when multiple windows on an origin are open at once?</p>
+      
+</ol></section>
 
 
    <section>
@@ -784,21 +827,32 @@ Conformance</span></a>
 
     <ol>
      <li data-md="">
-      <p><code>cookie</code>, which implies that cookies for a host ought to be removed.</p>
+      <p><code>cookie</code>, which implies that cookies for a host ought to be
+  removed.</p>
       
 
-     <li data-md="">
-      <p><code>dom</code>, which implies that all DOM-accessible storage for an origin ought to be cleared.</p>
-      
 
      <li data-md="">
-      <p><code>cache</code>, which implies that all locally cached data for an origin ought to be cleared.</p>
+      <p><code>dom</code>, which implies that all DOM-accessible storage for an
+  origin ought to be cleared.</p>
+      
+
+
+     <li data-md="">
+      <p><code>cache</code>, which implies that all locally cached data for an
+  origin ought to be cleared.</p>
       
 </ol>
 
-    <p>User agent conformance details are detailed in TODO. Those steps represent the
-  following requirements when the header is present in a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>
-  (<var>response</var>):</p>
+    <p>Invalid type keywords present in a header’s value are simply ignored. Parsing
+  details can be found in <a href="#parsing">§3.1 Parsing</a>.</p>
+
+
+    <p>User agent conformance details are detailed in <a href="#clear">§3.2 
+    Clear browsing data for response
+  </a>. Those steps
+  represent the following requirements when the header is present in a
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a> (<var>response</var>):</p>
 
 
     <ol>
@@ -836,20 +890,257 @@ Conformance</span></a>
   is a subdomain of <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>
   MUST be cleared.</p>
       
+
+
+     <li data-md="">
+      <p>If the value of the header contains "<code>*</code>" or
+  "<code>cache</code>", then all locally cached data for
+  <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      
+
+
+      <p>If the <code>includeSubdomains</code> option is present, then all locally
+  cached data for any host which is a subdomain of <var>response</var>’s
+  <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      
 </ol>
+  
+    <h3 class="heading settled" data-level="2.2" id="fetch-integration"><span class="secno">2.2. </span><span class="content">Fetch Integration</span><a class="self-link" href="#fetch-integration"></a></h3>
+
+
+    <p class="issue" id="issue-3ded38d3"><a class="self-link" href="#issue-3ded38d3"></a>Monkey patching! Talk with Anne.</p>
+
+
+    <p>If the <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a> header is present in an HTTP
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>, then data MUST be cleared before rendering the response to
+  the user. That is, before step #9 in the current <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#main-fetch">main fetch</a> algorithm,
+  execute the following step:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>If <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-list">header list</a> contains a header named
+  <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a>, then execute <a href="#clear">§3.2 
+    Clear browsing data for response
+  </a> on
+  <var>response</var>.</p>
+      
+</ol>
+
+    <p class="issue" id="issue-c60e2320"><a class="self-link" href="#issue-c60e2320"></a>This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. That’s probably what we want, but what about opt-out cookies?</p>
+
     <section>
 
 
      <section>
   
-      <h2 class="heading settled" data-level="3" id="iana-considerations"><span class="secno">3. </span><span class="content">IANA Considerations</span><a class="self-link" href="#iana-considerations"></a></h2>
+      <h2 class="heading settled" data-level="3" id="algorithms"><span class="secno">3. </span><span class="content">Algorithms</span><a class="self-link" href="#algorithms"></a></h2>
+
+  
+      <h3 class="heading settled" data-level="3.1" id="parsing"><span class="secno">3.1. </span><span class="content">Parsing</span><a class="self-link" href="#parsing"></a></h3>
+
+  
+      <h4 class="heading settled" data-level="3.1.1" id="get-types"><span class="secno">3.1.1. </span><span class="content">
+    Which data types ought to be cleared for <var>response</var>
+  </span><a class="self-link" href="#get-types"></a></h4>
+
+
+      <p>TODO: Parse the <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a> header. Return
+  a list of type names.</p>
+
+  
+      <h4 class="heading settled" data-level="3.1.2" id="should-include-subdomains"><span class="secno">3.1.2. </span><span class="content">
+    Should subdomains' browsing data be cleared for <var>response</var>
+  </span><a class="self-link" href="#should-include-subdomains"></a></h4>
+
+
+      <p>TODO: Parse the <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a> header. Return
+  either <dfn data-dfn-type="dfn" data-noexport="" id="include-subdomains"><code>Include Subdomains</code><a class="self-link" href="#include-subdomains"></a></dfn> or <dfn data-dfn-type="dfn" data-noexport="" id="exclude-subdomains"><code>Exclude
+  Subdomains</code><a class="self-link" href="#exclude-subdomains"></a></dfn>.</p>
+
+  
+      <h3 class="heading settled" data-level="3.2" id="clear"><span class="secno">3.2. </span><span class="content">
+    Clear browsing data for <var>response</var>
+  </span><a class="self-link" href="#clear"></a></h3>
+
+
+      <p>Given a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a> (<var>response</var>), this algorithm parses the
+  <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a> header to determine what needs to be
+  cleared, which origins are affected, and then executes those requests.</p>
+
+
+      <ol>
+       <li data-md="">
+        <p>Let <var>types</var> be the result of <a href="#get-types">§3.1.1 
+    Which data types ought to be cleared for response
+  </a> executed on
+  <var>response</var>.</p>
+        
+
+
+       <li data-md="">
+        <p>Let <var>subdomains</var> be the result of <a href="#should-include-subdomains">§3.1.2 
+    Should subdomains' browsing data be cleared for response
+  </a>
+  executed on <var>response</var>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>types</var> contains "<code>cookie</code>", execute
+  <a href="#clear-cookies">§3.2.2 
+    Clear cookies for origin with subdomain state
+  </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomains</var>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>types</var> contains "<code>dom</code>", execute <a href="#clear-dom">§3.2.3 
+    Clear DOM-accessible storage for origin with
+    subdomains
+  </a>
+  on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with
+  <var>subdomains</var>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>types</var> contains "<code>cache</code>", execute
+  <a href="#clear-cache">§3.2.1 
+    Clear cache for origin with subdomain state
+  </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomains</var>.</p>
+        
+</ol>
+  
+      <h4 class="heading settled" data-level="3.2.1" id="clear-cache"><span class="secno">3.2.1. </span><span class="content">
+    Clear cache for <var>origin</var> with <var>subdomain state</var>
+  </span><a class="self-link" href="#clear-cache"></a></h4>
+
+
+      <p>Given an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> (<var>origin</var>) and a <var>subdomain state</var>
+  of either <a data-link-type="dfn" href="#include-subdomains"><code>Include Subdomains</code></a> or <a data-link-type="dfn" href="#exclude-subdomains"><code>Exclude
+  Subdomains</code></a>, this algorithm removes data from the user agent’s
+  local caches that matches the origin and subdomain state.</p>
+
+
+      <ol>
+       <li data-md="">
+        <p>Let <var>host</var> be <var>origin</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>,
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.1.2">canonicalized</a> as per Section 5.1.2 of <a data-link-type="biblio" href="#biblio-rfc6265">[RFC6265]</a>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>subdomain state</var> is <a data-link-type="dfn" href="#include-subdomains"><code>Include Subdomains</code></a>,
+  then let <var>cache list</var> be the set of entries from the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-2">network
+  cache</a> whose <code>target URI</code>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.1.3">domain-matches</a> <var>host</var> when <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.1.2">canonicalized</a> as per
+  Section 5.1.2 of <a data-link-type="biblio" href="#biblio-rfc6265">[RFC6265]</a></p>
+        
+
+
+       <li data-md="">
+        <p>Otherwise, <var>subdomain state</var> is <a data-link-type="dfn" href="#exclude-subdomains"><code>Exclude
+  Subdomains</code></a>, so let <var>cache list</var> be the set of
+  entries from the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-2">network cache</a> whose <code>target URI</code>
+  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> is identical to <var>host</var> when <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.1.2">canonicalized</a> as
+  per Section 5.1.2 or <a data-link-type="biblio" href="#biblio-rfc6265">[RFC6265]</a>.</p>
+        
+
+
+       <li data-md="">
+        <p>Remove each <var>entry</var> in <var>cache list</var> from the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-2">network
+  cache</a>.</p>
+        
+
+
+       <li data-md="">
+        <p>If a user agent implements caches beyond a pure <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-2">network cache</a>, it
+  MUST remove all entries from those caches which match <var>origin</var>
+  and <var>subdomain state</var>.</p>
+        
+
+
+        <p class="issue" id="issue-0378d416"><a class="self-link" href="#issue-0378d416"></a>We’re dealing with the network cache here, as defined in
+  <a data-link-type="biblio" href="#biblio-rfc7234">[RFC7234]</a>, but that’s not nearly everything a user agent caches. How
+  hand-wavey with the vendor-specific section can we be? For instance,
+  Chrome clears out prerendered pages, script caches, WebGL shader caches,
+  WebRTC bits and pieces, address bar suggestion caches, various networking
+  bits that aren’t representations (HSTS/HPKP, SCDH, etc.).</p>
+        
+</ol>
+  
+      <h4 class="heading settled" data-level="3.2.2" id="clear-cookies"><span class="secno">3.2.2. </span><span class="content">
+    Clear cookies for <var>origin</var> with <var>subdomain state</var>
+  </span><a class="self-link" href="#clear-cookies"></a></h4>
+
+
+      <p>Given an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> (<var>origin</var>) and a <var>subdomain state</var>
+  of either <a data-link-type="dfn" href="#include-subdomains"><code>Include Subdomains</code></a> or <a data-link-type="dfn" href="#exclude-subdomains"><code>Exclude
+  Subdomains</code></a>, this algorithm removes cookies from the user agent’s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.3">cookie store</a> whose <code>domain</code> attribute matches the origin
+  and subdomain state.</p>
+
+
+      <p class="note" role="note">Note: This algorithm assumes that the user agent has implemented a <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.3">cookie
+  store</a> (as discussed in Section 5.3 of <a data-link-type="biblio" href="#biblio-rfc6265">[RFC6265]</a>), which offers the
+  ability to retrieve a list of cookies by host, and to remove individual
+  cookies.</p>
+
+
+      <ol>
+       <li data-md="">
+        <p>Let <var>host</var> be <var>origin</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>,
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.1.2">canonicalized</a> as per Section 5.1.2 of <a data-link-type="biblio" href="#biblio-rfc6265">[RFC6265]</a>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>subdomain state</var> is <a data-link-type="dfn" href="#include-subdomains"><code>Include Subdomains</code></a>,
+  then let <var>cookie list</var> be the set of cookies from the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.3">cookie
+  store</a> whose <code>domain</code> attribute <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.1.3">domain-matches</a>
+  <var>host</var>.</p>
+        
+
+
+       <li data-md="">
+        <p>Otherwise, <var>subdomain state</var> is <a data-link-type="dfn" href="#exclude-subdomains"><code>Exclude
+  Subdomains</code></a>, so let <var>cookie list</var> be the set of
+  cookies from the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.3">cookie store</a> whose <code>domain</code> attribute
+  is identical to <var>host</var>.</p>
+        
+
+
+       <li data-md="">
+        <p>Remove each <var>cookie</var> in <var>cookie list</var> from the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.3">cookie
+  store</a>.</p>
+        
+</ol>
+  
+      <h4 class="heading settled" data-level="3.2.3" id="clear-dom"><span class="secno">3.2.3. </span><span class="content">
+    Clear DOM-accessible storage for <var>origin</var> with
+    <var>subdomains</var>
+  </span><a class="self-link" href="#clear-dom"></a></h4>
+
+
+      <p class="issue" id="issue-0d569f64"><a class="self-link" href="#issue-0d569f64"></a>Clear localStorage, sessionStorage, Indexed DB, WebSQL, Filesystems,
+  Dedicated Workers, Shared Workers, Service Workers, etc.</p>
+</section>
+
+
+     <section>
+  
+      <h2 class="heading settled" data-level="4" id="iana-considerations"><span class="secno">4. </span><span class="content">IANA Considerations</span><a class="self-link" href="#iana-considerations"></a></h2>
 
 
       <p>The permanent message header field registry should be updated
   with the following registration: <a data-link-type="biblio" href="#biblio-rfc3864">[RFC3864]</a></p>
 
   
-      <h3 class="heading settled" data-level="3.1" id="iana-https"><span class="secno">3.1. </span><span class="content">
+      <h3 class="heading settled" data-level="4.1" id="iana-https"><span class="secno">4.1. </span><span class="content">
     HTTPS
   </span><a class="self-link" href="#iana-https"></a></h3>
 
@@ -897,7 +1188,7 @@ Conformance</span></a>
 
       <section>
   
-       <h2 class="heading settled" data-level="4" id="acknowledgements"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+       <h2 class="heading settled" data-level="5" id="acknowledgements"><span class="secno">5. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
 
 
        <p>Michal Zalewski proposed a variant of this concept, and Mark Knichel helped
@@ -951,7 +1242,10 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
    <li>Clear-Browsing-Data, <a href="#clear_browsing_data">2.1</a>
    <li>data-type, <a href="#data_type">2.1</a>
    <li>data-type-list, <a href="#data_type_list">2.1</a>
+   <li>Exclude
+  Subdomains, <a href="#exclude-subdomains">3.1.2</a>
    <li>extension, <a href="#extension">2.1</a>
+   <li>Include Subdomains, <a href="#include-subdomains">3.1.2</a>
    <li>subdomain-extension, <a href="#subdomain_extension">2.1</a>
    <li>unknown-extension, <a href="#unknown_extension">2.1</a>
   </ul>
@@ -959,6 +1253,8 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   <ul class="indexlist">
    <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
     <ul>
+     <li><a href="https://fetch.spec.whatwg.org/#concept-header-list">header list</a>
+     <li><a href="https://fetch.spec.whatwg.org/#main-fetch">main fetch</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-response">response</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-response-url">url</a>
     </ul>
@@ -976,9 +1272,19 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
      <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">vchar</a>
      <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">wsp</a>
     </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc6265">[rfc6265]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc6265#section-5.1.2">canonicalized</a>
+     <li><a href="https://tools.ietf.org/html/rfc6265#section-5.3">cookie store</a>
+     <li><a href="https://tools.ietf.org/html/rfc6265#section-5.1.3">domain-match</a>
+    </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc6454">[RFC6454]</a> defines the following terms:
     <ul>
      <li><a href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc7234">[rfc7234]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc7234#section-2">network cache</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-url">[URL]</a> defines the following terms:
     <ul>
@@ -1004,6 +1310,10 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
    <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a>
    <dt id="biblio-rfc5234"><a class="self-link" href="#biblio-rfc5234"></a>[RFC5234]
    <dd>D. Crocker, Ed.; P. Overell. <a href="http://www.ietf.org/rfc/rfc5234.txt">Augmented BNF for Syntax Specifications: ABNF</a>. January 2008. Internet Standard. URL: <a href="http://www.ietf.org/rfc/rfc5234.txt">http://www.ietf.org/rfc/rfc5234.txt</a>
+   <dt id="biblio-rfc6265"><a class="self-link" href="#biblio-rfc6265"></a>[RFC6265]
+   <dd>A. Barth. <a href="http://www.ietf.org/rfc/rfc6265.txt">HTTP State Management Mechanism</a>. April 2011. Proposed Standard. URL: <a href="http://www.ietf.org/rfc/rfc6265.txt">http://www.ietf.org/rfc/rfc6265.txt</a>
+   <dt id="biblio-rfc7234"><a class="self-link" href="#biblio-rfc7234"></a>[RFC7234]
+   <dd>R. Fielding, Ed.; M. Nottingham, Ed.; J. Reschke, Ed.. <a href="http://www.ietf.org/rfc/rfc7234.txt">Hypertext Transfer Protocol (HTTP/1.1): Caching</a>. June 2014. Proposed Standard. URL: <a href="http://www.ietf.org/rfc/rfc7234.txt">http://www.ietf.org/rfc/rfc7234.txt</a>
   </dl>
   <h3 class="no-num heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
@@ -1014,9 +1324,16 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   </dl>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue">With regard to #5, how specific do I need to be? How well is any cache
-  specified?<a href="#issue-9100bd61"> ↵ </a></div>
-   <div class="issue">What about opt-out cookies and the like? Do we need some sort of
-  whitelisting mechainsm? Hope not!<a href="#issue-7439f649"> ↵ </a></div>
+   <div class="issue">Monkey patching! Talk with Anne.<a href="#issue-3ded38d3"> ↵ </a></div>
+   <div class="issue">This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. That’s probably what we want, but what about opt-out cookies?<a href="#issue-c60e2320"> ↵ </a></div>
+   <div class="issue">We’re dealing with the network cache here, as defined in
+  <a data-link-type="biblio" href="#biblio-rfc7234">[RFC7234]</a>, but that’s not nearly everything a user agent caches. How
+  hand-wavey with the vendor-specific section can we be? For instance,
+  Chrome clears out prerendered pages, script caches, WebGL shader caches,
+  WebRTC bits and pieces, address bar suggestion caches, various networking
+  bits that aren’t representations (HSTS/HPKP, SCDH, etc.).<a href="#issue-0378d416"> ↵ </a></div>
+   <div class="issue">Clear localStorage, sessionStorage, Indexed DB, WebSQL, Filesystems,
+  Dedicated Workers, Shared Workers, Service Workers, etc.<a href="#issue-0d569f64"> ↵ </a></div>
   </div></body>
 </html>
