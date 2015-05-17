@@ -265,10 +265,11 @@ store user credentials for future use.</p>
     <li><a href="#security-considerations"><span class="secno">6</span> <span class="content">Security Considerations</span></a>
      <ul class="toc">
       <li><a href="#security-cross-origin-leakage"><span class="secno">6.1</span> <span class="content">Cross-origin Credential Leakage</span></a>
-      <li><a href="#security-origin-confusion"><span class="secno">6.2</span> <span class="content">Origin Confusion</span></a>
-      <li><a href="#security-insecure-origins"><span class="secno">6.3</span> <span class="content">Insecure Sites</span></a>
-      <li><a href="#security-xss"><span class="secno">6.4</span> <span class="content">Script Injection</span></a>
-      <li><a href="#security-autocomplete-off"><span class="secno">6.5</span> <span class="content">
+      <li><a href="#security-same-origin-leakage"><span class="secno">6.2</span> <span class="content">Same-origin Leakage</span></a>
+      <li><a href="#security-origin-confusion"><span class="secno">6.3</span> <span class="content">Origin Confusion</span></a>
+      <li><a href="#security-insecure-origins"><span class="secno">6.4</span> <span class="content">Insecure Sites</span></a>
+      <li><a href="#security-xss"><span class="secno">6.5</span> <span class="content">Script Injection</span></a>
+      <li><a href="#security-autocomplete-off"><span class="secno">6.6</span> <span class="content">
     Avoid reintroducing <code>autocomplete="off"</code>
   </span></a>
      </ul>
@@ -2595,7 +2596,20 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
     </ol>
 
   
-    <h3 class="heading settled" data-level="6.2" id="security-origin-confusion"><span class="secno">6.2. </span><span class="content">Origin Confusion</span><a class="self-link" href="#security-origin-confusion"></a></h3>
+    <h3 class="heading settled" data-level="6.2" id="security-same-origin-leakage"><span class="secno">6.2. </span><span class="content">Same-origin Leakage</span><a class="self-link" href="#security-same-origin-leakage"></a></h3>
+
+
+    <p>Cross-site scripting attacks could make it possible to exploit <code class="idl"><a data-link-type="idl" href="#dom-passwordcredential-sendurl">send()</a></code> in
+  order to leak credential information via a vulnerable same-origin endpoint.
+  To mitigate this kind of risk, authors SHOULD set a reasonable Content
+  Security Policy <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> which restricts the kinds of content which can
+  execute in their sites' context. In particular, authors should ensure that
+  both <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-script-src">script-src</a></code> and <code><a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-object-src">object-src</a></code>
+  directives are set in any policy they specify in order to ensure that only
+  trusted script is executed on a page with access to a user’s credentials.</p>
+
+  
+    <h3 class="heading settled" data-level="6.3" id="security-origin-confusion"><span class="secno">6.3. </span><span class="content">Origin Confusion</span><a class="self-link" href="#security-origin-confusion"></a></h3>
 
 
     <p>If framed pages have access to the APIs defined here, it might be possible
@@ -2619,7 +2633,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   for details.</p>
 
   
-    <h3 class="heading settled" data-level="6.3" id="security-insecure-origins"><span class="secno">6.3. </span><span class="content">Insecure Sites</span><a class="self-link" href="#security-insecure-origins"></a></h3>
+    <h3 class="heading settled" data-level="6.4" id="security-insecure-origins"><span class="secno">6.4. </span><span class="content">Insecure Sites</span><a class="self-link" href="#security-insecure-origins"></a></h3>
 
 
     <p>User agents MUST NOT expose the APIs defined here to environments which are
@@ -2631,7 +2645,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   contexts</a> (as discussed in <a href="#security-cross-origin-leakage">§6.1 Cross-origin Credential Leakage</a>.</p>
 
   
-    <h3 class="heading settled" data-level="6.4" id="security-xss"><span class="secno">6.4. </span><span class="content">Script Injection</span><a class="self-link" href="#security-xss"></a></h3>
+    <h3 class="heading settled" data-level="6.5" id="security-xss"><span class="secno">6.5. </span><span class="content">Script Injection</span><a class="self-link" href="#security-xss"></a></h3>
 
 
     <p>If a malicious party is able to inject script into an origin, they could
@@ -2647,7 +2661,7 @@ dictionary <dfn class="idl-code" data-dfn-type="dictionary" data-export="" data-
   <a data-link-type="biblio" href="#biblio-sri">[SRI]</a> to ensure that only trusted JavaScript is executed.</p>
 
   
-    <h3 class="heading settled" data-level="6.5" id="security-autocomplete-off"><span class="secno">6.5. </span><span class="content">
+    <h3 class="heading settled" data-level="6.6" id="security-autocomplete-off"><span class="secno">6.6. </span><span class="content">
     Avoid reintroducing <code>autocomplete="off"</code>
   </span><a class="self-link" href="#security-autocomplete-off"></a></h3>
 
@@ -3042,6 +3056,8 @@ typedef (FederatedCredentialRequestOptions or ExampleCredentialRequestOptions) C
     <ul>
      <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-child-src">child-src</a>
      <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-connect-src">connect-src</a>
+     <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-object-src">object-src</a>
+     <li><a href="https://w3c.github.io/webappsec/specs/content-security-policy/#directive-script-src">script-src</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
     <ul>
