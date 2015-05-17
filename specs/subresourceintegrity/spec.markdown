@@ -100,8 +100,8 @@ and future versions of the specification are likely to expand this coverage.
                 crossorigin="anonymous"></script>
     {:.example.highlight}
 
-*   A user agent wishes to ensure that pieces of its UI which are rendered via
-    HTML (for example, a browser's New Tab page) aren't manipulated before display.
+*   A user agent wishes to ensure that JavaScript code running in high-privilege HTML 
+    contexts (for example, a browser's New Tab page) aren't manipulated before display.
     [Integrity metadata][] mitigates the risk that altered JavaScript will run
     in these pages' high-privilege contexts.
 </section><!-- Introduction::UseCases::Integrity -->
