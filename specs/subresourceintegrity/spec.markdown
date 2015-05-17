@@ -281,9 +281,9 @@ User agents MUST provide a mechanism of determining the relative priority of two
 hash functions and return the empty string if the priority is equal. That is, if
 a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
 b)</dfn> it would return the hash function the user agent considers the most
-collision-resistant.  For example, `getPrioritizedHashFunction('SHA-256',
-'SHA-512')` would return `'SHA-512'` and `getPrioritizedHashFunction('SHA-256',
-'SHA-256')` would return the empty string.
+collision-resistant.  For example, `getPrioritizedHashFunction('sha256',
+'sha512')` would return `'sha512'` and `getPrioritizedHashFunction('sha256',
+'sha256')` would return the empty string.
 
 </section><!-- /Framework::Cryptographic hash functions::Priority -->
 
