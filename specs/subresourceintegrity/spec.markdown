@@ -48,7 +48,7 @@ This example can be communicated to a user agent by adding the hash to a
             integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="
             crossorigin="anonymous"></script>
 
-{:.example.highlight}
+{:.example}
 
 Scripts, of course, are not the only resource type which would benefit
 from integrity validation. The scheme specified here also applies to `link`
@@ -88,7 +88,7 @@ and future versions of the specification are likely to expand this coverage.
         <link rel="stylesheet" href="https://site53.example.net/style.css"
               integrity="sha256-vjnUh7+rXHH2lg/5vDY8032ftNVCIEC21vL6szrVw9M="
               crossorigin="anonymous">
-    {:.example.highlight}
+    {:.example}
 
 *   An author wants to include JavaScript provided by a third-party
     analytics service. To ensure that only the code that has been carefully
@@ -98,7 +98,7 @@ and future versions of the specification are likely to expand this coverage.
         <script src="https://analytics-r-us.example.com/v1.0/include.js"
                 integrity="sha256-Rj/9XDU7F6pNSX8yBddiCIIS+XKDTtdq0//No0MH0AE="
                 crossorigin="anonymous"></script>
-    {:.example.highlight}
+    {:.example}
 
 *   A user agent wishes to ensure that JavaScript code running in high-privilege HTML 
     contexts (for example, a browser's New Tab page) aren't manipulated before display.
@@ -214,7 +214,7 @@ an author might choose [SHA-256][sha2] as a hash function.
 digest that results. This can be encoded as follows:
 
     sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
-{:.example.highlight}
+{:.example}
 
 <div class="note">
 Digests may be generated using any number of utilities. [OpenSSL][], for
@@ -249,7 +249,7 @@ by either of the following hash expressions:
 
     sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
     sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
-{:.example.highlight}
+{:.example}
 
 Authors may choose to specify both, for example:
 
@@ -447,7 +447,7 @@ which would allow the user agent to accept two different content payloads, one
 of which matches the first SHA256 hash value and the other matches the second
 SHA256 hash value.
 
-{:.example.highlight}
+{:.example}
 
 User agents may allow users to modify the result of this algorithm via user
 preferences, bookmarklets, third-party additions to the user agent, and other
@@ -717,7 +717,7 @@ Moreover, attackers can brute-force specific values in an otherwise
 static resource: consider a JSON response that looks like this:
 
     {'status': 'authenticated', 'username': 'Stephan Falken'}
-{:.example.highlight}
+{:.example}
 
 An attacker can precompute hashes for the response with a variety of
 common usernames, and specify those hashes while repeatedly attempting
