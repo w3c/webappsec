@@ -85,8 +85,8 @@ and future versions of the specification are likely to expand this coverage.
     behavior) would change that site in unfortunate ways, the following
     [integrity metadata][] is added to the `link` element included on the page:
 
-        <link rel="stylesheet" href="https://site53.cdn.net/style.css"
-              integrity="sha256-SDfwewFAE...wefjijfE"
+        <link rel="stylesheet" href="https://site53.example.net/style.css"
+              integrity="sha256-vjnUh7+rXHH2lg/5vDY8032ftNVCIEC21vL6szrVw9M="
               crossorigin="anonymous">
     {:.example.highlight}
 
@@ -95,8 +95,8 @@ and future versions of the specification are likely to expand this coverage.
     reviewed is executed, the author generates [integrity metadata][] for
     the script, and adds it to the `script` element:
 
-        <script src="https://analytics-r-us.com/v1.0/include.js"
-                integrity="sha256-SDfwewFAE...wefjijfE"
+        <script src="https://analytics-r-us.example.com/v1.0/include.js"
+                integrity="sha256-Rj/9XDU7F6pNSX8yBddiCIIS+XKDTtdq0//No0MH0AE="
                 crossorigin="anonymous"></script>
     {:.example.highlight}
 
@@ -438,7 +438,7 @@ the user agent.
 This algorithm allows the user agent to accept multiple, valid strong hash
 functions. For example, a developer might write a `script` element such as:
 
-    <script src="https://foobar.com/content-changes.js"
+    <script src="https://example.com/example-framework.js"
             integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=
                        sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng="
             crossorigin="anonymous"></script>
