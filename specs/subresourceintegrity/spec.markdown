@@ -285,6 +285,9 @@ collision-resistant.  For example, `getPrioritizedHashFunction('sha256',
 'sha512')` would return `'sha512'` and `getPrioritizedHashFunction('sha256',
 'sha256')` would return the empty string.
 
+The `getPrioritizedHashFunction` implementation is vendor specific, and the interface 
+provided is not exposed to the application.
+
 </section><!-- /Framework::Cryptographic hash functions::Priority -->
 
 </section><!-- /Framework::Cryptographic hash functions -->
