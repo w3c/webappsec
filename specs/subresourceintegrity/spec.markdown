@@ -627,26 +627,25 @@ reasons which are considered network errors.
 <section>
 ###### The `script` element
 
-When executing step 5 of step 14 of HTML5's
+Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
+
+1.  Let <var>src</var> be the value of the element's `src` attribute and
+    the request's associated [integrity metadata][] be the value of the element's
+    `integrity` attribute.
+
+Insert the following step after step 14.5 of HTML5's
 ["prepare a script" algorithm][prepare]:
 
-1.  Set the [integrity metadata][] of the request to the value
-    of the element's `integrity` attribute.
-
-Insert the following steps after step 5 of step 14 of HTML5's
-["prepare a script" algorithm][prepare]:
-
-8.  Once the [fetching algorithm][] has completed:
-    2.  If the response's integrity state is `corrupt`:
-        1.  [Fire a simple event][] named `error` at the `script`
-            element, and abort these steps.
+1.  Once the [fetching algorithm][] has completed, if the response's
+    integrity state is `corrupt`, [queue a task][] to
+    [fire a simple event][] named `error` at the element, and abort these
+    steps.
 {:start="6"}
 
 [prepare]: http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script
-[fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#fetch
+[fetching algorithm]: http://www.w3.org/TR/html5/infrastructure.html#potentially-cors-enabled-fetch
+[fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
 [queue a task]: http://www.w3.org/TR/html5/webappapis.html#queue-a-task
-[Fire a simple event]: http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event
-[bz]: http://lists.w3.org/Archives/Public/public-webappsec/2013Dec/0048.html
 </section><!-- /Framework::HTML::Elements::script -->
 
 </section><!-- /Framework::HTML::Elements -->
