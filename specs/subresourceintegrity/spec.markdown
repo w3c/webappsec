@@ -376,9 +376,8 @@ This algorithm accepts a string, and returns either `no metadata`, or a set of
 valid hash expressions whose hash functions are understood by
 the user agent.
 
-1.  If <var>metadata</var> is the empty string, return `no metadata`.
-2.  Let <var>result</var> be the empty set.
-3.  For each <var>token</var> returned by [splitting <var>metadata</var> on
+1.  Let <var>result</var> be the empty set.
+2.  For each <var>token</var> returned by [splitting <var>metadata</var> on
     spaces][split-on-spaces]:
     1.  If <var>token</var> is not a valid metadata, skip the remaining
         steps, and proceed to the next token.
@@ -386,7 +385,7 @@ the user agent.
         <var>token</var>.
     3.  If <var>algorithm</var> is a hash function recognized by the user
         agent, add <var>token</var> to <var>result</var>.
-4.  Return `no metadata` if <var>result</var> is empty, otherwise return
+3.  Return `no metadata` if <var>result</var> is empty, otherwise return
     <var>result</var>.
 
 [split-on-spaces]: http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces
