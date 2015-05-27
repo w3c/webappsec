@@ -213,8 +213,8 @@ deliver. To mitigate the risk that a CDN compromise (or unexpectedly malicious
 behavior) would change that site in unfortunate ways, the following
 <a href="#dfn-integrity-metadata">integrity metadata</a> is added to the <code>link</code> element included on the page:</p>
 
-          <pre class="example highlight"><code>&lt;link rel="stylesheet" href="https://site53.cdn.net/style.css"
-      integrity="sha256-SDfwewFAE...wefjijfE"
+          <pre class="example"><code>&lt;link rel="stylesheet" href="https://site53.example.net/style.css"
+      integrity="sha256-vjnUh7+rXHH2lg/5vDY8032ftNVCIEC21vL6szrVw9M="
       crossorigin="anonymous"&gt;
 </code></pre>
         </li>
@@ -224,14 +224,14 @@ analytics service. To ensure that only the code that has been carefully
 reviewed is executed, the author generates <a href="#dfn-integrity-metadata">integrity metadata</a> for
 the script, and adds it to the <code>script</code> element:</p>
 
-          <pre class="example highlight"><code>&lt;script src="https://analytics-r-us.com/v1.0/include.js"
-        integrity="sha256-SDfwewFAE...wefjijfE"
+          <pre class="example"><code>&lt;script src="https://analytics-r-us.example.com/v1.0/include.js"
+        integrity="sha256-Rj/9XDU7F6pNSX8yBddiCIIS+XKDTtdq0//No0MH0AE="
         crossorigin="anonymous"&gt;&lt;/script&gt;
 </code></pre>
         </li>
         <li>
-          <p>A user agent wishes to ensure that pieces of its UI which are rendered via
-HTML (for example, a browser’s New Tab page) aren’t manipulated before display.
+          <p>A user agent wishes to ensure that JavaScript code running in high-privilege HTML 
+contexts (for example, a browser’s New Tab page) aren’t manipulated before display.
 <a href="#dfn-integrity-metadata">Integrity metadata</a> mitigates the risk that altered JavaScript will run
 in these pages’ high-privilege contexts.</p>
         </li>
@@ -330,12 +330,12 @@ the spec may define options, such as MIME types [[!MIMETYPE]].</p>
     <p>This metadata MUST be encoded in the same format as the <code>hash-source</code>
 in <a href="http://www.w3.org/TR/CSP11/#source-list-syntax">section 4.2 of the Content Security Policy Level 2 specification</a>.</p>
 
-    <p>For example, given a script resource containing only the string “alert(‘Hello, world.’);”,
+    <p>For example, given a script resource containing only the string "alert('Hello, world.');",
 an author might choose <a href="#dfn-sha-2">SHA-256</a> as a hash function.
 <code>qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=</code> is the base64-encoded
 digest that results. This can be encoded as follows:</p>
 
-    <pre class="example highlight"><code>sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+    <pre class="example"><code>sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
 </code></pre>
 
     <div class="note">
@@ -366,7 +366,7 @@ resource in order to provide agility in the face of future discoveries.
 For example, the “Hello, world.” resource described above may be described
 by either of the following hash expressions:</p>
 
-      <pre class="example highlight"><code>sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
+      <pre class="example"><code>sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
 sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
 </code></pre>
 
@@ -402,9 +402,9 @@ stronger hash functions as they become available.</p>
 hash functions and return the empty string if the priority is equal. That is, if
 a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
 b)</dfn> it would return the hash function the user agent considers the most
-collision-resistant.  For example, <code>getPrioritizedHashFunction('SHA-256',
-'SHA-512')</code> would return <code>'SHA-512'</code> and <code>getPrioritizedHashFunction('SHA-256',
-'SHA-256')</code> would return the empty string.</p>
+collision-resistant.  For example, <code>getPrioritizedHashFunction('sha256',
+'sha512')</code> would return <code>'sha512'</code> and <code>getPrioritizedHashFunction('sha256',
+'sha256')</code> would return the empty string.</p>
 
     </section>
     <!-- /Framework::Cryptographic hash functions::Priority -->
@@ -575,7 +575,7 @@ metadata from <var>parsedMetadata</var></a>.</li>
       <p>This algorithm allows the user agent to accept multiple, valid strong hash
 functions. For example, a developer might write a <code>script</code> element such as:</p>
 
-      <pre><code>&lt;script src="https://foobar.com/content-changes.js"
+      <pre><code>&lt;script src="https://example.com/example-framework.js"
         integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=
                    sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng="
         crossorigin="anonymous"&gt;&lt;/script&gt;
@@ -759,25 +759,17 @@ failed resource with a different one.</p>
       <h6 id="the-link-element-for-stylesheets">The <code>link</code> element for stylesheets</h6>
 
       <p>Whenever a user agent attempts to <a href="http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain">obtain a resource</a> pointed to by a
-<code>link</code> element that has a <code>rel</code> attribute with the value of <code>stylesheet</code>:</p>
+<code>link</code> element that has a <code>rel</code> attribute with the value of <code>stylesheet</code>,
+insert the following step between steps 1 and 2:</p>
 
-      <ol>
+      <ol start="2">
         <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
 of the element’s <code>integrity</code> attribute.</li>
       </ol>
 
-      <p>Additionally, perform the following steps before firing a <code>load</code> event at
-the element:</p>
-
-      <ol>
-        <li>If the response’s integrity state is <code>corrupt</code>:
-          <ol>
-            <li>Abort the <code>load</code> event, and treat the resource as having failed
-to load.</li>
-            <li><a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">Fire a simple event</a> named <code>error</code> at the <code>link</code> element.</li>
-          </ol>
-        </li>
-      </ol>
+      <p>Additionally, in the paragraph specifying when to fire a <code>load</code> event, add
+“response with a <code>corrupt</code> integrity state” to the list of load failure
+reasons which are considered network errors.</p>
 
     </section>
     <!-- /Framework::HTML::link -->
@@ -785,28 +777,22 @@ to load.</li>
     <section>
       <h6 id="the-script-element">The <code>script</code> element</h6>
 
-      <p>When executing step 5 of step 14 of HTML5’s
-<a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">“prepare a script” algorithm</a>:</p>
+      <p>Replace step 14.1 of HTML5’s <a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">“prepare a script” algorithm</a> with:</p>
 
       <ol>
-        <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element’s <code>integrity</code> attribute.</li>
+        <li>Let <var>src</var> be the value of the element’s <code>src</code> attribute and
+the request’s associated <a href="#dfn-integrity-metadata">integrity metadata</a> be the value of the element’s
+<code>integrity</code> attribute.</li>
       </ol>
 
-      <p>Insert the following steps after step 5 of step 14 of HTML5’s
+      <p>Insert the following step after step 14.5 of HTML5’s
 <a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">“prepare a script” algorithm</a>:</p>
 
       <ol start="6">
-        <li>Once the <a href="http://www.w3.org/TR/html5/infrastructure.html#fetch">fetching algorithm</a> has completed:
-          <ol>
-            <li>If the response’s integrity state is <code>corrupt</code>:
-              <ol>
-                <li><a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">Fire a simple event</a> named <code>error</code> at the <code>script</code>
-element, and abort these steps.</li>
-              </ol>
-            </li>
-          </ol>
-        </li>
+        <li>Once the <a href="http://www.w3.org/TR/html5/infrastructure.html#potentially-cors-enabled-fetch">fetching algorithm</a> has completed, if the response’s
+integrity state is <code>corrupt</code>, <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
+<a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the element, and abort these
+steps.</li>
       </ol>
 
     </section>
@@ -880,7 +866,7 @@ logged into a particular service.</p>
     <p>Moreover, attackers can brute-force specific values in an otherwise
 static resource: consider a JSON response that looks like this:</p>
 
-    <pre class="example highlight"><code>{'status': 'authenticated', 'username': 'Stephan Falken'}
+    <pre class="example"><code>{'status': 'authenticated', 'username': 'Stephan Falken'}
 </code></pre>
 
     <p>An attacker can precompute hashes for the response with a variety of
