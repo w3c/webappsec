@@ -263,9 +263,9 @@ list, and use that metadata to validate the resource (as described below in
 the "[parse metadata][parse]" and "[get the strongest metadata from
 set][get-the-strongest]" algorithms).
 
-When a hash function is determined to be insecure, user agents MUST deprecate
-and eventually remove support for integrity validation using that hash
-function.
+User agents MAY deprecate support (by blocking loads) for integrity validation using 
+hash functions deemed insecure. Web application authors SHOULD update integrity 
+metadata to remove use of insecure hash functions.
 
 To allow authors to switch to stronger hash functions without being held back by older
 user agents, validation using unsupported hash functions acts like no integrity value 
