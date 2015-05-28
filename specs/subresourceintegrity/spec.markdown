@@ -417,15 +417,14 @@ the user agent.
 <section>
 #### Does <var>resource</var> match <var>metadataList</var>?
 
-1.  If <var>resource</var>'s URL's scheme is `about`, return `true`.
-2.  Let <var>parsedMetadata</var> be the result of
+1.  Let <var>parsedMetadata</var> be the result of
     [parsing <var>metadataList</var>][parse].
-3.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
-4.  If [<var>resource</var> is not eligible for integrity
+2.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
+3.  If [<var>resource</var> is not eligible for integrity
     validation][eligible], return `false`.
-5.  Let <var>metadata</var> be the result of [getting the strongest
+4.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
-6.  For each <var>item</var> in <var>metadata</var>:
+5.  For each <var>item</var> in <var>metadata</var>:
     1.  Let <var>algorithm</var> be the <var>alg</var> component of
         <var>metadata</var>.
     2.  Let <var>expectedValue</var> be the <var>val</var> component of
@@ -434,7 +433,7 @@ the user agent.
         <var>algorithm</var> to <var>resource</var>][apply-algorithm].
     4.  If <var>actualValue</var> is a case-sensitive match for
         <var>expectedValue</var>, return `true`.
-7.  Return `false`.
+6.  Return `false`.
 
 This algorithm allows the user agent to accept multiple, valid strong hash
 functions. For example, a developer might write a `script` element such as:
