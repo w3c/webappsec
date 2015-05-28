@@ -557,7 +557,7 @@ The `integrity` IDL attribute must [reflect][] the `integrity` content attribute
 applied only to the `hash-expression` that immediately precedes it.
 
 In order for user agents to remain fully forwards compatible with future
-options, the user agent MUST ignore all unrecognized  `option-expression`s
+options, the user agent MUST ignore all unrecognized  `option-expression`s.
 
 Note that while the `option-expression` has been reserved in the syntax, no
 options have been defined. It is likely that a future version of the spec will
