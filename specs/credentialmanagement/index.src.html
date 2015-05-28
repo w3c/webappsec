@@ -239,7 +239,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <div class="example">
       <pre>
-        navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>(["<a const>password</a>"]).then(
+        navigator.<a attribute>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>(["<a const>password</a>"]).then(
             function(credential) {
               if (!credential) {
                 // The user either doesn't have credentials for this site, or
@@ -268,7 +268,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <div class="example">
       <pre>
-        navigator.<a attribute>credentials</a>.<a idl lt="get()">get</a>({
+        navigator.<a attribute>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>({
           [ "<a const>password</a>", "<a const>federated</a>" ],
           {
             "<a dict-member>federated</a>": {
@@ -671,12 +671,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       {{CredentialRequestOptions/federated}} property.
     </li>
     <li>
-      If <var>federated</var> is <code>undefined</code> or <code>null</code>,
-      return <a><code>Does Not Match</code></a>.
-    </li>
-    <li>
-      If <var>federated</var> has a
-      {{FederatedCredentialRequestOptions/providers}} property:
+      If the {{FederatedCredentialRequestOptions/providers}} property is
+      present in <var>federated</var>:
 
       <ol>
         <li>
@@ -694,8 +690,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </ol>
     </li>
     <li>
-      If <var>federated</var> has a
-      {{FederatedCredentialRequestOptions/protocols}} property:
+      If the {{FederatedCredentialRequestOptions/protocols}} property is
+      present in <var>federated</var>:
 
       <ol>
         <li>
@@ -729,7 +725,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     interface CredentialContainer {
-      Promise&lt;Credential?&gt; get(sequence&lt;DOMString&gt; types, CredentialRequestOptions? options);
+      Promise&lt;Credential?&gt; get(sequence&lt;DOMString&gt; types, optional CredentialRequestOptions options);
       Promise&lt;Credential&gt; store(optional Credential credential);
       Promise&lt;void&gt; requireUserMediation();
     };
@@ -750,8 +746,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       particular {{Credential}} to return. This process is described in each
       {{Credential}} type's <a>options matching algorithm</a>.
       
-      When {{get()}} is called, the user agent MUST execute the algorithm
-      defined in [[#request-credential]] on <var>types</var> and
+      When {{CredentialContainer/get()}} is called, the user agent MUST execute the
+      algorithm defined in [[#request-credential]] on <var>types</var> and
       <var>options</var>.
 
       Note: If and when we need to support returning more than a single
@@ -807,8 +803,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     dictionary CredentialRequestOptions {
-      object? password;
-      FederatedCredentialRequestOptions? federated;
+      FederatedCredentialRequestOptions federated;
 
       boolean suppressUI = false;
     };
@@ -842,7 +837,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     via the following call:
 
     <pre>
-      navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>(
+      navigator.<a idl>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>(
         [ "<a const>federated</a>" ],
         {
           "<a dict-member>federated</a>": {
@@ -860,7 +855,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     automatically sign into the origin):
 
     <pre>
-      navigator.<a idl>credentials</a>.<a idl lt="get()">get</a>(
+      navigator.<a idl>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>(
         [ "<a const>federated</a>" ],
         {
           "<a dict-member>federated</a>": {
@@ -1001,8 +996,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
               then reject <var>promise</var> with a <code>SecurityError</code>
               and terminate this algorithm.
 
-              Note: This boils down to requiring a user gesture for {{get()}}
-              before showing the user any UI.
+              Note: This boils down to requiring a user gesture for
+              {{CredentialContainer/get()}} before showing the user any UI.
             </li>
             <li>
               Resolve <var>promise</var> with the result of executing
@@ -1025,9 +1020,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   {{LocallyStoredCredential}} isn't the only type? For example, how could an
   author pull some "RemoteCredential" that required interaction with a
   third-party, but fall back to a {{PasswordCredential}}? For the moment, we're
-  resolving this by rejecting the promise if the types listed in {{get()}}'s
-  {{types!!argument}} aren't all instances of the same type, but that
-  seems like something we'd want to fix.
+  resolving this by rejecting the promise if the types listed in
+  {{CredentialContainer/get()}}'s {{types!!argument}} aren't all instances of
+  the same type, but that seems like something we'd want to fix.
 
   <h4 id="store-credential">
     Store a <code>Credential</code>
@@ -1200,8 +1195,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       This requirement only applies if we would show UI to the user.
       If she's elected to allow credentials to be provided without user
       mediation, and we can do so, then we don't require a user gesture
-      for {{get()}}. Otherwise, we do, due to the considerations in
-      [[#privacy-considerations]].
+      for {{CredentialContainer/get()}}. Otherwise, we do, due to the
+      considerations in [[#privacy-considerations]].
     </li>
     <li>
       Ask the user which {{Credential}} to share.
@@ -1555,13 +1550,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="user-mediated-selection">Credential Selection</h3>
 
-  When responding to a call to {{get()}} on an origin without credentials
-  that are available without user mediation, user agents MUST ask the user for
-  permission to share credential information. This SHOULD take the form of a
-  <dfn local-lt="chooser">credential chooser</dfn> which presents the user
-  with a list of credentials that are available for use on a site, allowing her
-  to select one which should be provided to the website, or to reject the
-  request entirely.
+  When responding to a call to {{CredentialContainer/get()}} on an origin
+  without credentials that are available without user mediation, user agents
+  MUST ask the user for permission to share credential information. This SHOULD
+  take the form of a <dfn local-lt="chooser">credential chooser</dfn> which
+  presents the user with a list of credentials that are available for use on a
+  site, allowing her to select one which should be provided to the website, or
+  to reject the request entirely.
 
   The chooser interface SHOULD be implemented in such a way as to be
   distinguishable from UI which a website could produce. For example, the
@@ -1587,12 +1582,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h4 id="synthesis">Synthesizing Credentials</h4>
 
-  In response to a call to {{get()}} a user agent can offer a user the ability
-  to create a {{Credential}} on the fly, rather than returning an empty set.
-  Since credentials suggested in the <a>credential chooser</a> are never exposed
-  to the web unless the user explicitly selects them, the user agent is free
-  to use any of a number of heuristics to help a user get signed-into/-up for
-  a website.
+  In response to a call to {{CredentialContainer/get()}} a user agent can offer
+  a user the ability to create a {{Credential}} on the fly, rather than
+  returning an empty set. Since credentials suggested in the <a>credential
+  chooser</a> are never exposed to the web unless the user explicitly selects
+  them, the user agent is free to use any of a number of heuristics to help a
+  user get signed-into/-up for a website.
 
   Credentials SHOULD be synthesized to populate a <a>chooser</a> based on the
   following heuristics:
@@ -1603,8 +1598,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
     <li>
       Switch on the interface whose {{Credential/type}} property matches one of
-      the items in {{get()}}'s {{types!!argument}} argument, and execute the associated
-      steps:
+      the items in {{CredentialContainer/get()}}'s {{types!!argument}} argument,
+      and execute the associated steps:
 
       <dl>
         <dt>{{FederatedCredential}}</dt>
@@ -1674,12 +1669,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     being a bit counterproductive, as the site needs to display a list of dozens
     of providers, hoping that users will see an icon they remember.
 
-    A call to {{get()}} will end up with an empty list of {{Credential}} objects
-    for new users, as they won't have any <code>https://example.com/</code>
-    credentials. They might, however, have a {{PasswordCredential}} stored for
-    the exciting social media site <code>https://federation.com/</code>, which
-    they visit daily.
-
+    A call to {{CredentialContainer/get()}} will end up with an empty list of
+    {{Credential}} objects for new users, as they won't have any
+    <code>https://example.com/</code> credentials. They might, however, have a
+    {{PasswordCredential}} stored for the exciting social media site
+    <code>https://federation.com/</code>, which they visit daily.
+   
     In this case, based on its knowledge of the user's history and credentials,
     the user agent might choose to synthesize a {{FederatedCredential}} for
     <code>https://example.com/</code>, using the {{Credential/id}} from
@@ -1687,7 +1682,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     it to the user as a sign-up options in a <a>chooser</a>.
 
     In this way, <code>https://example.com/</code> can support dozens of
-    providers as arguments to {{get()}} (via
+    providers as arguments to {{CredentialContainer/get()}} (via
     {{FederatedCredentialRequestOptions}}'s
     {{FederatedCredentialRequestOptions/providers}} property), and the user
     agent can cull that list down to the federations with which the user
@@ -1731,18 +1726,19 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       MAY use the Public Suffix List [[!PSL]] to determine the effective scope
       of a credential by comparing the <a>registerable domains</a> of the
       credential's {{[[origin]]}} with the origin in which
-      {{get()}} is called. That is: credentials saved on
+      {{CredentialContainer/get()}} is called. That is: credentials saved on
       <code>https://admin.example.com/</code> and
       <code>https://example.com/</code> MAY be offered to users when
-      {{get()}} is called from <code>https://www.example.com/</code>
+      {{CredentialContainer/get()}} is called from
+      <code>https://www.example.com/</code>.
     </li>
     <li>
-      MUST NOT offer credentials to an origin in response to {{get()}}
-      without user mediation if the credential's origin is not an exact match
-      for the calling origin. That is, {{Credential}} objects for
-      <code>https://example.com</code> would not be returned directly to
-      <code>https://www.example.com</code>, but could be offered to the user
-      via the chooser.
+      MUST NOT offer credentials to an origin in response to
+      {{CredentialContainer/get()}} without user mediation if the credential's
+      origin is not an exact match for the calling origin. That is,
+      {{Credential}} objects for <code>https://example.com</code> would not be
+      returned directly to <code>https://www.example.com</code>, but could be
+      offered to the user via the chooser.
     </li>
   </ol>
 
@@ -1791,9 +1787,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   Therefore, <a>Nested browsing contexts</a> and other environments like
   Workers [[WORKERS]] cannot receive or store {{Credential}} objects; the user
-  agent MUST reject promises generated by calls to {{get()}} and
-  {{store()}} with a <code>SecurityError</code> when called from a
-  context which is not a <a>top-level browsing context</a>.
+  agent MUST reject promises generated by calls to {{CredentialContainer/get()}}
+  and {{CredentialContainer/store()}} with a <code>SecurityError</code> when
+  called from a context which is not a <a>top-level browsing context</a>.
 
   See the algorithms defined in [[#request-credential]] and [[#store-credential]]
   for details.
@@ -1827,18 +1823,19 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="privacy-timing-attacks">Timing Attacks</h3>
 
-  If the user has no credentials for an origin, a call to {{get()}} will
-  resolve very quickly indeed. A malicious website could distinguish between
-  a user with no credentials and a user with credentials who chooses not to
-  share them.
+  If the user has no credentials for an origin, a call to
+  {{CredentialContainer/get()}} will resolve very quickly indeed. A malicious
+  website could distinguish between a user with no credentials and a user with
+  credentials who chooses not to share them.
 
   This could allow a malicious website to determine if a user has credentials
   saved for particular federated identity providers by repeatedly calling
-  {{get()}} with a single item in the
+  {{CredentialContainer/get()}} with a single item in the
   {{FederatedCredentialRequestOptions/providers}} array. The risk is mitigated
-  by the fact that a user-mediated {{get()}} is tied to a user gesture, and the
-  user would, sooner or later, be prompted to provide credentials to the site,
-  which would certainly raise her suspicions as to its behavior.
+  by the fact that a user-mediated {{CredentialContainer/get()}} is tied to a
+  user gesture, and the user would, sooner or later, be prompted to provide
+  credentials to the site which would certainly raise her suspicions as to its
+  behavior.
 
   <h3 id="privacy-chooser-leakage">Chooser Leakage</h3>
 
@@ -1956,8 +1953,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   that user agents can improve their own via this imperative approach.
 
   This could range from a complex new API that the user agent mediates, or
-  simply by allowing extensions to overwrite the {{get()}} and {{store()}}
-  endpoints for their own purposes.
+  simply by allowing extensions to overwrite the {{CredentialContainer/get()}}
+  and {{CredentialContainer/store()}} endpoints for their own purposes.
 </section>
 
 <!--
