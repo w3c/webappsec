@@ -244,7 +244,7 @@ resource's [integrity metadata][], and MAY support additional hash functions.
 
 Multiple sets of [integrity metadata][] may be associated with a single
 resource in order to provide agility in the face of future discoveries.
-For example, the "Hello, world." resource described above may be described
+For example, the resource described in the previous section may be described
 by either of the following hash expressions:
 
     sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
