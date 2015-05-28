@@ -337,30 +337,15 @@ only deliver integrity metadata on a [potentially secure origin][].  See
 [uri-origin]: http://tools.ietf.org/html/rfc6454#section-4
 [Non-secure contexts remain non-secure]: #non-secure-contexts-remain-non-secure-1
 
-
-Certain HTTP headers can also change the way the resource behaves in
-ways which integrity checking cannot account for. If the resource
-contains these headers, it is ineligible for integrity validation:
-
-*   `Authorization` or `WWW-Authenticate` hide resources behind a login;
-    such non-public resources are excluded from integrity checks.
-*   `Refresh` can cause IFrame contents to transparently redirect to an
-    unintended target, bypassing the integrity check.
-
 The following algorithm details these restrictions:
 
 1.  Let <var>request</var> be the request that fetched
     <var>resource</var>.
-2.  If <var>resource</var> contains any of the following HTTP headers,
-    return `false`:
-    * `Authorization`
-    * `WWW-Authenticate`
-    * `Refresh`
-3.  If the [mode][fetch-mode] of <var>request</var> is `CORS`,
+2.  If the [mode][fetch-mode] of <var>request</var> is `CORS`,
     return `true`.
-4.  If the [origin][fetch-origin] of <var>request</var> is
+3.  If the [origin][fetch-origin] of <var>request</var> is
     <var>resource</var>'s origin, return `true`.
-5.  Return `false`.
+4.  Return `false`.
 
 Step 3 returns `true` if the resource was a CORS-enabled request. If the
 resource failed the CORS checks, it won't be available to us for integrity
