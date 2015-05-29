@@ -457,52 +457,23 @@ to enable the rest of this specification's work [[!FETCH]]:
     Unless stated otherwise, a request's integrity metadata is the empty
     string."
 
-2.  The following text should be added to [section 2.1.5][fetch-responses]: "A
-    [response][fetch-response] has an associated integrity state, which
-    is one of `indeterminate`, `pending`, `corrupt`, and `intact`. Unless
-    stated otherwise, it is `indeterminate`.
-
-3.  Perform the following step between steps 10 and 11 in the "[main fetch][]"
+2.  Perform the following step between steps 10 and 11 in the "[main fetch][]"
     algorithm:
 
     1. If <var>request</var>'s integrity metadata is a non-empty string:
         1.  Wait for either end-of-file to have been pushed to
             <var>response</var>'s body or for <var>response</var> to have a
             [termination reason][].
-        2.  If <var>response</var> does not have a [termination reason][]:
-            1. If <var>response</var> does not [match][] the
-               [integrity metadata][] of the <var>request</var>, set
-               <var>response</var> to a [network error][].
+        2.  If <var>response</var> does not have a [termination reason][] and
+            <var>response</var> does not [match][] the [integrity metadata][] of
+            the <var>request</var>, set <var>response</var> to a
+            [network error][].
 
-4.  Perform the following steps before executing both the "[basic fetch][]" and
+3.  Perform the following steps before executing both the "[basic fetch][]" and
     "[CORS fetch with preflight][]" algorithms:
 
-    1.  If <var>request</var>'s integrity metadata is the empty string, set
-        <var>response</var>'s integrity state to `indeterminate`. Otherwise:
-
-        1.  Set <var>response</var>'s integrity state to `pending`.
-        2.  Include a `Cache-Control` header whose value is "no-transform".
-
-5.  Add the following step before step #1 of the handling of 401 status
-    codes in the [HTTP fetch][] algorithm:
-
-    1.  If <var>request</var>'s integrity state is `pending`, set
-        <var>response</var>'s integrity state to `corrupt` and return
-        <var>response</var>.
-
-6.  Before firing the [process request end-of-file][] event for any
-    <var>request</var>:
-
-    1.  If the <var>request</var>'s integrity metadata is the empty string, set
-        the <var>response</var>'s integrity state to `indeterminate` and
-        skip directly to firing the event.
-
-    2.  If <var>response</var> [matches][match] the request's integrity
-        metadata, set the <var>response</var>'s integrity state to `intact`
-        and skip directly to firing the event.
-
-    3.  Set the <var>response</var>'s integrity state to `corrupt`
-        and skip directly to firing the event.
+    1.  If <var>request</var>'s integrity metadata is not the empty string,
+        include a `Cache-Control` header whose value is "no-transform".
 
 [fetch-requests]: http://fetch.spec.whatwg.org/#requests
 [fetch-responses]: http://fetch.spec.whatwg.org/#responses

@@ -590,12 +590,6 @@ Unless stated otherwise, a request’s integrity metadata is the empty
 string.”</p>
       </li>
       <li>
-        <p>The following text should be added to <a href="http://fetch.spec.whatwg.org/#responses">section 2.1.5</a>: “A
-<a href="http://fetch.spec.whatwg.org/#concept-response">response</a> has an associated integrity state, which
-is one of <code>indeterminate</code>, <code>pending</code>, <code>corrupt</code>, and <code>intact</code>. Unless
-stated otherwise, it is <code>indeterminate</code>.</p>
-      </li>
-      <li>
         <p>Perform the following step between steps 10 and 11 in the “<a href="https://fetch.spec.whatwg.org/#main-fetch">main fetch</a>”
 algorithm:</p>
 
@@ -605,13 +599,10 @@ algorithm:</p>
               <li>Wait for either end-of-file to have been pushed to
 <var>response</var>’s body or for <var>response</var> to have a
 <a href="https://fetch.spec.whatwg.org/#concept-response-termination-reason">termination reason</a>.</li>
-              <li>If <var>response</var> does not have a <a href="https://fetch.spec.whatwg.org/#concept-response-termination-reason">termination reason</a>:
-                <ol>
-                  <li>If <var>response</var> does not <a href="#does-resource-match-metadatalist">match</a> the
-<a href="#dfn-integrity-metadata">integrity metadata</a> of the <var>request</var>, set
-<var>response</var> to a <a href="https://fetch.spec.whatwg.org/#concept-network-error">network error</a>.</li>
-                </ol>
-              </li>
+              <li>If <var>response</var> does not have a <a href="https://fetch.spec.whatwg.org/#concept-response-termination-reason">termination reason</a> and
+<var>response</var> does not <a href="#does-resource-match-metadatalist">match</a> the <a href="#dfn-integrity-metadata">integrity metadata</a> of
+the <var>request</var>, set <var>response</var> to a
+<a href="https://fetch.spec.whatwg.org/#concept-network-error">network error</a>.</li>
             </ol>
           </li>
         </ol>
@@ -621,46 +612,8 @@ algorithm:</p>
 “<a href="http://fetch.spec.whatwg.org/#cors-fetch-with-preflight">CORS fetch with preflight</a>” algorithms:</p>
 
         <ol>
-          <li>
-            <p>If <var>request</var>’s integrity metadata is the empty string, set
-<var>response</var>’s integrity state to <code>indeterminate</code>. Otherwise:</p>
-
-            <ol>
-              <li>Set <var>response</var>’s integrity state to <code>pending</code>.</li>
-              <li>Include a <code>Cache-Control</code> header whose value is “no-transform”.</li>
-            </ol>
-          </li>
-        </ol>
-      </li>
-      <li>
-        <p>Add the following step before step #1 of the handling of 401 status
-codes in the <a href="https://fetch.spec.whatwg.org/#http-fetch">HTTP fetch</a> algorithm:</p>
-
-        <ol>
-          <li>If <var>request</var>’s integrity state is <code>pending</code>, set
-<var>response</var>’s integrity state to <code>corrupt</code> and return
-<var>response</var>.</li>
-        </ol>
-      </li>
-      <li>
-        <p>Before firing the <a href="https://fetch.spec.whatwg.org/#process-request-end-of-file">process request end-of-file</a> event for any
-<var>request</var>:</p>
-
-        <ol>
-          <li>
-            <p>If the <var>request</var>’s integrity metadata is the empty string, set
-the <var>response</var>’s integrity state to <code>indeterminate</code> and
-skip directly to firing the event.</p>
-          </li>
-          <li>
-            <p>If <var>response</var> <a href="#does-resource-match-metadatalist">matches</a> the request’s integrity
-metadata, set the <var>response</var>’s integrity state to <code>intact</code>
-and skip directly to firing the event.</p>
-          </li>
-          <li>
-            <p>Set the <var>response</var>’s integrity state to <code>corrupt</code>
-and skip directly to firing the event.</p>
-          </li>
+          <li>If <var>request</var>’s integrity metadata is not the empty string,
+include a <code>Cache-Control</code> header whose value is “no-transform”.</li>
         </ol>
       </li>
     </ol>
