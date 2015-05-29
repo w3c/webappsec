@@ -244,18 +244,17 @@ resource's [integrity metadata][], and MAY support additional hash functions.
 
 Multiple sets of [integrity metadata][] may be associated with a single
 resource in order to provide agility in the face of future discoveries.
-For example, the "Hello, world." resource described above may be described
+For example, the resource described in the previous section may be described
 by either of the following hash expressions:
 
-    sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-    sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
-{:.example}
+    sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+    sha512-Q2bFTOhEALkN8hOms2FKTDLy7eugP2zFZ1T8LCvX42Fp3WoNr3bjZSAHeOsHrbV1Fu9/A0EzCinRE7Af1ofPrw==
 
 Authors may choose to specify both, for example:
 
     <script src="hello_world.js"
-       integrity="sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-                  sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg=="
+       integrity="sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+                  sha512-Q2bFTOhEALkN8hOms2FKTDLy7eugP2zFZ1T8LCvX42Fp3WoNr3bjZSAHeOsHrbV1Fu9/A0EzCinRE7Af1ofPrw=="
        crossorigin="anonymous"></script>
 
 In this case, the user agent will choose the strongest hash function in the
