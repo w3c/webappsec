@@ -363,18 +363,18 @@ resource’s <a href="#dfn-integrity-metadata">integrity metadata</a>, and MAY s
 
       <p>Multiple sets of <a href="#dfn-integrity-metadata">integrity metadata</a> may be associated with a single
 resource in order to provide agility in the face of future discoveries.
-For example, the “Hello, world.” resource described above may be described
+For example, the resource described in the previous section may be described
 by either of the following hash expressions:</p>
 
-      <pre class="example"><code>sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg==
+      <pre><code>sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+sha512-Q2bFTOhEALkN8hOms2FKTDLy7eugP2zFZ1T8LCvX42Fp3WoNr3bjZSAHeOsHrbV1Fu9/A0EzCinRE7Af1ofPrw==
 </code></pre>
 
       <p>Authors may choose to specify both, for example:</p>
 
       <pre><code>&lt;script src="hello_world.js"
-   integrity="sha256-+MO/YqmqPm/BYZwlDkir51GTc9Pt9BvmLrXcRRma8u8=
-              sha512-rQw3wx1psxXzqB8TyM3nAQlK2RcluhsNwxmcqXE2YbgoDW735o8TPmIR4uWpoxUERddvFwjgRSGw7gNPCwuvJg=="
+   integrity="sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+              sha512-Q2bFTOhEALkN8hOms2FKTDLy7eugP2zFZ1T8LCvX42Fp3WoNr3bjZSAHeOsHrbV1Fu9/A0EzCinRE7Af1ofPrw=="
    crossorigin="anonymous"&gt;&lt;/script&gt;
 </code></pre>
 
@@ -383,8 +383,9 @@ list, and use that metadata to validate the resource (as described below in
 the “<a href="#parse-metadata.x">parse metadata</a>” and “<a href="#get-the-strongest-metadata-from-set.x">get the strongest metadata from
 set</a>” algorithms).</p>
 
-      <p>When a hash function is determined to be insecure, user agents MUST deprecate
+      <p>When a hash function is determined to be insecure, user agents SHOULD deprecate
 and eventually remove support for integrity validation using that hash
+function. User agents MAY check the validity of hashes which use a deprecated
 function.</p>
 
       <p>To allow authors to switch to stronger hash functions without being held back by older
@@ -454,30 +455,11 @@ provides <em>no security guarantees at all</em>. For this reason, authors should
 only deliver integrity metadata on a <a href="#dfn-potentially-secure-origin">potentially secure origin</a>.  See
 <a href="#non-secure-contexts-remain-non-secure-1">Non-secure contexts remain non-secure</a> for more discussion.</p>
 
-      <p>Certain HTTP headers can also change the way the resource behaves in
-ways which integrity checking cannot account for. If the resource
-contains these headers, it is ineligible for integrity validation:</p>
-
-      <ul>
-        <li><code>Authorization</code> or <code>WWW-Authenticate</code> hide resources behind a login;
-such non-public resources are excluded from integrity checks.</li>
-        <li><code>Refresh</code> can cause IFrame contents to transparently redirect to an
-unintended target, bypassing the integrity check.</li>
-      </ul>
-
       <p>The following algorithm details these restrictions:</p>
 
       <ol>
         <li>Let <var>request</var> be the request that fetched
 <var>resource</var>.</li>
-        <li>If <var>resource</var> contains any of the following HTTP headers,
-return <code>false</code>:
-          <ul>
-            <li><code>Authorization</code></li>
-            <li><code>WWW-Authenticate</code></li>
-            <li><code>Refresh</code></li>
-          </ul>
-        </li>
         <li>If the <a href="http://fetch.spec.whatwg.org/#concept-request-mode">mode</a> of <var>request</var> is <code>CORS</code>,
 return <code>true</code>.</li>
         <li>If the <a href="http://fetch.spec.whatwg.org/#concept-request-origin">origin</a> of <var>request</var> is
@@ -499,7 +481,6 @@ valid hash expressions whose hash functions are understood by
 the user agent.</p>
 
       <ol>
-        <li>If <var>metadata</var> is the empty string, return <code>no metadata</code>.</li>
         <li>Let <var>result</var> be the empty set.</li>
         <li>For each <var>token</var> returned by <a href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">splitting <var>metadata</var> on
 spaces</a>:
@@ -549,7 +530,6 @@ result is <var>newAlgorithm</var>, set <var>strongest</var> to
       <h4 id="does-varresourcevar-match-varmetadatalistvar">Does <var>resource</var> match <var>metadataList</var>?</h4>
 
       <ol>
-        <li>If <var>resource</var>’s URL’s scheme is <code>about</code>, return <code>true</code>.</li>
         <li>Let <var>parsedMetadata</var> be the result of
 <a href="#parse-metadata.x">parsing <var>metadataList</var></a>.</li>
         <li>If <var>parsedMetadata</var> is <code>no metadata</code>, return <code>true</code>.</li>
