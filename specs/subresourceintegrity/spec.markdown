@@ -462,7 +462,19 @@ to enable the rest of this specification's work [[!FETCH]]:
     is one of `indeterminate`, `pending`, `corrupt`, and `intact`. Unless
     stated otherwise, it is `indeterminate`.
 
-3.  Perform the following steps before executing both the "[basic fetch][]" and
+3.  Perform the following step between steps 10 and 11 in the "[main fetch][]"
+    algorithm:
+
+    1. If <var>request</var>'s integrity metadata is a non-empty string:
+        1.  Wait for either end-of-file to have been pushed to
+            <var>response</var>'s body or for <var>response</var> to have a
+            [termination reason][].
+        2.  If <var>response</var> does not have a [termination reason][]:
+            1. If <var>response</var> does not [match][] the
+               [integrity metadata][] of the <var>request</var>, set
+               <var>response</var> to a [network error][].
+
+4.  Perform the following steps before executing both the "[basic fetch][]" and
     "[CORS fetch with preflight][]" algorithms:
 
     1.  If <var>request</var>'s integrity metadata is the empty string, set
@@ -471,14 +483,14 @@ to enable the rest of this specification's work [[!FETCH]]:
         1.  Set <var>response</var>'s integrity state to `pending`.
         2.  Include a `Cache-Control` header whose value is "no-transform".
 
-4.  Add the following step before step #1 of the handling of 401 status
+5.  Add the following step before step #1 of the handling of 401 status
     codes in the [HTTP fetch][] algorithm:
 
     1.  If <var>request</var>'s integrity state is `pending`, set
         <var>response</var>'s integrity state to `corrupt` and return
         <var>response</var>.
 
-5.  Before firing the [process request end-of-file][] event for any
+6.  Before firing the [process request end-of-file][] event for any
     <var>request</var>:
 
     1.  If the <var>request</var>'s integrity metadata is the empty string, set
@@ -500,6 +512,9 @@ to enable the rest of this specification's work [[!FETCH]]:
 [HTTP fetch]: https://fetch.spec.whatwg.org/#http-fetch
 [CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
 [process request end-of-file]: https://fetch.spec.whatwg.org/#process-request-end-of-file
+[main fetch]: https://fetch.spec.whatwg.org/#main-fetch
+[termination reason]: https://fetch.spec.whatwg.org/#concept-response-termination-reason
+[network error]: https://fetch.spec.whatwg.org/#concept-network-error
 </section>
 
 <section>
