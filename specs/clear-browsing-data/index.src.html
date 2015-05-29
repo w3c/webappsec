@@ -30,6 +30,13 @@ spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
     text: context; for: Request; url: concept-request-context
     text: context-frame-type; for: Request; url: concept-request-context-frame-type
     text: header-list; for: Request; url: concept-request-header-list
+spec: INDEXEDDB; urlPrefix: http://www.w3.org/TR/IndexedDB/
+  type: dfn
+    text: database deletion steps
+    text: database closing steps
+    text: delete pending; url: dfn-delete-pending
+  type: interface
+    text: IDBDatabase; url: idl-def-IDBDatabase 
 spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
   type: dfn
     urlPrefix: browsers.html
@@ -45,14 +52,19 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
       text: relevant settings object for a script
 spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
   urlPRefix: webstorage.html
+    type: dfn
+      text: local storage area; url: the-localstorage-attribute
+      text: session storage area; url: the-sessionstorage-attribute
     type: attribute
       text: localStorage; for: WindowLocalStorage; url: dom-localstorage
       text: sessionStorage; for: WindowSessionStorage; url: dom-sessionstorage
+    type: interface
+      text: Storage; url: storage-2
   urlPrefix: workers.html
     type: dfn
       text: set up a worker environment settings object
     type: interface
-      text: SharedWorker
+      text: SharedWorkers
 spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
   type: dfn
     text: embedding document
@@ -307,6 +319,15 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   either <dfn><code>Include Subdomains</code></dfn> or <dfn><code>Exclude
   Subdomains</code></dfn>.
 
+  <h4 id="matches-origin">
+    Does <var>origin</var> match <var>origin to clear</var> and
+    <var>subdomains</var>
+  </h4>
+
+  TODO: Given an origin, the origin to clear, and the "include subdomains"
+  flag, return <dfn><code>Matches</code></dfn> or <dfn><code>Does Not
+  Match</code></dfn>.
+
   <h3 id="clear">
     Clear browsing data for <var>response</var>
   </h3>
@@ -407,8 +428,60 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
     <var>subdomains</var>
   </h4>
 
-  ISSUE: Define how we clear localStorage, sessionStorage, Indexed DB, WebSQL,
-  Filesystems, Dedicated Workers, Shared Workers, Service Workers, etc.
+  1.  For each <var>area</var> in the user agent's set of <a>local storage
+      areas</a> [[!HTML]]:
+
+      1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
+          executed on <var>area</var>'s <a>origin</a>, <var>origin</var>, and
+          <code>subdomains</code>:
+
+          1.  Execute {{Storage/clear()}} on the {{Storage}} object associated
+              with <var>area</var>.
+
+  2.  For each <var>area</var> in the user agent's set of <a>session storage
+      areas</a> [[!HTML]]:
+
+      1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
+          executed on <var>area</var>'s <a>origin</a>, <var>origin</var>, and
+          <code>subdomains</code>:
+
+          1.  Execute {{Storage/clear()}} on the {{Storage}} object associated
+              with <var>area</var>.
+
+  3.  For each <var>database</var> in the user agent's set of Indexed
+      Databases [[!INDEXEDDB]]:
+
+      1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
+          executed on <var>database</var>'s <a>origin</a>, <var>origin</var>,
+          and <code>subdomains</code>:
+
+          1.  Set <var>database</var>'s <a>delete pending</a> flag to
+              <code>true</code>.
+
+          2.  For each <var>connection</var> in the set of all {{IDBDatabase}}
+              objects connected to <var>database</var>:
+
+              1.  Execute the <a>database closing steps</a> on
+                  <var>connection</var>.
+
+          3.  Execute the <a>database deletion steps</a> on
+              <var>database</var>, passing in <var>database</var>'s
+              <a>origin</a> and name.
+
+  4.  For each <var>database</var> in the user agent's set of WebSQL
+      databases [[!WEBDATABASE]]:
+
+      1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
+          executed on <var>database</var>'s <a>origin</a>, <var>origin</var>,
+          and <code>subdomains</code>:
+
+          1. Delete <var>database</var>.
+
+             ISSUE: The [[WEBDATABASE]] spec is fairly unhelpful here with
+             regard to deletion details.
+
+
+  ISSUE: Define how we clear Filesystems, Dedicated Workers, Shared Workers, Service Workers, etc.
 </section>
 
 <section>
