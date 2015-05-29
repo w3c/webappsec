@@ -184,16 +184,9 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   6.  All of the above can be propagated to an origin's host's subdomains.
   7.  All of the above can be propagated to the HTTP version of an HTTPS origin.
 
-  <h3 id="questions">Questions</h3>
-
-  1.  When should the clearing execute? Before <code>Set-Cookies</code> is
-      processed for a response, or after?
-
-  2.  How granular do we need to be? Based on discussion, it sounded like we
-      wish to distinguish between clearing cookies and clearing DOM-accessible
-      storage. Are those the only distinctions we care about?
-
-  3.  What do we do when multiple windows on an origin are open at once?
+  ISSUE: What do we do about today's multi-tab, multi-window user agents? Should
+  we also neuter open execution contexts in the affected origins? Close open
+  windows?
 </section>
 
 <section>
@@ -233,6 +226,11 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   3.  <code>cache</code>, which implies that all locally cached data for an
       origin ought to be cleared.
+
+  ISSUE: This should probably be changed into a mechansim which excludes certain
+  types. That is, I see a use case for skipping cookies. I don't see any for
+  skipping DOM storage or Cache. Perhaps drop down to <code>*</code> and
+  <code>everything-but-cookies</code>?
 
   Invalid type keywords present in a header's value are simply ignored. Parsing
   details can be found in [[#parsing]].
@@ -285,8 +283,8 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       <a><code>Clear-Browsing-Data</code></a>, then execute [[#clear]] on
       <var>response</var>.
 
-  Issue: This happens <em>after</em> <code>Set-Cookie</code> headers are
-  processed. That's probably what we want, but what about opt-out cookies?
+  Note: This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. If we clear cookies, we clear all of them.
 <section>
 
 <section>
@@ -409,8 +407,8 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
     <var>subdomains</var>
   </h4>
 
-  ISSUE: Clear localStorage, sessionStorage, Indexed DB, WebSQL, Filesystems,
-  Dedicated Workers, Shared Workers, Service Workers, etc.
+  ISSUE: Define how we clear localStorage, sessionStorage, Indexed DB, WebSQL,
+  Filesystems, Dedicated Workers, Shared Workers, Service Workers, etc.
 </section>
 
 <section>
@@ -419,8 +417,8 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   The permanent message header field registry should be updated
   with the following registration: [[!RFC3864]]
 
-  <h3 id="iana-https">
-    HTTPS
+  <h3 id="iana-clear-browsing-data">
+    Clear-Browsing-Data
   </h3>
 
   <dl>
