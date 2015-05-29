@@ -383,8 +383,9 @@ list, and use that metadata to validate the resource (as described below in
 the “<a href="#parse-metadata.x">parse metadata</a>” and “<a href="#get-the-strongest-metadata-from-set.x">get the strongest metadata from
 set</a>” algorithms).</p>
 
-      <p>When a hash function is determined to be insecure, user agents MUST deprecate
+      <p>When a hash function is determined to be insecure, user agents SHOULD deprecate
 and eventually remove support for integrity validation using that hash
+function. User agents MAY check the validity of hashes which use a deprecated
 function.</p>
 
       <p>To allow authors to switch to stronger hash functions without being held back by older
@@ -454,30 +455,11 @@ provides <em>no security guarantees at all</em>. For this reason, authors should
 only deliver integrity metadata on a <a href="#dfn-potentially-secure-origin">potentially secure origin</a>.  See
 <a href="#non-secure-contexts-remain-non-secure-1">Non-secure contexts remain non-secure</a> for more discussion.</p>
 
-      <p>Certain HTTP headers can also change the way the resource behaves in
-ways which integrity checking cannot account for. If the resource
-contains these headers, it is ineligible for integrity validation:</p>
-
-      <ul>
-        <li><code>Authorization</code> or <code>WWW-Authenticate</code> hide resources behind a login;
-such non-public resources are excluded from integrity checks.</li>
-        <li><code>Refresh</code> can cause IFrame contents to transparently redirect to an
-unintended target, bypassing the integrity check.</li>
-      </ul>
-
       <p>The following algorithm details these restrictions:</p>
 
       <ol>
         <li>Let <var>request</var> be the request that fetched
 <var>resource</var>.</li>
-        <li>If <var>resource</var> contains any of the following HTTP headers,
-return <code>false</code>:
-          <ul>
-            <li><code>Authorization</code></li>
-            <li><code>WWW-Authenticate</code></li>
-            <li><code>Refresh</code></li>
-          </ul>
-        </li>
         <li>If the <a href="http://fetch.spec.whatwg.org/#concept-request-mode">mode</a> of <var>request</var> is <code>CORS</code>,
 return <code>true</code>.</li>
         <li>If the <a href="http://fetch.spec.whatwg.org/#concept-request-origin">origin</a> of <var>request</var> is
@@ -499,7 +481,6 @@ valid hash expressions whose hash functions are understood by
 the user agent.</p>
 
       <ol>
-        <li>If <var>metadata</var> is the empty string, return <code>no metadata</code>.</li>
         <li>Let <var>result</var> be the empty set.</li>
         <li>For each <var>token</var> returned by <a href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">splitting <var>metadata</var> on
 spaces</a>:
@@ -549,7 +530,6 @@ result is <var>newAlgorithm</var>, set <var>strongest</var> to
       <h4 id="does-varresourcevar-match-varmetadatalistvar">Does <var>resource</var> match <var>metadataList</var>?</h4>
 
       <ol>
-        <li>If <var>resource</var>’s URL’s scheme is <code>about</code>, return <code>true</code>.</li>
         <li>Let <var>parsedMetadata</var> be the result of
 <a href="#parse-metadata.x">parsing <var>metadataList</var></a>.</li>
         <li>If <var>parsedMetadata</var> is <code>no metadata</code>, return <code>true</code>.</li>
@@ -760,16 +740,13 @@ failed resource with a different one.</p>
 
       <p>Whenever a user agent attempts to <a href="http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain">obtain a resource</a> pointed to by a
 <code>link</code> element that has a <code>rel</code> attribute with the value of <code>stylesheet</code>,
-insert the following step between steps 1 and 2:</p>
+modify step 4 to read:</p>
 
-      <ol start="2">
-        <li>Set the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the value
-of the element’s <code>integrity</code> attribute.</li>
-      </ol>
-
-      <p>Additionally, in the paragraph specifying when to fire a <code>load</code> event, add
-“response with a <code>corrupt</code> integrity state” to the list of load failure
-reasons which are considered network errors.</p>
+      <p>Do a potentially CORS-enabled fetch of the resulting absolute URL, with the
+mode being the current state of the element’s crossorigin content attribute,
+the origin being the origin of the link element’s Document, the default origin
+behaviour set to taint, and the <a href="#dfn-integrity-metadata">integrity metadata</a> of the request to the
+value of the element’s <code>integrity</code> attribute.</p>
 
     </section>
     <!-- /Framework::HTML::link -->
@@ -783,16 +760,6 @@ reasons which are considered network errors.</p>
         <li>Let <var>src</var> be the value of the element’s <code>src</code> attribute and
 the request’s associated <a href="#dfn-integrity-metadata">integrity metadata</a> be the value of the element’s
 <code>integrity</code> attribute.</li>
-      </ol>
-
-      <p>Insert the following step after step 14.5 of HTML5’s
-<a href="http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script">“prepare a script” algorithm</a>:</p>
-
-      <ol start="6">
-        <li>Once the <a href="http://www.w3.org/TR/html5/infrastructure.html#potentially-cors-enabled-fetch">fetching algorithm</a> has completed, if the response’s
-integrity state is <code>corrupt</code>, <a href="http://www.w3.org/TR/html5/webappapis.html#queue-a-task">queue a task</a> to
-<a href="http://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event">fire a simple event</a> named <code>error</code> at the element, and abort these
-steps.</li>
       </ol>
 
     </section>

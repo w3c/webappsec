@@ -595,15 +595,15 @@ failed resource with a different one.
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
 `link` element that has a `rel` attribute with the value of `stylesheet`,
-insert the following step between steps 1 and 2:
+modify step 4 to read:
 
-1.  Set the [integrity metadata][] of the request to the value
-    of the element's `integrity` attribute.
+Do a potentially CORS-enabled fetch of the resulting absolute URL, with the
+mode being the current state of the element's crossorigin content attribute,
+the origin being the origin of the link element's Document, the default origin
+behaviour set to taint, and the [integrity metadata][] of the request to the
+value of the element's `integrity` attribute.
+
 {:start="2"}
-
-Additionally, in the paragraph specifying when to fire a `load` event, add
-"response with a `corrupt` integrity state" to the list of load failure
-reasons which are considered network errors.
 
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
 </section><!-- /Framework::HTML::link -->
@@ -617,13 +617,6 @@ Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
     the request's associated [integrity metadata][] be the value of the element's
     `integrity` attribute.
 
-Insert the following step after step 14.5 of HTML5's
-["prepare a script" algorithm][prepare]:
-
-1.  Once the [fetching algorithm][] has completed, if the response's
-    integrity state is `corrupt`, [queue a task][] to
-    [fire a simple event][] named `error` at the element, and abort these
-    steps.
 {:start="6"}
 
 [prepare]: http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script
