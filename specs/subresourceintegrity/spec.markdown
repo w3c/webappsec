@@ -476,13 +476,9 @@ to enable the rest of this specification's work [[!FETCH]]:
         include a `Cache-Control` header whose value is "no-transform".
 
 [fetch-requests]: http://fetch.spec.whatwg.org/#requests
-[fetch-responses]: http://fetch.spec.whatwg.org/#responses
 [fetch-request]: http://fetch.spec.whatwg.org/#concept-request
-[fetch-response]: http://fetch.spec.whatwg.org/#concept-response
 [basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
-[HTTP fetch]: https://fetch.spec.whatwg.org/#http-fetch
 [CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
-[process request end-of-file]: https://fetch.spec.whatwg.org/#process-request-end-of-file
 [main fetch]: https://fetch.spec.whatwg.org/#main-fetch
 [termination reason]: https://fetch.spec.whatwg.org/#concept-response-termination-reason
 [network error]: https://fetch.spec.whatwg.org/#concept-network-error
