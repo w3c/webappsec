@@ -558,7 +558,8 @@ attribute DOMString integrity
 #### Handling integrity violations
 
 The user agent MUST refuse to render or execute resources that fail an
-integrity check, <em>and</em> MUST return an error.
+integrity check <em>and</em> MUST return a network error, as described in
+[Modifications to Fetch][].
 
 On a failed integrity check, an <code>error</code> event is thrown. Developers
 wishing to provide a canonical fallback resource (e.g. a resource not served
