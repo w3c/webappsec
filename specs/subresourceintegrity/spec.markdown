@@ -460,7 +460,8 @@ to enable the rest of this specification's work [[!FETCH]]:
 2.  Perform the following step between steps 10 and 11 in the "[main fetch][]"
     algorithm:
 
-    1. If <var>request</var>'s integrity metadata is a non-empty string:
+    1. If <var>request</var>'s integrity metadata is a non-empty string and
+       <var>response</var> is not a [network error][]:
         1.  Wait for either end-of-file to have been pushed to
             <var>response</var>'s body or for <var>response</var> to have a
             [termination reason][].
