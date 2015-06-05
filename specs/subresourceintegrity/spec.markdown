@@ -285,6 +285,13 @@ collision-resistant.  For example, `getPrioritizedHashFunction('sha256',
 'sha512')` would return `'sha512'` and `getPrioritizedHashFunction('sha256',
 'sha256')` would return the empty string.
 
+<div class="note">
+The <dfn>getPrioritizedHashFunction</dfn> is an internal 
+implementation detail. It is not an API that implementors 
+provide to web applications. It is used in this document 
+only to simplify the algorithm description.
+</div>
+
 </section><!-- /Framework::Cryptographic hash functions::Priority -->
 
 </section><!-- /Framework::Cryptographic hash functions -->
