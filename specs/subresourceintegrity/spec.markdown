@@ -373,14 +373,16 @@ the user agent.
     spaces][split-on-spaces]:
     1.  If <var>token</var> is not a valid metadata, skip the remaining
         steps, and proceed to the next token.
-    2.  Let <var>algorithm</var> be the <var>alg</var> component of
+    2.  Parse <var>token</var> per the grammar in [integrity metadata][]
+    3.  Let <var>algorithm</var> be the <var>alg</var> component of
         <var>token</var>.
-    3.  If <var>algorithm</var> is a hash function recognized by the user
-        agent, add <var>token</var> to <var>result</var>.
+    4.  If <var>algorithm</var> is a hash function recognized by the user
+        agent, add the parsed <var>token</var> to <var>result</var>.
 3.  Return `no metadata` if <var>result</var> is empty, otherwise return
     <var>result</var>.
 
 [split-on-spaces]: http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces
+[integrity metadata]: #dfn-integrity-metadata
 </section><!-- Algorithms::parse -->
 <section>
 #### Get the strongest metadata from <var>set</var>.
@@ -416,7 +418,7 @@ the user agent.
     metadata from <var>parsedMetadata</var>][get-the-strongest].
 5.  For each <var>item</var> in <var>metadata</var>:
     1.  Let <var>algorithm</var> be the <var>alg</var> component of
-        <var>metadata</var>.
+        <var>item</var>.
     2.  Let <var>expectedValue</var> be the <var>val</var> component of
         <var>metadata</var>.
     3.  Let <var>actualValue</var> be the result of [applying
