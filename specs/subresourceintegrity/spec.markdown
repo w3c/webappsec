@@ -420,7 +420,7 @@ the user agent.
     1.  Let <var>algorithm</var> be the <var>alg</var> component of
         <var>item</var>.
     2.  Let <var>expectedValue</var> be the <var>val</var> component of
-        <var>metadata</var>.
+        <var>item</var>.
     3.  Let <var>actualValue</var> be the result of [applying
         <var>algorithm</var> to <var>resource</var>][apply-algorithm].
     4.  If <var>actualValue</var> is a case-sensitive match for
