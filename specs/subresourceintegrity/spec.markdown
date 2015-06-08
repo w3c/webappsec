@@ -472,49 +472,32 @@ to enable the rest of this specification's work [[!FETCH]]:
     Unless stated otherwise, a request's integrity metadata is the empty
     string."
 
-2.  The following text should be added to [section 2.1.5][fetch-responses]: "A
-    [response][fetch-response] has an associated integrity state, which
-    is one of `indeterminate`, `pending`, `corrupt`, and `intact`. Unless
-    stated otherwise, it is `indeterminate`.
+2.  Perform the following step between steps 10 and 11 in the "[main fetch][]"
+    algorithm:
+
+    1. If <var>request</var>'s integrity metadata is a non-empty string and
+       <var>response</var> is not a [network error][]:
+        1.  Wait for either end-of-file to have been pushed to
+            <var>response</var>'s body or for <var>response</var> to have a
+            [termination reason][].
+        2.  If <var>response</var> does not have a [termination reason][] and
+            <var>response</var> does not [match][] the [integrity metadata][] of
+            the <var>request</var>, set <var>response</var> to a
+            [network error][].
 
 3.  Perform the following steps before executing both the "[basic fetch][]" and
     "[CORS fetch with preflight][]" algorithms:
 
-    1.  If <var>request</var>'s integrity metadata is the empty string, set
-        <var>response</var>'s integrity state to `indeterminate`. Otherwise:
-
-        1.  Set <var>response</var>'s integrity state to `pending`.
-        2.  Include a `Cache-Control` header whose value is "no-transform".
-
-4.  Add the following step before step #1 of the handling of 401 status
-    codes in the [HTTP fetch][] algorithm:
-
-    1.  If <var>request</var>'s integrity state is `pending`, set
-        <var>response</var>'s integrity state to `corrupt` and return
-        <var>response</var>.
-
-5.  Before firing the [process request end-of-file][] event for any
-    <var>request</var>:
-
-    1.  If the <var>request</var>'s integrity metadata is the empty string, set
-        the <var>response</var>'s integrity state to `indeterminate` and
-        skip directly to firing the event.
-
-    2.  If <var>response</var> [matches][match] the request's integrity
-        metadata, set the <var>response</var>'s integrity state to `intact`
-        and skip directly to firing the event.
-
-    3.  Set the <var>response</var>'s integrity state to `corrupt`
-        and skip directly to firing the event.
+    1.  If <var>request</var>'s integrity metadata is a non-empty string,
+        include a `Cache-Control` header whose value is "no-transform".
 
 [fetch-requests]: http://fetch.spec.whatwg.org/#requests
-[fetch-responses]: http://fetch.spec.whatwg.org/#responses
 [fetch-request]: http://fetch.spec.whatwg.org/#concept-request
-[fetch-response]: http://fetch.spec.whatwg.org/#concept-response
 [basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
-[HTTP fetch]: https://fetch.spec.whatwg.org/#http-fetch
 [CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
-[process request end-of-file]: https://fetch.spec.whatwg.org/#process-request-end-of-file
+[main fetch]: https://fetch.spec.whatwg.org/#main-fetch
+[termination reason]: https://fetch.spec.whatwg.org/#concept-response-termination-reason
+[network error]: https://fetch.spec.whatwg.org/#concept-network-error
 </section>
 
 <section>
@@ -591,7 +574,8 @@ attribute DOMString integrity
 #### Handling integrity violations
 
 The user agent MUST refuse to render or execute resources that fail an
-integrity check, <em>and</em> MUST return an error.
+integrity check <em>and</em> MUST return a network error, as described in
+[Modifications to Fetch][].
 
 On a failed integrity check, an <code>error</code> event is thrown. Developers
 wishing to provide a canonical fallback resource (e.g. a resource not served
@@ -610,15 +594,15 @@ failed resource with a different one.
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
 `link` element that has a `rel` attribute with the value of `stylesheet`,
-insert the following step between steps 1 and 2:
+modify step 4 to read:
 
-1.  Set the [integrity metadata][] of the request to the value
-    of the element's `integrity` attribute.
-{:start="2"}
+Do a potentially CORS-enabled fetch of the resulting absolute URL, with the
+mode being the current state of the element's crossorigin content attribute,
+the origin being the origin of the link element's Document, the default origin
+behaviour set to taint, and the [integrity metadata][] of the request to the
+value of the element's `integrity` attribute.
 
-Additionally, in the paragraph specifying when to fire a `load` event, add
-"response with a `corrupt` integrity state" to the list of load failure
-reasons which are considered network errors.
+{:start="4"}
 
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
 </section><!-- /Framework::HTML::link -->
@@ -632,13 +616,6 @@ Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
     the request's associated [integrity metadata][] be the value of the element's
     `integrity` attribute.
 
-Insert the following step after step 14.5 of HTML5's
-["prepare a script" algorithm][prepare]:
-
-1.  Once the [fetching algorithm][] has completed, if the response's
-    integrity state is `corrupt`, [queue a task][] to
-    [fire a simple event][] named `error` at the element, and abort these
-    steps.
 {:start="6"}
 
 [prepare]: http://www.w3.org/TR/html5/scripting-1.html#prepare-a-script
