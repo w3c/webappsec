@@ -488,7 +488,7 @@ to enable the rest of this specification's work [[!FETCH]]:
 3.  Perform the following steps before executing both the "[basic fetch][]" and
     "[CORS fetch with preflight][]" algorithms:
 
-    1.  If <var>request</var>'s integrity metadata is not the empty string,
+    1.  If <var>request</var>'s integrity metadata is a non-empty string,
         include a `Cache-Control` header whose value is "no-transform".
 
 [fetch-requests]: http://fetch.spec.whatwg.org/#requests
