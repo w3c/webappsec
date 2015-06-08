@@ -602,7 +602,7 @@ the origin being the origin of the link element's Document, the default origin
 behaviour set to taint, and the [integrity metadata][] of the request to the
 value of the element's `integrity` attribute.
 
-{:start="2"}
+{:start="4"}
 
 [obtain a resource]: http://www.w3.org/TR/html5/document-metadata.html#concept-link-obtain
 </section><!-- /Framework::HTML::link -->
