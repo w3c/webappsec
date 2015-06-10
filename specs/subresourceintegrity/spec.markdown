@@ -491,10 +491,33 @@ to enable the rest of this specification's work [[!FETCH]]:
     1.  If <var>request</var>'s integrity metadata is a non-empty string,
         include a `Cache-Control` header whose value is "no-transform".
 
-[fetch-requests]: http://fetch.spec.whatwg.org/#requests
-[fetch-request]: http://fetch.spec.whatwg.org/#concept-request
-[basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
-[CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
+4. Add the following to the [Request class definition][fetch-request-api]:
+
+    1. Add the following attribute after the <code>redirect</code> attribute as
+       follows:
+
+            readonly attribute DOMString integrity;
+    2. In step 4 of the constructor, modify the end of the step to read, "and
+       [integrity][fetch-request] is <var>request</var>'s
+       [integrity][fetch-request]."
+
+    3. Perform the following steps after step 19 of the constructor:
+
+       1. Let <var>integrity</var> be <var>init</var>'s <code>integrity</code>
+          member if it is present and the empty string otherwise.
+       2. Set <var>request</var>'s [integrity][fetch-request] to
+          <var>integrity</var>.
+
+    4. Add the following to the list of descriptions after the constructor:
+
+       "The <code>integrity</code> attribute's getter must return
+       [request][fetch-request]'s <var>integrity</var>."
+
+[fetch-requests]: https://fetch.spec.whatwg.org/#requests
+[fetch-request]: https://fetch.spec.whatwg.org/#concept-request
+[fetch-request-api]: https://fetch.spec.whatwg.org/#request
+[basic fetch]: https://fetch.spec.whatwg.org/#basic-fetch
+[CORS fetch with preflight]: https://fetch.spec.whatwg.org/#cors-fetch-with-preflight
 [main fetch]: https://fetch.spec.whatwg.org/#main-fetch
 [termination reason]: https://fetch.spec.whatwg.org/#concept-response-termination-reason
 [network error]: https://fetch.spec.whatwg.org/#concept-network-error
