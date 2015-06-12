@@ -92,6 +92,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
   type: interface
     text: Worker
+spec: SERVICE-WORKERS; urlPrefix: http://www.w3.org/TR/service-workers/
+  type: dfn
+    text: register; url: register-algorithm
+    text: scope url; url: dfn-scope-url
+    text: service worker registration; url: dfn-service-worker-registration
+  type: method
+    text: unregister(); for: ServiceWorkerRegistration; url: navigator-service-worker-unregister
 spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
   type: dfn
     text: VCHAR; url: appendix-B.1
@@ -147,21 +154,69 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   This document defines a new mechanism to deal with removing data from these
   and other types of local storage, giving web developers the ability to clear
-  out a user's local cache of data via either the <a>Clear-Site-Data</a>
-  HTTP response header, or the TBD JavaScript API.
+  out a user's local cache of data via the <a>Clear-Site-Data</a> HTTP response
+  header.
 
   <h3 id="examples">Examples</h3>
 
   <h4 id="example-signout">Signing Out</h4>
 
   A user signs out of Super Secret Social Network via a CSRF-protected POST to
-  <code>https://supersecretsocialnetwork.com/logout</code>, and the site author
-  wishes to ensure that locally stored data is removed as a result.
+  <code>https://supersecretsocialnetwork.example.com/logout</code>, and the site
+  author wishes to ensure that locally stored data is removed as a result.
 
   They can do so by sending the following HTTP header in the response:
 
   <pre>
     <a>Clear-Site-Data</a>: *
+  </pre>
+
+  <h4 id="example-targeted">Targeted Clearing</h4>
+
+  A user signs out of Megacorp Inc.'s site via a CSRD-protected POST to
+  <code>https://megacorp.example.com/logout</code>. Megacorp has a large number
+  of services available as subdomains, so many that it's not entirely clear
+  which of them would be safe to clear as a response to a logout action. One
+  option would be to simply clear everything, and deal with the fallout.
+  Megacorp's CEO, however, once lost hours and hours of progress in "Irate
+  Ibix" due to inadvertant site-data clearing, and so is refuses to allow such
+  a sweeping impact to the site's users.
+
+  The developers know, however, that the "Minus" application is certainly safe
+  to clear out. They can target this specific subdomain by including a request
+  to that subdomain as part of the logout landing page (ideally as a
+  CORS-enabled, CSRF-protected POST):
+
+  <pre>
+    fetch("https://minus.megacorp.example.com/clear-site-data",
+          {
+              method: "POST",
+              mode: "cors",
+              headers: new Headers({
+                  "CSRF": "[<em>insert sekrit token here</em>]"
+              })
+          });
+  </pre>
+
+  That endpoint would return proper CORS headers in response to that request's
+  preflight, and would return the following header for the actual request:
+
+  <pre>
+    <a>Clear-Site-Data</a>: *; <a>includeSubdomains</a>
+  </pre>
+
+  <h4 id="example-keepcookies">Keep Critical Cookies</h4>
+
+  A user opts-out of interest-based advertising via a CSRF-protected POST to
+  <code>https://ads-are-awesome.example.com/optout</code>. The site author
+  wishes to remove DOM-accessible data which might contain tracking information,
+  but needs to ensure that the opt-out cookie which the user has just received
+  isn't wiped along with it.
+
+  They can do so by sending the following HTTP header in the response:
+
+  <pre>
+    <a>Clear-Site-Data</a>: <a>retainCookies</a>; <a>includeSubdomains</a>
   </pre>
 
   <h4 id="example-killswitch">Kill Switch</h4>
@@ -177,7 +232,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   following HTTP header in a response to wipe out local sources of data:
 
   <pre>
-    <a>Clear-Site-Data</a>: *
+    <a>Clear-Site-Data</a>: *; <a>includeSubdomains</a>
   </pre>
 
   Note: Installing a Service Worker guarantees that a request will go out to
@@ -198,10 +253,8 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   5.  Resources from an origin are removed from the user agent's local cache.
   6.  All of the above can be propagated to an origin's host's subdomains.
   7.  All of the above can be propagated to the HTTP version of an HTTPS origin.
-
-  ISSUE: What do we do about today's multi-tab, multi-window user agents? Should
-  we also neuter open browsing contexts in the affected origins? Close open
-  windows?
+  8.  None of the above can be bypassed by a maliciously active document that
+      retains interesting data in memory, and rewrites it if it's cleared.
 </section>
 
 <section>
@@ -536,8 +589,18 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
              ISSUE: The [[WEBDATABASE]] spec is fairly unhelpful here with
              regard to deletion details.
 
+  5.  For each <var>registration</var> in the user agent's set of
+      <a>registered</a> <a>service worker registrations</a>:
 
-  ISSUE: Define how we clear Filesystems, Dedicated Workers, Shared Workers, Service Workers, etc.
+      1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
+          executed on <var>registration</var>'s <a>scope URL</a>'s
+          <a>origin</a>, <var>origin</var>, and <code>subdomain state</code>:
+
+          1.  Execute {{ServiceWorkerRegistration/unregister()}} on
+              <var>registration</var>.
+
+  ISSUE: We still need to spell out Filesystems, Dedicated Workers, Shared
+  Workers, etc. (This isn't an exhaustive list. We should fix that too.)
 
   ISSUE: How do we say something about plugins here? Point out to
   <a href="https://wiki.mozilla.org/NPAPI:ClearSiteData">NPP_ClearSiteData</a>?
