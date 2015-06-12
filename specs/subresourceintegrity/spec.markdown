@@ -491,10 +491,35 @@ to enable the rest of this specification's work [[!FETCH]]:
     1.  If <var>request</var>'s integrity metadata is a non-empty string,
         include a `Cache-Control` header whose value is "no-transform".
 
-[fetch-requests]: http://fetch.spec.whatwg.org/#requests
-[fetch-request]: http://fetch.spec.whatwg.org/#concept-request
-[basic fetch]: http://fetch.spec.whatwg.org/#basic-fetch
-[CORS fetch with preflight]: http://fetch.spec.whatwg.org/#cors-fetch-with-preflight
+4. Add the following to the [Request class definition][fetch-request-api]:
+
+    1. Add the following attribute to the <code>Request</code> class after the
+       <code>redirect</code> attribute as follows:
+
+            readonly attribute DOMString integrity;
+    2. Add the following member to the end of the <code>RequestInit</code>
+       dictionary:
+
+            DOMString integrity = "";
+
+    3. In step 4 of the constructor, modify the end of the step to read, "and
+       [integrity][integrity metadata] is <var>request</var>'s
+       [integrity][integrity metadata]."
+
+    4. Perform the following steps after step 19 of the constructor:
+       1. Set <var>request</var>'s [integrity][integrity metadata] to the value
+          of <var>init</var>'s [integrity][integrity metadata] member.
+
+    5. Add the following to the list of descriptions after the constructor:
+
+       "The <code>integrity</code> attribute's getter must return
+       [request][fetch-request]'s <var>integrity</var>."
+
+[fetch-requests]: https://fetch.spec.whatwg.org/#requests
+[fetch-request]: https://fetch.spec.whatwg.org/#concept-request
+[fetch-request-api]: https://fetch.spec.whatwg.org/#request
+[basic fetch]: https://fetch.spec.whatwg.org/#basic-fetch
+[CORS fetch with preflight]: https://fetch.spec.whatwg.org/#cors-fetch-with-preflight
 [main fetch]: https://fetch.spec.whatwg.org/#main-fetch
 [termination reason]: https://fetch.spec.whatwg.org/#concept-response-termination-reason
 [network error]: https://fetch.spec.whatwg.org/#concept-network-error
@@ -665,11 +690,12 @@ document][]. See also [securing the web][].
 
 Similarly, since integrity checks do not provide any privacy guarantees,
 [Integrity metadata][] MUST NOT affect the return values of the Mixed Content
-algorithms as defined in [section 5 of the Mixed Content][mixedcontent]
+algorithms as defined in [section 5 of the Mixed
+Content][mixedcontent-algorithms]
 specification.
 
 [Securing the Web]: https://w3ctag.github.io/web-https/
-[mixedcontent]: http://www.w3.org/TR/mixed-content/#algorithms
+[mixedcontent-algorithms]: http://www.w3.org/TR/mixed-content/#algorithms
 </section><!-- /Security::Non-secure contexts remain non-secure -->
 
 <section>
