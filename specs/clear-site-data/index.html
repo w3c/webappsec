@@ -5,7 +5,7 @@
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   
   
-  <title>Clear Browsing Data</title>
+  <title>Clear Site Data</title>
   
   
   <style>
@@ -570,7 +570,7 @@ span.issue, span.note {
   
    <p data-fill-with="logo"></p>
   
-   <h1 class="p-name no-ref" id="title">Clear Browsing Data</h1>
+   <h1 class="p-name no-ref" id="title">Clear Site Data</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">A Collection of Interesting Ideas,
     <time class="dt-updated" datetime="2015-06-12">12 June 2015</time></span></h2>
@@ -578,9 +578,9 @@ span.issue, span.note {
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="https://w3c.github.io/webappsec/specs/clear-browsing-data/">https://w3c.github.io/webappsec/specs/clear-browsing-data/</a>
+     <dd><a class="u-url" href="https://w3c.github.io/webappsec/specs/clear-site-data/">https://w3c.github.io/webappsec/specs/clear-site-data/</a>
      <dt>Latest version:
-     <dd><a href="http://www.w3.org/TR/clear-browsing-data/">http://www.w3.org/TR/clear-browsing-data/</a>
+     <dd><a href="http://www.w3.org/TR/clear-site-data/">http://www.w3.org/TR/clear-site-data/</a>
      <dt>Issue Tracking:
      <dd><a href="https://github.com/w3c/webappsec/issues/">GitHub</a>
      <dd><a href="#issues-index">Inline In Spec</a>
@@ -604,7 +604,7 @@ span.issue, span.note {
   <div class="p-summary" data-fill-with="abstract">
    <p>This document defines an imperative mechanism which allows web developers to
 
-instruct a user agent to clear a user’s locally stored browsing data for a
+instruct a user agent to clear a user’s locally stored data related to a
 host and its subdomains.</p>
 
 </div>
@@ -621,14 +621,16 @@ host and its subdomains.</p>
       <li><a href="#examples"><span class="secno">1.1</span> <span class="content">Examples</span></a>
        <ul class="toc">
         <li><a href="#example-signout"><span class="secno">1.1.1</span> <span class="content">Signing Out</span></a>
-        <li><a href="#example-killswitch"><span class="secno">1.1.2</span> <span class="content">Kill Switch</span></a>
+        <li><a href="#example-targeted"><span class="secno">1.1.2</span> <span class="content">Targeted Clearing</span></a>
+        <li><a href="#example-keepcookies"><span class="secno">1.1.3</span> <span class="content">Keep Critical Cookies</span></a>
+        <li><a href="#example-killswitch"><span class="secno">1.1.4</span> <span class="content">Kill Switch</span></a>
        </ul>
       <li><a href="#goals"><span class="secno">1.2</span> <span class="content">Goals</span></a>
      </ul>
-    <li><a href="#clearing"><span class="secno">2</span> <span class="content">Clearing Browsing Data</span></a>
+    <li><a href="#clearing"><span class="secno">2</span> <span class="content">Clearing Site Data</span></a>
      <ul class="toc">
       <li><a href="#header"><span class="secno">2.1</span> <span class="content">
-    The <code>Clear-Browsing-Data</code> HTTP Response Header Field
+    The <code>Clear-Site-Data</code> HTTP Response Header Field
   </span></a>
       <li><a href="#fetch-integration"><span class="secno">2.2</span> <span class="content">Fetch Integration</span></a>
      </ul>
@@ -636,40 +638,49 @@ host and its subdomains.</p>
      <ul class="toc">
       <li><a href="#parsing"><span class="secno">3.1</span> <span class="content">Parsing</span></a>
        <ul class="toc">
-        <li><a href="#get-types"><span class="secno">3.1.1</span> <span class="content">
-    Which data types ought to be cleared for <var>response</var>
+        <li><a href="#get-exclusions"><span class="secno">3.1.1</span> <span class="content">
+    Which data types ought to be retained for <var>response</var>?
   </span></a>
         <li><a href="#should-include-subdomains"><span class="secno">3.1.2</span> <span class="content">
-    Should subdomains' browsing data be cleared for <var>response</var>
+    Should subdomains' data be cleared for <var>response</var>
   </span></a>
         <li><a href="#matches-origin"><span class="secno">3.1.3</span> <span class="content">
     Does <var>origin</var> match <var>origin to clear</var> and
-    <var>subdomains</var>
+    <var>subdomain state</var>
   </span></a>
        </ul>
       <li><a href="#clear"><span class="secno">3.2</span> <span class="content">
-    Clear browsing data for <var>response</var>
+    Clear data for <var>response</var>
   </span></a>
        <ul class="toc">
-        <li><a href="#clear-cache"><span class="secno">3.2.1</span> <span class="content">
+        <li><a href="#neuter-contexts"><span class="secno">3.2.1</span> <span class="content">
+    Neuter browsing contexts matching <var>origin</var> with
+    <var>subdomain state</var>
+  </span></a>
+        <li><a href="#clear-cache"><span class="secno">3.2.2</span> <span class="content">
     Clear cache for <var>origin</var> with <var>subdomain state</var>
   </span></a>
-        <li><a href="#clear-cookies"><span class="secno">3.2.2</span> <span class="content">
+        <li><a href="#clear-cookies"><span class="secno">3.2.3</span> <span class="content">
     Clear cookies for <var>origin</var> with <var>subdomain state</var>
   </span></a>
-        <li><a href="#clear-dom"><span class="secno">3.2.3</span> <span class="content">
+        <li><a href="#clear-dom"><span class="secno">3.2.4</span> <span class="content">
     Clear DOM-accessible storage for <var>origin</var> with
-    <var>subdomains</var>
+    <var>subdomain state</var>
   </span></a>
        </ul>
      </ul>
-    <li><a href="#iana-considerations"><span class="secno">4</span> <span class="content">IANA Considerations</span></a>
+    <li><a href="#privacy"><span class="secno">4</span> <span class="content">Privacy Considerations</span></a>
      <ul class="toc">
-      <li><a href="#iana-clear-browsing-data"><span class="secno">4.1</span> <span class="content">
-    Clear-Browsing-Data
+      <li><a href="#user-vs-author"><span class="secno">4.1</span> <span class="content">Web developers control the timing.</span></a>
+      <li><a href="#remnants"><span class="secno">4.2</span> <span class="content">Remnants of data on disk.</span></a>
+     </ul>
+    <li><a href="#iana-considerations"><span class="secno">5</span> <span class="content">IANA Considerations</span></a>
+     <ul class="toc">
+      <li><a href="#iana-clear-site-data"><span class="secno">5.1</span> <span class="content">
+    Clear-Site-Data
   </span></a>
      </ul>
-    <li><a href="#acknowledgements"><span class="secno">5</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#acknowledgements"><span class="secno">6</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content">
 Conformance</span></a>
     <li><a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
@@ -727,8 +738,8 @@ Conformance</span></a>
 
     <p>This document defines a new mechanism to deal with removing data from these
   and other types of local storage, giving web developers the ability to clear
-  out a user’s local cache of data via either the <a data-link-type="dfn" href="#clear_browsing_data">Clear-Browsing-Data</a>
-  HTTP response header, or the TBD JavaScript API.</p>
+  out a user’s local cache of data via the <a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a> HTTP response
+  header.</p>
 
   
     <h3 class="heading settled" data-level="1.1" id="examples"><span class="secno">1.1. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h3>
@@ -738,18 +749,73 @@ Conformance</span></a>
 
 
     <p>A user signs out of Super Secret Social Network via a CSRF-protected POST to
-  <code>https://supersecretsocialnetwork.com/logout</code>, and the site author
-  wishes to ensure that locally stored data is removed as a result.</p>
+  <code>https://supersecretsocialnetwork.example.com/logout</code>, and the site
+  author wishes to ensure that locally stored data is removed as a result.</p>
 
 
     <p>They can do so by sending the following HTTP header in the response:</p>
 
   
-    <pre><a data-link-type="dfn" href="#clear_browsing_data">Clear-Browsing-Data</a>: *
+    <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: *
 </pre>
 
   
-    <h4 class="heading settled" data-level="1.1.2" id="example-killswitch"><span class="secno">1.1.2. </span><span class="content">Kill Switch</span><a class="self-link" href="#example-killswitch"></a></h4>
+    <h4 class="heading settled" data-level="1.1.2" id="example-targeted"><span class="secno">1.1.2. </span><span class="content">Targeted Clearing</span><a class="self-link" href="#example-targeted"></a></h4>
+
+
+    <p>A user signs out of Megacorp Inc.'s site via a CSRD-protected POST to
+  <code>https://megacorp.example.com/logout</code>. Megacorp has a large number
+  of services available as subdomains, so many that it’s not entirely clear
+  which of them would be safe to clear as a response to a logout action. One
+  option would be to simply clear everything, and deal with the fallout.
+  Megacorp’s CEO, however, once lost hours and hours of progress in "Irate
+  Ibix" due to inadvertant site-data clearing, and so is refuses to allow such
+  a sweeping impact to the site’s users.</p>
+
+
+    <p>The developers know, however, that the "Minus" application is certainly safe
+  to clear out. They can target this specific subdomain by including a request
+  to that subdomain as part of the logout landing page (ideally as a
+  CORS-enabled, CSRF-protected POST):</p>
+
+  
+    <pre>fetch("https://minus.megacorp.example.com/clear-site-data",
+      {
+          method: "POST",
+          mode: "cors",
+          headers: new Headers({
+              "CSRF": "[<em>insert sekrit token here</em>]"
+          })
+      });
+</pre>
+
+
+    <p>That endpoint would return proper CORS headers in response to that request’s
+  preflight, and would return the following header for the actual request:</p>
+
+  
+    <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: *; <a data-link-type="dfn" href="#includesubdomains">includeSubdomains</a>
+</pre>
+
+  
+    <h4 class="heading settled" data-level="1.1.3" id="example-keepcookies"><span class="secno">1.1.3. </span><span class="content">Keep Critical Cookies</span><a class="self-link" href="#example-keepcookies"></a></h4>
+
+
+    <p>A user opts-out of interest-based advertising via a CSRF-protected POST to
+  <code>https://ads-are-awesome.example.com/optout</code>. The site author
+  wishes to remove DOM-accessible data which might contain tracking information,
+  but needs to ensure that the opt-out cookie which the user has just received
+  isn’t wiped along with it.</p>
+
+
+    <p>They can do so by sending the following HTTP header in the response:</p>
+
+  
+    <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: <a data-link-type="dfn" href="#retaincookies">retainCookies</a>; <a data-link-type="dfn" href="#includesubdomains">includeSubdomains</a>
+</pre>
+
+  
+    <h4 class="heading settled" data-level="1.1.4" id="example-killswitch"><span class="secno">1.1.4. </span><span class="content">Kill Switch</span><a class="self-link" href="#example-killswitch"></a></h4>
 
 
     <p>Super Secret Social Network’s developers learn that the site was vulnerable
@@ -764,7 +830,7 @@ Conformance</span></a>
   following HTTP header in a response to wipe out local sources of data:</p>
 
   
-    <pre><a data-link-type="dfn" href="#clear_browsing_data">Clear-Browsing-Data</a>: *
+    <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: *; <a data-link-type="dfn" href="#includesubdomains">includeSubdomains</a>
 </pre>
 
 
@@ -810,81 +876,77 @@ Conformance</span></a>
      <li data-md="">
       <p>All of the above can be propagated to the HTTP version of an HTTPS origin.</p>
       
-</ol>
 
-    <p class="issue" id="issue-7d4886ca"><a class="self-link" href="#issue-7d4886ca"></a> What do we do about today’s multi-tab, multi-window user agents? Should
-  we also neuter open execution contexts in the affected origins? Close open
-  windows?</p>
-</section>
+     <li data-md="">
+      <p>None of the above can be bypassed by a maliciously active document that
+  retains interesting data in memory, and rewrites it if it’s cleared.</p>
+      
+</ol></section>
 
 
    <section>
   
-    <h2 class="heading settled" data-level="2" id="clearing"><span class="secno">2. </span><span class="content">Clearing Browsing Data</span><a class="self-link" href="#clearing"></a></h2>
+    <h2 class="heading settled" data-level="2" id="clearing"><span class="secno">2. </span><span class="content">Clearing Site Data</span><a class="self-link" href="#clearing"></a></h2>
 
 
-    <p>Developers may instruct a user agent to clear various types of browsing data
+    <p>Developers may instruct a user agent to clear various types of relevant data
   in two ways: an HTTP response header, and a JavaScript API:</p>
 
   
     <h3 class="heading settled" data-level="2.1" id="header"><span class="secno">2.1. </span><span class="content">
-    The <code>Clear-Browsing-Data</code> HTTP Response Header Field
+    The <code>Clear-Site-Data</code> HTTP Response Header Field
   </span><a class="self-link" href="#header"></a></h3>
 
 
-    <p>The <dfn data-dfn-type="dfn" data-noexport="" id="clear_browsing_data"><code>Clear-Browsing-Data</code><a class="self-link" href="#clear_browsing_data"></a></dfn> HTTP response header field
-  sends a signal to the user agent that it ought to remove all browsing data
+    <p>The <dfn data-dfn-type="dfn" data-noexport="" id="clear_site_data"><code>Clear-Site-Data</code><a class="self-link" href="#clear_site_data"></a></dfn> HTTP response header field
+  sends a signal to the user agent that it ought to remove all data
   of a certain set of types. The header is represented by the following ABNF:</p>
 
   
-    <pre>"Clear-Browsing-Data:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#data_type_list">data-type-list</a> *[ ";" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#extension">extension</a> *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> ]  *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
+    <pre>"Clear-Site-Data:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#data_type_list">data-type-list</a> *[ ";" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#extension">extension</a> *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> ]  *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
 
-<dfn data-dfn-type="dfn" data-noexport="" id="data_type_list">data-type-list<a class="self-link" href="#data_type_list"></a></dfn> = "*" / ( <a data-link-type="dfn" href="#data_type">data-type</a> *( " " <a data-link-type="dfn" href="#data_type">data-type</a> ) )
-<dfn data-dfn-type="dfn" data-noexport="" id="data_type">data-type<a class="self-link" href="#data_type"></a></dfn> = "cookie" / "dom" / "cache"
+<dfn data-dfn-type="dfn" data-noexport="" id="data_type_list">data-type-list<a class="self-link" href="#data_type_list"></a></dfn> = "*" / ( <a data-link-type="dfn" href="#exclusion">exclusion</a> *( " " <a data-link-type="dfn" href="#exclusion">exclusion</a> ) )
+<dfn data-dfn-type="dfn" data-noexport="" id="exclusion">exclusion<a class="self-link" href="#exclusion"></a></dfn> = "<dfn data-dfn-type="dfn" data-noexport="" id="retaincookies">retainCookies<a class="self-link" href="#retaincookies"></a></dfn>" / "<dfn data-dfn-type="dfn" data-noexport="" id="retaincontexts">retainContexts<a class="self-link" href="#retaincontexts"></a></dfn>"
 <dfn data-dfn-type="dfn" data-noexport="" id="extension">extension<a class="self-link" href="#extension"></a></dfn> = <a data-link-type="dfn" href="#subdomain_extension">subdomain-extension</a> / <a data-link-type="dfn" href="#unknown_extension">unknown-extension</a>
-<dfn data-dfn-type="dfn" data-noexport="" id="subdomain_extension">subdomain-extension<a class="self-link" href="#subdomain_extension"></a></dfn> = "includeSubdomains"
+<dfn data-dfn-type="dfn" data-noexport="" id="subdomain_extension">subdomain-extension<a class="self-link" href="#subdomain_extension"></a></dfn> = "<dfn data-dfn-type="dfn" data-noexport="" id="includesubdomains">includeSubdomains<a class="self-link" href="#includesubdomains"></a></dfn>"
 <dfn data-dfn-type="dfn" data-noexport="" id="unknown_extension">unknown-extension<a class="self-link" href="#unknown_extension"></a></dfn> = *( <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> / &lt;<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">VCHAR</a> except ";" and ","> )
 </pre>
 
 
     <p>The header’s value contains either the U+002A ASTERISK character
-  (<code>*</code>) or a list of type keywords, followed by a set of options.</p>
+  (<code>*</code>) or a list of type exclusions, followed by a set of options.</p>
 
 
-    <p>The valid type keywords are:</p>
+    <p>If the header’s value’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> component is "<code>*</code>",
+  then all data types specified in this document that are related to this site
+  will be removed.</p>
+
+
+    <p>If exclusions are specified, then all data types specified in this document
+  will be removed, with the exception of the specified types. Recognized
+  exclusions are as follows:</p>
 
 
     <ol>
      <li data-md="">
-      <p><code>cookie</code>, which implies that cookies for a host ought to be
-  removed.</p>
+      <p><code>retainCookies</code>, which implies that cookies for the site’s
+  host will <strong>not</strong> be removed.</p>
       
 
 
      <li data-md="">
-      <p><code>dom</code>, which implies that all DOM-accessible storage for an
-  origin ought to be cleared.</p>
-      
-
-
-     <li data-md="">
-      <p><code>cache</code>, which implies that all locally cached data for an
-  origin ought to be cleared.</p>
+      <p><code>retainContexts</code>, which implies that user agents which support
+  opening multiple windows or tabs will <strong>not</strong> neuter existing
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> open onto the site.</p>
       
 </ol>
 
-    <p class="issue" id="issue-f878de52"><a class="self-link" href="#issue-f878de52"></a> This should probably be changed into a mechansim which excludes certain
-  types. That is, I see a use case for skipping cookies. I don’t see any for
-  skipping DOM storage or Cache. Perhaps drop down to <code>*</code> and
-  <code>everything-but-cookies</code>?</p>
-
-
-    <p>Invalid type keywords present in a header’s value are simply ignored. Parsing
-  details can be found in <a href="#parsing">§3.1 Parsing</a>.</p>
+    <p>Invalid exclusion keywords present in a header’s value are simply ignored.
+  Parsing details can be found in <a href="#parsing">§3.1 Parsing</a>.</p>
 
 
     <p>User agent conformance details are detailed in <a href="#clear">§3.2 
-    Clear browsing data for response
+    Clear data for response
   </a>. Those steps
   represent the following requirements when the header is present in a
   <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a> (<var>response</var>):</p>
@@ -892,31 +954,36 @@ Conformance</span></a>
 
     <ol>
      <li data-md="">
-      <p>User agents MUST ignore the <a data-link-type="dfn" href="#clear_browsing_data">Clear-Browsing-Data</a> header if it is
+      <p>User agents MUST ignore the <a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a> header if it is
   delivered along with a Response whose URL is <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i>
   insecure</a>.</p>
       
 
 
-     <li data-md="">
-      <p>If the value of the header contains "<code>*</code>" or
-  "<code>cookie</code>", then all cookies which would be sent along with
-  requests to the <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code> MUST be removed.</p>
-      
-
-
-      <p>If the <code>includeSubdomains</code> option is present, then all cookies
-  which would be sent along with requests to any host which is a subdomain
-  of <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      <p class="note" role="note">Note: This means that the header will be ignored for unauthenticated or
+  unencrypted connections ("HTTP" vs "HTTPS", for example).</p>
       
 
 
      <li data-md="">
-      <p>If the value of the header contains "<code>*</code>" or
-  "<code>dom</code>", then all DOM-accessible storage mechanisms
-  (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a></code>, <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a></code>, <a data-link-type="biblio" href="#biblio-indexeddb">[INDEXEDDB]</a>, <a data-link-type="biblio" href="#biblio-webdatabase">[WEBDATABASE]</a>,
-  etc) for <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be
-  cleared.</p>
+      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> does not contain
+  <a data-link-type="dfn" href="#retaincookies"><code>retainCookies</code></a>, then all cookies which would be sent
+  along with any request to the <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      
+
+
+      <p>Further, if the same header’s <a data-link-type="dfn" href="#extension">extension</a> contains
+  <a data-link-type="dfn" href="#includesubdomains"><code>includeSubdomains</code></a>, then all cookies which would be
+  sent along with any request to any host which is a subdomain of
+  <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      
+
+
+     <li data-md="">
+      <p>All DOM-accessible storage mechanisms (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a></code>,
+  <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a></code>, <a data-link-type="biblio" href="#biblio-indexeddb">[INDEXEDDB]</a>, <a data-link-type="biblio" href="#biblio-webdatabase">[WEBDATABASE]</a>, etc) for
+  <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be cleared.</p>
       
 
 
@@ -928,15 +995,30 @@ Conformance</span></a>
 
 
      <li data-md="">
-      <p>If the value of the header contains "<code>*</code>" or
-  "<code>cache</code>", then all locally cached data for
-  <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      <p>All locally cached data for <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be removed.</p>
       
 
 
       <p>If the <code>includeSubdomains</code> option is present, then all locally
   cached data for any host which is a subdomain of <var>response</var>’s
   <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      
+
+
+     <li data-md="">
+      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> does not contain
+  <a data-link-type="dfn" href="#retaincontexts"><code>retainContexts</code></a>, then all <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a>
+  whose <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active Document</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is identical to
+  <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be neutered by tightly sandboxing
+  them.</p>
+      
+
+
+      <p>If the <code>includeSubdomains</code> option is present, then all
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> whose <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active Document</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>’s
+  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> is a subdomain of <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be neutered.</p>
       
 </ol>
   
@@ -946,7 +1028,7 @@ Conformance</span></a>
     <p class="issue" id="issue-3ded38d3"><a class="self-link" href="#issue-3ded38d3"></a> Monkey patching! Talk with Anne.</p>
 
 
-    <p>If the <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a> header is present in an HTTP
+    <p>If the <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header is present in an HTTP
   <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>, then data MUST be cleared before rendering the response to
   the user. That is, before step #9 in the current <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#main-fetch">main fetch</a> algorithm,
   execute the following step:</p>
@@ -955,15 +1037,18 @@ Conformance</span></a>
     <ol>
      <li data-md="">
       <p>If <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-list">header list</a> contains a header named
-  <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a>, then execute <a href="#clear">§3.2 
-    Clear browsing data for response
+  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a>, then execute <a href="#clear">§3.2 
+    Clear data for response
   </a> on
   <var>response</var>.</p>
       
 </ol>
 
-    <p class="note" role="note">Note: This happens <em>after</em> <code>Set-Cookie</code> headers are
-  processed. If we clear cookies, we clear all of them.</p>
+    <p class="issue" id="issue-16edebe8"><a class="self-link" href="#issue-16edebe8"></a> This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. If we clear cookies, we clear all of them. This is intentional,
+  and <a data-link-type="dfn" href="#retaincookies"><code>retainCookies</code></a> is what we would offer to folks who
+  want to retain certain cookies. Perhaps we need a mechanism to allow only
+  certain cookies to be retained?</p>
 
     <section>
 
@@ -976,28 +1061,28 @@ Conformance</span></a>
       <h3 class="heading settled" data-level="3.1" id="parsing"><span class="secno">3.1. </span><span class="content">Parsing</span><a class="self-link" href="#parsing"></a></h3>
 
   
-      <h4 class="heading settled" data-level="3.1.1" id="get-types"><span class="secno">3.1.1. </span><span class="content">
-    Which data types ought to be cleared for <var>response</var>
-  </span><a class="self-link" href="#get-types"></a></h4>
+      <h4 class="heading settled" data-level="3.1.1" id="get-exclusions"><span class="secno">3.1.1. </span><span class="content">
+    Which data types ought to be retained for <var>response</var>?
+  </span><a class="self-link" href="#get-exclusions"></a></h4>
 
 
-      <p>TODO: Parse the <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a> header. Return
-  a list of type names.</p>
+      <p>TODO: Parse the <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header. Return
+  a list of type names to be excluded.</p>
 
   
       <h4 class="heading settled" data-level="3.1.2" id="should-include-subdomains"><span class="secno">3.1.2. </span><span class="content">
-    Should subdomains' browsing data be cleared for <var>response</var>
+    Should subdomains' data be cleared for <var>response</var>
   </span><a class="self-link" href="#should-include-subdomains"></a></h4>
 
 
-      <p>TODO: Parse the <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a> header. Return
+      <p>TODO: Parse the <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header. Return
   either <dfn data-dfn-type="dfn" data-noexport="" id="include-subdomains"><code>Include Subdomains</code><a class="self-link" href="#include-subdomains"></a></dfn> or <dfn data-dfn-type="dfn" data-noexport="" id="exclude-subdomains"><code>Exclude
   Subdomains</code><a class="self-link" href="#exclude-subdomains"></a></dfn>.</p>
 
   
       <h4 class="heading settled" data-level="3.1.3" id="matches-origin"><span class="secno">3.1.3. </span><span class="content">
     Does <var>origin</var> match <var>origin to clear</var> and
-    <var>subdomains</var>
+    <var>subdomain state</var>
   </span><a class="self-link" href="#matches-origin"></a></h4>
 
 
@@ -1007,61 +1092,119 @@ Conformance</span></a>
 
   
       <h3 class="heading settled" data-level="3.2" id="clear"><span class="secno">3.2. </span><span class="content">
-    Clear browsing data for <var>response</var>
+    Clear data for <var>response</var>
   </span><a class="self-link" href="#clear"></a></h3>
 
 
       <p>Given a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a> (<var>response</var>), this algorithm parses the
-  <a data-link-type="dfn" href="#clear_browsing_data"><code>Clear-Browsing-Data</code></a> header to determine what needs to be
+  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header to determine what needs to be
   cleared, which origins are affected, and then executes those requests.</p>
 
 
       <ol>
        <li data-md="">
-        <p>Let <var>types</var> be the result of <a href="#get-types">§3.1.1 
-    Which data types ought to be cleared for response
+        <p>Let <var>exclusions</var> be the result of <a href="#get-exclusions">§3.1.1 
+    Which data types ought to be retained for response?
   </a> executed on
   <var>response</var>.</p>
         
 
 
        <li data-md="">
-        <p>Let <var>subdomains</var> be the result of <a href="#should-include-subdomains">§3.1.2 
-    Should subdomains' browsing data be cleared for response
-  </a>
-  executed on <var>response</var>.</p>
+        <p>Let <var>subdomain state</var> be the result of
+  <a href="#should-include-subdomains">§3.1.2 
+    Should subdomains' data be cleared for response
+  </a> executed on <var>response</var>.</p>
         
 
 
        <li data-md="">
-        <p>If <var>types</var> contains "<code>cookie</code>", execute
-  <a href="#clear-cookies">§3.2.2 
+        <p>If <var>exclusions</var> does not contain "<code>contexts</code>", execute
+  <a href="#neuter-contexts">§3.2.1 
+    Neuter browsing contexts matching origin with
+    subdomain state
+  </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>exclusions</var> does not contain "<code>cookies</code>", execute
+  <a href="#clear-cookies">§3.2.3 
     Clear cookies for origin with subdomain state
   </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
-  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomains</var>.</p>
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
         
 
 
        <li data-md="">
-        <p>If <var>types</var> contains "<code>dom</code>", execute <a href="#clear-dom">§3.2.3 
+        <p>Execute <a href="#clear-dom">§3.2.4 
     Clear DOM-accessible storage for origin with
-    subdomains
-  </a>
-  on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with
-  <var>subdomains</var>.</p>
+    subdomain state
+  </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
         
 
 
        <li data-md="">
-        <p>If <var>types</var> contains "<code>cache</code>", execute
-  <a href="#clear-cache">§3.2.1 
+        <p>Execute <a href="#clear-cache">§3.2.2 
     Clear cache for origin with subdomain state
   </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
-  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomains</var>.</p>
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
         
 </ol>
   
-      <h4 class="heading settled" data-level="3.2.1" id="clear-cache"><span class="secno">3.2.1. </span><span class="content">
+      <h4 class="heading settled" data-level="3.2.1" id="neuter-contexts"><span class="secno">3.2.1. </span><span class="content">
+    Neuter browsing contexts matching <var>origin</var> with
+    <var>subdomain state</var>
+  </span><a class="self-link" href="#neuter-contexts"></a></h4>
+
+
+      <p>Given an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> (<var>origin</var>) and a <var>subdomain state</var>
+  of either <a data-link-type="dfn" href="#include-subdomains"><code>Include Subdomains</code></a> or <a data-link-type="dfn" href="#exclude-subdomains"><code>Exclude
+  Subdomains</code></a>, this algorithm walks through the set of <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing
+  contexts</a> which the user agent knows about, and sandboxes each in order
+  to prevent them from recreating wiped data (from in-memory JavaScript
+  variables, for instance):</p>
+
+
+      <ol>
+       <li data-md="">
+        <p>For each <var>context</var> in the user agent’s set of <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing
+  contexts</a>:</p>
+        
+
+
+        <ol>
+         <li data-md="">
+          <p>Let <var>document</var> be <var>context</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active
+  document</a>.</p>
+          
+
+
+         <li data-md="">
+          <p>If <a href="#matches-origin">§3.1.3 
+    Does origin match origin to clear and
+    subdomain state
+  </a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
+  executed on <var>context</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and
+  <code>subdomain state</code>:</p>
+          
+
+
+          <ol>
+           <li data-md="">
+            <p><a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#sandboxing:parse-a-sandboxing-directive">Parse a sandboxing directive</a> using the empty string as
+  the <var>input</var>, and <var>document</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-sandboxing-flag-set">active
+  sandboxing flag set</a> as the <var>output</var>.</p>
+            
+</ol></ol></ol>
+
+      <p class="issue" id="issue-65295789"><a class="self-link" href="#issue-65295789"></a> This won’t be an atomic set of operations. How can we prevent collusion
+  between browsing contexts to potentially bypass neutering?</p>
+
+  
+      <h4 class="heading settled" data-level="3.2.2" id="clear-cache"><span class="secno">3.2.2. </span><span class="content">
     Clear cache for <var>origin</var> with <var>subdomain state</var>
   </span><a class="self-link" href="#clear-cache"></a></h4>
 
@@ -1110,16 +1253,17 @@ Conformance</span></a>
         
 
 
-        <p class="issue" id="issue-0378d416"><a class="self-link" href="#issue-0378d416"></a> We’re dealing with the network cache here, as defined in
+        <p class="issue" id="issue-d40aa458"><a class="self-link" href="#issue-d40aa458"></a> We’re dealing with the network cache here, as defined in
   <a data-link-type="biblio" href="#biblio-rfc7234">[RFC7234]</a>, but that’s not nearly everything a user agent caches. How
   hand-wavey with the vendor-specific section can we be? For instance,
   Chrome clears out prerendered pages, script caches, WebGL shader caches,
   WebRTC bits and pieces, address bar suggestion caches, various networking
-  bits that aren’t representations (HSTS/HPKP, SCDH, etc.).</p>
+  bits that aren’t representations (HSTS/HPKP, SCDH, etc.). Perhaps
+  <a data-link-type="biblio" href="#biblio-storage">[STORAGE]</a> will make this clearer?</p>
         
 </ol>
   
-      <h4 class="heading settled" data-level="3.2.2" id="clear-cookies"><span class="secno">3.2.2. </span><span class="content">
+      <h4 class="heading settled" data-level="3.2.3" id="clear-cookies"><span class="secno">3.2.3. </span><span class="content">
     Clear cookies for <var>origin</var> with <var>subdomain state</var>
   </span><a class="self-link" href="#clear-cookies"></a></h4>
 
@@ -1147,8 +1291,16 @@ Conformance</span></a>
        <li data-md="">
         <p>If <var>subdomain state</var> is <a data-link-type="dfn" href="#include-subdomains"><code>Include Subdomains</code></a>,
   then let <var>cookie list</var> be the set of cookies from the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.3">cookie
-  store</a> whose <code>domain</code> attribute <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.1.3">domain-matches</a>
+  store</a> whose <code>domain</code> attribute is <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.1.3">domain-matched</a> by
   <var>host</var>.</p>
+        
+
+
+        <p class="note" role="note">Note: The direction of the matching is important. If
+  <code>subdomain.example.com</code> delivers the
+  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header and includes subdomains, then
+  cookies for <code>.another.subdomain.example.com</code> will be cleared,
+  but cookies for <code>.example.com</code> will not.</p>
         
 
 
@@ -1166,9 +1318,9 @@ Conformance</span></a>
         
 </ol>
   
-      <h4 class="heading settled" data-level="3.2.3" id="clear-dom"><span class="secno">3.2.3. </span><span class="content">
+      <h4 class="heading settled" data-level="3.2.4" id="clear-dom"><span class="secno">3.2.4. </span><span class="content">
     Clear DOM-accessible storage for <var>origin</var> with
-    <var>subdomains</var>
+    <var>subdomain state</var>
   </span><a class="self-link" href="#clear-dom"></a></h4>
 
 
@@ -1183,10 +1335,10 @@ Conformance</span></a>
          <li data-md="">
           <p>If <a href="#matches-origin">§3.1.3 
     Does origin match origin to clear and
-    subdomains
+    subdomain state
   </a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>area</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and
-  <code>subdomains</code>:</p>
+  <code>subdomain state</code>:</p>
           
 
 
@@ -1208,10 +1360,10 @@ Conformance</span></a>
          <li data-md="">
           <p>If <a href="#matches-origin">§3.1.3 
     Does origin match origin to clear and
-    subdomains
+    subdomain state
   </a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>area</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and
-  <code>subdomains</code>:</p>
+  <code>subdomain state</code>:</p>
           
 
 
@@ -1233,10 +1385,10 @@ Conformance</span></a>
          <li data-md="">
           <p>If <a href="#matches-origin">§3.1.3 
     Does origin match origin to clear and
-    subdomains
+    subdomain state
   </a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>database</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>,
-  and <code>subdomains</code>:</p>
+  and <code>subdomain state</code>:</p>
           
 
 
@@ -1279,10 +1431,10 @@ Conformance</span></a>
          <li data-md="">
           <p>If <a href="#matches-origin">§3.1.3 
     Does origin match origin to clear and
-    subdomains
+    subdomain state
   </a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>database</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>,
-  and <code>subdomains</code>:</p>
+  and <code>subdomain state</code>:</p>
           
 
 
@@ -1297,24 +1449,102 @@ Conformance</span></a>
             
 </ol></ol>
         
-</ol>
 
-      <p class="issue" id="issue-ee3e4711"><a class="self-link" href="#issue-ee3e4711"></a> Define how we clear Filesystems, Dedicated Workers, Shared Workers, Service Workers, etc.</p>
+       <li data-md="">
+        <p>For each <var>registration</var> in the user agent’s set of
+  <a data-link-type="dfn" href="http://www.w3.org/TR/service-workers/#register-algorithm">registered</a> <a data-link-type="dfn" href="http://www.w3.org/TR/service-workers/#dfn-service-worker-registration">service worker registrations</a>:</p>
+        
+
+
+        <ol>
+         <li data-md="">
+          <p>If <a href="#matches-origin">§3.1.3 
+    Does origin match origin to clear and
+    subdomain state
+  </a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
+  executed on <var>registration</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/service-workers/#dfn-scope-url">scope URL</a>’s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and <code>subdomain state</code>:</p>
+          
+
+
+          <ol>
+           <li data-md="">
+            <p>Execute <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/service-workers/#navigator-service-worker-unregister">unregister()</a></code> on
+  <var>registration</var>.</p>
+            
+</ol></ol></ol>
+
+      <p class="issue" id="issue-364d6bdf"><a class="self-link" href="#issue-364d6bdf"></a> We still need to spell out Filesystems, Dedicated Workers, Shared
+  Workers, etc. (This isn’t an exhaustive list. We should fix that too.)</p>
+
+
+      <p class="issue" id="issue-a42aab60"><a class="self-link" href="#issue-a42aab60"></a> How do we say something about plugins here? Point out to
+  <a href="https://wiki.mozilla.org/NPAPI:ClearSiteData">NPP_ClearSiteData</a>?</p>
 </section>
 
 
      <section>
   
-      <h2 class="heading settled" data-level="4" id="iana-considerations"><span class="secno">4. </span><span class="content">IANA Considerations</span><a class="self-link" href="#iana-considerations"></a></h2>
+      <h2 class="heading settled" data-level="4" id="privacy"><span class="secno">4. </span><span class="content">Privacy Considerations</span><a class="self-link" href="#privacy"></a></h2>
+
+  
+      <h3 class="heading settled" data-level="4.1" id="user-vs-author"><span class="secno">4.1. </span><span class="content">Web developers control the timing.</span><a class="self-link" href="#user-vs-author"></a></h3>
+
+
+      <p>If triggered at appropriate times, <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> can
+  increase a user’s privacy and security by clearing sensitive data from their
+  user agent. However, note that the web developer (and <em>not</em> the user)
+  is in control of when the clearing event is triggered. Even assuming a
+  non-malicious site author, users can’t rely on data being cleared at any
+  particular point, nor are users in control of what data types are cleared.</p>
+
+
+      <p>If a user wishes to ensure that site data is indeed cleared at some specific
+  point, they ought to rely on the data-clearing functionality offered by their
+  user agent.</p>
+
+
+      <p>At a bare minimum, user agents OUGHT TO (in the <a data-link-type="biblio" href="#biblio-rfc6919">[RFC6919]</a> sense of the
+  words) offer the same functionality to users that they offer to web
+  developers. Ideally, they will offer significantly more than we can offer at
+  a platform level (clearing browsing history, for example).</p>
+
+  
+      <h3 class="heading settled" data-level="4.2" id="remnants"><span class="secno">4.2. </span><span class="content">Remnants of data on disk.</span><a class="self-link" href="#remnants"></a></h3>
+
+
+      <p>While <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> triggers a clearing event in a
+  user’s agent, it is difficult to make promises about the state of a user’s
+  disk after a clearing event takes place. In particular, note that it is up
+  to the user agent to ensure that all traces of a site’s date is actually
+  removed from disk, which can be a herculean task (consider virtual memory,
+  as a good example of a larger issue).</p>
+
+
+      <p>In short, most user agents implement data clearing as "best effort", but
+  can’t promise an exhaustive wipe.</p>
+
+
+      <p>If a user wishes to ensure that site data does not remain on disk, the best
+  way to do so is to use a browsing mode that promises not to intentionally
+  write data to disk (Chrome’s "Incognito", Internet Explorer’s "InPrivate",
+  etc). These modes will do a better job of keeping data off disk, but are
+  still subject to a number of limitations at the edges.</p>
+</section>
+
+
+     <section>
+  
+      <h2 class="heading settled" data-level="5" id="iana-considerations"><span class="secno">5. </span><span class="content">IANA Considerations</span><a class="self-link" href="#iana-considerations"></a></h2>
 
 
       <p>The permanent message header field registry should be updated
   with the following registration: <a data-link-type="biblio" href="#biblio-rfc3864">[RFC3864]</a></p>
 
   
-      <h3 class="heading settled" data-level="4.1" id="iana-clear-browsing-data"><span class="secno">4.1. </span><span class="content">
-    Clear-Browsing-Data
-  </span><a class="self-link" href="#iana-clear-browsing-data"></a></h3>
+      <h3 class="heading settled" data-level="5.1" id="iana-clear-site-data"><span class="secno">5.1. </span><span class="content">
+    Clear-Site-Data
+  </span><a class="self-link" href="#iana-clear-site-data"></a></h3>
 
   
       <dl>
@@ -1322,7 +1552,7 @@ Conformance</span></a>
        <dt>Header field name
        
     
-       <dd>Clear-Browsing-Data
+       <dd>Clear-Site-Data
        
 
     
@@ -1351,7 +1581,7 @@ Conformance</span></a>
        
     
        <dd>This specification (See <a href="#header">§2.1 
-    The Clear-Browsing-Data HTTP Response Header Field
+    The Clear-Site-Data HTTP Response Header Field
   </a>)
        
   
@@ -1360,7 +1590,7 @@ Conformance</span></a>
 
       <section>
   
-       <h2 class="heading settled" data-level="5" id="acknowledgements"><span class="secno">5. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+       <h2 class="heading settled" data-level="6" id="acknowledgements"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
 
 
        <p>Michal Zalewski proposed a variant of this concept, and Mark Knichel helped
@@ -1411,16 +1641,19 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
   <h3 class="no-num heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="indexlist">
-   <li>Clear-Browsing-Data, <a href="#clear_browsing_data">2.1</a>
-   <li>data-type, <a href="#data_type">2.1</a>
+   <li>Clear-Site-Data, <a href="#clear_site_data">2.1</a>
    <li>data-type-list, <a href="#data_type_list">2.1</a>
    <li>Does Not
   Match, <a href="#does-not-match">3.1.3</a>
    <li>Exclude
   Subdomains, <a href="#exclude-subdomains">3.1.2</a>
+   <li>exclusion, <a href="#exclusion">2.1</a>
    <li>extension, <a href="#extension">2.1</a>
    <li>Include Subdomains, <a href="#include-subdomains">3.1.2</a>
+   <li>includeSubdomains, <a href="#includesubdomains">2.1</a>
    <li>Matches, <a href="#matches">3.1.3</a>
+   <li>retainContexts, <a href="#retaincontexts">2.1</a>
+   <li>retainCookies, <a href="#retaincookies">2.1</a>
    <li>subdomain-extension, <a href="#subdomain_extension">2.1</a>
    <li>unknown-extension, <a href="#unknown_extension">2.1</a>
   </ul>
@@ -1440,6 +1673,13 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
      <li><a href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a>
      <li><a href="https://html.spec.whatwg.org/multipage/#the-sessionstorage-attribute">session storage area</a>
      <li><a href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-html5">[html5]</a> defines the following terms:
+    <ul>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#active-sandboxing-flag-set">active sandboxing flag set</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#sandboxing:parse-a-sandboxing-directive">parse a sandboxing directive</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-indexeddb">[IndexedDB]</a> defines the following terms:
     <ul>
@@ -1471,6 +1711,13 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
     <ul>
      <li><a href="https://tools.ietf.org/html/rfc7234#section-2">network cache</a>
     </ul>
+   <li><a data-link-type="biblio" href="#biblio-service-workers">[service-workers]</a> defines the following terms:
+    <ul>
+     <li><a href="http://www.w3.org/TR/service-workers/#register-algorithm">register</a>
+     <li><a href="http://www.w3.org/TR/service-workers/#dfn-scope-url">scope url</a>
+     <li><a href="http://www.w3.org/TR/service-workers/#dfn-service-worker-registration">service worker registration</a>
+     <li><a href="http://www.w3.org/TR/service-workers/#navigator-service-worker-unregister">unregister()</a>
+    </ul>
    <li><a data-link-type="biblio" href="#biblio-url">[URL]</a> defines the following terms:
     <ul>
      <li><a href="http://www.w3.org/TR/url/#concept-url-host">host</a>
@@ -1497,6 +1744,8 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
    <dd>Adam Barth. <a href="http://www.ietf.org/rfc/rfc6454.txt">The Web Origin Concept</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6454.txt">http://www.ietf.org/rfc/rfc6454.txt</a>
    <dt id="biblio-url"><a class="self-link" href="#biblio-url"></a>[URL]
    <dd>Anne van Kesteren. <a href="https://url.spec.whatwg.org/">URL</a>. Living Standard. URL: <a href="https://url.spec.whatwg.org/">https://url.spec.whatwg.org/</a>
+   <dt id="biblio-html5"><a class="self-link" href="#biblio-html5"></a>[HTML5]
+   <dd>Ian Hickson; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
    <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
    <dt id="biblio-rfc5234"><a class="self-link" href="#biblio-rfc5234"></a>[RFC5234]
@@ -1505,6 +1754,8 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
    <dd>A. Barth. <a href="https://tools.ietf.org/html/rfc6265">HTTP State Management Mechanism</a>. April 2011. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc6265">https://tools.ietf.org/html/rfc6265</a>
    <dt id="biblio-rfc7234"><a class="self-link" href="#biblio-rfc7234"></a>[RFC7234]
    <dd>R. Fielding, Ed.; M. Nottingham, Ed.; J. Reschke, Ed.. <a href="https://tools.ietf.org/html/rfc7234">Hypertext Transfer Protocol (HTTP/1.1): Caching</a>. June 2014. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc7234">https://tools.ietf.org/html/rfc7234</a>
+   <dt id="biblio-service-workers"><a class="self-link" href="#biblio-service-workers"></a>[SERVICE-WORKERS]
+   <dd>Alex Russell; Jungkee Song; Jake Archibald. <a href="http://www.w3.org/TR/service-workers/">Service Workers</a>. 5 February 2015. WD. URL: <a href="http://www.w3.org/TR/service-workers/">http://www.w3.org/TR/service-workers/</a>
    <dt id="biblio-webdatabase"><a class="self-link" href="#biblio-webdatabase"></a>[WEBDATABASE]
    <dd>Ian Hickson. <a href="http://www.w3.org/TR/webdatabase/">Web SQL Database</a>. 18 November 2010. NOTE. URL: <a href="http://www.w3.org/TR/webdatabase/">http://www.w3.org/TR/webdatabase/</a>
   </dl>
@@ -1512,27 +1763,33 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   <dl>
    <dt id="biblio-csp2"><a class="self-link" href="#biblio-csp2"></a>[CSP2]
    <dd>Mike West; Adam Barth; Dan Veditz. <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">Content Security Policy Level 2</a>. CR. URL: <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">https://w3c.github.io/webappsec/specs/content-security-policy/</a>
-   <dt id="biblio-service-workers"><a class="self-link" href="#biblio-service-workers"></a>[SERVICE-WORKERS]
-   <dd>Alex Russell; Jungkee Song; Jake Archibald. <a href="http://www.w3.org/TR/service-workers/">Service Workers</a>. 5 February 2015. WD. URL: <a href="http://www.w3.org/TR/service-workers/">http://www.w3.org/TR/service-workers/</a>
+   <dt id="biblio-storage"><a class="self-link" href="#biblio-storage"></a>[STORAGE]
+   <dd>Anne van Kesteren. <a href="https://storage.spec.whatwg.org/">Storage Living Standard</a>. LS. URL: <a href="https://storage.spec.whatwg.org/">https://storage.spec.whatwg.org/</a>
+   <dt id="biblio-rfc6919"><a class="self-link" href="#biblio-rfc6919"></a>[RFC6919]
+   <dd>R. Barnes; S. Kent; E. Rescorla. <a href="https://tools.ietf.org/html/rfc6919">Further Key Words for Use in RFCs to Indicate Requirement Levels</a>. 1 April 2013. Experimental. URL: <a href="https://tools.ietf.org/html/rfc6919">https://tools.ietf.org/html/rfc6919</a>
   </dl>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue"> What do we do about today’s multi-tab, multi-window user agents? Should
-  we also neuter open execution contexts in the affected origins? Close open
-  windows?<a href="#issue-7d4886ca"> ↵ </a></div>
-   <div class="issue"> This should probably be changed into a mechansim which excludes certain
-  types. That is, I see a use case for skipping cookies. I don’t see any for
-  skipping DOM storage or Cache. Perhaps drop down to <code>*</code> and
-  <code>everything-but-cookies</code>?<a href="#issue-f878de52"> ↵ </a></div>
    <div class="issue"> Monkey patching! Talk with Anne.<a href="#issue-3ded38d3"> ↵ </a></div>
+   <div class="issue"> This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. If we clear cookies, we clear all of them. This is intentional,
+  and <a data-link-type="dfn" href="#retaincookies"><code>retainCookies</code></a> is what we would offer to folks who
+  want to retain certain cookies. Perhaps we need a mechanism to allow only
+  certain cookies to be retained?<a href="#issue-16edebe8"> ↵ </a></div>
+   <div class="issue"> This won’t be an atomic set of operations. How can we prevent collusion
+  between browsing contexts to potentially bypass neutering?<a href="#issue-65295789"> ↵ </a></div>
    <div class="issue"> We’re dealing with the network cache here, as defined in
   <a data-link-type="biblio" href="#biblio-rfc7234">[RFC7234]</a>, but that’s not nearly everything a user agent caches. How
   hand-wavey with the vendor-specific section can we be? For instance,
   Chrome clears out prerendered pages, script caches, WebGL shader caches,
   WebRTC bits and pieces, address bar suggestion caches, various networking
-  bits that aren’t representations (HSTS/HPKP, SCDH, etc.).<a href="#issue-0378d416"> ↵ </a></div>
+  bits that aren’t representations (HSTS/HPKP, SCDH, etc.). Perhaps
+  <a data-link-type="biblio" href="#biblio-storage">[STORAGE]</a> will make this clearer?<a href="#issue-d40aa458"> ↵ </a></div>
    <div class="issue"> The <a data-link-type="biblio" href="#biblio-webdatabase">[WEBDATABASE]</a> spec is fairly unhelpful here with
  regard to deletion details.<a href="#issue-cefd18f2"> ↵ </a></div>
-   <div class="issue"> Define how we clear Filesystems, Dedicated Workers, Shared Workers, Service Workers, etc.<a href="#issue-ee3e4711"> ↵ </a></div>
+   <div class="issue"> We still need to spell out Filesystems, Dedicated Workers, Shared
+  Workers, etc. (This isn’t an exhaustive list. We should fix that too.)<a href="#issue-364d6bdf"> ↵ </a></div>
+   <div class="issue"> How do we say something about plugins here? Point out to
+  <a href="https://wiki.mozilla.org/NPAPI:ClearSiteData">NPP_ClearSiteData</a>?<a href="#issue-a42aab60"> ↵ </a></div>
   </div></body>
 </html>
