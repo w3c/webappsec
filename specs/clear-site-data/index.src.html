@@ -41,9 +41,12 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
   type: dfn
     urlPrefix: browsers.html
       text: ancestor browsing context
+      text: active document
       text: browsing context
       text: creating a new document object; url: create-a-document-object
       text: nested browsing context
+      text: active sandboxing flag set
+      text: parse a sandboxing directive; url: sandboxing:parse-a-sandboxing-directive
     urlPrefix: webappapis.html
       text: environment settings object; url: settings-object
       text: incumbent settings object
@@ -197,7 +200,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   7.  All of the above can be propagated to the HTTP version of an HTTPS origin.
 
   ISSUE: What do we do about today's multi-tab, multi-window user agents? Should
-  we also neuter open execution contexts in the affected origins? Close open
+  we also neuter open browsing contexts in the affected origins? Close open
   windows?
 </section>
 
@@ -219,7 +222,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
     "Clear-Site-Data:" *<a>WSP</a> <a>data-type-list</a> *[ ";" *<a>WSP</a> <a>extension</a> *<a>WSP</a> ]  *<a>WSP</a>
 
     <dfn>data-type-list</dfn> = "*" / ( <a>exclusion</a> *( " " <a>exclusion</a> ) )
-    <dfn>exclusion</dfn> = "<dfn>retainCookies</dfn>"
+    <dfn>exclusion</dfn> = "<dfn>retainCookies</dfn>" / "<dfn>retainContexts</dfn>"
     <dfn>extension</dfn> = <a>subdomain-extension</a> / <a>unknown-extension</a>
     <dfn>subdomain-extension</dfn> = "<dfn>includeSubdomains</dfn>"
     <dfn>unknown-extension</dfn> = *( <a>WSP</a> / &lt;<a>VCHAR</a> except ";" and ","&gt; )
@@ -237,7 +240,11 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   exclusions are as follows:
 
   1.  <code>retainCookies</code>, which implies that cookies for the site's
-      host will <code>not</code> be removed.
+      host will <strong>not</strong> be removed.
+
+  2.  <code>retainContexts</code>, which implies that user agents which support
+      opening multiple windows or tabs will <strong>not</strong> neuter existing
+      <a>browsing contexts</a> open onto the site.
 
   Invalid exclusion keywords present in a header's value are simply ignored.
   Parsing details can be found in [[#parsing]].
@@ -278,6 +285,17 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       If the <code>includeSubdomains</code> option is present, then all locally
       cached data for any host which is a subdomain of <var>response</var>'s
       {{Response/url}}'s {{URL/host}} MUST be removed.
+
+  5.  If the value of the header's <a>data-type-list</a> does not contain
+      <a><code>retainContexts</code></a>, then all <a>browsing contexts</a>
+      whose <a>active Document</a>'s <a>origin</a> is identical to
+      {{Response/url}}'s <a>origin</a> MUST be neutered by tightly sandboxing
+      them.
+
+      If the <code>includeSubdomains</code> option is present, then all
+      <a>browsing contexts</a> whose <a>active Document</a>'s <a>origin</a>'s
+      {{URL/host}} is a subdomain of <var>response</var>'s {{Response/url}}'s
+      {{URL/host}} MUST be neutered.
 
   <h3 id="fetch-integration">Fetch Integration</h3>
 
@@ -321,7 +339,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   <h4 id="matches-origin">
     Does <var>origin</var> match <var>origin to clear</var> and
-    <var>subdomains</var>
+    <var>subdomain state</var>
   </h4>
 
   TODO: Given an origin, the origin to clear, and the "include subdomains"
@@ -339,18 +357,51 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   1.  Let <var>exclusions</var> be the result of [[#get-exclusions]] executed on
       <var>response</var>.
 
-  2.  Let <var>subdomains</var> be the result of [[#should-include-subdomains]]
-      executed on <var>response</var>.
+  2.  Let <var>subdomain state</var> be the result of
+      [[#should-include-subdomains]] executed on <var>response</var>.
 
-  3.  If <var>exclusions</var> does not contain "<code>cookies</code>", execute
+  4.  If <var>exclusions</var> does not contain "<code>contexts</code>", execute
+      [[#neuter-contexts]] on <var>response</var>'s {{Response/url}}'s
+      <a>origin</a>, with <var>subdomain state</var>.
+
+  5.  If <var>exclusions</var> does not contain "<code>cookies</code>", execute
       [[#clear-cookies]] on <var>response</var>'s {{Response/url}}'s
-      <a>origin</a>, with <var>subdomains</var>.
+      <a>origin</a>, with <var>subdomain state</var>.
 
-  4.  Execute [[#clear-dom]] on <var>response</var>'s {{Response/url}}'s
-      <a>origin</a>, with <var>subdomains</var>.
+  6.  Execute [[#clear-dom]] on <var>response</var>'s {{Response/url}}'s
+      <a>origin</a>, with <var>subdomain state</var>.
 
-  5.  Execute [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
-      <a>origin</a>, with <var>subdomains</var>.
+  7.  Execute [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
+      <a>origin</a>, with <var>subdomain state</var>.
+
+  <h4 id="neuter-contexts">
+    Neuter browsing contexts matching <var>origin</var> with
+    <var>subdomain state</var>
+  </h4>
+
+  Given an <a>origin</a> (<var>origin</var>) and a <var>subdomain state</var>
+  of either <a><code>Include Subdomains</code></a> or <a><code>Exclude
+  Subdomains</code></a>, this algorithm walks through the set of <a>browsing
+  contexts</a> which the user agent knows about, and sandboxes each in order
+  to prevent them from recreating wiped data (from in-memory JavaScript
+  variables, for instance):
+
+  1.  For each <var>context</var> in the user agent's set of <a>browsing
+      contexts</a>:
+
+      1.  Let <var>document</var> be <var>context</var>'s <a>active
+          document</a>.
+
+      2.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
+          executed on <var>context</var>'s <a>origin</a>, <var>origin</var>, and
+          <code>subdomain state</code>:
+
+          1.  <a>Parse a sandboxing directive</a> using the empty string as
+              the <var>input</var>, and <var>document</var>'s <a>active
+              sandboxing flag set</a> as the <var>output</var>.
+
+  ISSUE: This won't be an atomic set of operations. How can we prevent collusion
+  between browsing contexts to potentially bypass neutering?
 
   <h4 id="clear-cache">
     Clear cache for <var>origin</var> with <var>subdomain state</var>
@@ -388,7 +439,8 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       hand-wavey with the vendor-specific section can we be? For instance,
       Chrome clears out prerendered pages, script caches, WebGL shader caches,
       WebRTC bits and pieces, address bar suggestion caches, various networking
-      bits that aren't representations (HSTS/HPKP, SCDH, etc.).
+      bits that aren't representations (HSTS/HPKP, SCDH, etc.). Perhaps
+      [[STORAGE]] will make this clearer?
 
   <h4 id="clear-cookies">
     Clear cookies for <var>origin</var> with <var>subdomain state</var>
@@ -429,7 +481,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   <h4 id="clear-dom">
     Clear DOM-accessible storage for <var>origin</var> with
-    <var>subdomains</var>
+    <var>subdomain state</var>
   </h4>
 
   1.  For each <var>area</var> in the user agent's set of <a>local storage
@@ -437,7 +489,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
       1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
           executed on <var>area</var>'s <a>origin</a>, <var>origin</var>, and
-          <code>subdomains</code>:
+          <code>subdomain state</code>:
 
           1.  Execute {{Storage/clear()}} on the {{Storage}} object associated
               with <var>area</var>.
@@ -447,7 +499,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
       1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
           executed on <var>area</var>'s <a>origin</a>, <var>origin</var>, and
-          <code>subdomains</code>:
+          <code>subdomain state</code>:
 
           1.  Execute {{Storage/clear()}} on the {{Storage}} object associated
               with <var>area</var>.
@@ -457,7 +509,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
       1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
           executed on <var>database</var>'s <a>origin</a>, <var>origin</var>,
-          and <code>subdomains</code>:
+          and <code>subdomain state</code>:
 
           1.  Set <var>database</var>'s <a>delete pending</a> flag to
               <code>true</code>.
@@ -477,7 +529,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
       1.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
           executed on <var>database</var>'s <a>origin</a>, <var>origin</var>,
-          and <code>subdomains</code>:
+          and <code>subdomain state</code>:
 
           1. Delete <var>database</var>.
 
@@ -486,6 +538,49 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
 
   ISSUE: Define how we clear Filesystems, Dedicated Workers, Shared Workers, Service Workers, etc.
+
+  ISSUE: How do we say something about plugins here? Point out to
+  <a href="https://wiki.mozilla.org/NPAPI:ClearSiteData">NPP_ClearSiteData</a>?
+</section>
+
+<section>
+  <h2 id="privacy">Privacy Considerations</h2>
+
+  <h3 id="user-vs-author">Web developers control the timing.</h3>
+
+  If triggered at appropriate times, <a><code>Clear-Site-Data</code></a> can
+  increase a user's privacy and security by clearing sensitive data from their
+  user agent. However, note that the web developer (and <em>not</em> the user)
+  is in control of when the clearing event is triggered. Even assuming a
+  non-malicious site author, users can't rely on data being cleared at any
+  particular point, nor are users in control of what data types are cleared.
+
+  If a user wishes to ensure that site data is indeed cleared at some specific
+  point, they ought to rely on the data-clearing functionality offered by their
+  user agent.
+
+  At a bare minimum, user agents OUGHT TO (in the [[RFC6919]] sense of the
+  words) offer the same functionality to users that they offer to web
+  developers. Ideally, they will offer significantly more than we can offer at
+  a platform level (clearing browsing history, for example).
+
+  <h3 id="remnants">Remnants of data on disk.</h3>
+
+  While <a><code>Clear-Site-Data</code></a> triggers a clearing event in a
+  user's agent, it is difficult to make promises about the state of a user's
+  disk after a clearing event takes place. In particular, note that it is up
+  to the user agent to ensure that all traces of a site's date is actually
+  removed from disk, which can be a herculean task (consider virtual memory,
+  as a good example of a larger issue).
+
+  In short, most user agents implement data clearing as "best effort", but
+  can't promise an exhaustive wipe.
+
+  If a user wishes to ensure that site data does not remain on disk, the best
+  way to do so is to use a browsing mode that promises not to intentionally
+  write data to disk (Chrome's "Incognito", Internet Explorer's "InPrivate",
+  etc). These modes will do a better job of keeping data off disk, but are
+  still subject to a number of limitations at the edges.
 </section>
 
 <section>
