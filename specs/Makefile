@@ -6,7 +6,7 @@ clean:
 	rm -rf ./mixedcontent/index.html
 	rm -rf ./referrer-policy/index.html
 
-CLEAR: clear-browsing-data/index.html
+CLEAR: clear-site-data/index.html
 CREDENTIAL: credentialmanagement/index.html
 CREDENTIAL-FPWD: credentialmanagement/published/2015-04-FPWD.html
 CSP-PINNING: csp-pinning/index.html
@@ -23,8 +23,8 @@ REFERRER: referrer-policy/index.html
 UPGRADE: upgrade/index.html
 UPGRADE-WD: upgrade/published/WD.html
 
-clear-browsing-data/index.html: clear-browsing-data/index.src.html biblio.json
-	bikeshed -f spec ./clear-browsing-data/index.src.html
+clear-site-data/index.html: clear-site-data/index.src.html biblio.json
+	bikeshed -f spec ./clear-site-data/index.src.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 	bikeshed -f spec ./csp-pinning/index.src.html
