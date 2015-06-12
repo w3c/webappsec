@@ -503,12 +503,12 @@ to enable the rest of this specification's work [[!FETCH]]:
             DOMString integrity = "";
 
     3. In step 4 of the constructor, modify the end of the step to read, "and
-       [integrity][fetch-request] is <var>request</var>'s
-       [integrity][fetch-request]."
+       [integrity][integrity metadata] is <var>request</var>'s
+       [integrity][integrity metadata]."
 
     4. Perform the following steps after step 19 of the constructor:
-       1. Set <var>request</var>'s [integrity][fetch-request] to the value of
-          <var>init</var>'s <code>integrity</code> member.
+       1. Set <var>request</var>'s [integrity][integrity metadata] to the value
+          of <var>init</var>'s [integrity][integrity metadata] member.
 
     5. Add the following to the list of descriptions after the constructor:
 
@@ -690,11 +690,12 @@ document][]. See also [securing the web][].
 
 Similarly, since integrity checks do not provide any privacy guarantees,
 [Integrity metadata][] MUST NOT affect the return values of the Mixed Content
-algorithms as defined in [section 5 of the Mixed Content][mixedcontent]
+algorithms as defined in [section 5 of the Mixed
+Content][mixedcontent-algorithms]
 specification.
 
 [Securing the Web]: https://w3ctag.github.io/web-https/
-[mixedcontent]: http://www.w3.org/TR/mixed-content/#algorithms
+[mixedcontent-algorithms]: http://www.w3.org/TR/mixed-content/#algorithms
 </section><!-- /Security::Non-secure contexts remain non-secure -->
 
 <section>
