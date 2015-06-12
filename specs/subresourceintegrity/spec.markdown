@@ -493,22 +493,24 @@ to enable the rest of this specification's work [[!FETCH]]:
 
 4. Add the following to the [Request class definition][fetch-request-api]:
 
-    1. Add the following attribute after the <code>redirect</code> attribute as
-       follows:
+    1. Add the following attribute to the <code>Request</code> class after the
+       <code>redirect</code> attribute as follows:
 
             readonly attribute DOMString integrity;
-    2. In step 4 of the constructor, modify the end of the step to read, "and
+    2. Add the following member to the end of the <code>RequestInit</code>
+       dictionary:
+
+            DOMString integrity = "";
+
+    3. In step 4 of the constructor, modify the end of the step to read, "and
        [integrity][fetch-request] is <var>request</var>'s
        [integrity][fetch-request]."
 
-    3. Perform the following steps after step 19 of the constructor:
+    4. Perform the following steps after step 19 of the constructor:
+       1. Set <var>request</var>'s [integrity][fetch-request] to the value of
+          <var>init</var>'s <code>integrity</code> member.
 
-       1. Let <var>integrity</var> be <var>init</var>'s <code>integrity</code>
-          member if it is present and the empty string otherwise.
-       2. Set <var>request</var>'s [integrity][fetch-request] to
-          <var>integrity</var>.
-
-    4. Add the following to the list of descriptions after the constructor:
+    5. Add the following to the list of descriptions after the constructor:
 
        "The <code>integrity</code> attribute's getter must return
        [request][fetch-request]'s <var>integrity</var>."
