@@ -218,34 +218,29 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   <pre>
     "Clear-Site-Data:" *<a>WSP</a> <a>data-type-list</a> *[ ";" *<a>WSP</a> <a>extension</a> *<a>WSP</a> ]  *<a>WSP</a>
 
-    <dfn>data-type-list</dfn> = "*" / ( <a>data-type</a> *( " " <a>data-type</a> ) )
-    <dfn>data-type</dfn> = "cookie" / "dom" / "cache"
+    <dfn>data-type-list</dfn> = "*" / ( <a>exclusion</a> *( " " <a>exclusion</a> ) )
+    <dfn>exclusion</dfn> = "<dfn>retainCookies</dfn>"
     <dfn>extension</dfn> = <a>subdomain-extension</a> / <a>unknown-extension</a>
-    <dfn>subdomain-extension</dfn> = "includeSubdomains"
+    <dfn>subdomain-extension</dfn> = "<dfn>includeSubdomains</dfn>"
     <dfn>unknown-extension</dfn> = *( <a>WSP</a> / &lt;<a>VCHAR</a> except ";" and ","&gt; )
   </pre>
 
   The header's value contains either the U+002A ASTERISK character
-  (<code>*</code>) or a list of type keywords, followed by a set of options.
+  (<code>*</code>) or a list of type exclusions, followed by a set of options.
 
-  The valid type keywords are:
+  If the header's value's <a>data-type-list</a> component is "<code>*</code>",
+  then all data types specified in this document that are related to this site
+  will be removed.
 
-  1.  <code>cookie</code>, which implies that cookies for a host ought to be
-      removed.
+  If exclusions are specified, then all data types specified in this document
+  will be removed, with the exception of the specified types. Recognized
+  exclusions are as follows:
 
-  2.  <code>dom</code>, which implies that all DOM-accessible storage for an
-      origin ought to be cleared.
+  1.  <code>retainCookies</code>, which implies that cookies for the site's
+      host will <code>not</code> be removed.
 
-  3.  <code>cache</code>, which implies that all locally cached data for an
-      origin ought to be cleared.
-
-  ISSUE: This should probably be changed into a mechansim which excludes certain
-  types. That is, I see a use case for skipping cookies. I don't see any for
-  skipping DOM storage or Cache. Perhaps drop down to <code>*</code> and
-  <code>everything-but-cookies</code>?
-
-  Invalid type keywords present in a header's value are simply ignored. Parsing
-  details can be found in [[#parsing]].
+  Invalid exclusion keywords present in a header's value are simply ignored.
+  Parsing details can be found in [[#parsing]].
 
   User agent conformance details are detailed in [[#clear]]. Those steps
   represent the following requirements when the header is present in a
@@ -255,28 +250,30 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       delivered along with a Response whose URL is <a><i lang="la">a priori</i>
       insecure</a>.
 
-  2.  If the value of the header contains "<code>*</code>" or
-      "<code>cookie</code>", then all cookies which would be sent along with
-      requests to the <var>response</var>'s {{Response/url}} MUST be removed.
+      Note: This means that the header will be ignored for unauthenticated or
+      unencrypted connections ("HTTP" vs "HTTPS", for example).
 
-      If the <code>includeSubdomains</code> option is present, then all cookies
-      which would be sent along with requests to any host which is a subdomain
-      of <var>response</var>'s {{Response/url}}'s {{URL/host}} MUST be removed.
+  2.  If the value of the header's <a>data-type-list</a> does not contain
+      <a><code>retainCookies</code></a>, then all cookies which would be sent
+      along with any request to the <var>response</var>'s {{Response/url}}'s
+      {{URL/host}} MUST be removed.
 
-  3.  If the value of the header contains "<code>*</code>" or
-      "<code>dom</code>", then all DOM-accessible storage mechanisms
-      ({{localStorage}}, {{sessionStorage}}, [[INDEXEDDB]], [[WEBDATABASE]],
-      etc) for <var>response</var>'s {{Response/url}}'s <a>origin</a> MUST be
-      cleared.
+      Further, if the same header's <a>extension</a> contains
+      <a><code>includeSubdomains</code></a>, then all cookies which would be
+      sent along with any request to any host which is a subdomain of
+      <var>response</var>'s {{Response/url}}'s {{URL/host}} MUST be removed.
+
+  3.  All DOM-accessible storage mechanisms ({{localStorage}},
+      {{sessionStorage}}, [[INDEXEDDB]], [[WEBDATABASE]], etc) for
+      <var>response</var>'s {{Response/url}}'s <a>origin</a> MUST be cleared.
 
       If the <code>includeSubdomains</code> option is present, then all
       DOM-accessible storage mechanisms for any <a>origin</a> whose {{URL/host}}
       is a subdomain of <var>response</var>'s {{Response/url}}'s {{URL/host}}
       MUST be cleared.
 
-  4.  If the value of the header contains "<code>*</code>" or
-      "<code>cache</code>", then all locally cached data for
-      <var>response</var>'s {{Response/url}}'s {{URL/host}} MUST be removed.
+  4.  All locally cached data for <var>response</var>'s {{Response/url}}'s
+      <a>origin</a> MUST be removed.
 
       If the <code>includeSubdomains</code> option is present, then all locally
       cached data for any host which is a subdomain of <var>response</var>'s
@@ -295,8 +292,11 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       <a><code>Clear-Site-Data</code></a>, then execute [[#clear]] on
       <var>response</var>.
 
-  Note: This happens <em>after</em> <code>Set-Cookie</code> headers are
-  processed. If we clear cookies, we clear all of them.
+  Issue: This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. If we clear cookies, we clear all of them. This is intentional,
+  and <a><code>retainCookies</code></a> is what we would offer to folks who
+  want to retain certain cookies. Perhaps we need a mechanism to allow only
+  certain cookies to be retained?
 <section>
 
 <section>
@@ -304,12 +304,12 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   <h3 id="parsing">Parsing</h3>
 
-  <h4 id="get-types">
-    Which data types ought to be cleared for <var>response</var>
+  <h4 id="get-exclusions">
+    Which data types ought to be retained for <var>response</var>?
   </h4>
 
   TODO: Parse the <a><code>Clear-Site-Data</code></a> header. Return
-  a list of type names.
+  a list of type names to be excluded.
 
   <h4 id="should-include-subdomains">
     Should subdomains' data be cleared for <var>response</var>
@@ -336,22 +336,20 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   <a><code>Clear-Site-Data</code></a> header to determine what needs to be
   cleared, which origins are affected, and then executes those requests.
 
-  1.  Let <var>types</var> be the result of [[#get-types]] executed on
+  1.  Let <var>exclusions</var> be the result of [[#get-exclusions]] executed on
       <var>response</var>.
 
   2.  Let <var>subdomains</var> be the result of [[#should-include-subdomains]]
       executed on <var>response</var>.
 
-  3.  If <var>types</var> contains "<code>cookie</code>", execute
+  3.  If <var>exclusions</var> does not contain "<code>cookies</code>", execute
       [[#clear-cookies]] on <var>response</var>'s {{Response/url}}'s
       <a>origin</a>, with <var>subdomains</var>.
 
-  4.  If <var>types</var> contains "<code>dom</code>", execute [[#clear-dom]]
-      on <var>response</var>'s {{Response/url}}'s <a>origin</a>, with
-      <var>subdomains</var>.
+  4.  Execute [[#clear-dom]] on <var>response</var>'s {{Response/url}}'s
+      <a>origin</a>, with <var>subdomains</var>.
 
-  5.  If <var>types</var> contains "<code>cache</code>", execute
-      [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
+  5.  Execute [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
       <a>origin</a>, with <var>subdomains</var>.
 
   <h4 id="clear-cache">
@@ -412,8 +410,14 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   2.  If <var>subdomain state</var> is <a><code>Include Subdomains</code></a>,
       then let <var>cookie list</var> be the set of cookies from the <a>cookie
-      store</a> whose <code>domain</code> attribute <a>domain-matches</a>
+      store</a> whose <code>domain</code> attribute is <a>domain-matched</a> by
       <var>host</var>.
+
+      Note: The direction of the matching is important. If
+      <code>subdomain.example.com</code> delivers the
+      <a><code>Clear-Site-Data</code></a> header and includes subdomains, then
+      cookies for <code>.another.subdomain.example.com</code> will be cleared,
+      but cookies for <code>.example.com</code> will not.
 
   3.  Otherwise, <var>subdomain state</var> is <a><code>Exclude
       Subdomains</code></a>, so let <var>cookie list</var> be the set of
