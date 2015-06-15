@@ -573,7 +573,7 @@ span.issue, span.note {
    <h1 class="p-name no-ref" id="title">Clear Site Data</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">A Collection of Interesting Ideas,
-    <time class="dt-updated" datetime="2015-06-12">12 June 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-06-15">15 June 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -657,13 +657,17 @@ host and its subdomains.</p>
     Neuter browsing contexts matching <var>origin</var> with
     <var>subdomain state</var>
   </span></a>
-        <li><a href="#clear-cache"><span class="secno">3.2.2</span> <span class="content">
+        <li><a href="#reload-contexts"><span class="secno">3.2.2</span> <span class="content">
+    Reload browsing contexts matching <var>origin</var> with
+    <var>subdomain state</var>
+  </span></a>
+        <li><a href="#clear-cache"><span class="secno">3.2.3</span> <span class="content">
     Clear cache for <var>origin</var> with <var>subdomain state</var>
   </span></a>
-        <li><a href="#clear-cookies"><span class="secno">3.2.3</span> <span class="content">
+        <li><a href="#clear-cookies"><span class="secno">3.2.4</span> <span class="content">
     Clear cookies for <var>origin</var> with <var>subdomain state</var>
   </span></a>
-        <li><a href="#clear-dom"><span class="secno">3.2.4</span> <span class="content">
+        <li><a href="#clear-dom"><span class="secno">3.2.5</span> <span class="content">
     Clear DOM-accessible storage for <var>origin</var> with
     <var>subdomain state</var>
   </span></a>
@@ -1103,6 +1107,19 @@ Conformance</span></a>
 
       <ol>
        <li data-md="">
+        <p>If <var>response</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url">URL</a></code> is <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i>
+  insecure</a>, skip the remaining steps of this algorithm.</p>
+        
+
+
+        <p class="issue" id="issue-6ab3e863"><a class="self-link" href="#issue-6ab3e863"></a> Some have suggested that this might not be a restriction we want
+  (see
+  <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Jun/0032.html">Martin
+  Thomson’s public-webappsec post on the topic</a>, for example).</p>
+        
+
+
+       <li data-md="">
         <p>Let <var>exclusions</var> be the result of <a href="#get-exclusions">§3.1.1 
     Which data types ought to be retained for response?
   </a> executed on
@@ -1130,7 +1147,7 @@ Conformance</span></a>
 
        <li data-md="">
         <p>If <var>exclusions</var> does not contain "<code>cookies</code>", execute
-  <a href="#clear-cookies">§3.2.3 
+  <a href="#clear-cookies">§3.2.4 
     Clear cookies for origin with subdomain state
   </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
@@ -1138,7 +1155,7 @@ Conformance</span></a>
 
 
        <li data-md="">
-        <p>Execute <a href="#clear-dom">§3.2.4 
+        <p>Execute <a href="#clear-dom">§3.2.5 
     Clear DOM-accessible storage for origin with
     subdomain state
   </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
@@ -1147,12 +1164,28 @@ Conformance</span></a>
 
 
        <li data-md="">
-        <p>Execute <a href="#clear-cache">§3.2.2 
+        <p>Execute <a href="#clear-cache">§3.2.3 
     Clear cache for origin with subdomain state
   </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
         
+
+
+       <li data-md="">
+        <p>If <var>exclusions</var> does not contain "<code>contexts</code>", execute
+  <a href="#reload-contexts">§3.2.2 
+    Reload browsing contexts matching origin with
+    subdomain state
+  </a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
+        
 </ol>
+
+      <p class="note" role="note">Note: Especially given the cross-context implications, user agents are
+  are encouraged to give web developers some mechanism by which the clearing
+  operation can be debugged. This might take the form of a console message or
+  timeline entry indicating success.</p>
+
   
       <h4 class="heading settled" data-level="3.2.1" id="neuter-contexts"><span class="secno">3.2.1. </span><span class="content">
     Neuter browsing contexts matching <var>origin</var> with
@@ -1164,8 +1197,12 @@ Conformance</span></a>
   of either <a data-link-type="dfn" href="#include-subdomains"><code>Include Subdomains</code></a> or <a data-link-type="dfn" href="#exclude-subdomains"><code>Exclude
   Subdomains</code></a>, this algorithm walks through the set of <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing
   contexts</a> which the user agent knows about, and sandboxes each in order
-  to prevent them from recreating wiped data (from in-memory JavaScript
-  variables, for instance):</p>
+  to prevent them from recreating cleared data (from in-memory JavaScript
+  variables, for instance). Once data is cleared, the affected browsing
+  contexts will be hard-reloaded, as defined in <a href="#reload-contexts">§3.2.2 
+    Reload browsing contexts matching origin with
+    subdomain state
+  </a>:</p>
 
 
       <ol>
@@ -1179,6 +1216,13 @@ Conformance</span></a>
          <li data-md="">
           <p>Let <var>document</var> be <var>context</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active
   document</a>.</p>
+          
+
+
+         <li data-md="">
+          <p>While <var>document</var> is <a data-link-type="dfn" href="http://www.w3.org/TR/html5/embedded-content-0.html#an-iframe-srcdoc-document">an <code>iframe srcdoc</code>
+  document</a>, let <var>document</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a>
+  of <var>document</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context-container">browsing context container</a>.</p>
           
 
 
@@ -1204,7 +1248,59 @@ Conformance</span></a>
   between browsing contexts to potentially bypass neutering?</p>
 
   
-      <h4 class="heading settled" data-level="3.2.2" id="clear-cache"><span class="secno">3.2.2. </span><span class="content">
+      <h4 class="heading settled" data-level="3.2.2" id="reload-contexts"><span class="secno">3.2.2. </span><span class="content">
+    Reload browsing contexts matching <var>origin</var> with
+    <var>subdomain state</var>
+  </span><a class="self-link" href="#reload-contexts"></a></h4>
+
+
+      <p>Given an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> (<var>origin</var>) and a <var>subdomain state</var>
+  of either <a data-link-type="dfn" href="#include-subdomains"><code>Include Subdomains</code></a> or <a data-link-type="dfn" href="#exclude-subdomains"><code>Exclude
+  Subdomains</code></a>, this algorithm walks through the set of <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing
+  contexts</a> which the user agent knows about and reloads each of them:</p>
+
+
+      <ol>
+       <li data-md="">
+        <p>For each <var>context</var> in the user agent’s set of <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing
+  contexts</a>:</p>
+        
+
+
+        <ol>
+         <li data-md="">
+          <p>Let <var>document</var> be <var>context</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active
+  document</a>.</p>
+          
+
+
+         <li data-md="">
+          <p>While <var>document</var> is <a data-link-type="dfn" href="http://www.w3.org/TR/html5/embedded-content-0.html#an-iframe-srcdoc-document">an <code>iframe srcdoc</code>
+  document</a>, let <var>document</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a>
+  of <var>document</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context-container">browsing context container</a>.</p>
+          
+
+
+         <li data-md="">
+          <p>If <a href="#matches-origin">§3.1.3 
+    Does origin match origin to clear and
+    subdomain state
+  </a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
+  executed on <var>context</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and
+  <code>subdomain state</code>:</p>
+          
+
+
+          <ol>
+           <li data-md="">
+            <p>Navigate <var>context</var> to <var>document</var>’s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url">URL</a></code> with
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#replacement-enabled">replacement enabled</a> and <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#exceptions-enabled">exceptions enabled</a>. The
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#source-browsing-context">source browsing context</a> is <var>context</var>. This is a
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#reload-triggered-navigation">reload-triggered navigation</a>.</p>
+            
+</ol></ol></ol>
+  
+      <h4 class="heading settled" data-level="3.2.3" id="clear-cache"><span class="secno">3.2.3. </span><span class="content">
     Clear cache for <var>origin</var> with <var>subdomain state</var>
   </span><a class="self-link" href="#clear-cache"></a></h4>
 
@@ -1263,7 +1359,7 @@ Conformance</span></a>
         
 </ol>
   
-      <h4 class="heading settled" data-level="3.2.3" id="clear-cookies"><span class="secno">3.2.3. </span><span class="content">
+      <h4 class="heading settled" data-level="3.2.4" id="clear-cookies"><span class="secno">3.2.4. </span><span class="content">
     Clear cookies for <var>origin</var> with <var>subdomain state</var>
   </span><a class="self-link" href="#clear-cookies"></a></h4>
 
@@ -1318,7 +1414,7 @@ Conformance</span></a>
         
 </ol>
   
-      <h4 class="heading settled" data-level="3.2.4" id="clear-dom"><span class="secno">3.2.4. </span><span class="content">
+      <h4 class="heading settled" data-level="3.2.5" id="clear-dom"><span class="secno">3.2.5. </span><span class="content">
     Clear DOM-accessible storage for <var>origin</var> with
     <var>subdomain state</var>
   </span><a class="self-link" href="#clear-dom"></a></h4>
@@ -1678,8 +1774,14 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
     <ul>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#active-sandboxing-flag-set">active sandboxing flag set</a>
+     <li><a href="http://www.w3.org/TR/html5/embedded-content-0.html#an-iframe-srcdoc-document">an iframe srcdoc document</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#browsing-context-container">browsing context container</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#exceptions-enabled">exceptions enabled</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#sandboxing:parse-a-sandboxing-directive">parse a sandboxing directive</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#reload-triggered-navigation">reload-triggered navigation</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#replacement-enabled">replacement enabled</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#source-browsing-context">source browsing context</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-indexeddb">[IndexedDB]</a> defines the following terms:
     <ul>
@@ -1720,6 +1822,7 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-url">[URL]</a> defines the following terms:
     <ul>
+     <li><a href="http://www.w3.org/TR/url/#concept-url">URL</a>
      <li><a href="http://www.w3.org/TR/url/#concept-url-host">host</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-html">[HTML]</a> defines the following terms:
@@ -1776,6 +1879,10 @@ Conformance</span><a class="self-link" href="#conformance"></a></h2>
   and <a data-link-type="dfn" href="#retaincookies"><code>retainCookies</code></a> is what we would offer to folks who
   want to retain certain cookies. Perhaps we need a mechanism to allow only
   certain cookies to be retained?<a href="#issue-16edebe8"> ↵ </a></div>
+   <div class="issue"> Some have suggested that this might not be a restriction we want
+  (see
+  <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Jun/0032.html">Martin
+  Thomson’s public-webappsec post on the topic</a>, for example).<a href="#issue-6ab3e863"> ↵ </a></div>
    <div class="issue"> This won’t be an atomic set of operations. How can we prevent collusion
   between browsing contexts to potentially bypass neutering?<a href="#issue-65295789"> ↵ </a></div>
    <div class="issue"> We’re dealing with the network cache here, as defined in
