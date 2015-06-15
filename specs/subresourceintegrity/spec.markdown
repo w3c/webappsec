@@ -746,7 +746,10 @@ Much of the content here is inspired heavily by Gervase
 Markham's [Link Fingerprints][] concept, as well as WHATWG's [Link Hashes][].
 
 A special thanks to Mike West of Google, Inc. for his invaluable contributions
-to the initial version of this spec.
+to the initial version of this spec. Additonally, (in no particular order) 
+Eduardo Vela, Michal Zalewski, Mark Nottingham, Anne Van Kesteren, 
+Brad Hill, Dan Veditz, Tanvi Vyas provided invaluable feedback.
+
 
 [Link Fingerprints]: http://www.gerv.net/security/link-fingerprints/
 [Link Hashes]: https://wiki.whatwg.org/wiki/Link_Hashes
