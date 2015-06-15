@@ -39,20 +39,33 @@ spec: INDEXEDDB; urlPrefix: http://www.w3.org/TR/IndexedDB/
     text: IDBDatabase; url: idl-def-IDBDatabase 
 spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
   type: dfn
+    urlPrefix: embedded-content-0.html
+      text: an iframe srcdoc document
     urlPrefix: browsers.html
       text: ancestor browsing context
       text: active document
       text: browsing context
+      text: browsing context container
       text: creating a new document object; url: create-a-document-object
       text: nested browsing context
       text: active sandboxing flag set
       text: parse a sandboxing directive; url: sandboxing:parse-a-sandboxing-directive
+      text: replacement enabled
+      text: exceptions enabled
+      text: source browsing context
+      text: reload-triggered navigation; url: reload-triggered-navigation
     urlPrefix: webappapis.html
       text: environment settings object; url: settings-object
       text: incumbent settings object
       text: responsible document
       text: responsible browsing context
       text: relevant settings object for a script
+  type: interface
+    urlPrefix: browsers.html
+      text: Location
+  type: method
+    urlPrefix: browsers.html
+      text: reload(); for: Location; url: dom-location-reload
 spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
   urlPRefix: webstorage.html
     type: dfn
@@ -427,6 +440,10 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   7.  Execute [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
       <a>origin</a>, with <var>subdomain state</var>.
 
+  8.  If <var>exclusions</var> does not contain "<code>contexts</code>", execute
+      [[#reload-contexts]] on <var>response</var>'s {{Response/url}}'s
+      <a>origin</a>, with <var>subdomain state</var>.
+
   <h4 id="neuter-contexts">
     Neuter browsing contexts matching <var>origin</var> with
     <var>subdomain state</var>
@@ -436,8 +453,9 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   of either <a><code>Include Subdomains</code></a> or <a><code>Exclude
   Subdomains</code></a>, this algorithm walks through the set of <a>browsing
   contexts</a> which the user agent knows about, and sandboxes each in order
-  to prevent them from recreating wiped data (from in-memory JavaScript
-  variables, for instance):
+  to prevent them from recreating cleared data (from in-memory JavaScript
+  variables, for instance). Once data is cleared, the affected browsing
+  contexts will be hard-reloaded, as defined in [[#reload-contexts]]:
 
   1.  For each <var>context</var> in the user agent's set of <a>browsing
       contexts</a>:
@@ -445,7 +463,11 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       1.  Let <var>document</var> be <var>context</var>'s <a>active
           document</a>.
 
-      2.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
+      2.  While <var>document</var> is <a>an <code>iframe srcdoc</code>
+          document</a>, let <var>document</var> be the <a>active document</a>
+          of <var>document</var>'s <a>browsing context container</a>.
+
+      3.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
           executed on <var>context</var>'s <a>origin</a>, <var>origin</var>, and
           <code>subdomain state</code>:
 
@@ -456,6 +478,35 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   ISSUE: This won't be an atomic set of operations. How can we prevent collusion
   between browsing contexts to potentially bypass neutering?
 
+  <h4 id="reload-contexts">
+    Reload browsing contexts matching <var>origin</var> with
+    <var>subdomain state</var>
+  </h4>
+
+  Given an <a>origin</a> (<var>origin</var>) and a <var>subdomain state</var>
+  of either <a><code>Include Subdomains</code></a> or <a><code>Exclude
+  Subdomains</code></a>, this algorithm walks through the set of <a>browsing
+  contexts</a> which the user agent knows about and reloads each of them:
+
+  1.  For each <var>context</var> in the user agent's set of <a>browsing
+      contexts</a>:
+
+      1.  Let <var>document</var> be <var>context</var>'s <a>active
+          document</a>.
+
+      2.  While <var>document</var> is <a>an <code>iframe srcdoc</code>
+          document</a>, let <var>document</var> be the <a>active document</a>
+          of <var>document</var>'s <a>browsing context container</a>.
+
+      3.  If [[#matches-origin]] returns <a><code>Matches</code></a> when
+          executed on <var>context</var>'s <a>origin</a>, <var>origin</var>, and
+          <code>subdomain state</code>:
+
+          1.  Navigate <var>context</var> to <var>document</var>'s {{URL}} with
+              <a>replacement enabled</a> and <a>exceptions enabled</a>. The
+              <a>source browsing context</a> is <var>context</var>. This is a
+              <a>reload-triggered navigation</a>.
+          
   <h4 id="clear-cache">
     Clear cache for <var>origin</var> with <var>subdomain state</var>
   </h4>
