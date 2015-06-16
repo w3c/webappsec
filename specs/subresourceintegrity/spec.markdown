@@ -487,13 +487,7 @@ to enable the rest of this specification's work [[!FETCH]]:
             the <var>request</var>, set <var>response</var> to a
             [network error][].
 
-3.  Perform the following steps before executing both the "[basic fetch][]" and
-    "[CORS fetch with preflight][]" algorithms:
-
-    1.  If <var>request</var>'s integrity metadata is a non-empty string,
-        include a `Cache-Control` header whose value is "no-transform".
-
-4. Add the following to the [Request class definition][fetch-request-api]:
+3. Add the following to the [Request class definition][fetch-request-api]:
 
     1. Add the following attribute to the <code>Request</code> class after the
        <code>redirect</code> attribute as follows:
@@ -664,16 +658,8 @@ with those resources stays in sync with the new content. One option
 is to ensure that the [integrity metadata][] associated with
 resources is updated along with the resource itself. Another
 would be simply to deliver only the canonical version of resources
-for which a page author has requested integrity verification. To
-support this latter option, user agents MUST send a
-[`Cache-Control`][cachecontrol] header with a value of
-[`no-transform`][notransform] when requesting a resource with
-associated integrity metadata (see item 3 in the "[Modifications to
-Fetch][]" section).
+for which a page author has requested integrity verification.
 
-[cachecontrol]: http://tools.ietf.org/html/rfc7234#section-5.2
-[notransform]: http://tools.ietf.org/html/rfc7234#section-5.2.1.6
-[Modifications to Fetch]: #modifications-to-fetch
 </section><!-- /Implementation -->
 
 <section>
