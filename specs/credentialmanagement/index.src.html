@@ -94,6 +94,7 @@ spec: XHR; urlPrefix: https://xhr.spec.whatwg.org/
 spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
   type: dfn
     text: type name; url: dfn-type-name
+    text: dictionary member; url: dfn-dictionary-member
   type: interface
     text: USVString; url: idl-USVString
     text: object; url: idl-object
@@ -238,7 +239,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <div class="example">
       <pre>
-        navigator.<a attribute>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>(["<a const>password</a>"]).then(
+        navigator.<a attribute>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>({ "<a for="CredentialRequestOptions" dict-member>password</a>": true }).then(
             function(credential) {
               if (!credential) {
                 // The user either doesn't have credentials for this site, or
@@ -268,11 +269,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <div class="example">
       <pre>
         navigator.<a attribute>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>({
-          [ "<a const>password</a>", "<a const>federated</a>" ],
-          {
-            "<a dict-member>federated</a>": {
-              "<a idl>providers</a>": [ "https://federation.com" ]
-            }
+          "<a for="CredentialRequestOptions" dict-member>password</a>": true,
+          "<a dict-member>federated</a>": {
+            "<a idl>providers</a>": [ "https://federation.com" ]
           }
         }).then(
             function(credential) {
@@ -727,7 +726,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     interface CredentialContainer {
-      Promise&lt;Credential?&gt; get(sequence&lt;DOMString&gt; types, optional CredentialRequestOptions options);
+      Promise&lt;Credential?&gt; get(optional CredentialRequestOptions options);
       Promise&lt;Credential&gt; store(optional Credential credential);
       Promise&lt;void&gt; requireUserMediation();
     };
@@ -736,12 +735,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <dt><dfn method>get()</dfn></dt>
     <dd>
       Request a credential from the credential manager.
-      
-      The {{types!!argument}} argument contains a sequence of strings specifying
-      the types of {{Credential}} objects which the caller wishes to obtain. An
-      empty sequence signifies that the caller will accept any credential type.
-      For processing details, see the algorithm defined in
-      [[#request-credential]].
 
       The {{options!!argument}} argument contains an object filled with
       type-specific sets of parameters which will be used to select a
@@ -798,16 +791,48 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   dictionary types will be added to the dictionary so they can be passed into the
   request. See [[#implementation-extension]].
 
+  <h5 id="interfaces-credentialrequestoptions">
+    <code>CredentialRequestOptions</code> dictionary
+  </h5>
+
+  <pre class="idl">
+    dictionary CredentialRequestOptions {
+      boolean password;
+      FederatedCredentialRequestOptions federated;
+
+      boolean suppressUI = false;
+    };
+  </pre>
+  <dl dfn-for="CredentialRequestOptions">
+    <dt><dfn dict-member>password</dfn></dt>
+    <dd>
+      If set, the user agent will request {{PasswordCredential}} objects, as
+      outlined in [[#request-credential]].
+    </dd>
+    <dt><dfn dict-member>federated</dfn></dt>
+    <dd>
+      If set, the user agent will request {{FederatedCredential}} objects, as
+      outlined in [[#request-credential]].
+    </dd>
+    <dt><dfn dict-member>suppressUI</dfn></dt>
+    <dd>
+      If <code>true</code>, the user agent will only attempt to provide
+      a {{Credential}} without user interaction: if the user has explicitly
+      opted-into always giving a particular site access to a particular set of
+      credentials, they will be provided. If not, the promise will resolve with
+      <code>undefined</code>. For processing details, see the algorithm defined
+      in [[#request-credential]].
+    </dd>
+  </dl>
+
+  <h5 id="interfaces-federatedcredentialrequestoptions">
+    <code>FederatedCredentialRequestOptions</code> dictionary
+  </h5>
+
   <pre class="idl">
     dictionary FederatedCredentialRequestOptions {
       sequence&lt;USVString&gt; providers;
       sequence&lt;DOMString&gt; protocols;
-    };
-
-    dictionary CredentialRequestOptions {
-      FederatedCredentialRequestOptions federated;
-
-      boolean suppressUI = false;
     };
   </pre>
   <dl dfn-for="FederatedCredentialRequestOptions">
@@ -821,17 +846,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       A sequence of protocol identifiers. 
     </dd>
   </dl>
-  <dl dfn-for="CredentialRequestOptions">
-    <dt><dfn dict-member>suppressUI</dfn></dt>
-    <dd>
-      If <code>true</code>, the user agent will only attempt to provide
-      a {{Credential}} without user interaction: if the user has explicitly
-      opted-into always giving a particular site access to a particular set of
-      credentials, they will be provided. If not, the promise will resolve with
-      <code>undefined</code>. For processing details, see the algorithm defined
-      in [[#request-credential]].
-    </dd>
-  </dl>
 
   <div class="example">
     Suppose <code>https://example.com/</code> only supports federated sign-in
@@ -839,12 +853,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     via the following call:
 
     <pre>
-      navigator.<a idl>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>(
-        [ "<a const>federated</a>" ],
-        {
-          "<a dict-member>federated</a>": {
-            "<a idl>providers</a>": [ "https://identity.example.com/" ]
-          }
+      navigator.<a idl>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>({
+        "<a dict-member>federated</a>": {
+          "<a idl>providers</a>": [ "https://identity.example.com/" ]
         }
       }).then(function (credential) {
         // ...
@@ -858,13 +869,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
     <pre>
       navigator.<a idl>credentials</a>.<a idl lt="get()" for="CredentialContainer">get</a>(
-        [ "<a const>federated</a>" ],
-        {
-          "<a dict-member>federated</a>": {
-            "<a idl>providers</a>": [ "https://identity.example.com/" ]
-          },
-          "<a idl>suppressUI</a>: true
-        }
+        "<a dict-member>federated</a>": {
+          "<a idl>providers</a>": [ "https://identity.example.com/" ]
+        },
+        "<a idl>suppressUI</a>: true
       ).then(function (credential) {
         // ...
       });
@@ -1023,7 +1031,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   author pull some "RemoteCredential" that required interaction with a
   third-party, but fall back to a {{PasswordCredential}}? For the moment, we're
   resolving this by rejecting the promise if the types listed in
-  {{CredentialContainer/get()}}'s {{types!!argument}} aren't all instances of
+  {{CredentialContainer/get()}}'s {{options!!argument}} aren't all instances of
   the same type, but that seems like something we'd want to fix.
 
   <h4 id="store-credential">
@@ -1599,62 +1607,79 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Let <var>synthesized</var> be an empty list.
     </li>
     <li>
-      Switch on the interface whose {{Credential/type}} property matches one of
-      the items in {{CredentialContainer/get()}}'s {{types!!argument}} argument,
-      and execute the associated steps:
+      For each <var>member</var> in the <a>dictionary members</a> of
+      {{CredentialContainer/get()}}'s {{options!!argument}} argument:
 
-      <dl>
-        <dt>{{FederatedCredential}}</dt>
-        <dd>
-          When executing the [[#gather-locallystoredcredentials]] algorithm, a
-          user agent SHOULD populate the <a>chooser</a> with options based on
-          the following heuristic:
+      <ol>
+        <li>
+          Let <var>interface</var> be the name of the interface inheriting from
+          {{Credential}} whose objects' {{Credential/type}} property's value
+          matches <var>member</var>'s key, or <code>null</code> if no such
+          interface exists.
 
-          <ol>
-            <li>
-              Let <var>providers</var> be the value of <var>options</var>'
-              <var>providers</var> property.
-            </li>
-            <li>
-              For each {{PasswordCredential}} <var>credential</var> in the
-              <a>credential store</a>:
+          Note: That is, instances of {{FederatedCredential}} have a
+          {{Credential/type}} property with a value of
+          "{{FederatedCredential/federated!!const}}". An {{options!!argument}}
+          argument's {{CredentialRequestOptions/federated}} member would map
+          to {{FederatedCredential}} in this step.
+        </li>
+        <li>
+          Switch on <var>interface</var>, and execute the associated steps:
+
+          <dl>
+            <dt>{{FederatedCredential}}</dt>
+            <dd>
+              When executing the [[#gather-locallystoredcredentials]] algorithm,
+              a user agent SHOULD populate the <a>chooser</a> with options based
+              on the following heuristic:
 
               <ol>
                 <li>
-                  For each <var>provider</var> in <var>options</var>'
-                  {{FederatedCredentialRequestOptions/providers}} property:
+                  Let <var>providers</var> be the value of <var>options</var>'
+                  <var>providers</var> property.
+                </li>
+                <li>
+                  For each {{PasswordCredential}} <var>credential</var> in the
+                  <a>credential store</a>:
 
                   <ol>
                     <li>
-                      If [[#is-match]] returns <code>Exact Match</code> or
-                      <code>Fuzzy Match</code> when executed upon
-                      <var>credential</var> and <var>provider</var>:
+                      For each <var>provider</var> in <var>options</var>'
+                      {{FederatedCredentialRequestOptions/providers}} property:
 
                       <ol>
                         <li>
-                          Create a new {{FederatedCredential}} object
-                          <var>new</var> whose {{[[origin]]}} slot is set to
-                          <var>origin</var>, {{Credential/id}} is set to
-                          <var>credential</var>'s {{Credential/id}},
-                          {{FederatedCredential/provider}} is set to
-                          <var>provider</var>.
-                        </li>
-                        <li>
-                          Append <var>new</var> to <var>synthesized</var>.
+                          If [[#is-match]] returns <code>Exact Match</code> or
+                          <code>Fuzzy Match</code> when executed upon
+                          <var>credential</var> and <var>provider</var>:
+
+                          <ol>
+                            <li>
+                              Create a new {{FederatedCredential}} object
+                              <var>new</var> whose {{[[origin]]}} slot is set to
+                              <var>origin</var>, {{Credential/id}} is set to
+                              <var>credential</var>'s {{Credential/id}},
+                              {{FederatedCredential/provider}} is set to
+                              <var>provider</var>.
+                            </li>
+                            <li>
+                              Append <var>new</var> to <var>synthesized</var>.
+                            </li>
+                          </ol>
                         </li>
                       </ol>
                     </li>
                   </ol>
                 </li>
               </ol>
-            </li>
-          </ol>
-        </dd>
-        <dt><em>This is an extension point.</em></dt>
-        <dd>
-          When new credential types are defined in the future, they'll go here.
-        </dd>
-      </dl>
+            </dd>
+            <dt><em>This is an extension point.</em></dt>
+            <dd>
+              When new credential types are defined in the future, they'll go here.
+            </dd>
+          </dl>
+        </li>
+      </ol>
     </li>
     <li>
       Return <var>synthesized</var>.
