@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Entry Point Regulation</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-04-21">21 April 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-06-19">19 June 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -248,7 +248,7 @@ external requests for all non-demarcated resources.</p>
 
 
     <p>These attacks all rely on the fundamentally porous nature of the web: any
-  addressible portion of an application can be requested by any third-party,
+  addressable portion of an application can be requested by any third-party,
   with arbitrary <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> parameters and <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a>
   identifiers. The user agent will happily issue such requests with all the
   authority granted to the user, which can result in a number of problems.</p>
@@ -266,7 +266,7 @@ external requests for all non-demarcated resources.</p>
 
     <p>This document defines a browser-enforced mechanism which can be layered on top
   of an existing application without server-side modifications, providing the
-  attack mitigation authors desire, while allowing user intent to trumph brittle
+  attack mitigation authors desire, while allowing user intent to trump brittle
   filters when possible.</p>
 
   
@@ -274,15 +274,15 @@ external requests for all non-demarcated resources.</p>
 
 
     <p>The threat model EPR operates under assumes that the user is authenticated to
-  various web sites within a single browser, and that the user browses to web 
-  content that may be malicious.  Web content can freely make authenticated 
-  cross-origin requests, enabling XSS, XSRF, and XSSI attacks.  While CSP has 
-  shown to be an effective approach to addressing XSS, the protection CSP 
-  provides is only as good as the policies web sites are able to put into place.  
-  In many cases enforcing optimally secure CSP policies has proven difficult, 
-  for example when web content needs to leverage javascript libraries requiring 
+  various web applications and origins within a single browser, and that the user
+	browses to web content that may be malicious.  Web content can freely make
+	authenticated cross-origin requests, enabling XSS, CSRF, and XSSI attacks.
+	While CSP has shown to be an effective approach to addressing XSS, the protection
+	CSP provides is only as good as the policies web applications are able to put into
+	place. In many cases enforcing optimally secure CSP policies has proven difficult,
+  for example when web content needs to leverage JavaScript libraries requiring
   eval().  EPR provides a defense-in-depth option for authors to mitigate XSS 
-  while also providing a new opportunity to mitigate XSRF and XSSI attacks.</p>
+  while also providing a new opportunity to mitigate CSRF and XSSI attacks.</p>
 
 
     <p>After an author implements EPR for an origin, the following statements ought
@@ -308,7 +308,7 @@ external requests for all non-demarcated resources.</p>
       <p>Authors should be able to block or modify incoming requests that contain
   data (e.g. the URL might have <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-query">query</a> or
   <a data-link-type="dfn" href="http://www.w3.org/TR/url/#concept-url-fragment">fragment</a> data, or the request might contain a
-  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-body">body</a>) differently to requests that do not contain
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-body">body</a>) differently from requests that do not contain
   data.</p>
       
 
@@ -333,7 +333,7 @@ external requests for all non-demarcated resources.</p>
      <li data-md="">
       <p>A user agent may choose to exclude other requests from the above filters
   in order to prioritize a user’s intent. For instance, URLs typed directly
-  into the address bar, or bookmarked URLs might skip filters entirely.</p>
+  into the address bar or bookmarked URLs might skip filters entirely.</p>
       
 </ol>
   
@@ -341,15 +341,15 @@ external requests for all non-demarcated resources.</p>
 
 
     <p>The developer of a web-based "Internet of Things" administration console
-  would like to have a high degree of assurance that XSS and XSRF attacks will
+  would like to have a high degree of assurance that XSS and CSRF attacks will
   not affect users.  If such an attack were to occur it could allow attackers
   to turn users' home appliances on and off at will, or perform other actions 
-  with serious consequences.  Because of the pervasive nature of XSS and XSRF 
+  with serious consequences.  Because of the pervasive nature of XSS and CSRF
   vulnerabilities, the developer had been considering creating only monolithic 
   desktop and mobile applications as opposed to utilizing the web platform.  
-  While thiswould allow them to sidestep the security concerns inherrent with 
-  the web platform, it is clearly not ideal for users.  Implementation of CSP 
-  seemed to present a solution, however a fully restrictive policy is not 
+  While this would allow them to sidestep the security concerns inherent with
+  the web platform, it is clearly not ideal for users.  Implementation of CSP
+  seemed to present a solution, however a fully restrictive policy is not
   possible due to library compatibility requirements.</p>
 
 
@@ -377,7 +377,7 @@ external requests for all non-demarcated resources.</p>
       type</a> is one of "<code>top-level</code>", "<code>auxiliary</code>",
       or "<code>nested</code>". Navigational requests load a resource into a
       context where markup will be rendered, meaning that they place an origin
-      at risk of both XSS and XSRF attack.
+      at risk of both XSS and CSRF attack.
     
      
     
@@ -385,7 +385,7 @@ external requests for all non-demarcated resources.</p>
       <dfn data-dfn-type="dfn" data-noexport="" id="subresource-request">subresource request<a class="self-link" href="#subresource-request"></a></dfn> if it is not a <a data-link-type="dfn" href="#connection-request">connection request</a>,
       and its <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">context frame type</a> is "<code>none</code>".
       Subresource requests cannot execute code directly, so the XSS risk is
-      minimal, but they do present the risk of XSRF attack.
+      minimal, but they do present the risk of CSRF and XSSI.
     
      
     
@@ -443,11 +443,7 @@ scenario where this is useful then it makes sense to do this.</p>
     
      <li>
       UA requests a resource from <code>example.com</code> for the very
-      first time. As no <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a>, and therefore no policy, is
-      available for this request, a <a data-link-type="dfn" href="#default-epr-policy">default EPR policy</a> will apply
-      as described in <a href="#default-policy">§4.2 
-    Default EPR policy
-  </a>.
+      first time.
     
      
     
@@ -455,6 +451,14 @@ scenario where this is useful then it makes sense to do this.</p>
       <code>example.com</code> responds with a document that has an
       <code><a data-link-type="dfn" href="#epr-http-response-header-field">EPR</a></code> header, which tells the UA that it should
       regulate entry points for the origin.
+
+
+      <p>As no <a data-link-type="dfn" href="#epr-manifest">EPR manifest</a>, and therefore no policy, is
+      available for this request, a <a data-link-type="dfn" href="#default-epr-policy">default EPR policy</a> will apply
+      as described in <a href="#default-policy">§4.2 
+    Default EPR policy
+  </a>.</p>
+      
 
 
       <p>Somewhere in Fetch after we have the headers, we’ll call out to
@@ -1078,10 +1082,10 @@ EPR-enabled site.</p>
   facilitate URLs sent in e-mail, etc.?</p>
 
 
-    <p>The intent of the default EPR policy is to mitigate XSS (not XSRF) when no
+    <p>The intent of the default EPR policy is to mitigate XSS (not CSRF) when no
   EPR policy is available yet.  Even when the user is not authenticated to
   a site, XSS is problematic because the attack may persist until the user
-  has authenticated.  This is not the case with XSRF, and XSRF is not
+  has authenticated.  This is not the case with CSRF, and CSRF is not
   effective until the user has authenticated to a site, at which point it is
   much more likely that a policy has been downloaded.</p>
 
