@@ -10,7 +10,10 @@ Previous Version: http://www.w3.org/TR/2014/WD-mixed-content-20140722/
 Level: 1
 Editor: Mike West 56384, Google Inc., mkwst@google.com
 Group: webappsec
-Abstract: This specification describes how a user agent should handle fetching of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
+Abstract:
+  This specification describes how a user agent should handle fetching of
+  content over unencrypted or unauthenticated connections in the context of an
+  encrypted and authenticated document.
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
 Indent: 2
 At Risk: The <a>deprecated TLS-protection</a> concept.
@@ -186,15 +189,24 @@ type: element-attr
       <dfn export local-lt="mixed">mixed content</dfn>
     </dt>
     <dd>
-      A resource is said to be <strong>mixed content</strong> if the resource's
+      A resource or <a>request</a> is <strong>mixed content</strong> if its
       <a>origin</a> is <a>insecure</a>, <strong>and</strong> the context
       responsible for loading it restricts mixed content. See
       [[#categorize-settings-object]] for a normative definition of the latter.
 
       <div class="example">
-        The image <code>http://example.com/image.png</code> is <strong>mixed
-        content</strong> when loaded by
-        <code>https://not.example.com/</code>.
+        Inside a context that restricts mixed content
+        (<code>https://secure.example.com/</code>, for example):
+
+        * A request for the script <code>http://example.com/script.js</code> is
+          <strong>mixed content</strong>. As scripts are <a>blockable
+          content</a>, the user agent will return a network error rather than
+          loading the resource.
+
+        * A request for the image <code>http://example.com/image.png</code> is
+          <strong>mixed content</strong>. As images are <a>optionally-blockable
+          content</a>, the user agent might load the image, in which case the
+          image resource itself would be <strong>mixed content</strong>.
       </div>
     </dd>
 
@@ -215,6 +227,8 @@ type: element-attr
 
       A URL whose <a>origin</a> is potentially secure is itself considered to
       be potentially secure.
+
+      ISSUE: Drop <code>about</code>.
     </dd>
 
     <dt>
@@ -229,9 +243,9 @@ type: element-attr
     </dt>
     <dd>
       Any <a>origin</a> which is not <a>potentially secure</a> is said to
-      be <strong><i lang="la">a priori</i> insecure</strong>. We know, for example, that
-      <code>http://example.com/</code> is insecure just by looking at its scheme
-      component.
+      be <strong><i lang="la">a priori</i> insecure</strong>. We know, for
+      example, that <code>(http, example.com, 80)</code> is insecure just by
+      looking at its scheme component.
 
       A URL whose <a>origin</a> is <i lang="la">a priori</i> insecure is itself
       considered to be <i lang="la">a priori</i> insecure.
@@ -317,8 +331,7 @@ type: element-attr
   <section>
     <h3 id="category-optionally-blockable">Optionally-blockable Content</h3>
 
-    A resource is
-    <dfn local-lt="optionally-blockable">optionally-blockable content</dfn>
+    A resource or <a>request</a> is <dfn>optionally-blockable</dfn>
     when the risk of allowing its usage as <a>mixed content</a> is outweighed by
     the risk of breaking significant portions of the web. This could be because
     mixed usage of the resource type is sufficiently high, and because the
@@ -367,9 +380,8 @@ type: element-attr
   <section>
     <h3 id="category-blockable">Blockable Content</h3>
 
-    Any resource that isn't <a>optionally-blockable</a> is
-    <dfn lt="blockable content" local-lt="blockable">blockable
-    content</dfn>. Typical examples of this kind of content include scripts,
+    Any resource or <a>request</a> that isn't <a>optionally-blockable</a> is
+    <dfn>blockable</dfn>. Typical examples of this kind of content include scripts,
     <a>plugin</a> data, data requested via {{XMLHttpRequest}}, and so on. Every
     <a>request context</a> that is not <a>optionally-blockable</a> is a
     <dfn>blockable request context</dfn>. This explicitly includes any contexts
