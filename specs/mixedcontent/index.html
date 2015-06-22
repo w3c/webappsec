@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Mixed Content</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-03-12">12 March 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-06-22">22 June 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -86,7 +86,9 @@
      <dt>Version History:
      <dd><a href="https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html">https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html</a>
      <dt>Feedback:
-     <dd><span><a href="mailto:public-webappsec@w3.org?subject=%5Bmixed-content%5D%20feedback">public-webappsec@w3.org</a> with subject line “<kbd>[mixed-content] <var>… message topic …</var></kbd>” (<a href="http://lists.w3.org/Archives/Public/public-webappsec/" rel="discussion">archives</a>)</span>
+     <dd><span><a href="mailto:public-webappsec@w3.org?subject=%5Bmixed-content%5D%20YOUR%20TOPIC%20HERE">public-webappsec@w3.org</a> with subject line “<kbd>[mixed-content] <var>… message topic …</var></kbd>” (<a href="http://lists.w3.org/Archives/Public/public-webappsec/" rel="discussion">archives</a>)</span>
+     <dt>Issue Tracking:
+     <dd><a href="https://github.com/w3c/webappsec/issues/">GitHub</a>
      <dt class="editor">Editor:
      <dd class="editor p-author h-card vcard" data-editor-id="56384"><a class="p-name fn u-email email" href="mailto:mkwst@google.com">Mike West</a> (<span class="p-org org">Google Inc.</span>)
     </dl>
@@ -104,7 +106,10 @@
   <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
 
   <div class="p-summary" data-fill-with="abstract">
-   <p>This specification describes how a user agent should handle fetching of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.</p>
+   <p>This specification describes how a user agent should handle fetching of
+
+content over unencrypted or unauthenticated connections in the context of an
+encrypted and authenticated document.</p>
 
 </div>
 
@@ -155,12 +160,7 @@
 
 </p></div>
 
-  <div data-fill-with="at-risk">
-   <p>The following features are at-risk, and may be dropped during the CR period:
-</p>
-   <ul>
-    <li>The <a data-link-type="dfn" href="#deprecated-tls_protection">deprecated TLS-protection</a> concept.
-   </ul></div>
+  <div data-fill-with="at-risk"></div>
 
 
   <h2 class="no-num no-toc no-ref heading settled" id="contents"><span class="content">Table of Contents</span></h2>
@@ -288,9 +288,10 @@
 
 
     <p class="note" role="note">Note: Nothing described in this document is really new; everything covered
-  here has appeared in one or more a user agent over the years: Internet
-  Explorer led the way, alerting users to mixed content since at least
-  version 4.</p>
+  here has appeared in one or more user agents over the years: Internet
+  Explorer led the way, alerting users to mixed content since
+  <a href="https://twitter.com/ericlaw/status/469813922908758016">around</a>
+  <a href="https://support2.microsoft.com/default.aspx?scid=kb;EN-US;Q261188">version 4</a>.</p>
 </section>
 
 
@@ -308,7 +309,7 @@
      
     
      <dd>
-      A resource is said to be <strong>mixed content</strong> if the resource’s
+      A resource or <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is <strong>mixed content</strong> if its
       <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is <a data-link-type="dfn" href="#insecure-origin">insecure</a>, <strong>and</strong> the context
       responsible for loading it restricts mixed content. See
       <a href="#categorize-settings-object">§5.1 
@@ -316,11 +317,50 @@
     </a> for a normative definition of the latter.
 
       
-      <div class="example">
-        The image <code>http://example.com/image.png</code> is <strong>mixed
-        content</strong> when loaded by
-        <code>https://not.example.com/</code>.
+      <div class="example" id="example-0665cf9f"><a class="self-link" href="#example-0665cf9f"></a>
+        Inside a context that restricts mixed content
+        (<code>https://secure.example.com/</code>, for example):
+
+
+       <ol>
+        <li data-md="">
+         <p>A request for the script <code>http://example.com/script.js</code>
+  is <strong>mixed content</strong>. As script <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a> are
+  <a data-link-type="dfn" href="#blockable">blockable</a>, the user agent will return a network error rather
+  than loading the resource.</p>
+         
+
+
+        <li data-md="">
+         <p>A request for the image <code>http://example.com/image.png</code> is
+  <strong>mixed content</strong>. As image <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">requests</a> are
+  <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a>, the user agent might load the image, in
+  which case the image resource itself would be <strong>mixed
+  content</strong>.</p>
+         
+</ol>
+             
       </div>
+      
+
+
+      <p>If mixed content is loaded into a context that restricts mixed content
+      (as in #2 above), that context is considered a <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-12.4">mixed security
+      context</a> (as defined in <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>).</p>
+      
+
+
+      <p class="note" role="note">Note: "Mixed content" was originally defined in
+      <a href="http://www.w3.org/TR/wsc-ui/#securepage">section 5.3</a> of
+      <a data-link-type="biblio" href="#biblio-wsc-ui">[WSC-UI]</a>. This document updates that initial definition.</p>
+      
+
+
+      <p class="note" role="note">Note: <a data-link-type="biblio" href="#biblio-xml">[XML]</a> also defines an unrelated
+      <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#sec-mixed-content">"mixed content"</a>.
+      concept. This is potentially confusing, but given the term’s near
+      ubiquitious usage in a security context across user agents for more than
+      a decade, the practical risk of confusion seems low.</p>
       
     
      
@@ -369,9 +409,9 @@
     
      <dd>
       Any <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> which is not <a data-link-type="dfn" href="#potentially-secure-origin">potentially secure</a> is said to
-      be <strong><i lang="la">a priori</i> insecure</strong>. We know, for example, that
-      <code>http://example.com/</code> is insecure just by looking at its scheme
-      component.
+      be <strong><i lang="la">a priori</i> insecure</strong>. We know, for
+      example, that <code>(http, example.com, 80)</code> is insecure just by
+      looking at its scheme component.
 
 
       <p>A URL whose <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is <i lang="la">a priori</i> insecure is itself
@@ -396,7 +436,7 @@
      
     
      <dd>
-      An resource’s origin is said to be <strong>insecure</strong> if it is
+      A resource’s origin is said to be <strong>insecure</strong> if it is
       either <a data-link-type="dfn" href="#a-priori-insecure-origin"><i lang="la">a priori</i> insecure</a>, or the user agent discovers
       only after performing a TLS-handshake that the TLS-protection offered
       is <a data-link-type="dfn" href="#deprecated-tls_protection">deprecated</a>.
@@ -484,8 +524,7 @@
      
 
 
-     <p>A resource is
-    <dfn data-dfn-type="dfn" data-local-lt="optionally-blockable" data-noexport="" id="optionally_blockable-content">optionally-blockable content<a class="self-link" href="#optionally_blockable-content"></a></dfn>
+     <p>A resource or <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is <dfn data-dfn-type="dfn" data-noexport="" id="optionally_blockable">optionally-blockable<a class="self-link" href="#optionally_blockable"></a></dfn>
     when the risk of allowing its usage as <a data-link-type="dfn" href="#mixed-content">mixed content</a> is outweighed by
     the risk of breaking significant portions of the web. This could be because
     mixed usage of the resource type is sufficiently high, and because the
@@ -561,11 +600,10 @@
      
 
 
-     <p>Any resource that isn’t <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a> is
-    <dfn data-dfn-type="dfn" data-local-lt="blockable" data-lt="blockable content" data-noexport="" id="blockable-content">blockable
-    content<a class="self-link" href="#blockable-content"></a></dfn>. Typical examples of this kind of content include scripts,
+     <p>Any resource or <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> that isn’t <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> is
+    <dfn data-dfn-type="dfn" data-noexport="" id="blockable">blockable<a class="self-link" href="#blockable"></a></dfn>. Typical examples of this kind of content include scripts,
     <a data-link-type="dfn" href="http://www.w3.org/TR/html5/infrastructure.html#plugin">plugin</a> data, data requested via <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/XMLHttpRequest/#interface-xmlhttprequest">XMLHttpRequest</a></code>, and so on. Every
-    <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">request context</a> that is not <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a> is a
+    <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">request context</a> that is not <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> is a
     <dfn data-dfn-type="dfn" data-noexport="" id="blockable-request-context">blockable request context<a class="self-link" href="#blockable-request-context"></a></dfn>. This explicitly includes any contexts
     defined after publication of this document.</p>
      
@@ -603,7 +641,7 @@
     <p>In order to give authors assurance that mixed content will never degrade the
   security UI presented to their users (as described in <a href="#requirements-ux">§7.2 UI Requirements</a>),
   authors may choose to enable a stricter variant of mixed content checking
-  which will both block <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a> and <a data-link-type="dfn" href="#blockable-content">blockable</a> mixed
+  which will both block <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> and <a data-link-type="dfn" href="#blockable">blockable</a> mixed
   content, and suppress the user override options discussed in
   <a href="#requirements-user-controls">§7.3 User Controls</a>.</p>
 
@@ -620,7 +658,7 @@
   the <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/html5/dom.html#document">Document</a></code> is in <dfn data-dfn-type="dfn" data-noexport="" id="strict-mode">strict mode<a class="self-link" href="#strict-mode"></a></dfn>.</p>
 
   
-    <div class="example">
+    <div class="example" id="example-f4c16b63"><a class="self-link" href="#example-f4c16b63"></a>
     A <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/html5/dom.html#document">Document</a></code> may opt itself into strict mode by either delivering a
     <code>Content-Security-Policy</code> HTTP header, like:
 
@@ -657,13 +695,13 @@
     <ol>
     
      <li>
-      treat <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a> mixed content as though it were
-      <a data-link-type="dfn" href="#blockable-content">blockable</a>.
+      treat <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> mixed content as though it were
+      <a data-link-type="dfn" href="#blockable">blockable</a>.
     
      
     
      <li>
-      NOT provide users with a mechanism for forcing <a data-link-type="dfn" href="#blockable-content">blockable</a>
+      NOT provide users with a mechanism for forcing <a data-link-type="dfn" href="#blockable">blockable</a>
       mixed content to load.
 
 
@@ -900,7 +938,7 @@ directive-value = ""
       the resource she’s loaded. For example:
 
       
-      <div class="example">
+      <div class="example" id="example-94c619b8"><a class="self-link" href="#example-94c619b8"></a>
         <code>http://a.com</code> loads <code>http://evil.com</code>. The
         insecure request will be allowed, as <code>a.com</code> was not loaded
         over a secure connection.
@@ -908,7 +946,7 @@ directive-value = ""
       
 
       
-      <div class="example">
+      <div class="example" id="example-501baa03"><a class="self-link" href="#example-501baa03"></a>
         <code>https://a.com</code> loads <code>http://evil.com</code>. The
         insecure request will be blocked, as <code>a.com</code> was loaded over
         a secure connection.
@@ -916,7 +954,7 @@ directive-value = ""
       
 
       
-      <div class="example">
+      <div class="example" id="example-ae11902f"><a class="self-link" href="#example-ae11902f"></a>
         <code>http://a.com</code> frames <code>https://b.com</code>, which
         loads <code>http://evil.com</code>. In this case, the insecure request
         to <code>evil.com</code> will be blocked, as <code>b.com</code> was
@@ -925,7 +963,7 @@ directive-value = ""
       
 
       
-      <div class="example">
+      <div class="example" id="example-78c7ba27"><a class="self-link" href="#example-78c7ba27"></a>
         <code>https://a.com</code> frames a <code>data:</code> URL, which loads
         <code>http://evil.com</code>. In this case, the insecure request to
         <code>evil.com</code> will be blocked, as <code>a.com</code> was loaded
@@ -950,7 +988,7 @@ directive-value = ""
 
      <p class="note" role="note">Note: The Fetch specification hooks into this algorithm to determine whether
     a request should be entirely blocked (e.g. because the request is for
-    <a data-link-type="dfn" href="#blockable-content">blockable</a> content, and we can <em>assume</em> that it won’t be
+    <a data-link-type="dfn" href="#blockable">blockable</a> content, and we can <em>assume</em> that it won’t be
     loaded over a secure connection).</p>
      
 
@@ -1022,7 +1060,7 @@ directive-value = ""
         
           
         <li>
-            If the user agent is configured to block <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a>
+            If the user agent is configured to block <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a>
             mixed content, return <strong>blocked</strong>.
           
         
@@ -1062,9 +1100,9 @@ directive-value = ""
 
      <p class="note" role="note">Note: <a href="#should-block-fetch">If a request proceeds</a>, we still
     might want to block the response based on the state of the connection
-    that generated the response (e.g. because the response is for <a data-link-type="dfn" href="#blockable-content">blockable
-    content</a>, but the connection is <a data-link-type="dfn" href="#insecure-origin">insecure</a>). This algorithm is used
-    to make that determination.</p>
+    that generated the response (e.g. because the response is a <a data-link-type="dfn" href="#blockable">blockable</a>
+    <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a>, but the connection is <a data-link-type="dfn" href="#insecure-origin">insecure</a>). This algorithm is
+    used to make that determination.</p>
      
 
 
@@ -1101,7 +1139,7 @@ directive-value = ""
       <li>
         If <var>context</var> is not an <a data-link-type="dfn" href="#optionally_blockable-request-contexts">optionally-blockable request
         context</a>, or the user agent is configured to block
-        <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a> mixed content, or  <var>request</var>’s
+        <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> mixed content, or  <var>request</var>’s
         <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a>’s <a data-link-type="dfn" href="#strict-mixed-content-checking-flag">strict mixed content checking flag</a> is
         <code>true</code>:
 
@@ -1254,7 +1292,7 @@ directive-value = ""
 
 
      <p>Further, a user agent MAY treat form submissions from such a <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/html5/dom.html#document">Document</a></code>
-    as a request for <a data-link-type="dfn" href="#blockable-content">blockable content</a>, even if the submission occurs in
+    as a <a data-link-type="dfn" href="#blockable">blockable</a> request, even if the submission occurs in
     the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>.</p>
      
   
@@ -1268,14 +1306,26 @@ directive-value = ""
 
 
      <p>If a user agent would normally indicate to the user that the
-    <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a> is secure, then when the user
-    agent services a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> for an <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a>
-    resource which is <a data-link-type="dfn" href="#mixed-content">mixed content</a>, then the
-    user agent MUST NOT provide the user with that same indication. The
-    user agent SHOULD instead give an indication that <a data-link-type="dfn" href="#mixed-content">mixed
-    content</a> is present.</p>
+    <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a> is secure, then:</p>
      
 
+
+     <ul>
+      <li data-md="">
+       <p>When the user agent downgrades a context to a <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6797#section-12.4">mixed security
+  context</a> by returning a resource in response to a <a data-link-type="dfn" href="#mixed-content">mixed
+  content</a> <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> (either because the <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> is
+  <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a>, or because the user agent is configured
+  to allow <a data-link-type="dfn" href="#blockable">blockable</a> <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a>s), the user agent MUST NOT
+  provide the user with that same indication.</p>
+       
+
+
+       <p>The user agent SHOULD instead give an indication that <a data-link-type="dfn" href="#mixed-content">mixed
+  content</a> is present.</p>
+       
+</ul>
+     
 
      <p>If a mixed content indication is present, it MUST be made available
     through accessibility APIs for users of assistive technologies.</p>
@@ -1298,8 +1348,8 @@ directive-value = ""
 
 
      <p>A user agent MAY offer users the ability to directly decide whether or not
-    to treat <strong>all</strong> <a data-link-type="dfn" href="#mixed-content">mixed content</a> as <a data-link-type="dfn" href="#blockable-content">blockable</a>
-    (meaning that even <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a> mixed content would be
+    to treat <strong>all</strong> <a data-link-type="dfn" href="#mixed-content">mixed content</a> as <a data-link-type="dfn" href="#blockable">blockable</a>
+    (meaning that even <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> mixed content would be
     blocked).</p>
      
 
@@ -1310,7 +1360,7 @@ directive-value = ""
 
 
      <p>A user agent MAY offer users the ability to override its decision to block
-    <a data-link-type="dfn" href="#blockable-content">blockable</a> mixed content on a particular page.</p>
+    <a data-link-type="dfn" href="#blockable">blockable</a> mixed content on a particular page.</p>
      
 
 
@@ -1350,14 +1400,14 @@ directive-value = ""
       
       <li>
         Interpret the presence of a <code>Strict-Transport-Security</code>
-        header field as forcing all content into the <a data-link-type="dfn" href="#blockable-content">blockable</a> category
+        header field as forcing all content into the <a data-link-type="dfn" href="#blockable">blockable</a> category
         <a data-link-type="biblio" href="#biblio-rfc6797">[RFC6797]</a>, or as a signal to enable <a data-link-type="dfn" href="#strict-mode">strict mode</a> for mixed
         content checking.
       
       
       
       <li>
-        Modify requests for <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a> resources which are
+        Modify requests for <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> resources which are
         <a data-link-type="dfn" href="#mixed-content">mixed content</a> in order to reduce the risk to users: cookies
         and other authentication tokens could be stripped from the requests,
         automatic scheme upgrades could be attempted, and so on.
@@ -1365,8 +1415,8 @@ directive-value = ""
       
       
       <li>
-        Treat <a data-link-type="dfn" href="#optionally_blockable-content">optionally-blockable</a> resources inside <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing
-        contexts</a> as <a data-link-type="dfn" href="#blockable-content">blockable</a>, to allow sites to embed resources
+        Treat <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> resources inside <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing
+        contexts</a> as <a data-link-type="dfn" href="#blockable">blockable</a>, to allow sites to embed resources
         without fear of introducing mixed content.
       
       
@@ -1418,7 +1468,7 @@ directive-value = ""
     like this:
 
     </p>
-  <div class="example">
+  <div class="example" id="example-f839f6c8"><a class="self-link" href="#example-f839f6c8"></a>
         
    <p>This is an example of an informative example.</p>
    
@@ -1468,8 +1518,7 @@ directive-value = ""
    <li>a priori insecure, <a href="#a-priori-insecure-origin">2</a>
    <li>a priori insecure origin, <a href="#a-priori-insecure-origin">2</a>
    <li>a priori insecure URL, <a href="#a-priori-insecure-url">2</a>
-   <li>blockable, <a href="#blockable-content">3.2</a>
-   <li>blockable content, <a href="#blockable-content">3.2</a>
+   <li>blockable, <a href="#blockable">3.2</a>
    <li>blockable request context, <a href="#blockable-request-context">3.2</a>
    <li>block-all-mixed-content, <a href="#block_all_mixed_content">4.2</a>
    <li>conformant server, <a href="#conformant-server">Unnumbered section</a>
@@ -1482,8 +1531,7 @@ directive-value = ""
    <li>insecure URL, <a href="#insecure-url">2</a>
    <li>mixed, <a href="#mixed-content">2</a>
    <li>mixed content, <a href="#mixed-content">2</a>
-   <li>optionally-blockable, <a href="#optionally_blockable-content">3.1</a>
-   <li>optionally-blockable content, <a href="#optionally_blockable-content">3.1</a>
+   <li>optionally-blockable, <a href="#optionally_blockable">3.1</a>
    <li>optionally-blockable request
     contexts, <a href="#optionally_blockable-request-contexts">3.1</a>
    <li>potentially secure, <a href="#potentially-secure-origin">2</a>
@@ -1508,7 +1556,7 @@ directive-value = ""
      <li><a href="https://fetch.spec.whatwg.org/#concept-response">response</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-response-tls-state">tls state</a>
     </ul>
-   <li><a data-link-type="biblio" href="#biblio-html5">[HTML5]</a> defines the following terms:
+   <li><a data-link-type="biblio" href="#biblio-html5">[html5]</a> defines the following terms:
     <ul>
      <li><a href="http://www.w3.org/TR/html5/forms.html#attr-fs-action">action</a>
      <li><a href="http://www.w3.org/TR/html5/embedded-content-0.html#the-audio-element">audio</a>
@@ -1540,8 +1588,6 @@ directive-value = ""
   <h2 class="no-num heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
   <dl>
-   <dt id="biblio-cab"><a class="self-link" href="#biblio-cab"></a>[CAB]
-   <dd><a href="https://cabforum.org/baseline-requirements-documents/">CA/Browser Forum Baseline Requirements v1.1.8</a>. URL: <a href="https://cabforum.org/baseline-requirements-documents/">https://cabforum.org/baseline-requirements-documents/</a>
    <dt id="biblio-csp2"><a class="self-link" href="#biblio-csp2"></a>[CSP2]
    <dd>Mike West; Adam Barth; Dan Veditz. <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">Content Security Policy Level 2</a>. CR. URL: <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">https://w3c.github.io/webappsec/specs/content-security-policy/</a>
    <dt id="biblio-fetch"><a class="self-link" href="#biblio-fetch"></a>[FETCH]
@@ -1550,18 +1596,22 @@ directive-value = ""
    <dd>Adam Barth. <a href="http://www.ietf.org/rfc/rfc6454.txt">The Web Origin Concept</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6454.txt">http://www.ietf.org/rfc/rfc6454.txt</a>
    <dt id="biblio-rfc6455"><a class="self-link" href="#biblio-rfc6455"></a>[RFC6455]
    <dd>Ian Fette; Alexey Melnikov. <a href="http://www.ietf.org/rfc/rfc6455.txt">The WebSocket Protocol</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6455.txt">http://www.ietf.org/rfc/rfc6455.txt</a>
+   <dt id="biblio-rfc6797"><a class="self-link" href="#biblio-rfc6797"></a>[RFC6797]
+   <dd>Jeff Hodges; Collin Jackson; Adam Barth. <a href="http://www.ietf.org/rfc/rfc6797.txt">HTTP Strict Transport Security (HSTS)</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6797.txt">http://www.ietf.org/rfc/rfc6797.txt</a>
    <dt id="biblio-html5"><a class="self-link" href="#biblio-html5"></a>[HTML5]
-   <dd>Robin Berjon; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
+   <dd>Ian Hickson; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
-   <dd>S. Bradner. <a href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="http://www.ietf.org/rfc/rfc2119.txt">http://www.ietf.org/rfc/rfc2119.txt</a>
+   <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
    <dt id="biblio-websockets"><a class="self-link" href="#biblio-websockets"></a>[WEBSOCKETS]
    <dd>Ian Hickson. <a href="http://www.w3.org/TR/websockets/">The WebSocket API</a>. 20 September 2012. CR. URL: <a href="http://www.w3.org/TR/websockets/">http://www.w3.org/TR/websockets/</a></dl>
   <h3 class="no-num heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
-   <dt id="biblio-rfc6797"><a class="self-link" href="#biblio-rfc6797"></a>[RFC6797]
-   <dd>Jeff Hodges; Collin Jackson; Adam Barth. <a href="http://www.ietf.org/rfc/rfc6797.txt">HTTP Strict Transport Security (HSTS)</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6797.txt">http://www.ietf.org/rfc/rfc6797.txt</a>
+   <dt id="biblio-cab"><a class="self-link" href="#biblio-cab"></a>[CAB]
+   <dd><a href="https://cabforum.org/baseline-requirements-documents/">CA/Browser Forum Baseline Requirements v1.1.8</a>. URL: <a href="https://cabforum.org/baseline-requirements-documents/">https://cabforum.org/baseline-requirements-documents/</a>
    <dt id="biblio-rfc6919"><a class="self-link" href="#biblio-rfc6919"></a>[RFC6919]
-   <dd>R. Barnes; S. Kent; E. Rescorla. <a href="http://www.ietf.org/rfc/rfc6919.txt">Further Key Words for Use in RFCs to Indicate Requirement Levels</a>. 1 April 2013. Experimental. URL: <a href="http://www.ietf.org/rfc/rfc6919.txt">http://www.ietf.org/rfc/rfc6919.txt</a>
+   <dd>R. Barnes; S. Kent; E. Rescorla. <a href="https://tools.ietf.org/html/rfc6919">Further Key Words for Use in RFCs to Indicate Requirement Levels</a>. 1 April 2013. Experimental. URL: <a href="https://tools.ietf.org/html/rfc6919">https://tools.ietf.org/html/rfc6919</a>
    <dt id="biblio-wsc-ui"><a class="self-link" href="#biblio-wsc-ui"></a>[WSC-UI]
-   <dd>Thomas Roessler; Anil Saldhana. <a href="http://www.w3.org/TR/wsc-ui/">Web Security Context: User Interface Guidelines</a>. 12 August 2010. REC. URL: <a href="http://www.w3.org/TR/wsc-ui/">http://www.w3.org/TR/wsc-ui/</a></dl></body>
+   <dd>Thomas Roessler; Anil Saldhana. <a href="http://www.w3.org/TR/wsc-ui/">Web Security Context: User Interface Guidelines</a>. 12 August 2010. REC. URL: <a href="http://www.w3.org/TR/wsc-ui/">http://www.w3.org/TR/wsc-ui/</a>
+   <dt id="biblio-xml"><a class="self-link" href="#biblio-xml"></a>[XML]
+   <dd>Tim Bray; et al. <a href="http://www.w3.org/TR/xml">Extensible Markup Language (XML) 1.0 (Fifth Edition)</a>. 26 November 2008. REC. URL: <a href="http://www.w3.org/TR/xml">http://www.w3.org/TR/xml</a></dl></body>
 </html>
