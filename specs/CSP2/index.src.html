@@ -276,10 +276,6 @@ type: method
           completed, so noting the change here seems reasonable.
         </li>
         <li>
-          Redirects are blocked by default, and explicitly allowed with a new
-          <code>unsafe-redirect</code> expression.
-        </li>
-        <li>
           A <a>protected resource</a>'s ability to load Workers is now controlled
           via <a><code>child-src</code></a> rather than
           <a><code>script-src</code></a>.
@@ -702,18 +698,16 @@ type: method
     </pre>
 
     If the user agent is <a>monitoring</a> or <a>enforcing</a> a <a>policy</a>
-    that includes directives whose value is a <a>source list</a>, and whose
-    source list contains the <code>'unsafe-redirect'</code> source expression,
-    then the user agent MUST send a header field named <code>CSP</code>
-    along with requests for resources whose <a>origin</a> <em>does not</em>
-    match the <a>protected resource</a>'s origin. The value of this header MUST
-    be <code>active</code>.
+    that includes directives whose value is a <a>source list</a>, then the user
+    agent MUST send a header field named <code>CSP</code> along with requests
+    for resources whose <a>origin</a> <em>does not</em> match the <a>protected
+    resource</a>'s origin. The value of this header MUST be <code>active</code>.
 
     The user agent MAY choose to send this header only if the request is for a
     resource type which the active policy would effect. That is, given a policy
-    of <code>img-src example.com 'unsafe-redirect'</code>, the user agent
-    would send <code>CSP: active</code> along with requests for images, but
-    might choose not to send the header with requests for script.
+    of <code>img-src example.com</code>, the user agent would send <code>CSP:
+    active</code> along with requests for images, but might choose not to send
+    the header with requests for script.
 
     Note: The central reason for including this header is that it hints to a
     server that information about redirects might be leaked as a side-effect
@@ -984,7 +978,7 @@ type: method
       <dfn>source-expression</dfn> = <a>scheme-source</a> / <a>host-source</a> / <a>keyword-source</a> / <a>nonce-source</a> / <a>hash-source</a>
       <dfn>scheme-source</dfn>     = <a>scheme-part</a> ":"
       <dfn>host-source</dfn>       = [ <a>scheme-part</a> "://" ] <a>host-part</a> [ <a>port-part</a> ] [ <a>path-part</a> ]
-      <dfn>keyword-source</dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'" / "'unsafe-redirect'"
+      <dfn>keyword-source</dfn>    = "'self'" / "'unsafe-inline'" / "'unsafe-eval'"
       <dfn>base64-value</dfn>      = 1*( ALPHA / DIGIT / "+" / "/" )*2( "=" )
       <dfn>nonce-value</dfn>       = <a>base64-value</a>
       <dfn>hash-value</dfn>        = <a>base64-value</a>
@@ -1293,37 +1287,10 @@ type: method
       these URLs as existing in distinct origins.
 
       A URL <var>url</var> is said to <dfn>match a source list</dfn> for
-      <var>protected resource</var> if the following conditions are met:
-
-      <ol>
-        <li>
-          At least one source expression in the set of source expressions
-          obtained by <a lt="parse a source list">parsing the source
-          list</a> <a lt="match a source expression">matches <var>url</var>
-          for <var>protected resource</var></a>.
-        </li>
-        <li>
-          At least one of the following is true:
-
-          <ol>
-            <li>
-              <var>url</var> is <strong>not</strong> the result of a redirect.
-
-              Note: This is a bit hand-wavey; in the future, CSP will cleanly
-              integrate with [[FETCH]], which will allow us to clarify the
-              details.
-            </li>
-            <li>
-              The set of source expressions obtained by
-              <a lt="parse a source list">parsing the source list</a>
-              contains the source expression <code>'unsafe-redirect'</code>.
-            </li>
-            <li>
-              The source list is the U+002A ASTERISK character (<code>*</code>).
-            </li>
-          </ol>
-        </li>
-      </ol>
+      <var>protected resource</var> if at least one source expression in the set
+      of source expressions obtained by <a lt="parse a source list">parsing the
+      source list</a> <a lt="match a source expression">matches <var>url</var>
+      for <var>protected resource</var></a>.
 
       Note: No URLs match an empty set of source expressions, such as the set
       obtained by parsing the source list <code>'none'</code>.
@@ -2010,12 +1977,6 @@ type: method
   <code>'unsafe-inline'</code> or <code>data:</code> as valid sources in
   their policies. Both enable XSS attacks by allowing code to be included
   directly in the document itself; they are best avoided completely.
-
-  Redirects are another area of potential concern. Authors SHOULD NOT include
-  <code>'unsafe-redirect'</code> as valid sources in their policies. It makes
-  it more difficult to reason about the complete set of resources that a policy
-  allows, especially given the path behavior outlined in the
-  <a section href="#source-list-paths-and-redirects"></a> section.
 
 <!--
 ████████     ███     ██████  ████████         ██     ██ ████████  ████
