@@ -50,7 +50,7 @@ This example can be communicated to a user agent by adding the hash to a
 
 {:.example}
 
-Scripts, of course, are not the only resource type which would benefit
+Scripts, of course, are not the only response type which would benefit
 from integrity validation. The scheme specified here also applies to `link`
 and future versions of the specification are likely to expand this coverage.
 
@@ -68,7 +68,7 @@ and future versions of the specification are likely to expand this coverage.
     particular URL.
 
 2.  The verification mechanism should have error-reporting functionality which
-    would inform the author that an invalid resource was downloaded.
+    would inform the author that an invalid response was received.
 
 </section><!-- /Introduction::Goals -->
 
@@ -185,12 +185,12 @@ and <code><dfn>VCHAR</dfn></code> (printing characters).
 The integrity verification mechanism specified here boils down to the
 process of generating a sufficiently strong cryptographic digest for a
 resource, and transmitting that digest to a user agent so that it may be
-used when fetching the resource.
+used to verify the response.
 
 <section>
 ### Integrity metadata
 
-To verify the integrity of a resource, a user agent requires <dfn>integrity
+To verify the integrity of a response, a user agent requires <dfn>integrity
 metadata</dfn>, which consists of the following pieces of information:
 
 * cryptographic hash function ("alg")
@@ -198,7 +198,7 @@ metadata</dfn>, which consists of the following pieces of information:
 * options ("opt")
 
 The hash function and digest MUST be provided in order to validate a
-resource's integrity.
+response's integrity.
 
 <div class="note">
 At the moment, no options are defined. However, future versions of
@@ -237,7 +237,7 @@ result of the following command line:
 
 Conformant user agents MUST support the [SHA-256][sha2], [SHA-384][sha2]
 and [SHA-512][sha2] cryptographic hash functions for use as part of a
-resource's [integrity metadata][], and MAY support additional hash functions.
+response's [integrity metadata][], and MAY support additional hash functions.
 
 <section>
 #### Agility
@@ -258,7 +258,7 @@ Authors may choose to specify both, for example:
        crossorigin="anonymous"></script>
 
 In this case, the user agent will choose the strongest hash function in the
-list, and use that metadata to validate the resource (as described below in
+list, and use that metadata to validate the response (as described below in
 the "[parse metadata][parse]" and "[get the strongest metadata from
 set][get-the-strongest]" algorithms).
 
@@ -269,7 +269,7 @@ function.
 
 To allow authors to switch to stronger hash functions without being held back by older
 user agents, validation using unsupported hash functions acts like no integrity value 
-was provided (see the "[Does resource match metadataList][match]" algorithm below). 
+was provided (see the "[Does response match metadataList][match]" algorithm below). 
 Authors  are encouraged to use strong hash functions, and to begin migrating to 
 stronger hash functions as they become available.
 </section><!-- /Framework::Cryptographic hash functions::Agility -->
@@ -297,10 +297,10 @@ only to simplify the algorithm description.
 </section><!-- /Framework::Cryptographic hash functions -->
 
 <section>
-### Resource verification algorithms
+### Response verification algorithms
 
 <section>
-#### Apply <var>algorithm</var> to <var>resource</var>
+#### Apply <var>algorithm</var> to <var>response</var>
 
 1.  Let <var>result</var> be the result of [applying <var>algorithm</var>][apply-algorithm]
     to the [representation data][representationdata] without any content-codings
@@ -311,14 +311,14 @@ only to simplify the algorithm description.
     <var>result</var>.
 3.  Return <var>encodedResult</var>.
 
-[apply-algorithm]: #apply-algorithm-to-resource
+[apply-algorithm]: #apply-algorithm-to-response
 </section><!-- Algorithms::apply -->
 <section>
-#### Is <var>resource</var> eligible for integrity validation
-[eligible]: #is-resource-eligible-for-integrity-validation
+#### Is <var>response</var> eligible for integrity validation
+[eligible]: #is-response-eligible-for-integrity-validation
 
 In order to mitigate an attacker's ability to read data cross-origin by
-brute-forcing values via integrity checks, resources are only eligible for such
+brute-forcing values via integrity checks, responses are only eligible for such
 checks if they are same-origin or are the result of explicit access granted to
 the loading origin via CORS. [[!CORS]]
 
@@ -353,8 +353,8 @@ The following algorithm details these restrictions:
     <var>resource</var>'s origin, return `true`.
 4.  Return `false`.
 
-Step 3 returns `true` if the resource was a CORS-enabled request. If the
-resource failed the CORS checks, it won't be available to us for integrity
+Step 3 returns `true` if the fetch was a CORS-enabled request. If the
+fetch failed the CORS checks, it won't be available to us for integrity
 checking because it won't have loaded successfully.
 {:.note}
 
@@ -407,12 +407,12 @@ the user agent.
 [getPrioritizedHashFunction]: #dfn-getprioritizedhashfunction-a-b
 </section><!-- /Algorithms::get the strongest metadata -->
 <section>
-#### Does <var>resource</var> match <var>metadataList</var>?
+#### Does <var>response</var> match <var>metadataList</var>?
 
 1.  Let <var>parsedMetadata</var> be the result of
     [parsing <var>metadataList</var>][parse].
 2.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
-3.  If [<var>resource</var> is not eligible for integrity
+3.  If [<var>response</var> is not eligible for integrity
     validation][eligible], return `true`.
 4.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
@@ -422,7 +422,7 @@ the user agent.
     2.  Let <var>expectedValue</var> be the <var>val</var> component of
         <var>item</var>.
     3.  Let <var>actualValue</var> be the result of [applying
-        <var>algorithm</var> to <var>resource</var>][apply-algorithm].
+        <var>algorithm</var> to <var>response</var>][apply-algorithm].
     4.  If <var>actualValue</var> is a case-sensitive match for
         <var>expectedValue</var>, return `true`.
 6.  Return `false`.
@@ -449,9 +449,9 @@ correctly, even if the HTTPS version of a resource differs from the HTTP
 version.
 {:.note}
 
-This algorithm returns `true` if the resource is not eligible for integrity
+This algorithm returns `true` if the response is not eligible for integrity
 validation, on the general principle that client errors (in this case, an
-attempt to validate the integrity of a resource that is not accessible via
+attempt to validate the integrity of a response that is not accessible via
 same-origin or CORS) should fail open since they are not the result of an attack
 in the threat model of this specification. However, user agents SHOULD report
 a warning message about this failure in the developer console.
@@ -459,7 +459,7 @@ a warning message about this failure in the developer console.
 
 [parse]: #parse-metadata.x
 [get-the-strongest]: #get-the-strongest-metadata-from-set.x
-[match]: #does-resource-match-metadatalist
+[match]: #does-response-match-metadatalist
 </section><!-- Algorithms::Match -->
 </section><!-- Algorithms -->
 
@@ -600,7 +600,7 @@ attribute DOMString integrity
 <section>
 #### Handling integrity violations
 
-The user agent MUST refuse to render or execute resources that fail an
+The user agent MUST refuse to render or execute responses that fail an
 integrity check <em>and</em> MUST return a network error, as described in
 [Modifications to Fetch][].
 
@@ -659,10 +659,10 @@ Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
 ## Proxies
 
 Optimizing proxies and other intermediate servers which modify the
-content of fetched resources MUST ensure that the digest associated
-with those resources stays in sync with the new content. One option
+response MUST ensure that the digest associated
+with those responses stays in sync with the new content. One option
 is to ensure that the [integrity metadata][] associated with
-resources is updated along with the resource itself. Another
+resources is updated. Another
 would be simply to deliver only the canonical version of resources
 for which a page author has requested integrity verification. To
 support this latter option, user agents MUST send a
@@ -686,7 +686,7 @@ Fetch][]" section).
 such as an only protects an origin against a compromise of the
 server where an external resources is hosted. Network attackers can alter the
 digest in-flight (or remove it entirely, or do absolutely anything else to the
-document), just as they could alter the resource the hash is meant to validate.
+document), just as they could alter the response the hash is meant to validate.
 Thus, authors SHOULD deliver integrity metadata only to a [secure
 document][]. See also [securing the web][].
 
@@ -718,7 +718,7 @@ insecure.
 Attackers can determine whether some cross-origin resource has certain
 content by attempting to load it with a known digest, and watching for
 load failures. If the load fails, the attacker can surmise that the
-resource didn't match the hash, and thereby gain some insight into its
+response didn't match the hash, and thereby gain some insight into its
 contents. This might reveal, for example, whether or not a user is
 logged into a particular service.
 
