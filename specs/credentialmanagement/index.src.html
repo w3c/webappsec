@@ -485,7 +485,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   This document defines a generic and extensible {{Credential}} interface from
   which all <a>credentials</a> will inherit, and a slightly less-generic
   {{LocallyStoredCredential}}, which defines the specific attributes shared
-  by any <a>credential</a> persisted in user agent's <a>credential store</a>.
+  by any <a>Credential</a> persisted in user agent's <a>credential store</a>.
 
   {{PasswordCredential}} and {{FederatedCredential}} both inherit from
   {{LocallyStoredCredential}}, and, as you might expect, are the concrete types
@@ -605,6 +605,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       ISSUE(w3c/webappsec#288): Probably not something for v1, but an
       interesting option would be to provide a hash function here that the user
       agent would apply to the password before sending it over the wire.
+
+      <pre class="argumentdef" for="PasswordCredential/send(url)">
+        url: The same-origin endpoint to which the Credential will be POSTed.
+      </pre>
     </dd>
     <dt>{{[[type]]}}</dt>
     <dd>
@@ -724,10 +728,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     partial interface Navigator {
       readonly attribute CredentialContainer credentials;
     };
-
+  </pre>
+  <pre class="idl">
     interface CredentialContainer {
-      Promise&lt;Credential?&gt; get(optional CredentialRequestOptions options);
-      Promise&lt;Credential&gt; store(optional Credential credential);
+      Promise&lt;Credential?&gt; get(CredentialRequestOptions options);
+      Promise&lt;Credential&gt; store(Credential credential);
       Promise&lt;void&gt; requireUserMediation();
     };
   </pre>
@@ -749,6 +754,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       credential in response to a single call, we will likely introduce a
       <code>getAll()</code> method which would return
       <code>Promise&lt;sequence&lt;Credential&gt;&gt;</code>.
+
+      <pre class="argumentdef" for="CredentialContainer/get(options)">
+        options: The set of properties governing the scope of the request.
+      </pre>
     </dd>
     <dt><dfn method>store()</dfn></dt>
     <dd>
@@ -759,6 +768,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       When {{store()}} is called, the user agent MUST execute the algorithm
       defined in [[#store-credential]] with <var>credential</var> as an
       argument.
+
+      <pre class="argumentdef" for="CredentialContainer/store(credential)">
+        credential: The credential to be stored.
+      </pre>
     </dd>
     <dt><dfn method>requireUserMediation()</dfn></dt>
     <dd>
