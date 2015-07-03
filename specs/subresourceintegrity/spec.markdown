@@ -660,6 +660,13 @@ resources is updated along with the resource itself. Another
 would be simply to deliver only the canonical version of resources
 for which a page author has requested integrity verification.
 
+To help inform intermediate servers, those serving the resources SHOULD
+send along with the resource a [`Cache-Control`][cachecontrol] header
+with a value of [`no-transform`][notransform].
+
+[cachecontrol]: http://tools.ietf.org/html/rfc7234#section-5.2
+[notransform]: http://tools.ietf.org/html/rfc7234#section-5.2.1.6
+
 </section><!-- /Implementation -->
 
 <section>
