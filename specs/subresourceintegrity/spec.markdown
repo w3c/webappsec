@@ -382,7 +382,6 @@ the user agent.
     <var>result</var>.
 
 [split-on-spaces]: http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces
-[integrity metadata]: #dfn-integrity-metadata
 </section><!-- Algorithms::parse -->
 <section>
 #### Get the strongest metadata from <var>set</var>.
