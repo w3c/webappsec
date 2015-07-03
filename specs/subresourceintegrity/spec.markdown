@@ -605,6 +605,7 @@ from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
 failed resource with a different one.
 {:.note}
 
+[Modifications to Fetch]: #modifications-to-fetch
 </section>
 
 <section>
