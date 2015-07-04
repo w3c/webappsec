@@ -237,7 +237,7 @@ result of the following command line:
 
 Conformant user agents MUST support the [SHA-256][sha2], [SHA-384][sha2]
 and [SHA-512][sha2] cryptographic hash functions for use as part of a
-response's [integrity metadata][], and MAY support additional hash functions.
+request's [integrity metadata][], and MAY support additional hash functions.
 
 <section>
 #### Agility
