@@ -659,7 +659,7 @@ Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
 ## Proxies
 
 Optimizing proxies and other intermediate servers which modify the
-response MUST ensure that the digest associated
+responses MUST ensure that the digest associated
 with those responses stays in sync with the new content. One option
 is to ensure that the [integrity metadata][] associated with
 resources is updated. Another
