@@ -382,7 +382,6 @@ the user agent.
     <var>result</var>.
 
 [split-on-spaces]: http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces
-[integrity metadata]: #dfn-integrity-metadata
 </section><!-- Algorithms::parse -->
 <section>
 #### Get the strongest metadata from <var>set</var>.
@@ -487,13 +486,7 @@ to enable the rest of this specification's work [[!FETCH]]:
             the <var>request</var>, set <var>response</var> to a
             [network error][].
 
-3.  Perform the following steps before executing both the "[basic fetch][]" and
-    "[CORS fetch with preflight][]" algorithms:
-
-    1.  If <var>request</var>'s integrity metadata is a non-empty string,
-        include a `Cache-Control` header whose value is "no-transform".
-
-4. Add the following to the [Request class definition][fetch-request-api]:
+3. Add the following to the [Request class definition][fetch-request-api]:
 
     1. Add the following attribute to the <code>Request</code> class after the
        <code>redirect</code> attribute as follows:
@@ -611,6 +604,7 @@ from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
 failed resource with a different one.
 {:.note}
 
+[Modifications to Fetch]: #modifications-to-fetch
 </section>
 
 <section>
@@ -664,16 +658,15 @@ with those responses stays in sync with the new content. One option
 is to ensure that the [integrity metadata][] associated with
 resources is updated. Another
 would be simply to deliver only the canonical version of resources
-for which a page author has requested integrity verification. To
-support this latter option, user agents MUST send a
-[`Cache-Control`][cachecontrol] header with a value of
-[`no-transform`][notransform] when requesting a resource with
-associated integrity metadata (see item 3 in the "[Modifications to
-Fetch][]" section).
+for which a page author has requested integrity verification.
+
+To help inform intermediate servers, those serving the resources SHOULD
+send along with the resource a [`Cache-Control`][cachecontrol] header
+with a value of [`no-transform`][notransform].
 
 [cachecontrol]: http://tools.ietf.org/html/rfc7234#section-5.2
 [notransform]: http://tools.ietf.org/html/rfc7234#section-5.2.1.6
-[Modifications to Fetch]: #modifications-to-fetch
+
 </section><!-- /Implementation -->
 
 <section>
