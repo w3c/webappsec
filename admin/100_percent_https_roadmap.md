@@ -32,3 +32,21 @@ From the Biba and Bell-LaPadula formal integrity models.
 
 Complications: Each origin is the authority over its own information flows. User agents try to enforce the contracts an origin requests. Origins can read/write insecurely, but user agents also try to protect users from some classes of incorrect or dangerous actions.
 
+No Read Up
+---------------
+* Insecure content cannot read secure content.
+* Complicated in the context of the Web.
+ - Same Origin Policy puts http & https in different origins for application instances, so http application cannot read from https application.
+ - But an http resource can request and read or transclude resources with an https scheme.
+ - 
+
+No Read Down / No Write Up
+---------------------------
+* A resource should not read information at a lower integrity level than itself.
+ - Mixed content blocking
+* A resource should not write information to a higher integrity level than itself.
+ - Same Origin Policy enforces this for application contexts, but…
+ - http resources can GET/POST to https resources
+ - Cookies (even w/secure flag) can be written by http and are sent to https
+
+
