@@ -12,6 +12,8 @@ Lunch is provided for registered attendees, courtesy of our host.
 
 July 13
 =======
+Some starting notes to guide the discussion: PR's and updates welcome:
+https://github.com/w3c/webappsec/blob/master/admin/100_percent_https_roadmap.md
 
 All times are UTC+2
 
