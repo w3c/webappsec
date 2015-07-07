@@ -12,9 +12,6 @@ Lunch is provided for registered attendees, courtesy of our host.
 
 July 13
 =======
-Some starting notes to guide the discussion: PR's and updates welcome:
-https://github.com/w3c/webappsec/blob/master/admin/100_percent_https_roadmap.md
-
 All times are UTC+2
 
 10:00 - start and introductions
@@ -37,6 +34,9 @@ July 14
 Guests will be joining us from the TAG.
 Overall topic will be understanding plans to move the entire web to all-secure transports,
 how spec work in WebAppSec can assist, and what gaps exist.
+
+Some starting notes to guide the discussion: PR's and updates welcome:
+https://github.com/w3c/webappsec/blob/master/admin/100_percent_https_roadmap.md
 
 10:00 - start
 
