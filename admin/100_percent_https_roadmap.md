@@ -80,12 +80,46 @@ Upgrade-related work in the IETF
 * TRYTLS
  - New DNS record type w/similar semantics to upgrade-insecure-requests: _http.hostname IN TRYTLS sec-port
  - https://tools.ietf.org/html/draft-hoffman-trytls-02
- - http://tools.ietf.org/html/draft-hoffman-server-has-tls-05
+ - See also: http://tools.ietf.org/html/draft-hoffman-server-has-tls-05
    - Abandoned but revivable w/o fallback language
 
 * HTTP/2 AltSvc
  - https://tools.ietf.org/html/draft-ietf-httpbis-http2-encryption-02
  - DANE TLSRtype?
+
+Upgrading – What does it mean for the web security model?
+----------------
+* How to handle tranquility?
+* Request to load HTML is upgraded successfully to “full TLS”.   Some earlier resource instance already exists in the browser which was not upgraded.
+* Or a later request fails to upgrade.
+* What origin-labeled local data does it see? Which HTML messages?
+
+What new primitives do we need?
+--------------
+* A way for http, upgrade-eligible resources to opt-out of a tranquility contract?
+ - Optimistically secure, but no UX guarantees
+ - Not eligible for participation in information flows from a tranquil HTTPS resource
+ - HTTP header on a per-resource basis, or a TLS flag on a per-origin basis?
+ 
+New SOP and Data Flow Rules?
+--------------
+* (http) and (http + secure upgrade + tranquil: false) are same origin
+* Neither are same origin with (http + secure upgrade)
+* No Write Down contracts of https apps that want to accept upgradable http URLs requires that [(http), (http + secure upgrade + tranquil: false)] be hard-blocked for navigation, post message, form submission & mixed content
+ - Though tranquil: false might be treated as optionally blockable content is today (e.g. img)
+* Browsers need to indicate understanding these contracts before applications will attempt them.
+ - DOM feature detection is too late, need a request header; and responses may vary
+
+What about localStorage, indexedDB?
+------------
+* HSTS directive to one-time migrate http-origin client-side data to https-origin?
+* Other alternative is to RT through server. :(
+
+Other Issues
+----------
+* How do we protect anonymous expression on the web in a world of 100% authenticated content? 
+ - Are Let’s Encrypt and other free DV issuance enough?
+
 
 
 
