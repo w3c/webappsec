@@ -6,7 +6,9 @@ Logistics
 Mozilla has generously offered to host us at their Berlin office:
 https://wiki.mozilla.org/Berlin_Office
 
-We'll plan 90 minutes each day at noon local time to find food in the neighborhood + check your email.
+See dial-in and irc details below.
+
+We'll plan 90 minutes each day at noon local time to find food in the neighborhood.
 
 July 13
 =======
@@ -42,3 +44,38 @@ how spec work in WebAppSec can assist, and what gaps exist.
 13:30 - 15:00 open session: how to get from today to "all-secure", migration plans, tools, gaps to fill, including non-WebAppSec work: Let's Encrypt, http-layer upgrades, HSTS
 
 A few open problems to think about: What about "optimistic/opportunistic encryption"?  What does it mean for the web security model if we can transparently upgrade 'http' urls to full https-equivalance at runtime?  What would allow apps to be willing to use 'http' urls with that upgrade capability as-if 'https'?   How do we provide a migration path for data in localStorage or indexedDB for http origins to https?  How do we think about origin boundaries for transport-upgraded content?
+
+
+Remote Participation Details
+============================
+#webappsec on irc.w3.org:6665
+Meeting Number: 641 834 499
+Meeting Password: webappsec
+
+
+To join the online meeting (Now from mobile devices!)
+-------------------------------------------------------
+1. Go to
+https://mit.webex.com/mit/j.php?MTID=m12575b534e506abae4b7a9f445c0e53e
+2. If requested, enter your name and email address.
+3. If a password is required, enter the meeting password: webappsec
+4. Click "Join".
+
+To view in other time zones or languages, please click the link:
+https://mit.webex.com/mit/j.php?MTID=m3f8188061759c9d387834efb90e1335e
+
+
+To join the audio conference only
+-------------------------------------------------------
+To receive a call back, provide your phone number when you join the
+meeting, or call the number below and enter the access code.
+US Toll Number: +1-617-324-0000
+
+Access code:641 834 499
+Mobile Auto Dial:+1-617-324-0000,,,641834499#
+
+
+For assistance
+-------------------------------------------------------
+1. Go to https://mit.webex.com/mit/mc
+2. On the left navigation bar, click "Support".
