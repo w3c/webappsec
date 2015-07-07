@@ -8,7 +8,7 @@ https://wiki.mozilla.org/Berlin_Office
 
 See dial-in and irc details below.
 
-We'll plan 90 minutes each day at noon local time to find food in the neighborhood.
+Lunch is provided for registered attendees, courtesy of our host.
 
 July 13
 =======
