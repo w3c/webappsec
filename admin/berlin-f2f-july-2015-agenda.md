@@ -19,7 +19,7 @@ All times are UTC+2
 
 10:30 - 11:15 Mixed Content https://w3c.github.io/webappsec/specs/mixedcontent/
 
-11:15 - 12:00 Upgrade Insecure Requests https://w3c.github.io/webappsec/specs/upgrade/
+11:15 - 12:00 Upgrade Insecure Requests https://w3c.github.io/webappsec/specs/upgrade/ (also, let's visit the IETF proposal at: https://tools.ietf.org/html/draft-hoffman-trytls-02) 
 
 12:00 - 13:30 lunch
 
