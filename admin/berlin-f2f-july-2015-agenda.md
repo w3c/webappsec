@@ -25,6 +25,7 @@ All times are UTC+2
 
 15:00 - 17:00 teleconference with W3C systems staff on migrating w3.org to https (09:00 Boston time)
 
+Do we want to give any time to Subresource Integrity?
 
 July 14
 =======
@@ -40,4 +41,4 @@ how spec work in WebAppSec can assist, and what gaps exist.
 
 13:30 - 15:00 open session: how to get from today to "all-secure", migration plans, tools, gaps to fill, including non-WebAppSec work: Let's Encrypt, http-layer upgrades, HSTS
 
-A few open problems to think about: What about "optimistic/opportunistic encryption"?  What does it mean for the web security model if we can transparently upgrade 'http' urls to full https-equivalance at runtime?  What would allow apps to be willing to use 'http' urls with that upgrade capability as-if 'https'?   How do we provide a migration path for data in localStorage or indexedDB for http origins to https?  How do we think about origin boundaries for transport upgraded content?
+A few open problems to think about: What about "optimistic/opportunistic encryption"?  What does it mean for the web security model if we can transparently upgrade 'http' urls to full https-equivalance at runtime?  What would allow apps to be willing to use 'http' urls with that upgrade capability as-if 'https'?   How do we provide a migration path for data in localStorage or indexedDB for http origins to https?  How do we think about origin boundaries for transport-upgraded content?
