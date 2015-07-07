@@ -38,7 +38,6 @@ No Read Up
 * Complicated in the context of the Web.
  - Same Origin Policy puts http & https in different origins for application instances, so http application cannot read from https application.
  - But an http resource can request and read or transclude resources with an https scheme.
- - 
 
 No Read Down / No Write Up
 ---------------------------
@@ -48,5 +47,46 @@ No Read Down / No Write Up
  - Same Origin Policy enforces this for application contexts, but…
  - http resources can GET/POST to https resources
  - Cookies (even w/secure flag) can be written by http and are sent to https
+* Distinct invariants, but the web is very bad a data/code separation.
+* Even if we wanted to make an exception to Read Down (e.g. open data over http) it is impossible to guarantee that No Write Up isn’t also violated. 
+ - “optionally blockable” mixed content attempts this distinction, but XHR + JS is not strongly typed enough to allow read down without write up in an “open data” application
+
+No Write Down
+-------------
+ - Not enforced by today’s browsers unless you ask for it.
+ - If an application uses an https URL as the target of a write, it is expressing a no-write-down contract for the user agent to follow.
+ - These contracts are important to applications and will be a stumbling block making http URLs acceptable for “general use” through optimistic upgrade w/o guarantees.
+
+Tranquility
+-----------
+* An application does not change between secure/insecure while it is being accessed. 
+* Can’t “break the lock” with an insecure XHR after a secure page has loaded.
+* This will be an issue to solve for optimistic upgrades of applications addressed by http URLs.
+* Much of the complexity of the mixed content model comes from browsers demanding tranquility on behalf of the user from applications that do not self-enforce a tranquil contract.
+* Browsers consider the lock a guarantee that they are making to the user, or a promise they won’t let an origin break.
+ - Tranquility begins at conception: the moment you type “https” in the address bar or see it in a link.
+* There is no way in browsers today to use a secure transport but opt out of mandatory high-security tranquility.
+
+Upgrading
+---------
+* “Security properties of the Web shouldn’t depend on the s” – paraphrasing TBL 
+* http URLs should ideally remain stable identifiers even as we upgrade to secure transports everywhere
+* EKR has opined that Mozilla wants to be able to upgrade http URLs to full https equivalency, including checks for valid certificates
+
+Upgrade-related work in the IETF
+--------------------------------
+* Opportunistic Security
+ - https://tools.ietf.org/html/rfc7435 
+* TRYTLS
+ - New DNS record type w/similar semantics to upgrade-insecure-requests: _http.hostname IN TRYTLS sec-port
+ - https://tools.ietf.org/html/draft-hoffman-trytls-02
+ - http://tools.ietf.org/html/draft-hoffman-server-has-tls-05
+   - Abandoned but revivable w/o fallback language
+
+* HTTP/2 AltSvc
+ - https://tools.ietf.org/html/draft-ietf-httpbis-http2-encryption-02
+ - DANE TLSRtype?
+
+
 
 
