@@ -26,6 +26,7 @@ All times are UTC+2
 13:30 - 15:00 Powerful Features https://w3c.github.io/webappsec/specs/powerfulfeatures/
 
 15:00 - 17:00 teleconference with W3C systems staff on migrating w3.org to https (09:00 Boston time)
+ Systeam has a test mirror set-up at https://www-test.w3.org/. While we haven't rewritten links, you can substitute www-test for www in an existing URL to see what a page looks like if only the scheme is changed (e.g. https://www-test.w3.org/TR/mixed-content/ )
 
 Do we want to give any time to Subresource Integrity?
 
