@@ -67,7 +67,23 @@ Tranquility
  - Tranquility begins at conception: the moment you type “https” in the address bar or see it in a link.
 * There is no way in browsers today to use a secure transport but opt out of mandatory high-security tranquility.
 
-Upgrading
+HSTS and Mixed Content
+------------
+* Currently Mixed Content blocks happen before HSTS upgrades
+* Good to identify broken links, bad to make HSTS the most useful possible migration tool
+
+Scheme Upgrading
+------------
+* Upgrade Insecure Resources Draft
+ - Try to modify the scheme of all subresource fetches from http->https
+ - And same-origin navigation
+* Not a complete solution
+ - CSP for form action can help some...
+ - postMessage (COWL CSP directive may help)
+ - non-same-origin navigations can be risky with GET data
+ - what to do with local data?
+
+Transparent (w/http scheme intact) Upgrading
 ---------
 * “Security properties of the Web shouldn’t depend on the s” – paraphrasing TBL 
 * http URLs should ideally remain stable identifiers even as we upgrade to secure transports everywhere
@@ -87,7 +103,7 @@ Upgrade-related work in the IETF
  - https://tools.ietf.org/html/draft-ietf-httpbis-http2-encryption-02
  - DANE TLSRtype?
 
-Upgrading – What does it mean for the web security model?
+Transparent Upgrading – What does it mean for the web security model?
 ----------------
 * How to handle tranquility?
 * Request to load HTML is upgraded successfully to “full TLS”.   Some earlier resource instance already exists in the browser which was not upgraded.
