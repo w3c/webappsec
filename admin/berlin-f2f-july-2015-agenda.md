@@ -52,21 +52,20 @@ A few open problems to think about: What about "optimistic/opportunistic encrypt
 Remote Participation Details
 ============================
 #webappsec on irc.w3.org:6665
-Meeting Number: 641 834 499
+Meeting Number: 644 611 011
 Meeting Password: webappsec
 
 
 To join the online meeting (Now from mobile devices!)
 -------------------------------------------------------
 1. Go to
-https://mit.webex.com/mit/j.php?MTID=m12575b534e506abae4b7a9f445c0e53e
+https://mit.webex.com/mit/j.php?MTID=m4f38efcb32d0e25ff09e58b6a1040702
 2. If requested, enter your name and email address.
 3. If a password is required, enter the meeting password: webappsec
 4. Click "Join".
 
 To view in other time zones or languages, please click the link:
-https://mit.webex.com/mit/j.php?MTID=m3f8188061759c9d387834efb90e1335e
-
+https://mit.webex.com/mit/j.php?MTID=m6ea313ca2c810e419a057416e0ce3567
 
 To join the audio conference only
 -------------------------------------------------------
@@ -74,8 +73,8 @@ To receive a call back, provide your phone number when you join the
 meeting, or call the number below and enter the access code.
 US Toll Number: +1-617-324-0000
 
-Access code:641 834 499
-Mobile Auto Dial:+1-617-324-0000,,,641834499#
+Access code:644 611 011
+Mobile Auto Dial:+1-617-324-0000,,,644611011#
 
 
 For assistance
