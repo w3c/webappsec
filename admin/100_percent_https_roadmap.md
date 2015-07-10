@@ -71,6 +71,7 @@ HSTS and Mixed Content
 ------------
 * Currently Mixed Content blocks happen before HSTS upgrades
 * Good to identify broken links, bad to make HSTS the most useful possible migration tool
+* If mixed content is going to block an HTTP resource, should it try to upgrade it to HTTPS automatically?
 
 Scheme Upgrading
 ------------
