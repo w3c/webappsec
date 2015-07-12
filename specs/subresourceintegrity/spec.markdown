@@ -725,9 +725,6 @@ An attacker can precompute hashes for the response with a variety of
 common usernames, and specify those hashes while repeatedly attempting
 to load the document.
 
-User agents SHOULD mitigate the risk by refusing to fire `error` events
-on elements which loaded non-CORS cross-origin resources, but
-some side-channels will likely be difficult to avoid.
 </section><!-- /Security::cross-origin -->
 
 </section><!-- /Security -->
