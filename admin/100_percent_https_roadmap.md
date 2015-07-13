@@ -133,6 +133,7 @@ What about localStorage, indexedDB?
 
 Other Issues
 ----------
+* DTDs and Namespaces in XML
 * How do we protect anonymous expression on the web in a world of 100% authenticated content? 
  - Are Let’s Encrypt and other free DV issuance enough?
 
