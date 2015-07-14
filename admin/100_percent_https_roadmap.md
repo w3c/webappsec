@@ -57,6 +57,7 @@ No Read Down / No Write Up
 * Distinct invariants, but the web is very bad a data/code separation.
 * Even if we wanted to make an exception to Read Down (e.g. open data over http) it is impossible to guarantee that No Write Up isn’t also violated. 
  - “optionally blockable” mixed content attempts this distinction, but XHR + JS is not strongly typed enough to allow read down without write up in an “open data” application
+* There is also metadata and other information leakage possible in a secure->insecure read operation
 
 No Write Down
 -------------
