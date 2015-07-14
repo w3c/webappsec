@@ -332,8 +332,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
         <pre>
             server {
-              if ($http_https = "1") {
-                add_header Vary HTTPS;
+              if ($http_upgrade_insecure_requests = "1") {
+                add_header Vary Upgrade-Insecure-Requests;
                 return 307 https://$host$request_uri;
               }
             }
@@ -439,7 +439,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 <section>
   <h2 id="key-concepts">Key Concepts and Terminology</h2>
 
-  : <dfn export>upgrade</dfn>
+  : <dfn export lt="upgrade a request">upgrade</dfn>
   :: A {{Request}} is said to be <strong>upgraded</strong> if it is rewritten
      to contain a URL with a {{URL/scheme}} of <code>https</code> or
      <code>wss</code>.
@@ -449,8 +449,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <a>resource representation</a> which will be returned does not require the
       <code><a>upgrade-insecure-requests</a></code> mechanism described in this
       document to avoid breakage, or if the {{Request}}'s
-      {{Request/header-list}} contains an <code><a>HTTPS</a></code> header field
-      with a value of <code>1</code>.
+      {{Request/header-list}} contains an
+      <a><code>Upgrade-Insecure-Requests</code> header field</a> with a value of
+      <code>1</code>.
 
   :  <dfn export local-lt="HSTS-safe">HSTS-safe origin</dfn>
   ::  An <a>origin</a> is said to be <strong>HSTS-safe</strong> if no
@@ -607,14 +608,15 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
  
   Rather than relying on user-agent sniffing to make this decision, user agents
   can advertise their upgrade capability when making navigational requests by
-  including an <code><a>HTTPS</a></code> HTTP request header as described in
-  [[#preference]].
+  including an <a><code>Upgrade-Insecure-Requests</code> header field</a> as
+  described in [[#preference]].
 
   <h4 id="preference">
-    The <code>HTTPS</code> HTTP Request Header Field
+    The <code>Upgrade-Insecure-Requests</code> HTTP Request Header Field
   </h4>
 
-  The <dfn export local-lt="HTTPS"><code>HTTPS</code> HTTP request header
+  The <dfn export local-lt="Upgrade-Insecure-Requests header field">
+  <code>Upgrade-Insecure-Requests</code> HTTP request header
   field</dfn> sends a signal to the server expressing the client's preference
   for an encrypted and authenticated response, and that it can successfully
   handle the <code><a>upgrade-insecure-requests</a></code> directive in order
@@ -623,13 +625,13 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   This preference is represented by the following ANBF:
 
   <pre>
-    "HTTPS:" *<a>WSP</a> "1" *<a>WSP</a>
+    "Upgrade-Insecure-Requests:" *<a>WSP</a> "1" *<a>WSP</a>
   </pre>
 
-  Note: Though the <code>HTTPS</code> header expresses a preference, sending
-  it via the existing <code><a>Prefer</a></code> header is problematic, as we
-  expect the response from the server to use it as part of the cache key.
-  <code>Vary: Prefer</code> is too broad, as discussed in
+  Note: Though the <code>Upgrade-Insecure-Requests</code> header expresses a
+  preference, sending it via the existing <code><a>Prefer</a></code> header is
+  problematic, as we expect the response from the server to use it as part of
+  the cache key. <code>Vary: Prefer</code> is too broad, as discussed in
   <a href="https://github.com/w3c/webappsec/issues/216">w3/webappsec#216</a>.
 
   User agent conformance details are described in step #1 of the the
@@ -638,34 +640,36 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <ol>
     <li>
-      User agents MUST send an <code><a>HTTPS</a></code> header along with
-      {{Request}}s for <a><i lang="la">a priori</i> insecure URLs</a>.
+      User agents MUST send an <a><code>Upgrade-Insecure-Requests</code> header
+      field</a> along with {{Request}}s for <a><i lang="la">a priori</i>
+      insecure URLs</a>.
 
       Note: Servers can use this signal to upgrade HTTP requests to HTTPS for
       pages that require <code><a>upgrade-insecure-requests</a></code> support.
     </li>
     <li>
-      User agents MUST send an <code><a>HTTPS</a></code> header along with
-      {{Request}}s for <a>potentially secure URLs</a> whose {{Request/url}}'s
-      {{URL/host}} is <em>not</em> a <a>preloadable HSTS host</a>.
+      User agents MUST send an <a><code>Upgrade-Insecure-Requests</code> header
+      field</a> along with {{Request}}s for <a>potentially secure URLs</a> whose
+      {{Request/url}}'s {{URL/host}} is <em>not</em> a <a>preloadable HSTS host</a>.
 
       Note: Servers can use the absence of this signal to downgrade HTTPS
       requests to HTTP for pages that require
       <code><a>upgrade-insecure-requests</a></code> support.
     </li>
     <li>
-      User agents SHOULD periodically send an <code><a>HTTPS</a></code> header
-      along with {{Request}}s for <a>potentially secure URLs</a> whose
-      {{Request/url}}'s {{URL/host}} <em>is</em> a <a>preloadable HSTS host</a>.
-      For example, user agents could send an <code><a>HTTPS</a></code> header
-      only when the asserted <code>max-age</code> is a few days from expiration,
-      or only for a small percentage of requests.
+      User agents SHOULD periodically send an
+      <a><code>Upgrade-Insecure-Requests</code> header field</a> along with
+      {{Request}}s for <a>potentially secure URLs</a> whose {{Request/url}}'s
+      {{URL/host}} <em>is</em> a <a>preloadable HSTS host</a>. For example, user
+      agents could send an <a><code>Upgrade-Insecure-Requests</code> header
+      field</a> only when the asserted <code>max-age</code> is a few days from
+      expiration, or only for a small percentage of requests.
 
       Note: <a>preloadable HSTS hosts</a> have asserted that they are
       <a>HSTS-safe</a>, and therefore don't need a downgrade signal. They will
       need to refresh HSTS status before the asserted <code>max-age</code>
-      expires, and the <code><a>HTTPS</a></code> serves as a fine signal that
-      HSTS could be refreshed.
+      expires, and the <a><code>Upgrade-Insecure-Requests</code> header
+      field</a> serves as a fine signal that HSTS could be refreshed.
     </li>
   </ol>
 
@@ -685,7 +689,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <pre>
       GET / HTTP/1.1
       Host: example.com
-      <a>HTTPS</a>: 1
+      <a lt="Upgrade-Insecure-Requests header field">Upgrade-Insecure-Requests</a>: 1
     </pre>
 
     The server parses the preference, notices that the user's client can deal
@@ -695,11 +699,12 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <pre>
       HTTP/1.1 302 Moved Temporarily
       Location: https://example.com/
-      <a>Vary</a>: <a>HTTPS</a>
+      <a>Vary</a>: <a lt="Upgrade-Insecure-Requests header field">Upgrade-Insecure-Requests</a>
     </pre>
 
-    <a><code>HTTPS</code></a> is listed in the <a><code>Vary</code></a> header,
-    as the redirect response might otherwise be served by caches to clients that
+    The <a lt="Upgrade-Insecure-Requests header field"><code>Upgrade-Insecure-Requests</code>
+    header field</a> is listed in the <a><code>Vary</code></a> header, as the
+    redirect response might otherwise be served by caches to clients that
     don't support the upgrade mechanism defined here. A similar effect could be
     achieved by making this redirect response uncachable via the
     <a><code>Cache-Control</code></a> header:
@@ -855,9 +860,10 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   Given a {{Request}} <var>request</var>, this algorithm will rewrite its
   {{Request/url}} if the {{Request/client}} from which the request originates
-  has opted-in to upgrades. It will also inject an <code><a>HTTPS</a></code>
-  header for insecure navigational requests in order to improve a server's
-  ability to feature-detect a client's upgrade capabilities.
+  has opted-in to upgrades. It will also inject an
+  <a><code>Upgrade-Insecure-Requests</code> header field</a> header for
+  insecure navigational requests in order to improve a server's ability to
+  feature-detect a client's upgrade capabilities.
 
   We will not upgrade cross-origin navigational requests, with the exception of
   form submissions. Form submissions will be upgraded to mitigate the risk of
@@ -869,8 +875,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
       <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
-      <a>append</a> a header named <code>HTTPS</code> with a value of
-      <code>1</code> to <var>request</var>'s {{Request/header-list}} if
+      <a>append</a> a header named <code>Upgrade-Insecure-Requests</code> with a
+      value of <code>1</code> to <var>request</var>'s {{Request/header-list}} if
       any of the following criteria are met:
 
       <ol>
@@ -884,8 +890,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
         </li>
       </ol>
 
-      Note: User agents can choose to append the <code><a>HTTPS</a></code>
-      header for other requests, as discussed in [[#preference]].
+      Note: User agents can choose to append the
+      <a><code>Upgrade-Insecure-Requests</code> header field</a> for other
+      requests, as discussed in [[#preference]].
     </li>
     <li>
       If <var>request</var>'s {{Request/context-frame-type}} is
@@ -1078,9 +1085,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 <section>
   <h2 id="performance">Performance Considerations</h2>
 
-  The upgrade mechanism specified here adds <code>HTTPS: 1\r\n</code> (10 bytes)
-  to every outgoing navigational request to non-<a>preloadable HSTS hosts</a>
-  (as discussed at length on public-webappsec@, and
+  The upgrade mechanism specified here adds <code>Upgrade-Insecure-Requests:
+  1\r\n</code> to every outgoing navigational request to non-<a>preloadable
+  HSTS hosts</a> (as discussed at length on public-webappsec@, and
   <a href="https://github.com/w3c/webappsec/issues/216">w3c/webappsec#216</a>).
   The advantages and intent of the header are laid out in [[#preference]], and
   though we've taken some steps to ensure that it won't be a permanent fixture
@@ -1133,12 +1140,12 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   with the following registration: [[!RFC3864]]
 
   <h3 id="iana-https">
-    HTTPS
+    Upgrade-Insecure-Requests
   </h3>
 
   <dl>
     <dt>Header field name</dt>
-    <dd>HTTPS</dd>
+    <dd>Upgrade-Insecure-Requests</dd>
 
     <dt>Applicable protocol</dt>
     <dd>http</dd>
