@@ -6,6 +6,7 @@ Is “Just turn on TLS” and s/http/https/g good enough?
 * Mixed content and secure <--> insecure information flows can violate the invariants of secure contexts.
 * Need a plan to manage upgrading static content, including URLs-as-data and URLs-as-stable-identifiers, to work with secure transports.
 * What would it look like if 'http' was a potentially secure scheme?
+* How do we avoid flag days as we move to an all secure web?
 
 Terminology
 -----------
