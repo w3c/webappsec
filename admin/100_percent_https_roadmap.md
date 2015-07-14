@@ -1,4 +1,4 @@
-100% HTTPS: Roadmap for the entire Web
+100% HTTPS: Speculations on a Roadmap for the entire Web
 ======================================
 
 Is “Just turn on TLS” and s/http/https/g good enough? 
