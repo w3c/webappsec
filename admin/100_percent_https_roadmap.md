@@ -8,6 +8,11 @@ Is “Just turn on TLS” and s/http/https/g good enough?
 * What would it look like if 'http' was a potentially secure scheme?
 * How do we avoid flag days as we move to an all secure web?
 
+What does 'secure' http mean?
+-----------
+* Subsetting?
+* Upgrade to all properties of https w/possibility of downgrade attacks
+
 Terminology
 -----------
 * Resource = some information addressable by a URL / URI
