@@ -159,4 +159,13 @@ Issues
 * HTTPS Everwhere rules are mostly not "http and https" are equivalent sites
   - some cert errors
   - some Forbes.com stuff
+  - mixed content can break lots of stuff
+* What about functions only available in secure contexts
+
+
+Outcomes
+=========
+* "Why we can't have nice things" document
+* Browsers do phishing protections - why not an HTTPS-Everywhere like list, and make it easy for adminsitrators that don't care much  (Yan says it breaks things, Mike says it takes away control over migrations)
+* 
 
