@@ -137,7 +137,7 @@ New SOP and Data Flow Rules?
 What about localStorage, indexedDB?
 ------------
 * HSTS directive to one-time migrate http-origin client-side data to https-origin?
-* Other alternative is to RT through server. :(
+* Other alternative is to RT through server or postMessage between windows. :(
 
 Other Issues
 ----------
