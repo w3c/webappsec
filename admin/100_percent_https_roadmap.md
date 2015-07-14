@@ -153,3 +153,10 @@ Grab bag
 
 
 
+Issues
+=========
+* What does opting-in to this for servers look like?
+* HTTPS Everwhere rules are mostly not "http and https" are equivalent sites
+  - some cert errors
+  - some Forbes.com stuff
+
