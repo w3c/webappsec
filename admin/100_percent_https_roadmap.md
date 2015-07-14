@@ -1,10 +1,11 @@
 100% HTTPS: Roadmap for the entire Web
 ======================================
 
-“Just turn on https” isn’t enough.
+Is “Just turn on TLS” and s/http/https/g good enough? 
 ----------------------------------
 * Mixed content and secure <--> insecure information flows can violate the invariants of secure contexts.
 * Need a plan to manage upgrading static content, including URLs-as-data and URLs-as-stable-identifiers, to work with secure transports.
+* What would it look like if 'http' was a potentially secure scheme?
 
 Terminology
 -----------
@@ -16,11 +17,11 @@ E.g.: HTTP GET/POST send data from an application to a resource, XHR reads data 
 Starting Assumptions
 ----------------------------------
 * Axiom 1: Users cannot meaningfully deal with nuanced security models.  A resource is either secure or it is not.
-* Axiom 2: Secure means that the source of information is authenticated, and it has privacy and integrity guarantees in transit between the source and the user.
+* Axiom 2: Secure means that the source of information is authenticated and it has privacy and integrity guarantees in transit between the source and the user.
 * Axiom 3: (controversial?) We should not ask users to make exceptions or bypass security. (follows from Axiom 1)
 * Axiom 4: Applications must be able to require a security contract from user agents on behalf of users.
 
-e.g. if Facebook is going to send a security token somewhere on your behalf, we will never do so over an insecure channel or one that is only “optimistically” secure.
+e.g. 4 if Facebook is going to send a security token somewhere on your behalf, it wants to be sure it will never do so over an insecure channel or one that is only “optimistically” secure.
 
 The Invariants
 ----------------------------------
@@ -134,6 +135,9 @@ What about localStorage, indexedDB?
 Other Issues
 ----------
 * DTDs and Namespaces in XML
+
+Grab bag
+---------
 * How do we protect anonymous expression on the web in a world of 100% authenticated content? 
  - Are Let’s Encrypt and other free DV issuance enough?
 
