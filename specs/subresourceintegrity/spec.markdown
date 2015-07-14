@@ -614,7 +614,7 @@ failed resource with a different one.
 ###### The `link` element for stylesheets
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
-`link` element that has a `rel` attribute with the value of `stylesheet`,
+`link` element that has a `rel` attribute with the keyword of `stylesheet`,
 modify step 4 to read:
 
 Do a potentially CORS-enabled fetch of the resulting absolute URL, with the
