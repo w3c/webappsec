@@ -57,6 +57,7 @@ No Write Down
  - Not enforced by today’s browsers unless you ask for it.
  - If an application uses an https URL as the target of a write, it is expressing a no-write-down contract for the user agent to follow.
  - These contracts are important to applications and will be a stumbling block making http URLs acceptable for “general use” through optimistic upgrade w/o guarantees.
+ - Content-Security-Policy: upgrade-insecure-navigations *
 
 Tranquility
 -----------
