@@ -29,6 +29,8 @@ Starting Assumptions
 
 e.g. 4 if Facebook is going to send a security token somewhere on your behalf, it wants to be sure it will never do so over an insecure channel or one that is only “optimistically” secure.
 
+TimBL: users must be able to control how the user agent trusts on their behalf
+
 The Invariants
 ----------------------------------
 From the Biba and Bell-LaPadula formal integrity models.
@@ -55,8 +57,8 @@ No Read Down / No Write Up
  - http resources can GET/POST to https resources
  - Cookies (even w/secure flag) can be written by http and are sent to https
 * Distinct invariants, but the web is very bad a data/code separation.
-* Even if we wanted to make an exception to Read Down (e.g. open data over http) it is impossible to guarantee that No Write Up isn’t also violated. 
- - “optionally blockable” mixed content attempts this distinction, but XHR + JS is not strongly typed enough to allow read down without write up in an “open data” application
+* Even if we wanted to make an exception to Read Down (e.g. to read an open data source that is served only over http) it is impossible to guarantee that No Write Up isn’t also violated. 
+ - “optionally blockable” mixed content attempts this distinction, but XHR + JS is not strongly typed enough to allow read down without write up in such an application
 * There is also metadata and other information leakage possible in a secure->insecure read operation
 
 No Write Down
