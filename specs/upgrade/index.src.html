@@ -39,14 +39,13 @@ spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
   type: dfn
     text: fetching
     text: append; url: concept-header-list-append
-  type: interface
-    text: Request; url: concept-request
+    text: request; url: concept-request
   type: attribute
-    text: url; for: Request; url: concept-request-url
-    text: client; for: Request; url: concept-request-client
-    text: context; for: Request; url: concept-request-context
-    text: context-frame-type; for: Request; url: concept-request-context-frame-type
-    text: header-list; for: Request; url: concept-request-header-list
+    text: url; for: request; url: concept-request-url
+    text: client; for: request; url: concept-request-client
+    text: context; for: request; url: concept-request-context
+    text: context-frame-type; for: request; url: concept-request-context-frame-type
+    text: header-list; for: request; url: concept-request-header-list
 spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
   type: dfn
     urlPrefix: browsers.html
@@ -463,16 +462,16 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <h2 id="key-concepts">Key Concepts and Terminology</h2>
 
   : <dfn export lt="upgrade a request">upgrade</dfn>
-  :: A {{Request}} is said to be <strong>upgraded</strong> if it is rewritten
+  :: A <a>request</a> is said to be <strong>upgraded</strong> if it is rewritten
      to contain a URL with a {{URL/scheme}} of <code>https</code> or
      <code>wss</code>.
 
   :  <dfn export local-lt="safely upgradable">safely upgradable requests</dfn>
-  ::  A {{Request}} is said to be <strong>safely upgradable</strong> if the
+  ::  A <a>request</a> is said to be <strong>safely upgradable</strong> if the
       <a>resource representation</a> which will be returned does not require the
       <code><a>upgrade-insecure-requests</a></code> mechanism described in this
-      document to avoid breakage, or if the {{Request}}'s
-      {{Request/header-list}} contains an
+      document to avoid breakage, or if the <a>request</a>'s
+      <a for="request" attribute>header-list</a> contains an
       <a><code>Upgrade-Insecure-Requests</code> header field</a> with a value of
       <code>1</code>.
 
@@ -623,7 +622,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   Sites which require the upgrade mechanism laid out in this document in order
   to provide users with a reasonable experience over secure transit need some
-  way to determine whether or not a particular {{Request}} can safely be
+  way to determine whether or not a particular <a>request</a> can safely be
   redirected from HTTP to HTTPS (and vice-versa). Moreover, <a>conditionally
   HSTS-safe origins</a> can only opt-into
   <code><a>Strict-Transport-Security</a></code> for supported user agents, and
@@ -664,7 +663,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <ol>
     <li>
       User agents MUST send an <a><code>Upgrade-Insecure-Requests</code> header
-      field</a> along with {{Request}}s for <a><i lang="la">a priori</i>
+      field</a> along with <a>request</a>s for <a><i lang="la">a priori</i>
       insecure URLs</a>.
 
       Note: Servers can use this signal to upgrade HTTP requests to HTTPS for
@@ -672,8 +671,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     </li>
     <li>
       User agents MUST send an <a><code>Upgrade-Insecure-Requests</code> header
-      field</a> along with {{Request}}s for <a>potentially secure URLs</a> whose
-      {{Request/url}}'s {{URL/host}} is <em>not</em> a <a>preloadable HSTS host</a>.
+      field</a> along with <a>request</a>s for <a>potentially secure URLs</a> whose
+      <a for="request" attribute>url</a>'s {{URL/host}} is <em>not</em> a <a>preloadable HSTS host</a>.
 
       Note: Servers can use the absence of this signal to downgrade HTTPS
       requests to HTTP for pages that require
@@ -682,7 +681,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       User agents SHOULD periodically send an
       <a><code>Upgrade-Insecure-Requests</code> header field</a> along with
-      {{Request}}s for <a>potentially secure URLs</a> whose {{Request/url}}'s
+      <a>request</a>s for <a>potentially secure URLs</a> whose <a for="request" attribute>url</a>'s
       {{URL/host}} <em>is</em> a <a>preloadable HSTS host</a>. For example, user
       agents could send an <a><code>Upgrade-Insecure-Requests</code> header
       field</a> only when the asserted <code>max-age</code> is a few days from
@@ -852,7 +851,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <a>Content-Security-Policy-Report-Only</a>: <a>default-src</a> https:; <a>report-uri</a> /endpoint
     </pre>
 
-    The user agent will fire off a {{Request}} <var>request</var> that:
+    The user agent will fire off a <a>request</a> <var>request</var> that:
 
     <ol>
       <li>
@@ -881,8 +880,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     Upgrade <var>request</var> to a potentially secure URL, if appropriate
   </h3>
 
-  Given a {{Request}} <var>request</var>, this algorithm will rewrite its
-  {{Request/url}} if the {{Request/client}} from which the request originates
+  Given a <a>request</a> <var>request</var>, this algorithm will rewrite its
+  <a for="request" attribute>url</a> if the <a for="request" attribute>client</a> from which the request originates
   has opted-in to upgrades. It will also inject an
   <a><code>Upgrade-Insecure-Requests</code> header field</a> header for
   insecure navigational requests in order to improve a server's ability to
@@ -896,19 +895,19 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
 
   <ol>
     <li>
-      If <var>request</var>'s {{Request/context-frame-type}} is
+      If <var>request</var>'s <a for="request" attribute>context-frame-type</a> is
       <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
       <a>append</a> a header named <code>Upgrade-Insecure-Requests</code> with a
-      value of <code>1</code> to <var>request</var>'s {{Request/header-list}} if
+      value of <code>1</code> to <var>request</var>'s <a for="request" attribute>header-list</a> if
       any of the following criteria are met:
 
       <ol>
         <li>
-          <var>request</var>'s {{Request/url}} is <a><i lang="la">a priori</i>
+          <var>request</var>'s <a for="request" attribute>url</a> is <a><i lang="la">a priori</i>
           insecure</a>
         </li>
         <li>
-          <var>request</var>'s {{Request/url}}'s {{URL/host}} is <em>not</em> a
+          <var>request</var>'s <a for="request" attribute>url</a>'s {{URL/host}} is <em>not</em> a
           <a>preloadable HSTS host</a>
         </li>
       </ol>
@@ -918,21 +917,21 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       requests, as discussed in [[#preference]].
     </li>
     <li>
-      If <var>request</var>'s {{Request/context-frame-type}} is
+      If <var>request</var>'s <a for="request" attribute>context-frame-type</a> is
       <code>top-level</code> or <code>auxiliary</code>, then:
 
       <ol>
         <li>
-          If <var>request</var>'s {{Request/context}} is <code>form</code>,
+          If <var>request</var>'s <a for="request" attribute>context</a> is <code>form</code>,
           skip the remaining substeps, and continue upgrading
           <var>request</var>.
         </li>
         <li>
           Let <var>tuple</var> be a tuple of <var>request</var>'s
-          {{Request/url}}'s {{URL/host}} and {{URL/port}}.
+          <a for="request" attribute>url</a>'s {{URL/host}} and {{URL/port}}.
         </li>
         <li>
-          If <var>tuple</var> is contained in {{Request/client}}'s
+          If <var>tuple</var> is contained in <a for="request" attribute>client</a>'s
           <a>upgrade insecure navigations set</a>, then skip the remaining
           substeps, and continue upgrading <var>request</var>.
 
@@ -951,20 +950,20 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
     <li>
       Let <var>upgrade state</var> be the result of executing
       [[#should-upgrade-for-client]] upon <var>request</var>'s
-      {{Request/client}}.
+      <a for="request" attribute>client</a>.
     </li>
     <li>
       If <var>upgrade state</var> is <a value>Do Not Upgrade</a>, return without
       modifying <var>request</var>.
     </li>
     <li>
-      If <var>request</var>'s {{Request/url}}'s {{URL/scheme}} is
-      <code>http</code>, set <var>request</var>'s {{Request/url}}'s
+      If <var>request</var>'s <a for="request" attribute>url</a>'s {{URL/scheme}} is
+      <code>http</code>, set <var>request</var>'s <a for="request" attribute>url</a>'s
       {{URL/scheme}} to <code>https</code>, and return.
     </li>
     <li>
-      If <var>request</var>'s {{Request/url}}s {{URL/port}} is
-      <code>80</code>, set <var>request</var>'s {{Request/url}}s {{URL/port}}
+      If <var>request</var>'s <a for="request" attribute>url</a>s {{URL/port}} is
+      <code>80</code>, set <var>request</var>'s <a for="request" attribute>url</a>s {{URL/port}}
       to <code>443</code>.
 
       Note: This will only change the URL's port if the port is
@@ -983,15 +982,16 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   insecurely-redirected requests as well as insecure initial requests.
 
   <h3 id="should-upgrade-for-client">
-    Should insecure {{Request}}s be upgraded for <var>client</var>?
+    Should insecure <a>request</a>s be upgraded for <var>client</var>?
   </h3>
 
-  Given an {{Request}}'s {{Request/client}} <var>client</var> (an <a>environment
-  settings object</a>), this algorithm returns <code>Enforced Upgrade</code> if
-  <a><i lang="la">a priori</i> insecure</a> requests associated with that client
-  should be upgraded, or <a value>Do Not Upgrade</a> otherwise. In short, this
-  will check the client and return the appropriate <a>insecure requests
-  policy</a> set on it or its <a>browsing context</a>.
+  Given an <a>request</a>'s <a for="request" attribute>client</a>
+  <var>client</var> (an <a>environment settings object</a>), this algorithm
+  returns <code>Enforced Upgrade</code> if <a><i lang="la">a priori</i>
+  insecure</a> requests associated with that client should be upgraded, or
+  <a value>Do Not Upgrade</a> otherwise. In short, this will check the client
+  and return the appropriate <a>insecure requests policy</a> set on it or its
+  <a>browsing context</a>.
 
   <ol>
     <li>
@@ -1006,9 +1006,9 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       If <var>client</var> has a <a>responsible browsing context</a>, return the
       value of its <a>insecure requests policy</a>.
 
-      Note: This catches requests triggered from detached {{Request/client}}s.
-      Not sure this is necessary, really, given the inheritance structure
-      defined in [[#nesting]].
+      Note: This catches requests triggered from detached
+      <a for="request" attribute>client</a>s. Not sure this is necessary, really,
+      given the inheritance structure defined in [[#nesting]].
     </li>
     <li>
       Return <a value>Do Not Upgrade</a>.
