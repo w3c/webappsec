@@ -61,6 +61,8 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
       text: responsible document
       text: responsible browsing context
       text: relevant settings object for a script
+    urlPrefix: infrastructure.html
+      text: split on spaces; url: split-a-string-on-spaces
   type: interface
     urlPrefix: browsers.html
       text: Location
@@ -117,6 +119,9 @@ spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
   type: dfn
     text: VCHAR; url: appendix-B.1
     text: WSP; url: appendix-B.1
+spec: RFC5890; urlPrefix: https://tools.ietf.org/html/rfc5890
+  type: dfn
+    text: label; url: section-2.2
 spec: RFC6265; urlPrefix: https://tools.ietf.org/html/rfc6265
   type: dfn
     text: canonicalized; url: section-5.1.2
@@ -124,7 +129,9 @@ spec: RFC6265; urlPrefix: https://tools.ietf.org/html/rfc6265
     text: domain-match; url: section-5.1.3
 spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
   type: dfn
+    text: globally unique identifier; url: section-2.3
     text: origin; url: section-3.2
+    text: the same; url: section-5
 spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   type: dfn
     text: network cache; url: section-2
@@ -225,10 +232,11 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   but needs to ensure that the opt-out cookie which the user has just received
   isn't wiped along with it.
 
-  They can do so by sending the following HTTP header in the response:
+  They can do so by sending the following HTTP header in the response, which
+  includes all the types except for "<a>cookies</a>":
 
   <pre>
-    <a>Clear-Site-Data</a>: <a>retainCookies</a>; <a>includeSubdomains</a>
+    <a>Clear-Site-Data</a>: <a>domStorage</a> <a>executionContexts</a> <a>cache</a>; <a>includeSubdomains</a>
   </pre>
 
   <h4 id="example-killswitch">Kill Switch</h4>
@@ -286,8 +294,8 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   <pre>
     "Clear-Site-Data:" *<a>WSP</a> <a>data-type-list</a> *[ ";" *<a>WSP</a> <a>extension</a> *<a>WSP</a> ]  *<a>WSP</a>
 
-    <dfn>data-type-list</dfn> = "*" / ( <a>exclusion</a> *( " " <a>exclusion</a> ) )
-    <dfn>exclusion</dfn> = "<dfn>retainCookies</dfn>" / "<dfn>retainContexts</dfn>"
+    <dfn>data-type-list</dfn> = "*" / ( <a>type</a> *( " " <a>type</a> ) )
+    <dfn>type</dfn> = "<dfn>domStorage</dfn>" / "<dfn>cookies</dfn>" / "<dfn>executionContexts</dfn>" / "<dfn>cache</dfn>"
     <dfn>extension</dfn> = <a>subdomain-extension</a> / <a>unknown-extension</a>
     <dfn>subdomain-extension</dfn> = "<dfn>includeSubdomains</dfn>"
     <dfn>unknown-extension</dfn> = *( <a>WSP</a> / &lt;<a>VCHAR</a> except ";" and ","&gt; )
@@ -300,18 +308,6 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   then all data types specified in this document that are related to this site
   will be removed.
 
-  If exclusions are specified, then all data types specified in this document
-  will be removed, with the exception of the specified types. Recognized
-  exclusions are as follows:
-
-  1.  <code>retainCookies</code>, which implies that cookies for the site's
-      host will <strong>not</strong> be removed.
-
-  2.  <code>retainContexts</code>, which implies that user agents which support
-      opening multiple windows or tabs will <strong>not</strong> neuter existing
-      <a>browsing contexts</a> open onto the site.
-
-  Invalid exclusion keywords present in a header's value are simply ignored.
   Parsing details can be found in [[#parsing]].
 
   User agent conformance details are detailed in [[#clear]]. Those steps
@@ -325,37 +321,41 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       Note: This means that the header will be ignored for unauthenticated or
       unencrypted connections ("HTTP" vs "HTTPS", for example).
 
-  2.  If the value of the header's <a>data-type-list</a> does not contain
-      <a><code>retainCookies</code></a>, then all cookies which would be sent
-      along with any request to the <var>response</var>'s {{Response/url}}'s
-      {{URL/host}} MUST be removed.
+  2.  If the value of the header's <a>data-type-list</a> contains
+      <a><code>cookies</code></a> or <code>*</code>, then all cookies which
+      would be sent along with any request to the <var>response</var>'s
+      {{Response/url}}'s {{URL/host}} MUST be removed.
 
       Further, if the same header's <a>extension</a> contains
       <a><code>includeSubdomains</code></a>, then all cookies which would be
       sent along with any request to any host which is a subdomain of
       <var>response</var>'s {{Response/url}}'s {{URL/host}} MUST be removed.
 
-  3.  All DOM-accessible storage mechanisms ({{localStorage}},
-      {{sessionStorage}}, [[INDEXEDDB]], [[WEBDATABASE]], etc) for
-      <var>response</var>'s {{Response/url}}'s <a>origin</a> MUST be cleared.
+  3.  If the value of the header's <a>data-type-list</a> contains
+      <a><code>domStorage</code></a> or <code>*</code>, then all DOM-accessible
+      storage mechanisms ({{localStorage}}, {{sessionStorage}}, [[INDEXEDDB]],
+      [[WEBDATABASE]], etc) for <var>response</var>'s {{Response/url}}'s
+      <a>origin</a> MUST be cleared.
 
       If the <code>includeSubdomains</code> option is present, then all
       DOM-accessible storage mechanisms for any <a>origin</a> whose {{URL/host}}
       is a subdomain of <var>response</var>'s {{Response/url}}'s {{URL/host}}
       MUST be cleared.
 
-  4.  All locally cached data for <var>response</var>'s {{Response/url}}'s
-      <a>origin</a> MUST be removed.
+  4.  If the value of the header's <a>data-type-list</a> contains
+      <a><code>cache</code></a> or <code>*</code>, then all locally cached data
+      for <var>response</var>'s {{Response/url}}'s <a>origin</a> MUST be
+      removed.
 
       If the <code>includeSubdomains</code> option is present, then all locally
       cached data for any host which is a subdomain of <var>response</var>'s
       {{Response/url}}'s {{URL/host}} MUST be removed.
 
-  5.  If the value of the header's <a>data-type-list</a> does not contain
-      <a><code>retainContexts</code></a>, then all <a>browsing contexts</a>
-      whose <a>active Document</a>'s <a>origin</a> is identical to
-      {{Response/url}}'s <a>origin</a> MUST be neutered by tightly sandboxing
-      them.
+  5.  If the value of the header's <a>data-type-list</a> contains
+      <a><code>executionContexts</code></a> or <code>*</code>, then all
+      <a>browsing contexts</a> whose <a>active Document</a>'s <a>origin</a> is
+      identical to {{Response/url}}'s <a>origin</a> MUST be neutered by tightly
+      sandboxing them.
 
       If the <code>includeSubdomains</code> option is present, then all
       <a>browsing contexts</a> whose <a>active Document</a>'s <a>origin</a>'s
@@ -375,11 +375,11 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       <a><code>Clear-Site-Data</code></a>, then execute [[#clear]] on
       <var>response</var>.
 
-  Issue: This happens <em>after</em> <code>Set-Cookie</code> headers are
-  processed. If we clear cookies, we clear all of them. This is intentional,
-  and <a><code>retainCookies</code></a> is what we would offer to folks who
-  want to retain certain cookies. Perhaps we need a mechanism to allow only
-  certain cookies to be retained?
+  Note: This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. If we clear cookies, we clear all of them. This is intentional, as
+  removing only certain cookies might leave an application in an indeterminate
+  and vulnerable state. Removing specific cookies is best done via expiration 
+  using the <code>Set-Cookie</code> header.
 <section>
 
 <section>
@@ -387,29 +387,83 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   <h3 id="parsing">Parsing</h3>
 
-  <h4 id="get-exclusions">
-    Which data types ought to be retained for <var>response</var>?
+  <h4 id="get-types">
+    Which data types ought to be removed for <var>response</var>?
   </h4>
 
-  TODO: Parse the <a><code>Clear-Site-Data</code></a> header. Return
-  a list of type names to be excluded.
+  1.  If <var>response</var> does not contain a
+      <a><code>Clear-Site-Data</code></a> header, return an empty list.
+
+  2.  Let <var>types</var> be the value of <var>response</var>'s 
+      <a><code>Clear-Site-Data</code></a> <a>data-type-list</a> component,
+      <a>split on spaces</a>.
+
+  3.  If <var>types</var> contains a single entry whose value is <code>*</code>:
+
+      1. Append <code>cache</code>, <code>cookies</code>,
+         <code>domStorage</code>, and <code>executionContexts</code> to
+         <var>remove</var>.
+
+      2. Return <var>remove</var>.
+
+  3.  Let <var>remove</var> be an empty list.
+
+  4.  For each <var>token</var> in <var>types</var>:
+  
+      1.  If <var>token</var> is a valid <a>type</a>, append it to to
+          <var>remove</var>.
+
+      2.  Otherwise, ignore <var>token</var>.
+
+  5.  Return <var>remove</var>.
 
   <h4 id="should-include-subdomains">
     Should subdomains' data be cleared for <var>response</var>
   </h4>
 
-  TODO: Parse the <a><code>Clear-Site-Data</code></a> header. Return
-  either <dfn><code>Include Subdomains</code></dfn> or <dfn><code>Exclude
-  Subdomains</code></dfn>.
+  1.  Let <var>extensions</var> be the list of <var>response</var>'s 
+      <a><code>Clear-Site-Data</code></a> <a>extension</a> components.
+ 
+  2.  If <var>extensions</var> contains <a><code>includeSubdomains</code></a>,
+      return <dfn><code>Include Subdomains</code></dfn>.
+     
+  3.  Otherwise, return <dfn><code>Exclude Subdomains</code></dfn>.
 
   <h4 id="matches-origin">
     Does <var>origin</var> match <var>origin to clear</var> and
     <var>subdomain state</var>
   </h4>
 
-  TODO: Given an origin, the origin to clear, and the "include subdomains"
+  Given an origin, the origin to clear, and the "include subdomains"
   flag, return <dfn><code>Matches</code></dfn> or <dfn><code>Does Not
   Match</code></dfn>.
+
+  1.  If either <var>origin</var> or <var>origin to clear</var> are <a>globally
+      unique identifiers</a>, return <code>Does Not Match</code>.
+
+  2.  If <var>origin</var> is <a>the same</a> as <var>origin to clear</var>,
+      return <code>Matches</code>.
+
+  3.  If <var>subdomain state</var> is <a><code>Exclude Subdomains</code></a>,
+      return <code>Does Not Match</code>.
+
+  4.  Let <var>labels to clear</var> be the {{URL/host}} component of <var>origin
+      to clear</var> split into <a>labels</a>, and <var>labels</var> be the
+      {{URL/host}} component of <var>origin</var>, split into <a>labels</a>.
+
+  5.  If <var>labels</var> does not have more entries than <var>labels to
+      clear</var>, return <code>Does Not Match</code>.
+
+  6.  While <var>labels to clear</var> is not empty:
+
+      1.  If the final entry of <var>labels to clear</var> does not exactly
+          match the final entry of <var>labels</var>, return <code>Does Not
+          Match</code>.
+
+      2.  Remove the final entry of <var>labels to clear</var>, and of
+          <var>labels</var>.
+
+  7.  Return <code>Matches</code>.
 
   <h3 id="clear">
     Clear data for <var>response</var>
@@ -427,27 +481,29 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Jun/0032.html">Martin
       Thomson's public-webappsec post on the topic</a>, for example).
 
-  2.  Let <var>exclusions</var> be the result of [[#get-exclusions]] executed on
+  2.  Let <var>types</var> be the result of [[#get-types]] executed on
       <var>response</var>.
 
   3.  Let <var>subdomain state</var> be the result of
       [[#should-include-subdomains]] executed on <var>response</var>.
 
-  4.  If <var>exclusions</var> does not contain "<code>contexts</code>", execute
+  4.  If <var>types</var> contains "<code>executionContexts</code>", execute
       [[#neuter-contexts]] on <var>response</var>'s {{Response/url}}'s
       <a>origin</a>, with <var>subdomain state</var>.
 
-  5.  If <var>exclusions</var> does not contain "<code>cookies</code>", execute
+  5.  If <var>types</var> contains "<code>cookies</code>", execute
       [[#clear-cookies]] on <var>response</var>'s {{Response/url}}'s
       <a>origin</a>, with <var>subdomain state</var>.
 
-  6.  Execute [[#clear-dom]] on <var>response</var>'s {{Response/url}}'s
+  6.  If <var>types</var> contains "<code>domStorage</code>", execute
+      [[#clear-dom]] on <var>response</var>'s {{Response/url}}'s
       <a>origin</a>, with <var>subdomain state</var>.
 
-  7.  Execute [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
+  7.  If <var>types</var> contains "<code>cache</code>", execute
+      [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
       <a>origin</a>, with <var>subdomain state</var>.
 
-  8.  If <var>exclusions</var> does not contain "<code>contexts</code>", execute
+  8.  If <var>types</var> contains "<code>executionContexts</code>", execute
       [[#reload-contexts]] on <var>response</var>'s {{Response/url}}'s
       <a>origin</a>, with <var>subdomain state</var>.
 
@@ -486,9 +542,6 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
           1.  <a>Parse a sandboxing directive</a> using the empty string as
               the <var>input</var>, and <var>document</var>'s <a>active
               sandboxing flag set</a> as the <var>output</var>.
-
-  ISSUE: This won't be an atomic set of operations. How can we prevent collusion
-  between browsing contexts to potentially bypass neutering?
 
   <h4 id="reload-contexts">
     Reload browsing contexts matching <var>origin</var> with

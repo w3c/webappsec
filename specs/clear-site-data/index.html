@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Clear Site Data</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-07-15">15 July 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-07-17">17 July 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -186,8 +186,8 @@ host and its subdomains.</p>
      <ul class="toc">
       <li><a href="#parsing"><span class="secno">3.1</span> <span class="content">Parsing</span></a>
        <ul class="toc">
-        <li><a href="#get-exclusions"><span class="secno">3.1.1</span> <span class="content">
-    Which data types ought to be retained for <var>response</var>?
+        <li><a href="#get-types"><span class="secno">3.1.1</span> <span class="content">
+    Which data types ought to be removed for <var>response</var>?
   </span></a>
         <li><a href="#should-include-subdomains"><span class="secno">3.1.2</span> <span class="content">
     Should subdomains' data be cleared for <var>response</var>
@@ -362,10 +362,11 @@ host and its subdomains.</p>
   isn’t wiped along with it.</p>
 
 
-    <p>They can do so by sending the following HTTP header in the response:</p>
+    <p>They can do so by sending the following HTTP header in the response, which
+  includes all the types except for "<a data-link-type="dfn" href="#cookies">cookies</a>":</p>
 
   
-    <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: <a data-link-type="dfn" href="#retaincookies">retainCookies</a>; <a data-link-type="dfn" href="#includesubdomains">includeSubdomains</a>
+    <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: <a data-link-type="dfn" href="#domstorage">domStorage</a> <a data-link-type="dfn" href="#executioncontexts">executionContexts</a> <a data-link-type="dfn" href="#cache">cache</a>; <a data-link-type="dfn" href="#includesubdomains">includeSubdomains</a>
 </pre>
 
   
@@ -459,8 +460,8 @@ host and its subdomains.</p>
   
     <pre>"Clear-Site-Data:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#data_type_list">data-type-list</a> *[ ";" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#extension">extension</a> *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> ]  *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
 
-<dfn data-dfn-type="dfn" data-noexport="" id="data_type_list">data-type-list<a class="self-link" href="#data_type_list"></a></dfn> = "*" / ( <a data-link-type="dfn" href="#exclusion">exclusion</a> *( " " <a data-link-type="dfn" href="#exclusion">exclusion</a> ) )
-<dfn data-dfn-type="dfn" data-noexport="" id="exclusion">exclusion<a class="self-link" href="#exclusion"></a></dfn> = "<dfn data-dfn-type="dfn" data-noexport="" id="retaincookies">retainCookies<a class="self-link" href="#retaincookies"></a></dfn>" / "<dfn data-dfn-type="dfn" data-noexport="" id="retaincontexts">retainContexts<a class="self-link" href="#retaincontexts"></a></dfn>"
+<dfn data-dfn-type="dfn" data-noexport="" id="data_type_list">data-type-list<a class="self-link" href="#data_type_list"></a></dfn> = "*" / ( <a data-link-type="dfn" href="#type">type</a> *( " " <a data-link-type="dfn" href="#type">type</a> ) )
+<dfn data-dfn-type="dfn" data-noexport="" id="type">type<a class="self-link" href="#type"></a></dfn> = "<dfn data-dfn-type="dfn" data-noexport="" id="domstorage">domStorage<a class="self-link" href="#domstorage"></a></dfn>" / "<dfn data-dfn-type="dfn" data-noexport="" id="cookies">cookies<a class="self-link" href="#cookies"></a></dfn>" / "<dfn data-dfn-type="dfn" data-noexport="" id="executioncontexts">executionContexts<a class="self-link" href="#executioncontexts"></a></dfn>" / "<dfn data-dfn-type="dfn" data-noexport="" id="cache">cache<a class="self-link" href="#cache"></a></dfn>"
 <dfn data-dfn-type="dfn" data-noexport="" id="extension">extension<a class="self-link" href="#extension"></a></dfn> = <a data-link-type="dfn" href="#subdomain_extension">subdomain-extension</a> / <a data-link-type="dfn" href="#unknown_extension">unknown-extension</a>
 <dfn data-dfn-type="dfn" data-noexport="" id="subdomain_extension">subdomain-extension<a class="self-link" href="#subdomain_extension"></a></dfn> = "<dfn data-dfn-type="dfn" data-noexport="" id="includesubdomains">includeSubdomains<a class="self-link" href="#includesubdomains"></a></dfn>"
 <dfn data-dfn-type="dfn" data-noexport="" id="unknown_extension">unknown-extension<a class="self-link" href="#unknown_extension"></a></dfn> = *( <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> / &lt;<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">VCHAR</a> except ";" and ","> )
@@ -476,27 +477,7 @@ host and its subdomains.</p>
   will be removed.</p>
 
 
-    <p>If exclusions are specified, then all data types specified in this document
-  will be removed, with the exception of the specified types. Recognized
-  exclusions are as follows:</p>
-
-
-    <ol>
-     <li data-md="">
-      <p><code>retainCookies</code>, which implies that cookies for the site’s
-  host will <strong>not</strong> be removed.</p>
-      
-
-
-     <li data-md="">
-      <p><code>retainContexts</code>, which implies that user agents which support
-  opening multiple windows or tabs will <strong>not</strong> neuter existing
-  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> open onto the site.</p>
-      
-</ol>
-
-    <p>Invalid exclusion keywords present in a header’s value are simply ignored.
-  Parsing details can be found in <a href="#parsing">§3.1 Parsing</a>.</p>
+    <p>Parsing details can be found in <a href="#parsing">§3.1 Parsing</a>.</p>
 
 
     <p>User agent conformance details are detailed in <a href="#clear">§3.2 
@@ -519,10 +500,10 @@ host and its subdomains.</p>
 
 
      <li data-md="">
-      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> does not contain
-  <a data-link-type="dfn" href="#retaincookies"><code>retainCookies</code></a>, then all cookies which would be sent
-  along with any request to the <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
-  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
+      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> contains
+  <a data-link-type="dfn" href="#cookies"><code>cookies</code></a> or <code>*</code>, then all cookies which
+  would be sent along with any request to the <var>response</var>’s
+  <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
       
 
 
@@ -534,9 +515,11 @@ host and its subdomains.</p>
 
 
      <li data-md="">
-      <p>All DOM-accessible storage mechanisms (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a></code>,
-  <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a></code>, <a data-link-type="biblio" href="#biblio-indexeddb">[INDEXEDDB]</a>, <a data-link-type="biblio" href="#biblio-webdatabase">[WEBDATABASE]</a>, etc) for
-  <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be cleared.</p>
+      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> contains
+  <a data-link-type="dfn" href="#domstorage"><code>domStorage</code></a> or <code>*</code>, then all DOM-accessible
+  storage mechanisms (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a></code>, <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a></code>, <a data-link-type="biblio" href="#biblio-indexeddb">[INDEXEDDB]</a>,
+  <a data-link-type="biblio" href="#biblio-webdatabase">[WEBDATABASE]</a>, etc) for <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be cleared.</p>
       
 
 
@@ -548,8 +531,10 @@ host and its subdomains.</p>
 
 
      <li data-md="">
-      <p>All locally cached data for <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
-  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be removed.</p>
+      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> contains
+  <a data-link-type="dfn" href="#cache"><code>cache</code></a> or <code>*</code>, then all locally cached data
+  for <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be
+  removed.</p>
       
 
 
@@ -560,11 +545,11 @@ host and its subdomains.</p>
 
 
      <li data-md="">
-      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> does not contain
-  <a data-link-type="dfn" href="#retaincontexts"><code>retainContexts</code></a>, then all <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a>
-  whose <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active Document</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is identical to
-  <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be neutered by tightly sandboxing
-  them.</p>
+      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> contains
+  <a data-link-type="dfn" href="#executioncontexts"><code>executionContexts</code></a> or <code>*</code>, then all
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> whose <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active Document</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is
+  identical to <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be neutered by tightly
+  sandboxing them.</p>
       
 
 
@@ -596,11 +581,11 @@ host and its subdomains.</p>
       
 </ol>
 
-    <p class="issue" id="issue-16edebe8"><a class="self-link" href="#issue-16edebe8"></a> This happens <em>after</em> <code>Set-Cookie</code> headers are
-  processed. If we clear cookies, we clear all of them. This is intentional,
-  and <a data-link-type="dfn" href="#retaincookies"><code>retainCookies</code></a> is what we would offer to folks who
-  want to retain certain cookies. Perhaps we need a mechanism to allow only
-  certain cookies to be retained?</p>
+    <p class="note" role="note">Note: This happens <em>after</em> <code>Set-Cookie</code> headers are
+  processed. If we clear cookies, we clear all of them. This is intentional, as
+  removing only certain cookies might leave an application in an indeterminate
+  and vulnerable state. Removing specific cookies is best done via expiration 
+  using the <code>Set-Cookie</code> header.</p>
 
     <section>
 
@@ -613,24 +598,94 @@ host and its subdomains.</p>
       <h3 class="heading settled" data-level="3.1" id="parsing"><span class="secno">3.1. </span><span class="content">Parsing</span><a class="self-link" href="#parsing"></a></h3>
 
   
-      <h4 class="heading settled" data-level="3.1.1" id="get-exclusions"><span class="secno">3.1.1. </span><span class="content">
-    Which data types ought to be retained for <var>response</var>?
-  </span><a class="self-link" href="#get-exclusions"></a></h4>
+      <h4 class="heading settled" data-level="3.1.1" id="get-types"><span class="secno">3.1.1. </span><span class="content">
+    Which data types ought to be removed for <var>response</var>?
+  </span><a class="self-link" href="#get-types"></a></h4>
 
 
-      <p>TODO: Parse the <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header. Return
-  a list of type names to be excluded.</p>
+      <ol>
+       <li data-md="">
+        <p>If <var>response</var> does not contain a
+  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header, return an empty list.</p>
+        
 
+
+       <li data-md="">
+        <p>Let <var>types</var> be the value of <var>response</var>’s
+  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> <a data-link-type="dfn" href="#data_type_list">data-type-list</a> component,
+  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">split on spaces</a>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>types</var> contains a single entry whose value is <code>*</code>:</p>
+        
+
+
+        <ol>
+         <li data-md="">
+          <p>Append <code>cache</code>, <code>cookies</code>,
+ <code>domStorage</code>, and <code>executionContexts</code> to
+ <var>remove</var>.</p>
+          
+
+
+         <li data-md="">
+          <p>Return <var>remove</var>.</p>
+          
+</ol>
+        
+
+       <li data-md="">
+        <p>Let <var>remove</var> be an empty list.</p>
+        
+
+
+       <li data-md="">
+        <p>For each <var>token</var> in <var>types</var>:</p>
+        
+
+
+        <ol>
+         <li data-md="">
+          <p>If <var>token</var> is a valid <a data-link-type="dfn" href="#type">type</a>, append it to to
+  <var>remove</var>.</p>
+          
+
+
+         <li data-md="">
+          <p>Otherwise, ignore <var>token</var>.</p>
+          
+</ol>
+        
+
+       <li data-md="">
+        <p>Return <var>remove</var>.</p>
+        
+</ol>
   
       <h4 class="heading settled" data-level="3.1.2" id="should-include-subdomains"><span class="secno">3.1.2. </span><span class="content">
     Should subdomains' data be cleared for <var>response</var>
   </span><a class="self-link" href="#should-include-subdomains"></a></h4>
 
 
-      <p>TODO: Parse the <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header. Return
-  either <dfn data-dfn-type="dfn" data-noexport="" id="include-subdomains"><code>Include Subdomains</code><a class="self-link" href="#include-subdomains"></a></dfn> or <dfn data-dfn-type="dfn" data-noexport="" id="exclude-subdomains"><code>Exclude
-  Subdomains</code><a class="self-link" href="#exclude-subdomains"></a></dfn>.</p>
+      <ol>
+       <li data-md="">
+        <p>Let <var>extensions</var> be the list of <var>response</var>’s
+  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> <a data-link-type="dfn" href="#extension">extension</a> components.</p>
+        
 
+
+       <li data-md="">
+        <p>If <var>extensions</var> contains <a data-link-type="dfn" href="#includesubdomains"><code>includeSubdomains</code></a>,
+  return <dfn data-dfn-type="dfn" data-noexport="" id="include-subdomains"><code>Include Subdomains</code><a class="self-link" href="#include-subdomains"></a></dfn>.</p>
+        
+
+
+       <li data-md="">
+        <p>Otherwise, return <dfn data-dfn-type="dfn" data-noexport="" id="exclude-subdomains"><code>Exclude Subdomains</code><a class="self-link" href="#exclude-subdomains"></a></dfn>.</p>
+        
+</ol>
   
       <h4 class="heading settled" data-level="3.1.3" id="matches-origin"><span class="secno">3.1.3. </span><span class="content">
     Does <var>origin</var> match <var>origin to clear</var> and
@@ -638,10 +693,67 @@ host and its subdomains.</p>
   </span><a class="self-link" href="#matches-origin"></a></h4>
 
 
-      <p>TODO: Given an origin, the origin to clear, and the "include subdomains"
+      <p>Given an origin, the origin to clear, and the "include subdomains"
   flag, return <dfn data-dfn-type="dfn" data-noexport="" id="matches"><code>Matches</code><a class="self-link" href="#matches"></a></dfn> or <dfn data-dfn-type="dfn" data-noexport="" id="does-not-match"><code>Does Not
   Match</code><a class="self-link" href="#does-not-match"></a></dfn>.</p>
 
+
+      <ol>
+       <li data-md="">
+        <p>If either <var>origin</var> or <var>origin to clear</var> are <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-2.3">globally
+  unique identifiers</a>, return <code>Does Not Match</code>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>origin</var> is <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-5">the same</a> as <var>origin to clear</var>,
+  return <code>Matches</code>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>subdomain state</var> is <a data-link-type="dfn" href="#exclude-subdomains"><code>Exclude Subdomains</code></a>,
+  return <code>Does Not Match</code>.</p>
+        
+
+
+       <li data-md="">
+        <p>Let <var>labels to clear</var> be the <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> component of <var>origin
+  to clear</var> split into <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5890#section-2.2">labels</a>, and <var>labels</var> be the
+  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> component of <var>origin</var>, split into <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5890#section-2.2">labels</a>.</p>
+        
+
+
+       <li data-md="">
+        <p>If <var>labels</var> does not have more entries than <var>labels to
+  clear</var>, return <code>Does Not Match</code>.</p>
+        
+
+
+       <li data-md="">
+        <p>While <var>labels to clear</var> is not empty:</p>
+        
+
+
+        <ol>
+         <li data-md="">
+          <p>If the final entry of <var>labels to clear</var> does not exactly
+  match the final entry of <var>labels</var>, return <code>Does Not
+  Match</code>.</p>
+          
+
+
+         <li data-md="">
+          <p>Remove the final entry of <var>labels to clear</var>, and of
+  <var>labels</var>.</p>
+          
+</ol>
+        
+
+       <li data-md="">
+        <p>Return <code>Matches</code>.</p>
+        
+</ol>
   
       <h3 class="heading settled" data-level="3.2" id="clear"><span class="secno">3.2. </span><span class="content">
     Clear data for <var>response</var>
@@ -668,8 +780,8 @@ host and its subdomains.</p>
 
 
        <li data-md="">
-        <p>Let <var>exclusions</var> be the result of <a href="#get-exclusions">§3.1.1 
-    Which data types ought to be retained for response?</a> executed on
+        <p>Let <var>types</var> be the result of <a href="#get-types">§3.1.1 
+    Which data types ought to be removed for response?</a> executed on
   <var>response</var>.</p>
         
 
@@ -682,7 +794,7 @@ host and its subdomains.</p>
 
 
        <li data-md="">
-        <p>If <var>exclusions</var> does not contain "<code>contexts</code>", execute
+        <p>If <var>types</var> contains "<code>executionContexts</code>", execute
   <a href="#neuter-contexts">§3.2.1 
     Neuter browsing contexts matching origin with
     subdomain state</a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
@@ -691,7 +803,7 @@ host and its subdomains.</p>
 
 
        <li data-md="">
-        <p>If <var>exclusions</var> does not contain "<code>cookies</code>", execute
+        <p>If <var>types</var> contains "<code>cookies</code>", execute
   <a href="#clear-cookies">§3.2.4 
     Clear cookies for origin with subdomain state</a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
@@ -699,7 +811,8 @@ host and its subdomains.</p>
 
 
        <li data-md="">
-        <p>Execute <a href="#clear-dom">§3.2.5 
+        <p>If <var>types</var> contains "<code>domStorage</code>", execute
+  <a href="#clear-dom">§3.2.5 
     Clear DOM-accessible storage for origin with
     subdomain state</a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
@@ -707,14 +820,15 @@ host and its subdomains.</p>
 
 
        <li data-md="">
-        <p>Execute <a href="#clear-cache">§3.2.3 
+        <p>If <var>types</var> contains "<code>cache</code>", execute
+  <a href="#clear-cache">§3.2.3 
     Clear cache for origin with subdomain state</a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, with <var>subdomain state</var>.</p>
         
 
 
        <li data-md="">
-        <p>If <var>exclusions</var> does not contain "<code>contexts</code>", execute
+        <p>If <var>types</var> contains "<code>executionContexts</code>", execute
   <a href="#reload-contexts">§3.2.2 
     Reload browsing contexts matching origin with
     subdomain state</a> on <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
@@ -1298,22 +1412,23 @@ host and its subdomains.</p>
   <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
   <h3 class="no-num heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="indexlist">
+   <li>cache, <a href="#cache">2.1</a>
    <li>Clear-Site-Data, <a href="#clear_site_data">2.1</a>
    <li>conformant server, <a href="#conformant-server">Unnumbered section</a>
    <li>conformant user agent, <a href="#conformant-user-agent">Unnumbered section</a>
+   <li>cookies, <a href="#cookies">2.1</a>
    <li>data-type-list, <a href="#data_type_list">2.1</a>
    <li>Does Not
   Match, <a href="#does-not-match">3.1.3</a>
-   <li>Exclude
-  Subdomains, <a href="#exclude-subdomains">3.1.2</a>
-   <li>exclusion, <a href="#exclusion">2.1</a>
+   <li>domStorage, <a href="#domstorage">2.1</a>
+   <li>Exclude Subdomains, <a href="#exclude-subdomains">3.1.2</a>
+   <li>executionContexts, <a href="#executioncontexts">2.1</a>
    <li>extension, <a href="#extension">2.1</a>
-   <li>Include Subdomains, <a href="#include-subdomains">3.1.2</a>
    <li>includeSubdomains, <a href="#includesubdomains">2.1</a>
+   <li>Include Subdomains, <a href="#include-subdomains">3.1.2</a>
    <li>Matches, <a href="#matches">3.1.3</a>
-   <li>retainContexts, <a href="#retaincontexts">2.1</a>
-   <li>retainCookies, <a href="#retaincookies">2.1</a>
    <li>subdomain-extension, <a href="#subdomain_extension">2.1</a>
+   <li>type, <a href="#type">2.1</a>
    <li>unknown-extension, <a href="#unknown_extension">2.1</a></ul>
   <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="indexlist">
@@ -1344,6 +1459,7 @@ host and its subdomains.</p>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#reload-triggered-navigation">reload-triggered navigation</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#replacement-enabled">replacement enabled</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#source-browsing-context">source browsing context</a>
+     <li><a href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">split on spaces</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-indexeddb">[IndexedDB]</a> defines the following terms:
     <ul>
@@ -1361,6 +1477,10 @@ host and its subdomains.</p>
      <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">vchar</a>
      <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">wsp</a>
     </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc5890">[rfc5890]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc5890#section-2.2">label</a>
+    </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc6265">[rfc6265]</a> defines the following terms:
     <ul>
      <li><a href="https://tools.ietf.org/html/rfc6265#section-5.1.2">canonicalized</a>
@@ -1369,7 +1489,9 @@ host and its subdomains.</p>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc6454">[RFC6454]</a> defines the following terms:
     <ul>
+     <li><a href="https://tools.ietf.org/html/rfc6454#section-2.3">globally unique identifier</a>
      <li><a href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>
+     <li><a href="https://tools.ietf.org/html/rfc6454#section-5">the same</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc7234">[rfc7234]</a> defines the following terms:
     <ul>
@@ -1414,6 +1536,8 @@ host and its subdomains.</p>
    <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
    <dt id="biblio-rfc5234"><a class="self-link" href="#biblio-rfc5234"></a>[RFC5234]
    <dd>D. Crocker, Ed.; P. Overell. <a href="https://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>. January 2008. Internet Standard. URL: <a href="https://tools.ietf.org/html/rfc5234">https://tools.ietf.org/html/rfc5234</a>
+   <dt id="biblio-rfc5890"><a class="self-link" href="#biblio-rfc5890"></a>[RFC5890]
+   <dd>J. Klensin. <a href="https://tools.ietf.org/html/rfc5890">Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework</a>. August 2010. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc5890">https://tools.ietf.org/html/rfc5890</a>
    <dt id="biblio-rfc6265"><a class="self-link" href="#biblio-rfc6265"></a>[RFC6265]
    <dd>A. Barth. <a href="https://tools.ietf.org/html/rfc6265">HTTP State Management Mechanism</a>. April 2011. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc6265">https://tools.ietf.org/html/rfc6265</a>
    <dt id="biblio-rfc7234"><a class="self-link" href="#biblio-rfc7234"></a>[RFC7234]
@@ -1433,11 +1557,6 @@ host and its subdomains.</p>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
    <div class="issue"> Monkey patching! Talk with Anne.<a href="#issue-3ded38d3"> ↵ </a></div>
-   <div class="issue"> This happens <em>after</em> <code>Set-Cookie</code> headers are
-  processed. If we clear cookies, we clear all of them. This is intentional,
-  and <a data-link-type="dfn" href="#retaincookies"><code>retainCookies</code></a> is what we would offer to folks who
-  want to retain certain cookies. Perhaps we need a mechanism to allow only
-  certain cookies to be retained?<a href="#issue-16edebe8"> ↵ </a></div>
    <div class="issue"> Some have suggested that this might not be a restriction we want
   (see
   <a href="https://lists.w3.org/Archives/Public/public-webappsec/2015Jun/0032.html">Martin
