@@ -332,8 +332,8 @@ One should note that being a [secure document][] (e.g. a document delivered
 over HTTPS) is not necessary for the use of integrity validation. Because
 resource integrity is only an application level security tool, and it does not
 change the security state of the user agent, a [secure document] is
-unnecessary. However, if integrity is used in other than a [secure document][] (e.g.
-a document delivered over HTTP), authors should be aware that the integrity
+unnecessary. However, if integrity is used in something other than a [secure document][]
+(e.g. a document delivered over HTTP), authors should be aware that the integrity
 provides <em>no security guarantees at all</em>. For this reason, authors should
 only deliver integrity metadata on a [potentially secure origin][].  See
 [Non-secure contexts remain non-secure][] for more discussion.
