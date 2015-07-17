@@ -7,6 +7,7 @@ clean:
 	rm -rf ./referrer-policy/index.html
 
 CLEAR: clear-site-data/index.html
+CLEAR-FPWD: clear-site-data/published/2015-07-FPWD.html
 CREDENTIAL: credentialmanagement/index.html
 CREDENTIAL-FPWD: credentialmanagement/published/2015-04-FPWD.html
 CSP-PINNING: csp-pinning/index.html
@@ -25,6 +26,9 @@ UPGRADE-WD: upgrade/published/WD.html
 
 clear-site-data/index.html: clear-site-data/index.src.html biblio.json
 	bikeshed -f spec ./clear-site-data/index.src.html
+
+clear-site-data/published/2015-07-FPWD.html: clear-site-data/index.src.html biblio.json
+	bikeshed -f spec --md-status=FPWD --md-date=2015-07-30 ./clear-site-data/index.src.html ./clear-site-data/published/2015-07-FPWD.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 	bikeshed -f spec ./csp-pinning/index.src.html
