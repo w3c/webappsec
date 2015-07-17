@@ -676,7 +676,7 @@ with a value of [`no-transform`][notransform].
 ### Non-secure contexts remain non-secure
 
 [Integrity metadata][] delivered to a context that is not a [secure context],
-such as an only protects an origin against a compromise of the
+such as an HTTP page, only protects an origin against a compromise of the
 server where an external resources is hosted. Network attackers can alter the
 digest in-flight (or remove it entirely, or do absolutely anything else to the
 document), just as they could alter the response the hash is meant to validate.
