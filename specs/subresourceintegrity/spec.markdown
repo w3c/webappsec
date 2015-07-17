@@ -718,7 +718,7 @@ logged into a particular service.
 Moreover, attackers can brute-force specific values in an otherwise
 static resource: consider a JSON response that looks like this:
 
-    {'status': 'authenticated', 'username': 'Stephan Falken'}
+    {'status': 'authenticated', 'username': 'admin'}
 {:.example}
 
 An attacker can precompute hashes for the response with a variety of
