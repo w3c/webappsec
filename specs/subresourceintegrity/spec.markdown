@@ -243,7 +243,7 @@ request's [integrity metadata][], and MAY support additional hash functions.
 #### Agility
 
 Multiple sets of [integrity metadata][] may be associated with a single
-resource in order to provide agility in the face of future discoveries.
+resource in order to provide agility in the face of future cryptographic discoveries.
 For example, the resource described in the previous section may be described
 by either of the following hash expressions:
 
