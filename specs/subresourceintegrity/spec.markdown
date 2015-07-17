@@ -60,7 +60,7 @@ and future versions of the specification are likely to expand this coverage.
 <section>
 ### Goals
 
-1.  Compromise of the third-party service should not automatically mean
+1.  Compromise of a third-party service should not automatically mean
     compromise of every site which includes its scripts. Content authors
     will have a mechanism by which they can specify expectations for
     content they load, meaning for example that they could load a
@@ -277,7 +277,7 @@ stronger hash functions as they become available.
 <section>
 #### Priority
 
-User agents must provide a mechanism of determining the relative priority of two
+User agents must provide a mechanism for determining the relative priority of two
 hash functions and return the empty string if the priority is equal. That is, if
 a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
 b)</dfn> it would return the hash function the user agent considers the most
