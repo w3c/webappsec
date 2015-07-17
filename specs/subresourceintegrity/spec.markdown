@@ -29,7 +29,7 @@ impunity. Ideally, authors would not only be able to pin the keys of a
 server, but also pin the _content_, ensuring that an exact representation of
 a resource, and _only_ that representation, loads and executes.
 
-This document specifies such a validation scheme, extending several HTML
+This document specifies such a validation scheme, extending two HTML
 elements with an `integrity` attribute that contains a cryptographic hash of
 the representation of the resource the author expects to load. For instance,
 an author may wish to load some framework from a shared server rather than hosting it
