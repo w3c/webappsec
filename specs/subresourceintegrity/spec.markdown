@@ -353,7 +353,7 @@ The following algorithm details these restrictions:
     <var>resource</var>'s origin, return `true`.
 4.  Return `false`.
 
-Step 3 returns `true` if the fetch was a CORS-enabled request. If the
+Step 2 returns `true` if the fetch was a CORS-enabled request. If the
 fetch failed the CORS checks, it won't be available to us for integrity
 checking because it won't have loaded successfully.
 {:.note}
