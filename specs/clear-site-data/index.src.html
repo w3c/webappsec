@@ -97,6 +97,12 @@ spec: MIX; urlPrefix: https://w3c.github.io/webappsec/specs/mixedcontent/
       text: potentially secure origin
       text: potentially secure url
       text: potentially secure
+spec: SECURE; urlPrefix: https://w3c.github.io/webappsec/specs/powerfulfeatures/
+  type: dfn
+    text: secure context
+spec: STORAGE; urlPrefix: https://storage.spec.whatwg.org/
+  type: interface
+    text: StorageManager
 spec: URL; urlPrefix: http://www.w3.org/TR/url/
   type: interface
     text: URL; url: concept-url
@@ -310,8 +316,8 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   Parsing details can be found in [[#parsing]].
 
-  User agent conformance details are detailed in [[#clear]]. Those steps
-  represent the following requirements when the header is present in a
+  User agent conformance details are detailed in [[#clear-response]]. Those
+  steps represent the following requirements when the header is present in a
   <a>response</a> (<var>response</var>):
 
   1.  User agents MUST ignore the <a>Clear-Site-Data</a> header if it is
@@ -362,6 +368,61 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
       {{URL/host}} is a subdomain of <var>response</var>'s {{Response/url}}'s
       {{URL/host}} MUST be neutered.
 
+  <h3 id="dom-api">JavaScript API</h3>
+
+  ISSUE: This might live more cleanly in [[STORAGE]].
+
+  <div class="example">
+    Megacorp, Inc. wants to remove data in response to a user's activity on
+    their site. They can execute the following JavaScript to clear all the
+    relevant data for a user:
+
+    <pre>
+      navigator.storage.<a method>clear()</a>;
+    </pre>
+
+    If they only wished to clear the otherwise inaccessible cache for the
+    current origin and all subdomains:
+
+    <pre>
+      navigator.storage.<a method>clear</a>({
+        <a dict-member>types</a>: [ "cache" ],
+        <a dict-member>includeSubdomains</a>: true
+      });
+    </pre>
+  </div>
+
+  <pre class="idl">
+    enum StorageClearType {
+      "cache",
+      "cookies",
+      "domStorage",
+      "executionContexts"
+    };
+
+    dictionary StorageClearOptions {
+      sequence&lt;StorageClearType&gt; types;
+      boolean includeSubdomains = false;
+    };
+
+    partial interface StorageManager {
+      Promise&lt;void&gt; clear(StorageClearOptions options);
+    };
+  </pre>
+  <dl dfn-for="StorageManager">
+    <dt><dfn method lt="clear(options)">clear(options)</dfn></dt>
+    <dd>
+      Clears data based on the values in the <var>options</var> argument.
+      Returns a Promise that resolves when clearing is complete. If no
+      {{StorageClearOptions/types}} are specified, all data types will be
+      cleared.
+
+      <pre class="argumentdef" for="StorageManager/clear(options)">
+        options: The data to clear.
+      </pre>
+    </dd>
+  </dl>
+
   <h3 id="fetch-integration">Fetch Integration</h3>
 
   ISSUE: Monkey patching! Talk with Anne.
@@ -372,7 +433,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   execute the following step:
 
   9.  If <var>response</var>'s <a>header list</a> contains a header named
-      <a><code>Clear-Site-Data</code></a>, then execute [[#clear]] on
+      <a><code>Clear-Site-Data</code></a>, then execute [[#clear-response]] on
       <var>response</var>.
 
   Note: This happens <em>after</em> <code>Set-Cookie</code> headers are
@@ -465,7 +526,7 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
   7.  Return <code>Matches</code>.
 
-  <h3 id="clear">
+  <h3 id="clear-response">
     Clear data for <var>response</var>
   </h3>
 
@@ -487,30 +548,74 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   3.  Let <var>subdomain state</var> be the result of
       [[#should-include-subdomains]] executed on <var>response</var>.
 
-  4.  If <var>types</var> contains "<code>executionContexts</code>", execute
-      [[#neuter-contexts]] on <var>response</var>'s {{Response/url}}'s
-      <a>origin</a>, with <var>subdomain state</var>.
-
-  5.  If <var>types</var> contains "<code>cookies</code>", execute
-      [[#clear-cookies]] on <var>response</var>'s {{Response/url}}'s
-      <a>origin</a>, with <var>subdomain state</var>.
-
-  6.  If <var>types</var> contains "<code>domStorage</code>", execute
-      [[#clear-dom]] on <var>response</var>'s {{Response/url}}'s
-      <a>origin</a>, with <var>subdomain state</var>.
-
-  7.  If <var>types</var> contains "<code>cache</code>", execute
-      [[#clear-cache]] on <var>response</var>'s {{Response/url}}'s
-      <a>origin</a>, with <var>subdomain state</var>.
-
-  8.  If <var>types</var> contains "<code>executionContexts</code>", execute
-      [[#reload-contexts]] on <var>response</var>'s {{Response/url}}'s
-      <a>origin</a>, with <var>subdomain state</var>.
+  4.  Execute [[#clear-internal]] on <var>types</var>, <var>response</var>'s
+      {{Response/url}}'s <a>origin</a>, and <var>subdomain state</var>.
 
   Note: Especially given the cross-context implications, user agents are
   are encouraged to give web developers some mechanism by which the clearing
   operation can be debugged. This might take the form of a console message or
   timeline entry indicating success.
+
+  <h3 id="clear-api">
+    Clear data for <var>storageRequestOptions</var>
+  </h3>
+
+  Given a {{StorageClearOptions}} (<var>options</var>), this algorithm
+  determines what needs to be cleared, returns a Promise, and executes the
+  request asynchronously.
+
+  1.  If the <a>incumbent settings object</a> is not a <a>secure context</a>,
+      return a <code>Promise</code> rejected with
+      <code>NotSupportedError</code>.
+
+  2.  Let <var>promise</var> be a newly created <code>Promise</code> object.
+
+  3.  Return <var>promise</var>, and execute the remaining steps asynchronously.
+
+  4.  Let <var>subdomain state</var> be <a><code>Include Subdomains</code></a>
+      if <var>options</var>' {{StorageClearOptions/includeSubdomains}} property
+      is <code>true</code>, and <a><code>Exclude Subdomains</code></a>
+      otherwise.
+
+  5.  Let <var>types</var> be an empty list.
+
+  6.  If <var>options</var>' {{StorageClearOptions/types}} is an empty sequence:
+
+      1. Append <code>cache</code>, <code>cookies</code>,
+         <code>domStorage</code>, and <code>executionContexts</code> to
+         <var>types</var>.
+
+  7.  Otherwise, for each {{StorageClearType}} <var>type</var> in
+      <var>options</var>' {{StorageClearOptions/types}} property:
+
+      1. Append <var>type</var> to <var>types</var>.
+
+  8.  Execute [[#clear-internal]] on <var>types</var>, the <a>incumbent
+      settings object</a>'s <a>origin</a>, and <var>subdomain state</var>.
+
+  9.  Resolve <var>promise</var> with <code>undefined</code>.
+
+  <h3 id="clear-internal">
+    Clear <var>types</var> for <var>origin</var> with <var>subdomain
+    state</var>
+  </h3>
+
+  1.  If <var>types</var> contains "<code>executionContexts</code>", execute
+      [[#neuter-contexts]] on <var>origin</var>, with <var>subdomain
+      state</var>.
+
+  2.  If <var>types</var> contains "<code>cookies</code>", execute
+      [[#clear-cookies]] on <var>origin</var>, with <var>subdomain state</var>.
+
+  3.  If <var>types</var> contains "<code>domStorage</code>", execute
+      [[#clear-dom]] on <var>origin</var>, with <var>subdomain state</var>.
+
+  4.  If <var>types</var> contains "<code>cache</code>", execute
+      [[#clear-cache]] on <var>origin</var>, with <var>subdomain state</var>.
+
+  5.  If <var>types</var> contains "<code>executionContexts</code>", execute
+      [[#reload-contexts]] on <var>origin</var>, with <var>subdomain
+      state</var>.
 
   <h4 id="neuter-contexts">
     Neuter browsing contexts matching <var>origin</var> with
