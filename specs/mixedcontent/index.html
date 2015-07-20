@@ -202,7 +202,8 @@ encrypted and authenticated document.</p>
       <li><a href="#requirements-forms"><span class="secno">7.2</span> <span class="content">Form Submission</span></a>
       <li><a href="#requirements-ux"><span class="secno">7.3</span> <span class="content">UI Requirements</span></a>
       <li><a href="#requirements-user-controls"><span class="secno">7.4</span> <span class="content">User Controls</span></a>
-      <li><a href="#further-action"><span class="secno">7.5</span> <span class="content">Further Action</span></a>
+      <li><a href="#service-workers"><span class="secno">7.5</span> <span class="content">Service Workers</span></a>
+      <li><a href="#further-action"><span class="secno">7.6</span> <span class="content">Further Action</span></a>
      </ul>
     <li><a href="#acknowledgements"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content">Conformance</span></a>
@@ -1005,8 +1006,7 @@ directive-value = ""
        <ol>
           
         <li>
-            If <var>request</var>’s <code>window</code> is not an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#settings-object">environment
-            settings object</a> (e.g. it is either <code>client</code> or
+            If <var>request</var>’s <code>window</code> is
             <code>no-window</code>, return <strong>blocked</strong>.
           
         
@@ -1023,6 +1023,13 @@ directive-value = ""
 
             
          <ol>
+              
+          <li>
+                If <var>request</var>’s <code>window</code> is the same as
+                <var>request</var>’s <code>client</code>, return
+                <strong>blocked</strong>.
+              
+          
               
           <li>
                 If <var>request</var>’s <code>mode</code> is not
@@ -1067,11 +1074,12 @@ directive-value = ""
      
 
 
-     <p class="note" role="note">Note: We special-case <code>fetch</code> in order to allow Service Workers
-    to passthrough requests from Documents. We rely on the request’s
-    <code>window</code> property to be set to an environment settings object
-    when a Document initiates a fetch via some declarative mechanism, and to
-    <code>no-window</code> or <code>client</code> when called imperatively.</p>
+     <p class="note" role="note">Note: We special-case <code>fetch</code> to allow it as optionally-blockable
+    in the event that a Service Worker is making a <code>no-cors</code> request
+    in response to a Fetch event generated from a Document. In that case, the
+    request’s <code>window</code> property will be an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#settings-object">environment settings
+    object</a> distinct from its <code>client</code> (the former will be the
+    Document’s settings object, the latter the Service Worker’s).</p>
      
   
     </section>
@@ -1397,7 +1405,58 @@ directive-value = ""
   
     <section>
     
-     <h3 class="heading settled" data-level="7.5" id="further-action"><span class="secno">7.5. </span><span class="content">Further Action</span><a class="self-link" href="#further-action"></a></h3>
+     <h3 class="heading settled" data-level="7.5" id="service-workers"><span class="secno">7.5. </span><span class="content">Service Workers</span><a class="self-link" href="#service-workers"></a></h3>
+     
+
+
+     <p>The fact that Service Workers sit inbetween a document and the network means
+    that we need to special-case requests made in those contexts. In particular,
+    they should be able to cache the results of insecure requests, provided that
+    those requests were triggered from a document (which, presumably, ensures
+    that they’ll be used in an <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> context). Those
+    insecure results, however, cannot be exposed to the Service Worker, nor
+    should the Service Worker be allowed to launder <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a>
+    requests into <a data-link-type="dfn" href="#blockable">blockable</a> responses.</p>
+     
+
+
+     <p>To that end:</p>
+     
+
+
+     <ol>
+      <li data-md="">
+       <p><a href="#should-block-fetch">§5.2 
+      Should fetching request be blocked as mixed content?</a> has some carve-outs for the <code>fetch</code>
+  request context, with the intent of allowing a Service Worker to copy
+  a request as part of its response to a Fetch event (e.g.
+  <code>fetch(event.response)</code> should be executable inside the
+  event handler.</p>
+       
+
+
+       <p>The <code>fetch</code> request context will continue to be treated as
+  <a data-link-type="dfn" href="#blockable">blockable</a> when executed outside the context of a Fetch event,
+  which of course includes document contexts.</p>
+       
+
+
+      <li data-md="">
+       <p><a href="#should-block-response">§5.3 
+      Should response to request be blocked as mixed
+      content?</a> verifies that the incoming response has the
+  same security characteristics that were allowed for the request. That
+  is, a Service Worker will not be able to replace a request for a secure
+  script with a cached response for an insecure resource.</p>
+       
+</ol>
+       
+    </section>
+
+  
+    <section>
+    
+     <h3 class="heading settled" data-level="7.6" id="further-action"><span class="secno">7.6. </span><span class="content">Further Action</span><a class="self-link" href="#further-action"></a></h3>
      
 
 
