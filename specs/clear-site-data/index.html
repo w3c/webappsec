@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Clear Site Data</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-07-17">17 July 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-07-20">20 July 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -105,7 +105,7 @@
   <div class="p-summary" data-fill-with="abstract">
    <p>This document defines an imperative mechanism which allows web developers to
 
-instruct a user agent to clear a user’s locally stored data related to a
+instruct a user agent to clear a site’s locally stored data related to a
 host and its subdomains.</p>
 
 </div>
@@ -489,8 +489,7 @@ host and its subdomains.</p>
     <p>Parsing details can be found in <a href="#parsing">§3.1 Parsing</a>.</p>
 
 
-    <p>User agent conformance details are detailed in <a href="#clear-response">§3.2 
-    Clear data for response</a>. Those
+    <p>User agent conformance details are detailed in <a href="#clear-response">§3.2 Clear data for response</a>. Those
   steps represent the following requirements when the header is present in a
   <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a> (<var>response</var>):</p>
 
@@ -630,11 +629,6 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
       cleared.
 
 
-      <p class="issue" id="issue-398e4047"><a class="self-link" href="#issue-398e4047"></a> Does this make any sense, given that we’ll be sandboxing and
-      reloading this execution context?</p>
-      
-
-
             
       <table class="argumentdef data definition-table">
                 
@@ -692,8 +686,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
     <ol>
      <li data-md="">
       <p>If <var>response</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-list">header list</a> contains a header named
-  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a>, then execute <a href="#clear-response">§3.2 
-    Clear data for response</a> on
+  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a>, then execute <a href="#clear-response">§3.2 Clear data for response</a> on
   <var>response</var>.</p>
       
 </ol>
@@ -897,22 +890,19 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
 
        <li data-md="">
-        <p>Let <var>types</var> be the result of <a href="#get-types">§3.1.1 
-    Which data types ought to be removed for response?</a> executed on
+        <p>Let <var>types</var> be the result of <a href="#get-types">§3.1.1 Which data types ought to be removed for response?</a> executed on
   <var>response</var>.</p>
         
 
 
        <li data-md="">
         <p>Let <var>subdomain state</var> be the result of
-  <a href="#should-include-subdomains">§3.1.2 
-    Should subdomains' data be cleared for response</a> executed on <var>response</var>.</p>
+  <a href="#should-include-subdomains">§3.1.2 Should subdomains' data be cleared for response</a> executed on <var>response</var>.</p>
         
 
 
        <li data-md="">
-        <p>Execute <a href="#clear-internal">§3.4 
-    Clear types for origin with subdomain
+        <p>Execute <a href="#clear-internal">§3.4 Clear types for origin with subdomain
     state</a> on <var>types</var>, <var>response</var>’s
   <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, and <var>subdomain state</var>.</p>
         
@@ -939,6 +929,16 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
         <p>If the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a> is not a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#secure-context">secure context</a>,
   return a <code>Promise</code> rejected with
   <code>NotSupportedError</code>.</p>
+        
+
+
+       <li data-md="">
+        <p>Let <var>promise</var> be a newly created <code>Promise</code> object.</p>
+        
+
+
+       <li data-md="">
+        <p>Return <var>promise</var>, and execute the remaining steps asynchronously.</p>
         
 
 
@@ -983,10 +983,14 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
         
 
        <li data-md="">
-        <p>Execute <a href="#clear-internal">§3.4 
-    Clear types for origin with subdomain
+        <p>Execute <a href="#clear-internal">§3.4 Clear types for origin with subdomain
     state</a> on <var>types</var>, the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent
   settings object</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, and <var>subdomain state</var>.</p>
+        
+
+
+       <li data-md="">
+        <p>Resolve <var>promise</var> with <code>undefined</code>.</p>
         
 </ol>
   
@@ -999,8 +1003,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
       <ol>
        <li data-md="">
         <p>If <var>types</var> contains "<code>executionContexts</code>", execute
-  <a href="#neuter-contexts">§3.4.1 
-    Neuter browsing contexts matching origin with
+  <a href="#neuter-contexts">§3.4.1 Neuter browsing contexts matching origin with
     subdomain state</a> on <var>origin</var>, with <var>subdomain
   state</var>.</p>
         
@@ -1008,30 +1011,26 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
        <li data-md="">
         <p>If <var>types</var> contains "<code>cookies</code>", execute
-  <a href="#clear-cookies">§3.4.4 
-    Clear cookies for origin with subdomain state</a> on <var>origin</var>, with <var>subdomain state</var>.</p>
+  <a href="#clear-cookies">§3.4.4 Clear cookies for origin with subdomain state</a> on <var>origin</var>, with <var>subdomain state</var>.</p>
         
 
 
        <li data-md="">
         <p>If <var>types</var> contains "<code>domStorage</code>", execute
-  <a href="#clear-dom">§3.4.5 
-    Clear DOM-accessible storage for origin with
+  <a href="#clear-dom">§3.4.5 Clear DOM-accessible storage for origin with
     subdomain state</a> on <var>origin</var>, with <var>subdomain state</var>.</p>
         
 
 
        <li data-md="">
         <p>If <var>types</var> contains "<code>cache</code>", execute
-  <a href="#clear-cache">§3.4.3 
-    Clear cache for origin with subdomain state</a> on <var>origin</var>, with <var>subdomain state</var>.</p>
+  <a href="#clear-cache">§3.4.3 Clear cache for origin with subdomain state</a> on <var>origin</var>, with <var>subdomain state</var>.</p>
         
 
 
        <li data-md="">
         <p>If <var>types</var> contains "<code>executionContexts</code>", execute
-  <a href="#reload-contexts">§3.4.2 
-    Reload browsing contexts matching origin with
+  <a href="#reload-contexts">§3.4.2 Reload browsing contexts matching origin with
     subdomain state</a> on <var>origin</var>, with <var>subdomain
   state</var>.</p>
         
@@ -1049,8 +1048,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
   contexts</a> which the user agent knows about, and sandboxes each in order
   to prevent them from recreating cleared data (from in-memory JavaScript
   variables, for instance). Once data is cleared, the affected browsing
-  contexts will be hard-reloaded, as defined in <a href="#reload-contexts">§3.4.2 
-    Reload browsing contexts matching origin with
+  contexts will be hard-reloaded, as defined in <a href="#reload-contexts">§3.4.2 Reload browsing contexts matching origin with
     subdomain state</a>:</p>
 
 
@@ -1076,8 +1074,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
 
          <li data-md="">
-          <p>If <a href="#matches-origin">§3.1.3 
-    Does origin match origin to clear and
+          <p>If <a href="#matches-origin">§3.1.3 Does origin match origin to clear and
     subdomain state</a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>context</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and
   <code>subdomain state</code>:</p>
@@ -1126,8 +1123,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
 
          <li data-md="">
-          <p>If <a href="#matches-origin">§3.1.3 
-    Does origin match origin to clear and
+          <p>If <a href="#matches-origin">§3.1.3 Does origin match origin to clear and
     subdomain state</a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>context</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and
   <code>subdomain state</code>:</p>
@@ -1272,8 +1268,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
         <ol>
          <li data-md="">
-          <p>If <a href="#matches-origin">§3.1.3 
-    Does origin match origin to clear and
+          <p>If <a href="#matches-origin">§3.1.3 Does origin match origin to clear and
     subdomain state</a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>area</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and
   <code>subdomain state</code>:</p>
@@ -1296,8 +1291,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
         <ol>
          <li data-md="">
-          <p>If <a href="#matches-origin">§3.1.3 
-    Does origin match origin to clear and
+          <p>If <a href="#matches-origin">§3.1.3 Does origin match origin to clear and
     subdomain state</a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>area</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and
   <code>subdomain state</code>:</p>
@@ -1320,8 +1314,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
         <ol>
          <li data-md="">
-          <p>If <a href="#matches-origin">§3.1.3 
-    Does origin match origin to clear and
+          <p>If <a href="#matches-origin">§3.1.3 Does origin match origin to clear and
     subdomain state</a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>database</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>,
   and <code>subdomain state</code>:</p>
@@ -1365,8 +1358,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
         <ol>
          <li data-md="">
-          <p>If <a href="#matches-origin">§3.1.3 
-    Does origin match origin to clear and
+          <p>If <a href="#matches-origin">§3.1.3 Does origin match origin to clear and
     subdomain state</a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>database</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>,
   and <code>subdomain state</code>:</p>
@@ -1393,8 +1385,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
         <ol>
          <li data-md="">
-          <p>If <a href="#matches-origin">§3.1.3 
-    Does origin match origin to clear and
+          <p>If <a href="#matches-origin">§3.1.3 Does origin match origin to clear and
     subdomain state</a> returns <a data-link-type="dfn" href="#matches"><code>Matches</code></a> when
   executed on <var>registration</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/service-workers/#dfn-scope-url">scope URL</a>’s
   <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>, <var>origin</var>, and <code>subdomain state</code>:</p>
@@ -1514,8 +1505,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
        <dt>Specification document
        
     
-       <dd>This specification (See <a href="#header">§2.1 
-    The Clear-Site-Data HTTP Response Header Field</a>)
+       <dd>This specification (See <a href="#header">§2.1 The Clear-Site-Data HTTP Response Header Field</a>)
        
   
       </dl>
@@ -1785,8 +1775,6 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
    <div class="issue"> This might live more cleanly in <a data-link-type="biblio" href="#biblio-storage">[STORAGE]</a>.<a href="#issue-3153cbda"> ↵ </a></div>
-   <div class="issue"> Does this make any sense, given that we’ll be sandboxing and
-      reloading this execution context?<a href="#issue-398e4047"> ↵ </a></div>
    <div class="issue"> Monkey patching! Talk with Anne.<a href="#issue-3ded38d3"> ↵ </a></div>
    <div class="issue"> Some have suggested that this might not be a restriction we want
   (see
