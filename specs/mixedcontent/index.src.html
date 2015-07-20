@@ -683,8 +683,7 @@ type: element-attr
 
         <ol>
           <li>
-            If <var>request</var>'s <code>window</code> is not an <a>environment
-            settings object</a> (e.g. it is either <code>client</code> or
+            If <var>request</var>'s <code>window</code> is
             <code>no-window</code>, return <strong>blocked</strong>.
           </li>
           <li>
@@ -696,6 +695,11 @@ type: element-attr
             If <var>context</var> is <code>fetch</code>:
             
             <ol>
+              <li>
+                If <var>request</var>'s <code>window</code> is the same as
+                <var>request</var>'s <code>client</code>, return
+                <strong>blocked</strong>.
+              </li>
               <li>
                 If <var>request</var>'s <code>mode</code> is not
                 <code>no-cors</code>, return <strong>blocked</strong>.
@@ -722,11 +726,12 @@ type: element-attr
       </li>
     </ol>
 
-    Note: We special-case <code>fetch</code> in order to allow Service Workers
-    to passthrough requests from Documents. We rely on the request's
-    <code>window</code> property to be set to an environment settings object
-    when a Document initiates a fetch via some declarative mechanism, and to
-    <code>no-window</code> or <code>client</code> when called imperatively.
+    Note: We special-case <code>fetch</code> to allow it as optionally-blockable
+    in the event that a Service Worker is making a <code>no-cors</code> request
+    in response to a Fetch event generated from a Document. In that case, the
+    request's <code>window</code> property will be an <a>environment settings
+    object</a> distinct from its <code>client</code> (the former will be the
+    Document's settings object, the latter the Service Worker's).
   </section>
 
   <section>
