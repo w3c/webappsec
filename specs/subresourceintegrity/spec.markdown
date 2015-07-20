@@ -328,12 +328,12 @@ resources accessed over a `file` scheme URL are unlikely to be
 eligible for integrity checks.
 {:.note}
 
-One should note that being a [secure document][] (e.g. a document delivered
+One should note that being a [secure document][] (e.g., a document delivered
 over HTTPS) is not necessary for the use of integrity validation. Because
 resource integrity is only an application level security tool, and it does not
 change the security state of the user agent, a [secure document] is
 unnecessary. However, if integrity is used in something other than a [secure document][]
-(e.g. a document delivered over HTTP), authors should be aware that the integrity
+(e.g., a document delivered over HTTP), authors should be aware that the integrity
 provides <em>no security guarantees at all</em>. For this reason, authors should
 only deliver integrity metadata on a [potentially secure origin][].  See
 [Non-secure contexts remain non-secure][] for more discussion.
@@ -598,7 +598,7 @@ integrity check <em>and</em> MUST return a network error, as described in
 [Modifications to Fetch][].
 
 On a failed integrity check, an <code>error</code> event is thrown. Developers
-wishing to provide a canonical fallback resource (e.g. a resource not served
+wishing to provide a canonical fallback resource (e.g., a resource not served
 from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
 <code>error</code> event and provide an appropriate handler to replace the
 failed resource with a different one.
