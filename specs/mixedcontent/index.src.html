@@ -683,13 +683,27 @@ type: element-attr
 
         <ol>
           <li>
+            If <var>request</var>'s <code>window</code> is not an <a>environment
+            settings object</a> (e.g. it is either <code>client</code> or
+            <code>no-window</code>, return <strong>blocked</strong>.
+          </li>
+          <li>
             If <var>request</var>'s <code>mode</code> is <code>CORS</code> or
             <code>CORS-with-forced-preflight</code>, return
             <strong>blocked</strong>.
           </li>
           <li>
-            If <var>context</var> is not an <a>optionally-blockable request
-            context</a>, return <strong>blocked</strong>.
+            If <var>context</var> is <code>fetch</code>:
+            
+            <ol>
+              <li>
+                If <var>request</var>'s <code>mode</code> is not
+                <code>no-cors</code>, return <strong>blocked</strong>.
+              </li>
+            </ol> 
+          <li>
+            Otherwise, if <var>context</var> is an <a>optionally-blockable
+            request context</a>, return <strong>blocked</strong>.
           </li>
           <li>
             If the user agent is configured to block <a>optionally-blockable</a>
@@ -707,6 +721,12 @@ type: element-attr
         return <strong>allowed</strong>.
       </li>
     </ol>
+
+    Note: We special-case <code>fetch</code> in order to allow Service Workers
+    to passthrough requests from Documents. We rely on the request's
+    <code>window</code> property to be set to an environment settings object
+    when a Document initiates a fetch via some declarative mechanism, and to
+    <code>no-window</code> or <code>client</code> when called imperatively.
   </section>
 
   <section>
@@ -753,8 +773,9 @@ type: element-attr
             <code>authenticated</code>, return <strong>blocked</strong>.
 
             Note: This covers both cases in which unauthenticated resources are
-            requested, as well as cases in which the TLS handshake succeeds,
-            but the user agent chooses to hold it to a higher standard.
+            returned (by a Service Worker, for example), as well as cases in
+            which the TLS handshake succeeds, but the user agent chooses to hold
+            it to a higher standard.
           </li>
         </ol>
       </li>
