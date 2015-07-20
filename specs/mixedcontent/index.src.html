@@ -958,6 +958,36 @@ type: element-attr
   </section>
 
   <section>
+    <h3 id="service-workers">Service Workers</h3>
+
+    The fact that Service Workers sit inbetween a document and the network means
+    that we need to special-case requests made in those contexts. In particular,
+    they should be able to cache the results of insecure requests, provided that
+    those requests were triggered from a document (which, presumably, ensures
+    that they'll be used in an <a>optionally-blockable</a> context). Those
+    insecure results, however, cannot be exposed to the Service Worker, nor
+    should the Service Worker be allowed to launder <a>optionally-blockable</a>
+    requests into <a>blockable</a> responses.
+
+    To that end:
+
+    1.  [[#should-block-fetch]] has some carve-outs for the <code>fetch</code>
+        request context, with the intent of allowing a Service Worker to copy
+        a request as part of its response to a Fetch event (e.g.
+        <code>fetch(event.response)</code> should be executable inside the
+        event handler.
+
+        The <code>fetch</code> request context will continue to be treated as
+        <a>blockable</a> when executed outside the context of a Fetch event,
+        which of course includes document contexts.
+
+    2.  [[#should-block-response]] verifies that the incoming response has the
+        same security characteristics that were allowed for the request. That
+        is, a Service Worker will not be able to replace a request for a secure
+        script with a cached response for an insecure resource.
+  </section>
+
+  <section>
     <h3 id="further-action">Further Action</h3>
 
     A user agent is encouraged to take further action above and beyond the
