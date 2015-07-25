@@ -412,7 +412,7 @@ the user agent.
     [parsing <var>metadataList</var>][parse].
 2.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
 3.  If [<var>response</var> is not eligible for integrity
-    validation][eligible], return `true`.
+    validation][eligible], return `false`.
 4.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
 5.  For each <var>item</var> in <var>metadata</var>:
@@ -448,12 +448,10 @@ correctly, even if the HTTPS version of a resource differs from the HTTP
 version.
 {:.note}
 
-This algorithm returns `true` if the response is not eligible for integrity
-validation, on the general principle that client errors (in this case, an
-attempt to validate the integrity of a response that is not accessible via
-same-origin or CORS) should fail open since they are not the result of an attack
-in the threat model of this specification. However, user agents SHOULD report
-a warning message about this failure in the developer console.
+This algorithm returns `false` if the response is not eligible for integrity
+validation since Subresource Integrity requires CORS, and it is a logical error
+to attempt to use it without CORS. Additionally, user agents SHOULD report a
+warning message to the developer console to explain this failure.
 {:.note}
 
 [parse]: #parse-metadata.x
