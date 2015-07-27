@@ -301,6 +301,8 @@ only to simplify the algorithm description.
 
 <section>
 #### Apply <var>algorithm</var> to <var>response</var>
+{: #apply-algorithm-to-response}
+[apply-algorithm]: #apply-algorithm-to-response
 
 1.  Let <var>result</var> be the result of [applying <var>algorithm</var>][apply-algorithm]
     to the [representation data][representationdata] without any content-codings
@@ -310,11 +312,10 @@ only to simplify the algorithm description.
 2.  Let <var>encodedResult</var> be result of base64-encoding
     <var>result</var>.
 3.  Return <var>encodedResult</var>.
-
-[apply-algorithm]: #apply-algorithm-to-response
 </section><!-- Algorithms::apply -->
 <section>
 #### Is <var>response</var> eligible for integrity validation
+{: #is-response-eligible-for-integrity-validation}
 [eligible]: #is-response-eligible-for-integrity-validation
 
 In order to mitigate an attacker's ability to read data cross-origin by
