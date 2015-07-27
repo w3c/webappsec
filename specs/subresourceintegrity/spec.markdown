@@ -364,6 +364,8 @@ checking because it won't have loaded successfully.
 </section><!-- Algorithms::eligible -->
 <section>
 #### Parse <var>metadata</var>.
+{: #parse-metadata}
+[parse]: #parse-metadata
 
 This algorithm accepts a string, and returns either `no metadata`, or a set of
 valid hash expressions whose hash functions are understood by
@@ -386,6 +388,8 @@ the user agent.
 </section><!-- Algorithms::parse -->
 <section>
 #### Get the strongest metadata from <var>set</var>.
+{: #get-the-strongest-metadata-from-set}
+[get-the-strongest]: #get-the-strongest-metadata-from-set
 
 1.  Let <var>result</var> be the empty set and <var>strongest</var> be the empty
     string.
@@ -408,6 +412,8 @@ the user agent.
 </section><!-- /Algorithms::get the strongest metadata -->
 <section>
 #### Does <var>response</var> match <var>metadataList</var>?
+{: #does-response-match-metadatalist}
+[match]: #does-response-match-metadatalist
 
 1.  Let <var>parsedMetadata</var> be the result of
     [parsing <var>metadataList</var>][parse].
@@ -456,10 +462,6 @@ same-origin or CORS) should fail open since they are not the result of an attack
 in the threat model of this specification. However, user agents SHOULD report
 a warning message about this failure in the developer console.
 {:.note}
-
-[parse]: #parse-metadata.x
-[get-the-strongest]: #get-the-strongest-metadata-from-set.x
-[match]: #does-response-match-metadatalist
 </section><!-- Algorithms::Match -->
 </section><!-- Algorithms -->
 
@@ -542,6 +544,7 @@ for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
 
 <section>
 #### The `integrity` attribute
+{: #the-integrity-attribute}
 
 The `integrity` attribute represents [integrity metadata][] for an element.
 The value of the attribute MUST be either the empty string, or at least one
@@ -613,6 +616,7 @@ failed resource with a different one.
 
 <section>
 ###### The `link` element for stylesheets
+{: #the-link-element-for-stylesheets}
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
 `link` element that has a `rel` attribute with the keyword of `stylesheet`,
@@ -631,6 +635,7 @@ value of the element's `integrity` attribute.
 
 <section>
 ###### The `script` element
+{: #the-script-element}
 
 Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
 
