@@ -301,6 +301,8 @@ only to simplify the algorithm description.
 
 <section>
 #### Apply <var>algorithm</var> to <var>response</var>
+{: #apply-algorithm-to-response}
+[apply-algorithm]: #apply-algorithm-to-response
 
 1.  Let <var>result</var> be the result of [applying <var>algorithm</var>][apply-algorithm]
     to the [representation data][representationdata] without any content-codings
@@ -310,11 +312,10 @@ only to simplify the algorithm description.
 2.  Let <var>encodedResult</var> be result of base64-encoding
     <var>result</var>.
 3.  Return <var>encodedResult</var>.
-
-[apply-algorithm]: #apply-algorithm-to-response
 </section><!-- Algorithms::apply -->
 <section>
 #### Is <var>response</var> eligible for integrity validation
+{: #is-response-eligible-for-integrity-validation}
 [eligible]: #is-response-eligible-for-integrity-validation
 
 In order to mitigate an attacker's ability to read data cross-origin by
@@ -363,6 +364,8 @@ checking because it won't have loaded successfully.
 </section><!-- Algorithms::eligible -->
 <section>
 #### Parse <var>metadata</var>.
+{: #parse-metadata}
+[parse]: #parse-metadata
 
 This algorithm accepts a string, and returns either `no metadata`, or a set of
 valid hash expressions whose hash functions are understood by
@@ -385,6 +388,8 @@ the user agent.
 </section><!-- Algorithms::parse -->
 <section>
 #### Get the strongest metadata from <var>set</var>.
+{: #get-the-strongest-metadata-from-set}
+[get-the-strongest]: #get-the-strongest-metadata-from-set
 
 1.  Let <var>result</var> be the empty set and <var>strongest</var> be the empty
     string.
@@ -407,6 +412,8 @@ the user agent.
 </section><!-- /Algorithms::get the strongest metadata -->
 <section>
 #### Does <var>response</var> match <var>metadataList</var>?
+{: #does-response-match-metadatalist}
+[match]: #does-response-match-metadatalist
 
 1.  Let <var>parsedMetadata</var> be the result of
     [parsing <var>metadataList</var>][parse].
@@ -453,10 +460,6 @@ validation since Subresource Integrity requires CORS, and it is a logical error
 to attempt to use it without CORS. Additionally, user agents SHOULD report a
 warning message to the developer console to explain this failure.
 {:.note}
-
-[parse]: #parse-metadata.x
-[get-the-strongest]: #get-the-strongest-metadata-from-set.x
-[match]: #does-response-match-metadatalist
 </section><!-- Algorithms::Match -->
 </section><!-- Algorithms -->
 
@@ -539,6 +542,7 @@ for all possible subresources, i.e., `a`, `audio`, `embed`, `iframe`, `img`,
 
 <section>
 #### The `integrity` attribute
+{: #the-integrity-attribute}
 
 The `integrity` attribute represents [integrity metadata][] for an element.
 The value of the attribute MUST be either the empty string, or at least one
@@ -610,6 +614,7 @@ failed resource with a different one.
 
 <section>
 ###### The `link` element for stylesheets
+{: #the-link-element-for-stylesheets}
 
 Whenever a user agent attempts to [obtain a resource][] pointed to by a
 `link` element that has a `rel` attribute with the keyword of `stylesheet`,
@@ -628,6 +633,7 @@ value of the element's `integrity` attribute.
 
 <section>
 ###### The `script` element
+{: #the-script-element}
 
 Replace step 14.1 of HTML5's ["prepare a script" algorithm][prepare] with:
 
