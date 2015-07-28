@@ -455,7 +455,7 @@ correctly, even if the HTTPS version of a resource differs from the HTTP
 version.
 {:.note}
 
-This algorithm returns `false` if the response is not eligible for integrity
+This algorithm returns `false` if the response is not [eligible] for integrity
 validation since Subresource Integrity requires CORS, and it is a logical error
 to attempt to use it without CORS. Additionally, user agents SHOULD report a
 warning message to the developer console to explain this failure.
