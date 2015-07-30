@@ -1,3 +1,5 @@
+(Note: These were discussion notes for a chat with WebAppSec and the TAG the week of July 14.  I'd consider them somewhat muddled in their thinking and am working on a follow up document that clarifies much of this after we talked through these ideas. -Brad)
+
 100% HTTPS: Speculations on a Roadmap for the entire Web
 ======================================
 
