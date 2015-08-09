@@ -70,6 +70,7 @@ type: dfn
     text: request; url: concept-request
     text: response; url: concept-response
     text: network error; url: concept-network-error
+    text: opaque filtered response; url: concept-filtered-response-opaque
     url: concept-request-client
       text: request client
       text: client
@@ -641,6 +642,53 @@ type: element-attr
   </section>
 
   <section>
+    <h3 id="is-passthrough">
+      Is <var>request</var> a passthrough request?
+    </h3>
+
+    A <dfn>passthrough request</dfn> is a <a>request</a> (<var>request</var>)
+    which is created in a <a>browsing context</a> (e.g. via an <{img}> tag in a
+    document), but serviced by a Service Worker (e.g. by calling
+    <code>fetch(e.request)</code> from within an <code>onfetch</code> event
+    handler). As described in [[#service-workers]], we special-case these kinds
+    of requests in order to allow web developers to layer service workers on top
+    of an existing site which relies on requesting <a>optionally-blockable</a>
+    mixed content.
+
+    More formally, <var>request</var> is a passthrough request if the following
+    conditions hold:
+
+    <ol>
+      <li>
+        <var>request</var>'s <code>context</code> is <code>fetch</code>
+
+        Note: When a request is copied (as in the <code>fetch(e.response)</code>
+        example above), the original <code>context</code> is lost. Here, we
+        ensure that we're dealing with such a request, but we implicitly rely on
+        [[#should-block-fetch]] preventing <a>blockable</a> requests from
+        entering a Service Worker in the first place.
+      </li>
+      <li>
+        <var>request</var>'s <code>window</code> is an <a>environment settings
+        object</a> (and, therefore, <strong>not</strong> <code>no-window</code>)
+
+        Note: We rely on the <code>window</code> property being properly set by
+        [[FETCH]] to the <a>environment settings object</a> responsible for the
+        request in order to ensure that we can render some sort of warning to
+        the user (as described in [[#requirements-ux]]).
+      </li>
+      <li>
+        <var>request</var>'s <code>client</code>'s <a>global object</a> is a
+        {{Window}} object
+
+        Note: We rely on the <code>client</code> property to reflect the origin
+        of the request. Importantly, <var>request</var> isn't a passthrough
+        request if it originated in a <code>WorkerGlobalScope</code> environment.
+      </li>
+    </ol>
+  </section>
+
+  <section>
     <h3 id="should-block-fetch">
       Should fetching <var>request</var> be blocked as mixed content?
     </h3>
@@ -685,28 +733,23 @@ type: element-attr
 
         <ol>
           <li>
-            If <var>request</var>'s <code>window</code> is
-            <code>no-window</code>, return <strong>blocked</strong>.
-          </li>
-          <li>
             If <var>request</var>'s <code>mode</code> is <code>CORS</code> or
             <code>CORS-with-forced-preflight</code>, return
             <strong>blocked</strong>.
           </li>
           <li>
             If <var>context</var> is <code>fetch</code>:
-            
+
             <ol>
               <li>
-                If <var>request</var>'s <code>client</code>'s <a>global
-                object</a> is a {{Window}} object, return
-                <strong>blocked</strong>.
+                If <var>request</var> is <strong>not</strong> a <a>passthrough
+                request</a>, return <strong>blocked</strong>.
               </li>
               <li>
                 If <var>request</var>'s <code>mode</code> is not
                 <code>no-cors</code>, return <strong>blocked</strong>.
               </li>
-            </ol> 
+            </ol>
           <li>
             Otherwise, if <var>context</var> is a <a>blockable request
             context</a>, return <strong>blocked</strong>.
@@ -745,8 +788,10 @@ type: element-attr
     Note: <a href="#should-block-fetch">If a request proceeds</a>, we still
     might want to block the response based on the state of the connection
     that generated the response (e.g. because the request is <a>blockable</a>,
-    but the connection is <a>insecure</a>). This algorithm is used to make
-    that determination.
+    but the connection is <a>insecure</a>), and we also need to ensure that
+    Service Worker doesn't accidentally return an <a>insecure</a> response
+    for a <a>blockable</a> request. This algorithm is used to make that
+    determination.
 
     Given a <a>request</a> <var>request</var> and <a>response</a>
     <var>response</var>, the user agent determines what response should be
@@ -768,23 +813,60 @@ type: element-attr
         <var>request</var>.
       </li>
       <li>
-        If <var>context</var> is not an <a>optionally-blockable request
-        context</a>, or the user agent is configured to block
-        <a>optionally-blockable</a> mixed content, or  <var>request</var>'s
-        <a>client</a>'s <a>strict mixed content checking flag</a> is
-        <code>true</code>:
+        If <var>response</var>'s <a>HTTPS state</a> is not
+        <code>authenticated</code>:
 
         <ol>
           <li>
-            If <var>response</var>'s <a>HTTPS state</a> is not
-            <code>authenticated</code>, return <strong>blocked</strong>.
+            If <var>context</var> is <code>fetch</code>:
 
-            Note: This covers both cases in which unauthenticated resources are
-            returned (by a Service Worker, for example), as well as cases in
-            which the TLS handshake succeeds, but the user agent chooses to hold
-            it to a higher standard.
+            <ol>
+              <li>
+                If <var>request</var> is <strong>not</strong> a <a>passthrough
+                request</a>, return <strong>blocked</strong>.
+              </li>
+              <li>
+                If <var>response</var> is <strong>not</strong> an <a>opaque
+                filtered response</a>, return <strong>blocked</strong>.
+              </li>
+              <li>
+                If the user agent is configured to block
+                <a>optionally-blockable</a> mixed content, return
+                <strong>blocked</strong>.
+              </li>
+              <li>
+                If <var>request</var>'s <a>client</a>'s <a>strict mixed content
+                checking flag</a> is <code>true</code>, return
+                <strong>blocked</strong>.
+              </li>
+            </ol>
+          </li>
+          <li>
+            Otherwise:
+
+            <ol>
+              <li>
+                If <var>context</var> is a <a>blockable request
+                context</a>, return <strong>blocked</strong>.
+              </li>
+              <li>
+                If the user agent is configured to block
+                <a>optionally-blockable</a> mixed content, return
+                <strong>blocked</strong>.
+              </li>
+              <li>
+                If <var>request</var>'s <a>client</a>'s <a>strict mixed content
+                checking flag</a> is <code>true</code>, return
+                <strong>blocked</strong>.
+              </li>
+            </ol>
           </li>
         </ol>
+
+        Note: This covers both cases in which unauthenticated resources are
+        returned (by a Service Worker, for example), as well as cases in
+        which the TLS handshake succeeds, but the user agent chooses to hold
+        it to a higher standard.
       </li>
       <li>Return <strong>allowed</strong>.</li>
     </ol>
