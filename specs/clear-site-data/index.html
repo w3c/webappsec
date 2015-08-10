@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Clear Site Data</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-07-27">27 July 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-08-10">10 August 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -180,6 +180,26 @@ host and its subdomains.</p>
       <li><a href="#header"><span class="secno">2.1</span> <span class="content">
     The <code>Clear-Site-Data</code> HTTP Response Header Field
   </span></a>
+       <ul class="toc">
+        <li><a href="#cache-parameter"><span class="secno">2.1.1</span> <span class="content">
+    The <code>cache</code> parameter
+  </span></a>
+        <li><a href="#cookies-parameter"><span class="secno">2.1.2</span> <span class="content">
+    The <code>cookies</code> parameter
+  </span></a>
+        <li><a href="#domStorage-parameter"><span class="secno">2.1.3</span> <span class="content">
+    The <code>domStorage</code> parameter
+  </span></a>
+        <li><a href="#executionContexts-parameter"><span class="secno">2.1.4</span> <span class="content">
+    The <code>executionContexts</code> parameter
+  </span></a>
+        <li><a href="#includeSubdomains-parameter"><span class="secno">2.1.5</span> <span class="content">
+    The <code>includeSubdomains</code> parameter
+  </span></a>
+        <li><a href="#wildcard-parameter"><span class="secno">2.1.6</span> <span class="content">
+    The <code>*</code> parameter
+  </span></a>
+       </ul>
       <li><a href="#dom-api"><span class="secno">2.2</span> <span class="content">JavaScript API</span></a>
       <li><a href="#fetch-integration"><span class="secno">2.3</span> <span class="content">Fetch Integration</span></a>
      </ul>
@@ -467,106 +487,210 @@ host and its subdomains.</p>
   of a certain set of types. The header is represented by the following ABNF:</p>
 
   
-    <pre>"Clear-Site-Data:" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#data_type_list">data-type-list</a> *[ ";" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> <a data-link-type="dfn" href="#extension">extension</a> *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> ]  *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a>
-
-<dfn data-dfn-type="dfn" data-noexport="" id="data_type_list">data-type-list<a class="self-link" href="#data_type_list"></a></dfn> = "*" / ( <a data-link-type="dfn" href="#type">type</a> *( " " <a data-link-type="dfn" href="#type">type</a> ) )
-<dfn data-dfn-type="dfn" data-noexport="" id="type">type<a class="self-link" href="#type"></a></dfn> = "<dfn data-dfn-type="dfn" data-noexport="" id="domstorage">domStorage<a class="self-link" href="#domstorage"></a></dfn>" / "<dfn data-dfn-type="dfn" data-noexport="" id="cookies">cookies<a class="self-link" href="#cookies"></a></dfn>" / "<dfn data-dfn-type="dfn" data-noexport="" id="executioncontexts">executionContexts<a class="self-link" href="#executioncontexts"></a></dfn>" / "<dfn data-dfn-type="dfn" data-noexport="" id="cache">cache<a class="self-link" href="#cache"></a></dfn>"
-<dfn data-dfn-type="dfn" data-noexport="" id="extension">extension<a class="self-link" href="#extension"></a></dfn> = <a data-link-type="dfn" href="#subdomain_extension">subdomain-extension</a> / <a data-link-type="dfn" href="#unknown_extension">unknown-extension</a>
-<dfn data-dfn-type="dfn" data-noexport="" id="subdomain_extension">subdomain-extension<a class="self-link" href="#subdomain_extension"></a></dfn> = "<dfn data-dfn-type="dfn" data-noexport="" id="includesubdomains">includeSubdomains<a class="self-link" href="#includesubdomains"></a></dfn>"
-<dfn data-dfn-type="dfn" data-noexport="" id="unknown_extension">unknown-extension<a class="self-link" href="#unknown_extension"></a></dfn> = *( <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> / &lt;<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">VCHAR</a> except ";" and ","> )
+    <pre>Clear-Site-Data = 1#option
+<dfn data-dfn-type="dfn" data-noexport="" id="option">option<a class="self-link" href="#option"></a></dfn> = <a data-link-type="dfn" href="#parameter">parameter</a> *( <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.3">OWS</a> ";" [ <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.3">OWS</a> <a data-link-type="dfn" href="#parameter">parameter</a> ] )
+<dfn data-dfn-type="dfn" data-noexport="" id="parameter">parameter<a class="self-link" href="#parameter"></a></dfn> = <a data-link-type="dfn" href="#key">key</a> [ <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.3">BWS</a> "=" <a data-link-type="dfn" href="#value">value</a> ]
+<dfn data-dfn-type="dfn" data-noexport="" id="key">key<a class="self-link" href="#key"></a></dfn> = <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.6">token</a>
+<dfn data-dfn-type="dfn" data-noexport="" id="value">value<a class="self-link" href="#value"></a></dfn> = <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.6">token</a> / <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.6">quoted-string</a>
 </pre>
 
 
-    <p>The header’s value contains either the U+002A ASTERISK character
-  (<code>*</code>) or a list of type exclusions, followed by a set of options.</p>
+    <p class="note" role="note">Note: The <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.3">BWS</a>, <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.3">OWS</a>, <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.6">token</a>, and <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7230#section-3.2.6">quoted-string</a> rules
+  are defined in <a data-link-type="biblio" href="#biblio-rfc7230">[RFC7230]</a>.</p>
 
 
-    <p>If the header’s value’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> component is "<code>*</code>",
-  then all data types specified in this document that are related to this site
-  will be removed.</p>
+    <p>The <a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a> header’s value is essentially a semicolon-delimited
+  list of "<code>[key]=[value]</code>" pairs which define the kinds of data to
+  be cleared for a given response.</p>
 
 
-    <p>Parsing details can be found in <a href="#parsing">§3.1 Parsing</a>.</p>
+    <p>The following subsections define an initial set of known <a data-link-type="dfn" href="#parameter">parameter</a>
+  components; future versions of this document may define additional
+  <a data-link-type="dfn" href="#parameter">parameter</a> components: the ABNF above is intentionally generic and
+  extensible to make room for these future values, and user agents MUST ignore
+  unknown <a data-link-type="dfn" href="#parameter">parameter</a> components when parsing the header’s value.</p>
+
+  
+    <h4 class="heading settled" data-level="2.1.1" id="cache-parameter"><span class="secno">2.1.1. </span><span class="content">
+    The <code>cache</code> parameter
+  </span><a class="self-link" href="#cache-parameter"></a></h4>
 
 
-    <p>User agent conformance details are detailed in <a href="#clear-response">§3.2 Clear data for response</a>. Those
-  steps represent the following requirements when the header is present in a
-  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a> (<var>response</var>):</p>
+    <p>The <dfn data-dfn-type="dfn" data-noexport="" id="cache"><code>cache</code><a class="self-link" href="#cache"></a></dfn> parameter indicates that the server wishes
+  to remove locally cached data associated with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of a
+  particular <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>. This includes the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-2">network
+  cache</a>, of course, but will also remove data from various other caches
+  which a user agent implements (prerendered pages, script caches, shader
+  caches, etc.).</p>
 
 
-    <ol>
-     <li data-md="">
-      <p>User agents MUST ignore the <a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a> header if it is
-  delivered along with a Response whose URL is <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url"><i lang="la">a priori</i>
-  insecure</a>.</p>
-      
+    <p>The <a data-link-type="dfn" href="#value">value</a> component of this parameter is currently ignored, if present.</p>
 
 
-      <p class="note" role="note">Note: This means that the header will be ignored for unauthenticated or
-  unencrypted connections ("HTTP" vs "HTTPS", for example).</p>
-      
+    <p>Implementation details are in <a href="#clear-cache">§3.4.3 Clear cache for origin with subdomain state</a>, as part of the larger
+  <a href="#clear-response">§3.2 Clear data for response</a> and <a href="#clear-api">§3.3 Clear data for storageRequestOptions</a> algorithms.</p>
+
+  
+    <div class="example" id="example-e22fa0f9"><a class="self-link" href="#example-e22fa0f9"></a>
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause caches associated with the origin
+    <code>https://example.com</code> to be cleared:
+
+    
+     <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: <a data-link-type="dfn" href="#cache">cache</a>
+</pre>
+     
+  
+    </div>
+
+  
+    <h4 class="heading settled" data-level="2.1.2" id="cookies-parameter"><span class="secno">2.1.2. </span><span class="content">
+    The <code>cookies</code> parameter
+  </span><a class="self-link" href="#cookies-parameter"></a></h4>
 
 
-     <li data-md="">
-      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> contains
-  <a data-link-type="dfn" href="#cookies"><code>cookies</code></a> or <code>*</code>, then all cookies which
-  would be sent along with any request to the <var>response</var>’s
-  <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
-      
+    <p>The <dfn data-dfn-type="dfn" data-noexport="" id="cookies"><code>cookies</code><a class="self-link" href="#cookies"></a></dfn> parameter indicates that the server wishes
+  to remove cookies associated with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of a particular
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>. This includes the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc7234#section-2">network cache</a>, of
+  course, but will also remove data from various other caches which a user agent
+  implements (prerendered pages, script caches, shader caches, etc.).</p>
 
 
-      <p>Further, if the same header’s <a data-link-type="dfn" href="#extension">extension</a> contains
-  <a data-link-type="dfn" href="#includesubdomains"><code>includeSubdomains</code></a>, then all cookies which would be
-  sent along with any request to any host which is a subdomain of
-  <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
-      
+    <p>The <a data-link-type="dfn" href="#value">value</a> component of this parameter is currently ignored, if present.</p>
 
 
-     <li data-md="">
-      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> contains
-  <a data-link-type="dfn" href="#domstorage"><code>domStorage</code></a> or <code>*</code>, then all DOM-accessible
-  storage mechanisms (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a></code>, <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a></code>, <a data-link-type="biblio" href="#biblio-indexeddb">[INDEXEDDB]</a>,
-  <a data-link-type="biblio" href="#biblio-webdatabase">[WEBDATABASE]</a>, etc) for <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
-  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be cleared.</p>
-      
+    <p>Implementation details are in <a href="#clear-cache">§3.4.3 Clear cache for origin with subdomain state</a>, as part of the larger
+  <a href="#clear-response">§3.2 Clear data for response</a> and <a href="#clear-api">§3.3 Clear data for storageRequestOptions</a> algorithms.</p>
+
+  
+    <div class="example" id="example-a59997a7"><a class="self-link" href="#example-a59997a7"></a>
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause cookies associated with the origin
+    <code>https://example.com</code> to be cleared:
+
+    
+     <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: <a data-link-type="dfn" href="#cookies">cookies</a>
+</pre>
+     
+  
+    </div>
+
+  
+    <h4 class="heading settled" data-level="2.1.3" id="domStorage-parameter"><span class="secno">2.1.3. </span><span class="content">
+    The <code>domStorage</code> parameter
+  </span><a class="self-link" href="#domStorage-parameter"></a></h4>
 
 
-      <p>If the <code>includeSubdomains</code> option is present, then all
-  DOM-accessible storage mechanisms for any <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> whose <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>
-  is a subdomain of <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>
-  MUST be cleared.</p>
-      
+    <p>The <dfn data-dfn-type="dfn" data-noexport="" id="domstorage"><code>domStorage</code><a class="self-link" href="#domstorage"></a></dfn> parameter indicates that the server
+  wishes to remove locally stored data associated with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of a
+  particular <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>. This includes storage
+  mechansims such as (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-localstorage">localStorage</a></code>, <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/#dom-sessionstorage">sessionStorage</a></code>, <a data-link-type="biblio" href="#biblio-indexeddb">[INDEXEDDB]</a>,
+  <a data-link-type="biblio" href="#biblio-webdatabase">[WEBDATABASE]</a>, etc), as well as tangentially related mechainsm such as
+  <a data-link-type="dfn" href="http://www.w3.org/TR/service-workers/#dfn-service-worker-registration">service worker registrations</a>.</p>
 
 
-     <li data-md="">
-      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> contains
-  <a data-link-type="dfn" href="#cache"><code>cache</code></a> or <code>*</code>, then all locally cached data
-  for <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be
-  removed.</p>
-      
+    <p>The <a data-link-type="dfn" href="#value">value</a> component of this parameter is currently ignored, if present.</p>
 
 
-      <p>If the <code>includeSubdomains</code> option is present, then all locally
-  cached data for any host which is a subdomain of <var>response</var>’s
-  <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be removed.</p>
-      
+    <p>Implementation details are in <a href="#clear-dom">§3.4.5 Clear DOM-accessible storage for origin with
+    subdomain state</a>, as part of the larger
+  <a href="#clear-response">§3.2 Clear data for response</a> and <a href="#clear-api">§3.3 Clear data for storageRequestOptions</a> algorithms.</p>
+
+  
+    <div class="example" id="example-d9514b45"><a class="self-link" href="#example-d9514b45"></a>
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause DOM-accessible storage for the origin 
+    <code>https://example.com</code> to be cleared:
+
+    
+     <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: <a data-link-type="dfn" href="#domstorage">domStorage</a>
+</pre>
+     
+  
+    </div>
 
 
-     <li data-md="">
-      <p>If the value of the header’s <a data-link-type="dfn" href="#data_type_list">data-type-list</a> contains
-  <a data-link-type="dfn" href="#executioncontexts"><code>executionContexts</code></a> or <code>*</code>, then all
-  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> whose <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active Document</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is
-  identical to <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> MUST be neutered by tightly
-  sandboxing them.</p>
-      
+    <p class="issue" id="issue-cbd30db3"><a class="self-link" href="#issue-cbd30db3"></a> Probably should rename this to "storage".</p>
+
+  
+    <h4 class="heading settled" data-level="2.1.4" id="executionContexts-parameter"><span class="secno">2.1.4. </span><span class="content">
+    The <code>executionContexts</code> parameter
+  </span><a class="self-link" href="#executionContexts-parameter"></a></h4>
 
 
-      <p>If the <code>includeSubdomains</code> option is present, then all
-  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing contexts</a> whose <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active Document</a>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>’s
-  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> is a subdomain of <var>response</var>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s
-  <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> MUST be neutered.</p>
-      
-</ol>
+    <p>The <dfn data-dfn-type="dfn" data-noexport="" id="executioncontexts"><code>executionContexts</code><a class="self-link" href="#executioncontexts"></a></dfn> parameter indicates that the
+  server wishes to neuter and reload execution contexts currently rendering the
+  <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of a particular <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>.</p>
+
+
+    <p>The <a data-link-type="dfn" href="#value">value</a> component of this parameter is currently ignored, if present.</p>
+
+
+    <p>Implementation details are in <a href="#neuter-contexts">§3.4.1 Neuter browsing contexts matching origin with
+    subdomain state</a>, as part of the larger
+  <a href="#clear-response">§3.2 Clear data for response</a> and <a href="#clear-api">§3.3 Clear data for storageRequestOptions</a> algorithms.</p>
+
+  
+    <div class="example" id="example-5e780ed8"><a class="self-link" href="#example-5e780ed8"></a>
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause execution contexts displaying the origin 
+    <code>https://example.com</code> to be neutered and reloaded:
+
+    
+     <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: <a data-link-type="dfn" href="#executioncontexts">executionContexts</a>
+</pre>
+     
+  
+    </div>
+
+  
+    <h4 class="heading settled" data-level="2.1.5" id="includeSubdomains-parameter"><span class="secno">2.1.5. </span><span class="content">
+    The <code>includeSubdomains</code> parameter
+  </span><a class="self-link" href="#includeSubdomains-parameter"></a></h4>
+
+
+    <p>The <dfn data-dfn-type="dfn" data-noexport="" id="includesubdomains"><code>includeSubdomains</code><a class="self-link" href="#includesubdomains"></a></dfn> parameter expands the scope of
+  the storage type parameters to include any origin whose <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code> is a
+  subdomain of the <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#concept-response-url">url</a></code>'s <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/url/#concept-url-host">host</a></code>.</p>
+
+
+    <p>Implementation details are included as part of the larger <a href="#clear-response">§3.2 Clear data for response</a>
+  and <a href="#clear-api">§3.3 Clear data for storageRequestOptions</a> algorithms.</p>
+
+  
+    <div class="example" id="example-dae816c4"><a class="self-link" href="#example-dae816c4"></a>
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause caches associated with the origins
+    <code>https://example.com</code> and
+    <code>https://anythingelse.example.com</code> to be cleared:
+
+    
+     <pre><a data-link-type="dfn" href="#clear_site_data">Clear-Site-Data</a>: <a data-link-type="dfn" href="#cache">cache</a>; <a data-link-type="dfn" href="#includesubdomains">includeSubdomains</a>
+</pre>
+     
+  
+    </div>
+
+  
+    <h4 class="heading settled" data-level="2.1.6" id="wildcard-parameter"><span class="secno">2.1.6. </span><span class="content">
+    The <code>*</code> parameter
+  </span><a class="self-link" href="#wildcard-parameter"></a></h4>
+
+
+    <p>The <dfn data-dfn-type="dfn" data-noexport="" id=""><code>*</code><a class="self-link" href="#"></a></dfn> parameter is syntactic sugar which includes all
+  storage type parameters. That is:</p>
+
+  
+    <pre>Clear-Site-Data: *
+</pre>
+
+
+    <p>has the same meaning as:</p>
+
+  
+    <pre>Clear-Site-Data: <a data-link-type="dfn" href="#cache">cache</a>; <a data-link-type="dfn" href="#cookies">cookies</a>; <a data-link-type="dfn" href="#domstorage">domStorage</a>; <a data-link-type="dfn" href="#executioncontexts">executionContexts</a>
+</pre>
+
   
     <h3 class="heading settled" data-level="2.2" id="dom-api"><span class="secno">2.2. </span><span class="content">JavaScript API</span><a class="self-link" href="#dom-api"></a></h3>
 
@@ -721,14 +845,15 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
 
        <li data-md="">
-        <p>Let <var>types</var> be the value of <var>response</var>’s
-  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> <a data-link-type="dfn" href="#data_type_list">data-type-list</a> component,
-  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">split on spaces</a>.</p>
+        <p>Let <var>parameters</var> be the list of <a data-link-type="dfn" href="#parameter">parameter</a> components in
+  the value of <var>response</var>’s <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a>
+  header.</p>
         
 
 
        <li data-md="">
-        <p>If <var>types</var> contains a single entry whose value is <code>*</code>:</p>
+        <p>If <var>parameters</var> contains a <a data-link-type="dfn" href="#parameter">parameter</a> whose <a data-link-type="dfn" href="#key">key</a> is
+  <a data-link-type="dfn" href="#"><code>*</code></a>:</p>
         
 
 
@@ -747,24 +872,26 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
         
 
        <li data-md="">
-        <p>Let <var>remove</var> be an empty list.</p>
+        <p>Otherwise, let <var>remove</var> be an empty list.</p>
         
 
 
        <li data-md="">
-        <p>For each <var>token</var> in <var>types</var>:</p>
+        <p>For each <var>parameter</var> in <var>parameters</var>:</p>
         
 
 
         <ol>
          <li data-md="">
-          <p>If <var>token</var> is a valid <a data-link-type="dfn" href="#type">type</a>, append it to to
-  <var>remove</var>.</p>
+          <p>If <var>parameter</var>’s <a data-link-type="dfn" href="#key">key</a> is <a data-link-type="dfn" href="#cache"><code>cache</code></a>,
+  <a data-link-type="dfn" href="#cookies"><code>cookies</code></a>, <a data-link-type="dfn" href="#domstorage"><code>domStorage</code></a>, or
+  <a data-link-type="dfn" href="#executioncontexts"><code>executionContexts</code></a>, <a data-link-type="dfn" href="#cache"><code>cache</code></a>
+  append <var>parameter</var>’s <a data-link-type="dfn" href="#key">key</a> to <var>remove</var>.</p>
           
 
 
          <li data-md="">
-          <p>Otherwise, ignore <var>token</var>.</p>
+          <p>Otherwise, ignore <var>parameter</var>.</p>
           
 </ol>
         
@@ -781,19 +908,28 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 
       <ol>
        <li data-md="">
-        <p>Let <var>extensions</var> be the list of <var>response</var>’s
-  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> <a data-link-type="dfn" href="#extension">extension</a> components.</p>
+        <p>If <var>response</var> does not contain a
+  <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a> header, return <dfn data-dfn-type="dfn" data-noexport="" id="exclude-subdomains"><code>Exclude
+  Subdomains</code><a class="self-link" href="#exclude-subdomains"></a></dfn>.</p>
         
 
 
        <li data-md="">
-        <p>If <var>extensions</var> contains <a data-link-type="dfn" href="#includesubdomains"><code>includeSubdomains</code></a>,
-  return <dfn data-dfn-type="dfn" data-noexport="" id="include-subdomains"><code>Include Subdomains</code><a class="self-link" href="#include-subdomains"></a></dfn>.</p>
+        <p>Let <var>parameters</var> be the list of <a data-link-type="dfn" href="#parameter">parameter</a> components in
+  the value of <var>response</var>’s <a data-link-type="dfn" href="#clear_site_data"><code>Clear-Site-Data</code></a>
+  header.</p>
         
 
 
        <li data-md="">
-        <p>Otherwise, return <dfn data-dfn-type="dfn" data-noexport="" id="exclude-subdomains"><code>Exclude Subdomains</code><a class="self-link" href="#exclude-subdomains"></a></dfn>.</p>
+        <p>If <var>parameters</var> contains a <a data-link-type="dfn" href="#parameter">parameter</a> whose <a data-link-type="dfn" href="#key">key</a> is
+  <a data-link-type="dfn" href="#includesubdomains"><code>includeSubdomains</code></a>, return <dfn data-dfn-type="dfn" data-noexport="" id="include-subdomains"><code>Include
+  Subdomains</code><a class="self-link" href="#include-subdomains"></a></dfn>.</p>
+        
+
+
+       <li data-md="">
+        <p>Otherwise, return <code>Exclude Subdomains</code>.</p>
         
 </ol>
   
@@ -1593,33 +1729,35 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
   <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
   <h3 class="no-num heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="indexlist">
-   <li><a href="#cache">cache</a><span>, in §2.1</span>
+   <li><a href="#">*</a><span>, in §2.1.6</span>
+   <li><a href="#cache">cache</a><span>, in §2.1.1</span>
    <li><a href="#dom-storagemanager-clear">clear(options)</a><span>, in §2.2</span>
    <li><a href="#clear_site_data">Clear-Site-Data</a><span>, in §2.1</span>
    <li><a href="#conformant-server">conformant server</a><span>, in §Unnumbered section</span>
    <li><a href="#conformant-user-agent">conformant user agent</a><span>, in §Unnumbered section</span>
-   <li><a href="#cookies">cookies</a><span>, in §2.1</span>
-   <li><a href="#data_type_list">data-type-list</a><span>, in §2.1</span>
+   <li><a href="#cookies">cookies</a><span>, in §2.1.2</span>
    <li><a href="#does-not-match">Does Not
   Match</a><span>, in §3.1.3</span>
-   <li><a href="#domstorage">domStorage</a><span>, in §2.1</span>
-   <li><a href="#exclude-subdomains">Exclude Subdomains</a><span>, in §3.1.2</span>
-   <li><a href="#executioncontexts">executionContexts</a><span>, in §2.1</span>
-   <li><a href="#extension">extension</a><span>, in §2.1</span>
-   <li><a href="#include-subdomains">Include Subdomains</a><span>, in §3.1.2</span>
+   <li><a href="#domstorage">domStorage</a><span>, in §2.1.3</span>
+   <li><a href="#exclude-subdomains">Exclude
+  Subdomains</a><span>, in §3.1.2</span>
+   <li><a href="#executioncontexts">executionContexts</a><span>, in §2.1.4</span>
    <li>includeSubdomains
     <ul>
-     <li><a href="#includesubdomains">definition of</a><span>, in §2.1</span>
+     <li><a href="#includesubdomains">definition of</a><span>, in §2.1.5</span>
      <li><a href="#dom-storageclearoptions-includesubdomains">dict-member for StorageClearOptions</a><span>, in §2.2</span>
     </ul>
+   <li><a href="#include-subdomains">Include
+  Subdomains</a><span>, in §3.1.2</span>
+   <li><a href="#key">key</a><span>, in §2.1</span>
    <li><a href="#matches">Matches</a><span>, in §3.1.3</span>
+   <li><a href="#option">option</a><span>, in §2.1</span>
    <li><a href="#dom-storagemanager-clear-options-options">options</a><span>, in §2.2</span>
+   <li><a href="#parameter">parameter</a><span>, in §2.1</span>
    <li><a href="#dictdef-storageclearoptions">StorageClearOptions</a><span>, in §2.2</span>
    <li><a href="#enumdef-storagecleartype">StorageClearType</a><span>, in §2.2</span>
-   <li><a href="#subdomain_extension">subdomain-extension</a><span>, in §2.1</span>
-   <li><a href="#type">type</a><span>, in §2.1</span>
    <li><a href="#dom-storageclearoptions-types">types</a><span>, in §2.2</span>
-   <li><a href="#unknown_extension">unknown-extension</a><span>, in §2.1</span></ul>
+   <li><a href="#value">value</a><span>, in §2.1</span></ul>
   <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="indexlist">
    <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
@@ -1650,7 +1788,6 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
      <li><a href="http://www.w3.org/TR/html5/browsers.html#reload-triggered-navigation">reload-triggered navigation</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#replacement-enabled">replacement enabled</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#source-browsing-context">source browsing context</a>
-     <li><a href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">split on spaces</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-indexeddb">[IndexedDB]</a> defines the following terms:
     <ul>
@@ -1662,11 +1799,6 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
    <li><a data-link-type="biblio" href="#biblio-mix">[MIX]</a> defines the following terms:
     <ul>
      <li><a href="https://w3c.github.io/webappsec/specs/mixedcontent/#a-priori-insecure-url">a priori insecure</a>
-    </ul>
-   <li><a data-link-type="biblio" href="#biblio-rfc5234">[rfc5234]</a> defines the following terms:
-    <ul>
-     <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">vchar</a>
-     <li><a href="https://tools.ietf.org/html/rfc5234#appendix-B.1">wsp</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc5890">[rfc5890]</a> defines the following terms:
     <ul>
@@ -1683,6 +1815,13 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
      <li><a href="https://tools.ietf.org/html/rfc6454#section-2.3">globally unique identifier</a>
      <li><a href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>
      <li><a href="https://tools.ietf.org/html/rfc6454#section-5">the same</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-rfc7230">[RFC7230]</a> defines the following terms:
+    <ul>
+     <li><a href="https://tools.ietf.org/html/rfc7230#section-3.2.3">bws</a>
+     <li><a href="https://tools.ietf.org/html/rfc7230#section-3.2.3">ows</a>
+     <li><a href="https://tools.ietf.org/html/rfc7230#section-3.2.6">quoted-string</a>
+     <li><a href="https://tools.ietf.org/html/rfc7230#section-3.2.6">token</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-rfc7234">[rfc7234]</a> defines the following terms:
     <ul>
@@ -1728,6 +1867,8 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
    <dd>Graham Klyne; Mark Nottingham; Jeffrey C. Mogul. <a href="http://www.ietf.org/rfc/rfc3864.txt">Registration Procedures for Message Header Fields</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc3864.txt">http://www.ietf.org/rfc/rfc3864.txt</a>
    <dt id="biblio-rfc6454"><a class="self-link" href="#biblio-rfc6454"></a>[RFC6454]
    <dd>Adam Barth. <a href="http://www.ietf.org/rfc/rfc6454.txt">The Web Origin Concept</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6454.txt">http://www.ietf.org/rfc/rfc6454.txt</a>
+   <dt id="biblio-rfc7230"><a class="self-link" href="#biblio-rfc7230"></a>[RFC7230]
+   <dd>Roy T. Fielding; Julian F. Reschke. <a href="http://www.ietf.org/rfc/rfc7230.txt">HTTP/1.1 Message Syntax and Routing</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc7230.txt">http://www.ietf.org/rfc/rfc7230.txt</a>
    <dt id="biblio-storage"><a class="self-link" href="#biblio-storage"></a>[STORAGE]
    <dd>Anne van Kesteren. <a href="https://storage.spec.whatwg.org/">Storage Living Standard</a>. LS. URL: <a href="https://storage.spec.whatwg.org/">https://storage.spec.whatwg.org/</a>
    <dt id="biblio-url"><a class="self-link" href="#biblio-url"></a>[URL]
@@ -1736,8 +1877,6 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
    <dd>Ian Hickson; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
    <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
-   <dt id="biblio-rfc5234"><a class="self-link" href="#biblio-rfc5234"></a>[RFC5234]
-   <dd>D. Crocker, Ed.; P. Overell. <a href="https://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>. January 2008. Internet Standard. URL: <a href="https://tools.ietf.org/html/rfc5234">https://tools.ietf.org/html/rfc5234</a>
    <dt id="biblio-rfc5890"><a class="self-link" href="#biblio-rfc5890"></a>[RFC5890]
    <dd>J. Klensin. <a href="https://tools.ietf.org/html/rfc5890">Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework</a>. August 2010. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc5890">https://tools.ietf.org/html/rfc5890</a>
    <dt id="biblio-rfc6265"><a class="self-link" href="#biblio-rfc6265"></a>[RFC6265]
@@ -1774,6 +1913,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://s
 </pre>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
+   <div class="issue"> Probably should rename this to "storage".<a href="#issue-cbd30db3"> ↵ </a></div>
    <div class="issue"> This might live more cleanly in <a data-link-type="biblio" href="#biblio-storage">[STORAGE]</a>.<a href="#issue-3153cbda"> ↵ </a></div>
    <div class="issue"> Monkey patching! Talk with Anne.<a href="#issue-3ded38d3"> ↵ </a></div>
    <div class="issue"> Some have suggested that this might not be a restriction we want

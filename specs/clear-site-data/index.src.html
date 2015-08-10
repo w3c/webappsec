@@ -141,6 +141,12 @@ spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
 spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   type: dfn
     text: network cache; url: section-2
+spec: RFC7230; urlPrefix: https://tools.ietf.org/html/rfc7230
+  type: dfn
+    text: OWS; url: section-3.2.3
+    text: BWS; url: section-3.2.3
+    text: token; url: section-3.2.6
+    text: quoted-string; url: section-3.2.6
 </pre>
 
 <!--
@@ -298,75 +304,166 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   of a certain set of types. The header is represented by the following ABNF:
 
   <pre>
-    "Clear-Site-Data:" *<a>WSP</a> <a>data-type-list</a> *[ ";" *<a>WSP</a> <a>extension</a> *<a>WSP</a> ]  *<a>WSP</a>
-
-    <dfn>data-type-list</dfn> = "*" / ( <a>type</a> *( " " <a>type</a> ) )
-    <dfn>type</dfn> = "<dfn>domStorage</dfn>" / "<dfn>cookies</dfn>" / "<dfn>executionContexts</dfn>" / "<dfn>cache</dfn>"
-    <dfn>extension</dfn> = <a>subdomain-extension</a> / <a>unknown-extension</a>
-    <dfn>subdomain-extension</dfn> = "<dfn>includeSubdomains</dfn>"
-    <dfn>unknown-extension</dfn> = *( <a>WSP</a> / &lt;<a>VCHAR</a> except ";" and ","&gt; )
+    Clear-Site-Data = 1#option
+    <dfn>option</dfn> = <a>parameter</a> *( <a>OWS</a> ";" [ <a>OWS</a> <a>parameter</a> ] )
+    <dfn>parameter</dfn> = <a>key</a> [ <a>BWS</a> "=" <a>value</a> ]
+    <dfn>key</dfn> = <a>token</a>
+    <dfn>value</dfn> = <a>token</a> / <a>quoted-string</a>
   </pre>
 
-  The header's value contains either the U+002A ASTERISK character
-  (<code>*</code>) or a list of type exclusions, followed by a set of options.
+  Note: The <a>BWS</a>, <a>OWS</a>, <a>token</a>, and <a>quoted-string</a> rules
+  are defined in [[RFC7230]].
 
-  If the header's value's <a>data-type-list</a> component is "<code>*</code>",
-  then all data types specified in this document that are related to this site
-  will be removed.
+  The <a>Clear-Site-Data</a> header's value is essentially a semicolon-delimited
+  list of "<code>[key]=[value]</code>" pairs which define the kinds of data to
+  be cleared for a given response.
 
-  Parsing details can be found in [[#parsing]].
+  The following subsections define an initial set of known <a>parameter</a>
+  components; future versions of this document may define additional
+  <a>parameter</a> components: the ABNF above is intentionally generic and
+  extensible to make room for these future values, and user agents MUST ignore
+  unknown <a>parameter</a> components when parsing the header's value.
 
-  User agent conformance details are detailed in [[#clear-response]]. Those
-  steps represent the following requirements when the header is present in a
-  <a>response</a> (<var>response</var>):
+  <h4 id="cache-parameter">
+    The <code>cache</code> parameter
+  </h4>
 
-  1.  User agents MUST ignore the <a>Clear-Site-Data</a> header if it is
-      delivered along with a Response whose URL is <a><i lang="la">a priori</i>
-      insecure</a>.
+  The <dfn><code>cache</code></dfn> parameter indicates that the server wishes
+  to remove locally cached data associated with the <a>origin</a> of a
+  particular <a>response</a>'s {{Response/url}}. This includes the <a>network
+  cache</a>, of course, but will also remove data from various other caches
+  which a user agent implements (prerendered pages, script caches, shader
+  caches, etc.).
 
-      Note: This means that the header will be ignored for unauthenticated or
-      unencrypted connections ("HTTP" vs "HTTPS", for example).
+  The <a>value</a> component of this parameter is currently ignored, if present.
 
-  2.  If the value of the header's <a>data-type-list</a> contains
-      <a><code>cookies</code></a> or <code>*</code>, then all cookies which
-      would be sent along with any request to the <var>response</var>'s
-      {{Response/url}}'s {{URL/host}} MUST be removed.
+  Implementation details are in [[#clear-cache]], as part of the larger
+  [[#clear-response]] and [[#clear-api]] algorithms.
 
-      Further, if the same header's <a>extension</a> contains
-      <a><code>includeSubdomains</code></a>, then all cookies which would be
-      sent along with any request to any host which is a subdomain of
-      <var>response</var>'s {{Response/url}}'s {{URL/host}} MUST be removed.
+  <div class="example">
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause caches associated with the origin
+    <code>https://example.com</code> to be cleared:
 
-  3.  If the value of the header's <a>data-type-list</a> contains
-      <a><code>domStorage</code></a> or <code>*</code>, then all DOM-accessible
-      storage mechanisms ({{localStorage}}, {{sessionStorage}}, [[INDEXEDDB]],
-      [[WEBDATABASE]], etc) for <var>response</var>'s {{Response/url}}'s
-      <a>origin</a> MUST be cleared.
+    <pre>
+      <a>Clear-Site-Data</a>: <a>cache</a>
+    </pre>
+  </div>
 
-      If the <code>includeSubdomains</code> option is present, then all
-      DOM-accessible storage mechanisms for any <a>origin</a> whose {{URL/host}}
-      is a subdomain of <var>response</var>'s {{Response/url}}'s {{URL/host}}
-      MUST be cleared.
+  <h4 id="cookies-parameter">
+    The <code>cookies</code> parameter
+  </h4>
 
-  4.  If the value of the header's <a>data-type-list</a> contains
-      <a><code>cache</code></a> or <code>*</code>, then all locally cached data
-      for <var>response</var>'s {{Response/url}}'s <a>origin</a> MUST be
-      removed.
+  The <dfn><code>cookies</code></dfn> parameter indicates that the server wishes
+  to remove cookies associated with the <a>origin</a> of a particular
+  <a>response</a>'s {{Response/url}}. This includes the <a>network cache</a>, of
+  course, but will also remove data from various other caches which a user agent
+  implements (prerendered pages, script caches, shader caches, etc.).
 
-      If the <code>includeSubdomains</code> option is present, then all locally
-      cached data for any host which is a subdomain of <var>response</var>'s
-      {{Response/url}}'s {{URL/host}} MUST be removed.
+  The <a>value</a> component of this parameter is currently ignored, if present.
 
-  5.  If the value of the header's <a>data-type-list</a> contains
-      <a><code>executionContexts</code></a> or <code>*</code>, then all
-      <a>browsing contexts</a> whose <a>active Document</a>'s <a>origin</a> is
-      identical to {{Response/url}}'s <a>origin</a> MUST be neutered by tightly
-      sandboxing them.
+  Implementation details are in [[#clear-cache]], as part of the larger
+  [[#clear-response]] and [[#clear-api]] algorithms.
 
-      If the <code>includeSubdomains</code> option is present, then all
-      <a>browsing contexts</a> whose <a>active Document</a>'s <a>origin</a>'s
-      {{URL/host}} is a subdomain of <var>response</var>'s {{Response/url}}'s
-      {{URL/host}} MUST be neutered.
+  <div class="example">
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause cookies associated with the origin
+    <code>https://example.com</code> to be cleared:
+
+    <pre>
+      <a>Clear-Site-Data</a>: <a>cookies</a>
+    </pre>
+  </div>
+
+  <h4 id="domStorage-parameter">
+    The <code>domStorage</code> parameter
+  </h4>
+
+  The <dfn><code>domStorage</code></dfn> parameter indicates that the server
+  wishes to remove locally stored data associated with the <a>origin</a> of a
+  particular <a>response</a>'s {{Response/url}}. This includes storage
+  mechansims such as ({{localStorage}}, {{sessionStorage}}, [[INDEXEDDB]],
+  [[WEBDATABASE]], etc), as well as tangentially related mechainsm such as
+  <a>service worker registrations</a>.
+
+  The <a>value</a> component of this parameter is currently ignored, if present.
+ 
+  Implementation details are in [[#clear-dom]], as part of the larger
+  [[#clear-response]] and [[#clear-api]] algorithms.
+
+  <div class="example">
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause DOM-accessible storage for the origin 
+    <code>https://example.com</code> to be cleared:
+
+    <pre>
+      <a>Clear-Site-Data</a>: <a>domStorage</a>
+    </pre>
+  </div>
+
+  ISSUE: Probably should rename this to "storage".
+
+  <h4 id="executionContexts-parameter">
+    The <code>executionContexts</code> parameter
+  </h4>
+
+  The <dfn><code>executionContexts</code></dfn> parameter indicates that the
+  server wishes to neuter and reload execution contexts currently rendering the
+  <a>origin</a> of a particular <a>response</a>'s {{Response/url}}.
+
+  The <a>value</a> component of this parameter is currently ignored, if present.
+
+  Implementation details are in [[#neuter-contexts]], as part of the larger
+  [[#clear-response]] and [[#clear-api]] algorithms.
+
+  <div class="example">
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause execution contexts displaying the origin 
+    <code>https://example.com</code> to be neutered and reloaded:
+
+    <pre>
+      <a>Clear-Site-Data</a>: <a>executionContexts</a>
+    </pre>
+  </div>
+
+  <h4 id="includeSubdomains-parameter">
+    The <code>includeSubdomains</code> parameter
+  </h4>
+
+  The <dfn><code>includeSubdomains</code></dfn> parameter expands the scope of
+  the storage type parameters to include any origin whose {{URL/host}} is a
+  subdomain of the <a>response</a>'s {{Response/url}}'s {{URL/host}}.
+
+  Implementation details are included as part of the larger [[#clear-response]]
+  and [[#clear-api]] algorithms.
+
+  <div class="example">
+    When delivered with a response from <code>https://example.com/clear</code>,
+    the following header will cause caches associated with the origins
+    <code>https://example.com</code> and
+    <code>https://anythingelse.example.com</code> to be cleared:
+
+    <pre>
+      <a>Clear-Site-Data</a>: <a>cache</a>; <a>includeSubdomains</a>
+    </pre>
+  </div>
+
+  <h4 id="wildcard-parameter">
+    The <code>*</code> parameter
+  </h4>
+
+  The <dfn><code>*</code></dfn> parameter is syntactic sugar which includes all
+  storage type parameters. That is:
+  
+  <pre>
+    Clear-Site-Data: *
+  </pre>
+  
+  has the same meaning as:
+  
+  <pre>
+    Clear-Site-Data: <a>cache</a>; <a>cookies</a>; <a>domStorage</a>; <a>executionContexts</a>
+  </pre>
 
   <h3 id="dom-api">JavaScript API</h3>
 
@@ -455,11 +552,12 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
   1.  If <var>response</var> does not contain a
       <a><code>Clear-Site-Data</code></a> header, return an empty list.
 
-  2.  Let <var>types</var> be the value of <var>response</var>'s 
-      <a><code>Clear-Site-Data</code></a> <a>data-type-list</a> component,
-      <a>split on spaces</a>.
+  2.  Let <var>parameters</var> be the list of <a>parameter</a> components in
+      the value of <var>response</var>'s <a><code>Clear-Site-Data</code></a>
+      header.
 
-  3.  If <var>types</var> contains a single entry whose value is <code>*</code>:
+  3.  If <var>parameters</var> contains a <a>parameter</a> whose <a>key</a> is
+      <a><code>*</code></a>:
 
       1. Append <code>cache</code>, <code>cookies</code>,
          <code>domStorage</code>, and <code>executionContexts</code> to
@@ -467,14 +565,16 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
 
       2. Return <var>remove</var>.
 
-  3.  Let <var>remove</var> be an empty list.
+  3.  Otherwise, let <var>remove</var> be an empty list.
 
-  4.  For each <var>token</var> in <var>types</var>:
+  4.  For each <var>parameter</var> in <var>parameters</var>:
   
-      1.  If <var>token</var> is a valid <a>type</a>, append it to to
-          <var>remove</var>.
+      1.  If <var>parameter</var>'s <a>key</a> is <a><code>cache</code></a>,
+          <a><code>cookies</code></a>, <a><code>domStorage</code></a>, or
+          <a><code>executionContexts</code></a>, <a><code>cache</code></a>
+          append <var>parameter</var>'s <a>key</a> to <var>remove</var>.
 
-      2.  Otherwise, ignore <var>token</var>.
+      2.  Otherwise, ignore <var>parameter</var>.
 
   5.  Return <var>remove</var>.
 
@@ -482,13 +582,19 @@ spec: RFC7234; urlPrefix: https://tools.ietf.org/html/rfc7234
     Should subdomains' data be cleared for <var>response</var>
   </h4>
 
-  1.  Let <var>extensions</var> be the list of <var>response</var>'s 
-      <a><code>Clear-Site-Data</code></a> <a>extension</a> components.
- 
-  2.  If <var>extensions</var> contains <a><code>includeSubdomains</code></a>,
-      return <dfn><code>Include Subdomains</code></dfn>.
+  1.  If <var>response</var> does not contain a
+      <a><code>Clear-Site-Data</code></a> header, return <dfn><code>Exclude
+      Subdomains</code></dfn>.
+
+  2.  Let <var>parameters</var> be the list of <a>parameter</a> components in
+      the value of <var>response</var>'s <a><code>Clear-Site-Data</code></a>
+      header.
+
+  3.  If <var>parameters</var> contains a <a>parameter</a> whose <a>key</a> is
+      <a><code>includeSubdomains</code></a>, return <dfn><code>Include
+      Subdomains</code></dfn>.
      
-  3.  Otherwise, return <dfn><code>Exclude Subdomains</code></dfn>.
+  4.  Otherwise, return <code>Exclude Subdomains</code>.
 
   <h4 id="matches-origin">
     Does <var>origin</var> match <var>origin to clear</var> and
