@@ -192,84 +192,93 @@ spec: RFC7230; urlPrefix: https://tools.ietf.org/html/rfc7230
 
   <h4 id="example-signout">Signing Out</h4>
 
-  A user signs out of Super Secret Social Network via a CSRF-protected POST to
-  <code>https://supersecretsocialnetwork.example.com/logout</code>, and the site
-  author wishes to ensure that locally stored data is removed as a result.
+  <div class="example">
+    A user signs out of Super Secret Social Network via a CSRF-protected POST to
+    <code>https://supersecretsocialnetwork.example.com/logout</code>, and the
+    site author wishes to ensure that locally stored data is removed as a
+    result.
 
-  They can do so by sending the following HTTP header in the response:
+    They can do so by sending the following HTTP header in the response:
 
-  <pre>
-    <a>Clear-Site-Data</a>: *
-  </pre>
+    <pre>
+      <a>Clear-Site-Data</a>: <a>*</a>
+    </pre>
+  </div>
 
   <h4 id="example-targeted">Targeted Clearing</h4>
 
-  A user signs out of Megacorp Inc.'s site via a CSRF-protected POST to
-  <code>https://megacorp.example.com/logout</code>. Megacorp has a large number
-  of services available as subdomains, so many that it's not entirely clear
-  which of them would be safe to clear as a response to a logout action. One
-  option would be to simply clear everything, and deal with the fallout.
-  Megacorp's CEO, however, once lost hours and hours of progress in "Irate
-  Ibexes" due to inadvertent site-data clearing, and so refuses to allow such
-  a sweeping impact to the site's users.
+  <div class="example">
+    A user signs out of Megacorp Inc.'s site via a CSRF-protected POST to
+    <code>https://megacorp.example.com/logout</code>. Megacorp has a large
+    number of services available as subdomains, so many that it's not entirely
+    clear which of them would be safe to clear as a response to a logout action.
+    One option would be to simply clear everything, and deal with the fallout.
+    Megacorp's CEO, however, once lost hours and hours of progress in "Irate
+    Ibexes" due to inadvertent site-data clearing, and so refuses to allow such
+    a sweeping impact to the site's users.
 
-  The developers know, however, that the "Minus" application is certainly safe
-  to clear out. They can target this specific subdomain by including a request
-  to that subdomain as part of the logout landing page (ideally as a
-  CORS-enabled, CSRF-protected POST):
+    The developers know, however, that the "Minus" application is certainly safe
+    to clear out. They can target this specific subdomain by including a request
+    to that subdomain as part of the logout landing page (ideally as a
+    CORS-enabled, CSRF-protected POST):
 
-  <pre>
-    fetch("https://minus.megacorp.example.com/clear-site-data",
-          {
-              method: "POST",
-              mode: "cors",
-              headers: new Headers({
-                  "CSRF": "[<em>insert sekrit token here</em>]"
-              })
-          });
-  </pre>
+    <pre>
+      fetch("https://minus.megacorp.example.com/clear-site-data",
+            {
+                method: "POST",
+                mode: "cors",
+                headers: new Headers({
+                    "CSRF": "[<em>insert sekrit token here</em>]"
+                })
+            });
+    </pre>
 
-  That endpoint would return proper CORS headers in response to that request's
-  preflight, and would return the following header for the actual request:
+    That endpoint would return proper CORS headers in response to that request's
+    preflight, and would return the following header for the actual request:
 
-  <pre>
-    <a>Clear-Site-Data</a>: *; <a>includeSubdomains</a>
-  </pre>
+    <pre>
+      <a>Clear-Site-Data</a>: <a>*</a>; <a>includeSubdomains</a>
+    </pre>
+  </div>
 
   <h4 id="example-keepcookies">Keep Critical Cookies</h4>
 
-  A user opts-out of interest-based advertising via a CSRF-protected POST to
-  <code>https://ads-are-awesome.example.com/optout</code>. The site author
-  wishes to remove DOM-accessible data which might contain tracking information,
-  but needs to ensure that the opt-out cookie which the user has just received
-  isn't wiped along with it.
+  <div class="example">
+    A user opts-out of interest-based advertising via a CSRF-protected POST to
+    <code>https://ads-are-awesome.example.com/optout</code>. The site author
+    wishes to remove DOM-accessible data which might contain tracking
+    information, but needs to ensure that the opt-out cookie which the user has
+    just received isn't wiped along with it.
 
-  They can do so by sending the following HTTP header in the response, which
-  includes all the types except for "<a>cookies</a>":
+    They can do so by sending the following HTTP header in the response, which
+    includes all the types except for "<a>cookies</a>":
 
-  <pre>
-    <a>Clear-Site-Data</a>: <a>domStorage</a> <a>executionContexts</a> <a>cache</a>; <a>includeSubdomains</a>
-  </pre>
+    <pre>
+      <a>Clear-Site-Data</a>: <a>domStorage</a>; <a>executionContexts</a>; <a>cache</a>; <a>includeSubdomains</a>
+    </pre>
+  </div>
 
   <h4 id="example-killswitch">Kill Switch</h4>
 
-  Super Secret Social Network's developers learn that the site was vulnerable
-  to cross-site scripting attacks which allowed malicious parties to inject
-  arbitrary code into its origin. They fixed the site, and added a strong
-  Content Security Policy [[CSP2]] to mitigate the risk going forward, but
-  they can't be entirely sure that clients are really back to a trustworthy
-  state. Perhaps the attackers found a clever persistence mechanism?
+  <div class="example">
+    Super Secret Social Network's developers learn that the site was vulnerable
+    to cross-site scripting attacks which allowed malicious parties to inject
+    arbitrary code into its origin. They fixed the site, and added a strong
+    Content Security Policy [[CSP2]] to mitigate the risk going forward, but
+    they can't be entirely sure that clients are really back to a trustworthy
+    state. Perhaps the attackers found a clever persistence mechanism?
 
-  They can reduce the risk of a persistent client-side XSS by sending the
-  following HTTP header in a response to wipe out local sources of data:
+    They can reduce the risk of a persistent client-side XSS by sending the
+    following HTTP header in a response to wipe out local sources of data:
 
-  <pre>
-    <a>Clear-Site-Data</a>: *; <a>includeSubdomains</a>
-  </pre>
+    <pre>
+      <a>Clear-Site-Data</a>: <a>*</a>; <a>includeSubdomains</a>
+    </pre>
 
-  Note: Installing a Service Worker guarantees that a request will go out to
-  a server every ~24 hours. That update ping would be a wonderful time to send
-  a header like this one in case of catastrophe. [[SERVICE-WORKERS]]
+    Note: Installing a Service Worker guarantees that a request will go out to
+    a server every ~24 hours. That update ping would be a wonderful time to send
+    a header like this one in case of catastrophe. [[SERVICE-WORKERS]]
+  </div>
 
   <h3 id="goals">Goals</h3>
 
@@ -456,7 +465,7 @@ spec: RFC7230; urlPrefix: https://tools.ietf.org/html/rfc7230
   storage type parameters. That is:
   
   <pre>
-    Clear-Site-Data: *
+    <a>Clear-Site-Data</a>: <a>*</a>
   </pre>
   
   has the same meaning as:
