@@ -324,10 +324,6 @@ type: method
       in [[#source-list-valid-hashes]]).
     </li>
     <li>
-      A <code>CSP</code> request header is now sent with relevant requests, as
-      described in [[#csp-request-header]].
-    </li>
-    <li>
       A {{SecurityPolicyViolationEvent}} is fired upon violations, as described
       in [[#firing-securitypolicyviolationevent-events]].
     </li>
@@ -531,9 +527,6 @@ type: method
   header (defined in [[#content-security-policy-header-field]] and
   [[#content-security-policy-report-only-header-field]]) or an HTML
   <{meta}> element (defined in [[#delivery-html-meta-element]]).
-  
-  Servers are informed that requests are coming from a <a>protected resource</a>
-  via an HTTP request header (defined in [[#csp-request-header]]).
 
   <section>
     <h3 id="content-security-policy-header-field">
@@ -684,39 +677,6 @@ type: method
 
     Note: The <code><a>Content-Security-Policy-Report-Only</a></code>
     header is <em>not</em> supported inside a <{meta}> element.
-  </section>
-
-  <section>
-    <h3 id="csp-request-header">The <code>CSP</code> HTTP Request Header</h3>
-
-    The <code><dfn>CSP</dfn></code> header field indicates that a particular
-    request is subject to a <a>policy</a>, and its value is defined by the
-    following ABNF grammar:
-
-    <pre>
-      "CSP:" <a>csp-header-value</a>
-
-      <dfn>csp-header-value</dfn> = *WSP "active" *WSP
-    </pre>
-
-    If the user agent is <a>monitoring</a> or <a>enforcing</a> a <a>policy</a>
-    that includes directives whose value is a <a>source list</a>, then the user
-    agent MUST send a header field named <code>CSP</code> along with requests
-    for resources whose <a>origin</a> <em>does not</em> match the <a>protected
-    resource</a>'s origin. The value of this header MUST be <code>active</code>.
-
-    The user agent MAY choose to send this header only if the request is for a
-    resource type which the active policy would effect. That is, given a policy
-    of <code>img-src example.com</code>, the user agent would send <code>CSP:
-    active</code> along with requests for images, but might choose not to send
-    the header with requests for script.
-
-    Note: The central reason for including this header is that it hints to a
-    server that information about redirects might be leaked as a side-effect
-    of a page's active policy. If this header is present, a server might decline
-    to redirect a logged-out user from <code>example.com</code> to
-    <code>accounts.example.com</code>, for example, as a malicious embedder
-    might otherwise be able to determine the user's logged-in status.
   </section>
 
   <section>
@@ -1748,11 +1708,6 @@ type: method
   If the user agent <a>monitors</a> or <a>enforces</a> a policy that contains
   an unrecognized directive, the user agent SHOULD report a warning message
   in the developer console indicating the name of the unrecognized directive.
-
-  If the user agent <a>monitors</a> or <a>enforces</a> a policy that contains
-  a directive that contains a <a>source list</a>, then the user agent MUST set
-  a <code><a>CSP</a></code> Request Header when requesting cross-origin
-  resources, as described in [[#csp-request-header]].
 
   <section>
     <h3 id="processing-model-workers">Workers</h3>
@@ -3652,27 +3607,6 @@ type: method
       <dt>Specification document</dt>
       <dd>This specification (See
       <code><a>Content-Security-Policy-Report-Only</a></code> Header Field)</dd>
-    </dl>
-  </section>
-
-  <section>
-    <h3 id="iana-csp">CSP</h3>
-
-    <dl>
-      <dt>Header field name</dt>
-      <dd>CSP</dd>
-
-      <dt>Applicable protocol</dt>
-      <dd>http</dd>
-
-      <dt>Status</dt>
-      <dd>standard</dd>
-
-      <dt>Author/Change controller</dt>
-      <dd>W3C</dd>
-
-      <dt>Specification document</dt>
-      <dd>This specification (See [[#csp-request-header]])</dd>
     </dl>
   </section>
 </section>

@@ -229,9 +229,8 @@
       <li><a href="#delivery-html-meta-element"><span class="secno">3.3</span> <span class="content">
       HTML <code><span>meta</span></code> Element
     </span></a>
-      <li><a href="#csp-request-header"><span class="secno">3.4</span> <span class="content">The <code>CSP</code> HTTP Request Header</span></a>
-      <li><a href="#enforcing-multiple-policies"><span class="secno">3.5</span> <span class="content">Enforcing multiple policies.</span></a>
-      <li><a href="#which-policy-applies"><span class="secno">3.6</span> <span class="content">Policy applicability</span></a>
+      <li><a href="#enforcing-multiple-policies"><span class="secno">3.4</span> <span class="content">Enforcing multiple policies.</span></a>
+      <li><a href="#which-policy-applies"><span class="secno">3.5</span> <span class="content">Policy applicability</span></a>
      </ul>
     <li><a href="#syntax-and-algorithms"><span class="secno">4</span> <span class="content">Syntax and Algorithms</span></a>
      <ul class="toc">
@@ -357,7 +356,6 @@
      <ul class="toc">
       <li><a href="#iana-content-security-policy"><span class="secno">11.1</span> <span class="content">Content-Security-Policy</span></a>
       <li><a href="#iana-content-security-policy-report-only"><span class="secno">11.2</span> <span class="content">Content-Security-Policy-Report-Only</span></a>
-      <li><a href="#iana-csp"><span class="secno">11.3</span> <span class="content">CSP</span></a>
      </ul>
     <li><a href="#acknowledgements"><span class="secno">12</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content">Conformance</span></a>
@@ -530,12 +528,6 @@
       Individual inline scripts and stylesheets may be whitelisted via nonces
       (as described in <a href="#source-list-valid-nonces">§4.2.4 Valid Nonces</a>) and hashes (as described
       in <a href="#source-list-valid-hashes">§4.2.5 Valid Hashes</a>).
-    
-     
-    
-     <li>
-      A <code>CSP</code> request header is now sent with relevant requests, as
-      described in <a href="#csp-request-header">§3.4 The CSP HTTP Request Header</a>.
     
      
     
@@ -814,10 +806,6 @@
   <a href="#content-security-policy-report-only-header-field">§3.2 Content-Security-Policy-Report-Only Header Field</a>) or an HTML
   <code><a data-link-type="element" href="http://www.w3.org/TR/html5/document-metadata.html#the-meta-element">meta</a></code> element (defined in <a href="#delivery-html-meta-element">§3.3 HTML meta Element</a>).</p>
 
-
-    <p>Servers are informed that requests are coming from a <a data-link-type="dfn" href="#protected-resource">protected resource</a>
-  via an HTTP request header (defined in <a href="#csp-request-header">§3.4 The CSP HTTP Request Header</a>).</p>
-
   
     <section>
     
@@ -1035,7 +1023,7 @@
      <p class="note" role="note">Note: A <a data-link-type="dfn" href="#security-policy">policy</a> specified via a <code><a data-link-type="element" href="http://www.w3.org/TR/html5/document-metadata.html#the-meta-element">meta</a></code> element will be enforced
     along with any other policies active for the protected resource, regardless
     of where they’re specified. The general impact of enforcing multiple
-    policies is described in <a href="#enforcing-multiple-policies">§3.5 Enforcing multiple policies.</a>.</p>
+    policies is described in <a href="#enforcing-multiple-policies">§3.4 Enforcing multiple policies.</a>.</p>
      
 
 
@@ -1053,53 +1041,7 @@
   
     <section>
     
-     <h3 class="heading settled" data-level="3.4" id="csp-request-header"><span class="secno">3.4. </span><span class="content">The <code>CSP</code> HTTP Request Header</span><a class="self-link" href="#csp-request-header"></a></h3>
-     
-
-
-     <p>The <code><dfn data-dfn-type="dfn" data-noexport="" id="csp">CSP<a class="self-link" href="#csp"></a></dfn></code> header field indicates that a particular
-    request is subject to a <a data-link-type="dfn" href="#security-policy">policy</a>, and its value is defined by the
-    following ABNF grammar:</p>
-     
-
-    
-     <pre>"CSP:" <a data-link-type="dfn" href="#csp_header_value">csp-header-value</a>
-
-<dfn data-dfn-type="dfn" data-noexport="" id="csp_header_value">csp-header-value<a class="self-link" href="#csp_header_value"></a></dfn> = *WSP "active" *WSP
-</pre>
-     
-
-
-     <p>If the user agent is <a data-link-type="dfn" href="#monitor">monitoring</a> or <a data-link-type="dfn" href="#enforce">enforcing</a> a <a data-link-type="dfn" href="#security-policy">policy</a>
-    that includes directives whose value is a <a data-link-type="dfn" href="#source-list">source list</a>, then the user
-    agent MUST send a header field named <code>CSP</code> along with requests
-    for resources whose <a data-link-type="dfn" href="#origin">origin</a> <em>does not</em> match the <a data-link-type="dfn" href="#protected-resource">protected
-    resource</a>’s origin. The value of this header MUST be <code>active</code>.</p>
-     
-
-
-     <p>The user agent MAY choose to send this header only if the request is for a
-    resource type which the active policy would effect. That is, given a policy
-    of <code>img-src example.com</code>, the user agent would send <code>CSP:
-    active</code> along with requests for images, but might choose not to send
-    the header with requests for script.</p>
-     
-
-
-     <p class="note" role="note">Note: The central reason for including this header is that it hints to a
-    server that information about redirects might be leaked as a side-effect
-    of a page’s active policy. If this header is present, a server might decline
-    to redirect a logged-out user from <code>example.com</code> to
-    <code>accounts.example.com</code>, for example, as a malicious embedder
-    might otherwise be able to determine the user’s logged-in status.</p>
-     
-  
-    </section>
-
-  
-    <section>
-    
-     <h3 class="heading settled" data-level="3.5" id="enforcing-multiple-policies"><span class="secno">3.5. </span><span class="content">Enforcing multiple policies.</span><a class="self-link" href="#enforcing-multiple-policies"></a></h3>
+     <h3 class="heading settled" data-level="3.4" id="enforcing-multiple-policies"><span class="secno">3.4. </span><span class="content">Enforcing multiple policies.</span><a class="self-link" href="#enforcing-multiple-policies"></a></h3>
      
 
 
@@ -1149,7 +1091,7 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
   
     <section>
     
-     <h3 class="heading settled" data-level="3.6" id="which-policy-applies"><span class="secno">3.6. </span><span class="content">Policy applicability</span><a class="self-link" href="#which-policy-applies"></a></h3>
+     <h3 class="heading settled" data-level="3.5" id="which-policy-applies"><span class="secno">3.5. </span><span class="content">Policy applicability</span><a class="self-link" href="#which-policy-applies"></a></h3>
      
 
 
@@ -2640,12 +2582,6 @@ Content-Security-Policy: <a data-link-type="dfn" href="#connect_src">connect-src
     <p>If the user agent <a data-link-type="dfn" href="#monitor">monitors</a> or <a data-link-type="dfn" href="#enforce">enforces</a> a policy that contains
   an unrecognized directive, the user agent SHOULD report a warning message
   in the developer console indicating the name of the unrecognized directive.</p>
-
-
-    <p>If the user agent <a data-link-type="dfn" href="#monitor">monitors</a> or <a data-link-type="dfn" href="#enforce">enforces</a> a policy that contains
-  a directive that contains a <a data-link-type="dfn" href="#source-list">source list</a>, then the user agent MUST set
-  a <code><a data-link-type="dfn" href="#csp">CSP</a></code> Request Header when requesting cross-origin
-  resources, as described in <a href="#csp-request-header">§3.4 The CSP HTTP Request Header</a>.</p>
 
   
     <section>
@@ -5310,54 +5246,6 @@ Content-Security-Policy: style-src 'none'
      
   
     </section>
-
-  
-    <section>
-    
-     <h3 class="heading settled" data-level="11.3" id="iana-csp"><span class="secno">11.3. </span><span class="content">CSP</span><a class="self-link" href="#iana-csp"></a></h3>
-     
-
-    
-     <dl>
-      
-      <dt>Header field name
-      
-      
-      <dd>CSP
-      
-
-      
-      <dt>Applicable protocol
-      
-      
-      <dd>http
-      
-
-      
-      <dt>Status
-      
-      
-      <dd>standard
-      
-
-      
-      <dt>Author/Change controller
-      
-      
-      <dd>W3C
-      
-
-      
-      <dt>Specification document
-      
-      
-      <dd>This specification (See <a href="#csp-request-header">§3.4 The CSP HTTP Request Header</a>)
-      
-    
-     </dl>
-     
-  
-    </section>
 </section>
 
 
@@ -5492,8 +5380,6 @@ Content-Security-Policy: style-src 'none'
    <li><a href="#content_security_policy_report_only">Content-Security-Policy-Report-Only</a><span>, in §3.2</span>
    <li><a href="#content-security-policy-task-source">Content Security Policy task
           source</a><span>, in §4.4</span>
-   <li><a href="#csp">CSP</a><span>, in §3.4</span>
-   <li><a href="#csp_header_value">csp-header-value</a><span>, in §3.4</span>
    <li><a href="#default-sources">default sources</a><span>, in §7.4</span>
    <li><a href="#default_src">default-src</a><span>, in §7.4</span>
    <li><a href="#digest-of-elements-content">digest of element’s content</a><span>, in §4.2.5</span>
