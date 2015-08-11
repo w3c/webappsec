@@ -13,7 +13,7 @@ CREDENTIAL-FPWD: credentialmanagement/published/2015-04-FPWD.html
 CSP-PINNING: csp-pinning/index.html
 CSP-PINNING-FPWD: csp-pinning/published/2015-02-FPWD.html
 CSP2: CSP2/index.html
-CSP2-CR: CSP2/published/2015-02-CR.html
+CSP2-PR: CSP2/published/2015-08-PR.html
 CSP3: content-security-policy/index.html
 EPR: epr/index.html
 MIX: mixedcontent/index.html
@@ -40,8 +40,8 @@ csp-pinning/published/2015-02-FPWD.html: csp-pinning/index.src.html
 CSP2/index.html: CSP2/index.src.html biblio.json
 	bikeshed -f spec ./CSP2/index.src.html
 
-CSP2/published/2015-02-CR.html: CSP2/index.src.html
-	bikeshed -f spec --md-status=CR --md-deadline=2015-07-01 ./CSP2/index.src.html ./CSP2/published/2015-02-CR.html
+CSP2/published/2015-08-PR.html: CSP2/index.src.html
+	bikeshed -f spec --md-status=PR --md-date=2015-09-21 --md-deadline=2015-10-21 ./CSP2/index.src.html ./CSP2/published/2015-08-PR.html
 
 content-security-policy/index.html: content-security-policy/index.src.html biblio.json
 	bikeshed -f spec ./content-security-policy/index.src.html
