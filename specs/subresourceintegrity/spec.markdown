@@ -675,7 +675,7 @@ with a value of [`no-transform`][notransform].
 <section>
 ### Non-secure contexts remain non-secure
 
-[Integrity metadata][] delivered to a context that is not a [secure context],
+[Integrity metadata][] delivered by a context that is not a [secure context],
 such as an HTTP page, only protects an origin against a compromise of the
 server where an external resources is hosted. Network attackers can alter the
 digest in-flight (or remove it entirely, or do absolutely anything else to the
