@@ -23,7 +23,7 @@ POWER: powerfulfeatures/index.html
 POWER-WD: powerfulfeatures/published/WD.html
 REFERRER: referrer-policy/index.html
 UPGRADE: upgrade/index.html
-UPGRADE-WD: upgrade/published/WD.html
+UPGRADE-CR: upgrade/published/2015-09-CR.html
 
 clear-site-data/index.html: clear-site-data/index.src.html biblio.json
 	bikeshed -f spec ./clear-site-data/index.src.html
@@ -78,6 +78,9 @@ upgrade/index.html: upgrade/index.src.html biblio.json
 
 upgrade/published/WD.html: upgrade/index.src.html
 	bikeshed -f spec --md-status=WD ./upgrade/index.src.html ./upgrade/published/WD.html
+
+upgrade/published/2015-09-CR.html: upgrade/index.src.html
+	bikeshed -f spec --md-status=CR --md-date=2015-09-01 --md-deadline=2015-11-01 ./upgrade/index.src.html ./upgrade/published/2015-09-CR.html
 
 publish:
 	git push origin master master:gh-pages
