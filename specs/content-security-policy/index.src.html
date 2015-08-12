@@ -50,12 +50,16 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
       text: head; url: the-head-element
       text: meta; url: the-meta-element
       text: link; url: the-link-element
+    urlPrefix: embedded-content-0.html
+      text: iframe; url: the-iframe-element
     urlPrefix: scripting-1.html
       text: script; url: the-script-element
   type: element-attr
     urlPrefix: document-metadata.html
       text: content; for: meta; url: attr-meta-content
       text: http-equiv; for: meta; url: attr-meta-http-equiv
+    urlPrefix: embedded-content-0.html
+      text: srcdoc; for: iframe; url: attr-iframe-srcdoc
   type: interface
     urlPrefix: dom.html
       text: Document
@@ -64,11 +68,19 @@ spec: URL; urlPrefix: https://url.spec.whatwg.org/
     text: local scheme
   type: attribute
     text: scheme; for: URL; url: concept-url-scheme
+  type: interface;
+    text: URL
 spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
   type: interface
     text: Worker
+spec: RFC3986; urlPrefix: https://tools.ietf.org/html/rfc3986
+  type: grammar
+    text: path; url: section-3.3
+    text: scheme; url: section-3.1
 spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
-  type: dfn
+  type: grammar
+    text: ALPHA; url: appendix-B.1
+    text: DIGIT; url: appendix-B.1
     text: VCHAR; url: appendix-B.1
     text: WSP; url: appendix-B.1
 spec: RFC5890; urlPrefix: https://tools.ietf.org/html/rfc5890
@@ -80,11 +92,12 @@ spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
     text: origin; url: section-3.2
     text: the same; url: section-5
 spec: RFC7230; urlPrefix: https://tools.ietf.org/html/rfc7230
-  type: dfn
-    text: OWS; url: section-3.2.3
+  type: grammar
     text: BWS; url: section-3.2.3
-    text: token; url: section-3.2.6
+    text: OWS; url: section-3.2.3
+    text: RWS; url: section-3.2.3
     text: quoted-string; url: section-3.2.6
+    text: token; url: section-3.2.6
 spec: RFC7231; urlPrefix: https://tools.ietf.org/html/rfc7231
   type: dfn
     url: section-3
@@ -161,11 +174,25 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
 
   4.  Provide a reporting mechanism which allows developers to detect flaws
       being exploited in the wild.
+
+  <h3 id="changes-from-level-2">Changes from Level 2</h3>
+
+  This document describes an evolution of the
+  <a href="http://www.w3.org/TR/CSP2/">Content Security Policy Level 2
+  specification</a>. The following is a high-level overview of the changes:
+
+  1.  The specification has been rewritten from the ground up in terms of the
+      [[FETCH]] specification, which should make it simpler to integrate CSP's
+      requirements and restrictions with other specifications (and with
+      Service Workers in particular).
+
+  2.  The <code>frame-src</code> directive, which was deprecated in CSP Level
+      2, has been removed.
 </section>
 
 <!-- Big Text: Delivery -->
 <section>
-  <h2 id="delivery">
+  <h2 id="policy-delivery">
     Policy Delivery
   </h2>
 
@@ -180,46 +207,11 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
       as a string and applies it to the resource in which the <{meta}> element
       is embedded. The policy syntax is defined in [[#syntax]].
 
-  3.  A JavaScript interface (defined in [[#javascript-interface]]).
+  3.  Inheritance, which applies a policy to a <a>nested browsing context</a>
+      in certain circumstances, as defined in [[#delivery-implicit]].
 
-  4.  Inheritance, which copies a policy into a <a>nested browsing context</a>
-      in certain circumstances, as defined in [[#inheritance]].
+  4.  A JavaScript interface (defined in [[#javascript-interface]]).
 
-  Each of these mechanisms can be used to add values to one of three properties
-  this specification adds to <a>environment settings objects</a> to store the
-  relevant policy data for a resource:
-
-  ISSUE: This monkey-patches HTML. Talk to WHATWG and WICG folks.
-
-  : <dfn export for="environment settings object">
-      enforced Content Security Policies
-    </dfn>
-  :: A list of Content Security Policy objects which are to be enforced for
-     the settings object. This property's value is the empty list unless
-     otherwise specified.
-  : <dfn export for="environment settings object">monitored Content Security Policies</dfn>
-  :: A list of Content Security Policy objects which are to be monitored for
-     the settings object. This property's value is the empty list unless
-     otherwise specified.
-  : <dfn export for="environment settings object">
-      inherits Content Security Policies
-    </dfn>
-  :: A boolean value signifying whether or not the policies of an <a>embedding
-     <code>Document</code></a> ought to be applied (as described in
-     [[#get-policies]]). This property is <code>false</code> unless otherwise
-     specified.
-
-  A policy object is <dfn export local-lt="enforcing">enforced</dfn> for an
-  <a>environment settings object</a> by inserting it into the object's
-  <a>enforced Content Security Policies</a> list. A string is <a>enforced</a>
-  by <a>enforcing</a> each result of executing [[#parse-policy-string]] on the
-  string.
-
-  A policy object is <dfn export local-lt="monitoring">monitored</dfn> for an
-  <a>environment settings object</a> by inserting it into the object's
-  <a>monitored Content Security Policies</a> list. A string is <a>monitored</a>
-  by <a>monitoring</a> each result of executing [[#parse-policy-string]] on the
-  string.
 
   <h3 id="delivery-declarative">
     Declarative Delivery
@@ -250,7 +242,8 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   A server SHOULD NOT send more than one HTTP response header field named
   "<code>Content-Security-Policy</code>" with a given <a>resource
   representation</a>. The user agent MUST <a>enforce</a> each of the policies
-  contained in each such header field as described in [[#policy-application]].
+  contained in each such header field as described in
+  [[#algorithms-application]].
 
   <h4 id="cspro-header">
     The <code>Content-Security-Policy-Report-Only</code> HTTP Response Header Field
@@ -284,7 +277,8 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   A server SHOULD NOT send more than one HTTP response header field named
   "<code>Content-Security-Policy-Report-Only</code>" with a given <a>resource
   representation</a>. The user agent MUST <a>monitor</a> each of the policies
-  contained in each such header field as described in [[#policy-application]].
+  contained in each such header field as described in
+  [[#algorithms-application]].
 
   Note: The <code><a>Content-Security-Policy-Report-Only</a></code> header is
   <strong>not</strong> supported inside a <{meta}> element.
@@ -323,39 +317,424 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   Note: The <code><a>Content-Security-Policy-Report-Only</a></code>
   header is <em>not</em> supported inside a <{meta}> element.
 
-   
+  <h3 id="delivery-implicit">
+    Implicit Delivery 
+  </h3>
+
+  Resources with <a>local schemes</a> (e.g. <code>about</code>,
+  <code>blob:</code>, <code>data:</code>, and <code>filesystem:</code>), as well
+  as resouces embedded via <{iframe}>'s <{iframe/srcdoc}> attribute, are
+  considered same-origin with the origin that created them, but have no
+  mechanism for header-based policy delivery. To ensure that this property
+  doesn't allow a trivial bypass of a page's policy (by creating a
+  <code>blob:</code> and embedding it in an <{iframe}>, for instance), these
+  kinds of resources inherit the policy of their embedding context, as described
+  in [[#apply-to-document]], [[#apply-to-worker]], and
+  [[#apply-to-srcdoc-document]].
+
+  ISSUE(w3c/webappsec#451): We should consider extending this to include
+  auxiliary browsing contexts, not just nested browsing contexts.
 
   <h3 id="javascript-interface">
     Imperative Delivery
   </h3>
 
-  <h3 id="inheritance">
-    Inheritance
-  </h3>
-
-  <h4 id="inheritance-srcdoc">
-    <code>srcdoc</code> IFrames
-  </h4>
-
-  Something something <a>an <code>IFrame</code> srcdoc document</a>.
-
-  <h4 id="inheritance-local-schemes">
-    Local Schemes
-  </h4>
-
-  Something about an <a>origin</a> whose {{URL/scheme}} is a <a>local scheme</a>.
+  ISSUE: TODO: Everything.
 </section>
 
 <!-- Big text: Application -->
 <section>
-  <h2 id="policy-application">
-    Policy Application
+</section>
+
+<!-- Big Text: Syntax -->
+<section>
+  <h2 id="syntax">
+    Policy Syntax
   </h2>
 
-  ISSUE: Monkey patches gonna monkey patch.
+  A <dfn local-lt="policy string">serialized Content Security Policy</dfn>
+  consists of a semicolon-delimited list of directives. Each directive consists
+  of a key and (optionally) a value, defined by the following ABNF [[!RFC5234]]:
 
-  <h3 id="apply-to-document">
-    Applying policies to a fetched <code>Document</code>
+  <pre dfn-type="grammar" link-type="grammar">
+    <dfn>policy-token</dfn> = <a>directive-token</a> *( <a>OWS</a> ";" [ <a>OWS</a> <a>directive-token</a> ] )
+    <dfn>directive-token</dfn> = <a>directive-name</a> [ <a>RWS</a> <a>directive-value</a> ]
+    <dfn>directive-name</dfn> = 1*( <a>ALPHA</a> / <a>DIGIT</a> / "-" )
+    <dfn>directive-value</dfn> = *( <a>WSP</a> / &lt;<a>VCHAR</a> except ";" and ","&gt; )
+  </pre>
+
+  <div link-type="grammar" class="note">
+    Note: The <a>BWS</a>, <a>OWS</a>, and <a>RWS</a> rules are defined in
+    [[RFC7230]]. <a>ALPHA</a>, <a>DIGIT</a>, <a>VCHAR</a>, and <a>WSP</a>
+    are defined in [[RFC5234]].
+  </div>
+
+  <h3 id="syntax-source-list">
+    Source List Syntax
+  </h3>
+
+  The syntax for individual directives is defined in [[#csp-directives]], though
+  many directives share a common <dfn>source list</dfn> syntax defined below.
+
+  A source list represents a set of locations from which content of a specified
+  type can be fetched and potentially embedded or executed. Locations are
+  represented by one of the following types of <dfn>source expression</dfn>:
+
+  1.  Keywords such as <a grammar><code>'none'</code></a> and
+      <a grammar><code>'self'</code></a> (which match nothing and the current
+      URL's origin, respectively)
+
+  2.  Serialized URLs such as <code>https://example.com/path/to/file.js</code>
+      (which matches a specific file) or <code>https://example.com/</code>
+      (which matches everything on that origin)
+
+  3.  Schemes such as <code>https:</code> (which matches any resource having
+      the specified scheme)
+
+  4.  Hosts such as <code>example.com</code> (which matches any resource on
+      the host, regardless of scheme) or <code>*.example.com</code> (which
+      matches any resource on the host or any of its subdomains (and any of
+      its subdomains' subdomains, and so on))
+
+  5.  Nonces such as <code>'nonce-qwertyu12345'</code> (which can match specific
+      elements on a page)
+
+  6.  Digests such as <code>'sha256-abcd...'</code> (which can match specific
+      elements on a page)
+
+  These representations are defined by the following ABNF [[!RFC5234]]:
+
+  <pre dfn-type="grammar" link-type="grammar">
+    <dfn>source-list</dfn>       = <a>source-expression</a> *( <a>RWS</a> <a>source-expression</a> )
+                        / "<dfn>'none'</dfn>"
+    <dfn>source-expression</dfn> = <a>scheme-source</a> / <a>host-source</a> / <a>keyword-source</a>
+                        / <a>nonce-source</a> / <a>hash-source</a>
+
+    ; Schemes: `scheme:`
+    <dfn>scheme-source</dfn> = <a>scheme</a> ":"
+
+    ; Hosts: `example.com` / `*.example.com` / `https://*.example.com:12/path/to/file.js`
+    <dfn>host-source</dfn> = [ <a>scheme-part</a> "://" ] <a>host-part</a> [ <a>port-part</a> ] [ <a>path-part</a> ]
+    <dfn>scheme-part</dfn> = <a>scheme</a>
+    <dfn>host-part</dfn>   = "*" / [ "*." ] 1*<a>host-char</a> *( "." 1*<a>host-char</a> )
+    <dfn>host-char</dfn>   = <a>ALPHA</a> / <a>DIGIT</a> / "-"
+    <dfn>port-part</dfn>   = ":" ( 1*<a>DIGIT</a> / "*" )
+    <dfn>path-part</dfn>   = <a>path</a>
+   
+    ; Keywords:
+    <dfn>keyword-source</dfn> = "<dfn>'self'</dfn>" / "<dfn>'unsafe-inline'</dfn>" / "<dfn>'unsafe-eval'</dfn>" 
+
+    ; Nonces: 'nonce-[nonce goes here]'
+    <dfn>nonce-source</dfn>  = "'nonce-" <a>base64-value</a> "'"
+    <dfn>base64-value</dfn>  = 1*( <a>ALPHA</a> / <a>DIGIT</a> / "+" / "/" )*2( "=" ) 
+
+    ; Digests: 'sha256-[digest goes here]'
+    <dfn>hash-source</dfn>    = "'" <a>hash-algorithm</a> "-" <a>base64-value</a> "'"
+    <dfn>hash-algorithm</dfn> = "sha256" / "sha384" / "sha512"
+  </pre>
+
+  Note: The <a grammar>scheme</a> and <a grammar>path</a> rules are defined in
+  [[RFC3986]].
+
+  The <a grammar>host-char</a> production intentionally contains only ASCII
+  characters; internationalized domain names cannot be entered directly into a
+  <a>policy string</a>, but instead MUST be Punycode-encoded [[!RFC3492]]. For
+  example, the domain <code>üüüüüü.de</code> MUST be represented as
+  <code>xn--tdaaaaaa.de</code>.
+
+  Note: Though IP address do match the grammar above, only
+  <code>127.0.0.1</code> will actually match a URL when used in a source
+  expression (see [[#match-url-to-source-list]] for details). The security
+  properties of IP addresses are suspect, and authors ought to prefer hostnames
+  whenever possible.
+</section>
+
+<!-- Big Text: Reporting -->
+<section>
+  <h2 id="reporting">
+    Reporting
+  </h2>
+</section>
+
+<!-- Big Text: Directives -->
+<section>
+  <h2 id="csp-directives">
+    Content Security Policy Directives
+  </h2>
+  
+  This specification defines a number of <dfn>directives</dfn> which allow
+  developers to control certain aspects of their sites' behavior. The defined
+  directives fall into one of several categories:
+
+  1.  <dfn>Request Directives</dfn> control the locations from which certain
+      resource types may be loaded. For instance, <a>script-src</a> allows
+      developers to whitelist trusted sources of script to execute on a page,
+      while <a>font-src</a> controls the sources of web fonts.
+
+  2.  ...
+
+  To mitigate the risk of cross-site scripting attacks, web developers SHOULD
+  include directives that regulate sources of script and plugins. They can do
+  so by including:
+
+  *   Both the <a>script-src</a> and <a>object-src</a> directives, or
+  *   a <a>default-src</a> directive
+
+  In either case, developers SHOULD NOT include either
+  <a grammar><code>'unsafe-inline'</code></a>, or <code>data:</code> as valid
+  sources in their policies. Both enable XSS attacks by allowing code to be
+  included directly in the document itself; they are best avoided completely.
+
+  <h3 id="directives-request">
+    Request Directives
+  </h3>
+
+  <h4 id="directive-child-src"><code>child-src</code></h4>
+
+  The <dfn>child-src</dfn> directive governs the creation of <a>nested browsing
+  contexts</a> and Worker execution contexts. The syntax for the directive's
+  name and value is described by the following ABNF:
+
+  <pre>
+    directive-name  = "child-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <div class="example">
+    Given a page with the following Content Security Policy:
+
+    <pre>
+      Content-Security-Policy: child-src https://example.com/
+    </pre>
+
+    Fetches for the following code will all return network errors, as the URLs
+    provided do not match <code>child-src</code>'s <a>source list</a>:
+
+    <pre>
+      &lt;iframe src="https://not-example.com"&gt;&lt;/iframe&gt;
+      &lt;script&gt;
+        var blockedWorker = new Worker("data:application/javascript,...");
+      &lt;/script&gt;
+    </pre>
+  </div>
+
+  <h4 id="directive-connect-src"><code>connect-src</code></h4>
+
+  The <dfn>connect-src</dfn> directive restricts the URLs which can be loaded
+  using script interfaces such as those defined in [[XMLHttpRequest]] and
+  [[FETCH]]. The syntax for the directive's name and value is described by
+  the following ABNF:
+
+  <pre>
+    directive-name  = "connect-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <h4 id="directive-default-src"><code>default-src</code></h4>
+
+  The <dfn>default-src</dfn> directive serves as a fallback for the other 
+  <a>request directives</a>. The syntax for the directive's name and value is described by
+  the following ABNF:
+
+  <pre>
+    directive-name  = "default-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <h4 id="directive-font-src"><code>font-src</code></h4>
+
+  The <dfn>font-src</dfn> directive restricts the URLs from which font resources
+  may be loaded. The syntax for the directive's name and value is described by
+  the following ABNF:
+
+  <pre>
+    directive-name  = "font-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <h4 id="directive-img-src"><code>img-src</code></h4>
+
+  The <dfn>img-src</dfn> directive restricts the URLs from which image resources
+  may be loaded. The syntax for the directive's name and value is described by
+  the following ABNF:
+
+  <pre>
+    directive-name  = "img-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <h4 id="directive-media-src"><code>media-src</code></h4>
+
+  The <dfn>media-src</dfn> directive restricts the URLs from which video, audio,
+  and associated text track resources may be loaded. The syntax for the
+  directive's name and value is described by the following ABNF:
+
+  <pre>
+    directive-name  = "media-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <h4 id="directive-object-src"><code>object-src</code></h4>
+
+  The <dfn>object-src</dfn> directive restricts the URLs from which plugins may
+  be loaded. The syntax for the directive's name and value is described by the
+  following ABNF:
+
+  <pre>
+    directive-name  = "object-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <h4 id="directive-script-src"><code>script-src</code></h4>
+
+  The <dfn>script-src</dfn> directive restricts the locations from which scripts
+  may be executed. This includes not only URLs loaded directly into <{script}>
+  elements, but also things like inline script blocks and XSLT stylesheets
+  [[XSLT]] which can trigger script execution. The syntax for the directive's
+  name and value is described by the following ABNF:
+
+  <pre>
+    directive-name  = "script-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <h4 id="directive-style-src"><code>style-src</code></h4>
+
+  The <dfn>style-src</dfn> directive restricts the locations from which style
+  may be applied to a {{Document}}. The syntax for the directive's name and
+  value is described by the following ABNF:
+
+  <pre>
+    directive-name  = "style-src"
+    directive-value = <a grammar>source-list</a>
+  </pre>
+
+  <h3 id="directives-other">
+    Grabbag
+  </h3>
+
+  <h4 id="directive-base-uri"><code>base-uri</code></h4>
+  <h4 id="directive-form-action"><code>form-action</code></h4>
+  <h4 id="directive-frame-ancestors"><code>frame-ancestors</code></h4>
+  <h4 id="directive-plugin-types"><code>plugin-types</code></h4>
+  <h4 id="directive-sandbox"><code>sandbox</code></h4>
+
+  <h3 id="directives-reporting">
+    Reporting Directives
+  </h3>
+
+  <h4 id="directive-report-uri"><code>report-uri</code></h4>
+
+  The <dfn>report-uri</dfn> directive is deprecated. Please use the
+  <a>reports</a> directive instead.
+
+  <h4 id="directive-report"><code>reports</code></h4>
+
+  The <dfn>reports</dfn> directive defines the endpoint to which violation
+  reports are sent. The syntax for the directive's name and
+  value is described by the following ABNF:
+
+  <pre>
+    directive-name  = "reports"
+    directive-value = &lt;URL&gt; ; TODO: Figure out what to use here.
+  </pre>
+
+</section>
+
+<!-- Big Text: Algorithms -->
+<section>
+  <h2 id="algorithms">Algorithms</h2>
+
+  <h3 id="algorithms-fetch">Fetch Interface</h3>
+
+  This specification provides two algorithms which allow Fetch to make decisions
+  about whether or not a particular <a>request</a> should be blocked based on
+  its {{Request/client}}'s Content Security Policy [[!FETCH]]. The policy check
+  occurs twice: once at the top of Fetch, ensuring that outgoing requests
+  satisfy the relevant policy; and once at the bottom, ensuring that incoming
+  responses match as well (as they could have been modified in interesting ways
+  by an intermediate Service Worker). These algorithms can be considered the
+  public interface to the Content Security Policy specification:
+
+  <h4 id="should-block-request">
+    Should <var>request</var> be blocked by Content Security Policy?
+  </h4>
+
+  Given a <a>request</a> (<var>request</var>), this algorithm returns
+  <code>Blocked</code> or <code>Allowed</code> based on <var>request</var>'s
+  {{Request/client}}'s Content Security Policy.
+
+  Note: [[FETCH]] calls this algorithm as step #3 of its <a>Main Fetch</a>
+  algorithm.
+
+  1.  Let <var>client</var> be <var>request</var>'s {{Request/client}}.
+
+  2.  Return <code>Blocked</code>.
+
+  ISSUE: We should probably expand on this definition a bit.
+
+  <h4 id="should-block-response">
+    Should <var>response</var> to <var>request</var> be blocked by Content
+    Security Policy?
+  </h4>
+
+  Given a <a>response</a> (<var>response</var>) and a <a>request</a>
+  (<var>request</var>), this algorithm returns <code>Blocked</code> or
+  <code>Allowed</code> based on <var>request</var>'s {{Request/client}}'s
+  Content Security Policy.
+
+  Note: [[FETCH]] calls this algorithm as step #12 of its <a>Main Fetch</a>
+  algorithm.
+
+  1.  Let <var>client</var> be <var>request</var>'s {{Request/client}}.
+
+  2.  Return <code>Blocked</code>.
+
+  ISSUE: We should probably expand on this definition a bit.
+
+  <h3 id="algorithms-application">
+    Policy Application Algorithms
+  </h3>
+
+  ISSUE: Monkey patches gonna monkey patch. Talk to WHATWG / WICG.
+
+  Each of the delivery mechanisms specified in [[#policy-delivery]] can be used
+  to add values to one of three properties this specification adds to
+  <a>environment settings objects</a> to store the relevant policy data for a
+  resource:
+
+  : <dfn export for="environment settings object">
+      enforced Content Security Policies
+    </dfn>
+  :: A list of Content Security Policy objects which are to be enforced for
+     the settings object. This property's value is the empty list unless
+     otherwise specified.
+  : <dfn export for="environment settings object">monitored Content Security Policies</dfn>
+  :: A list of Content Security Policy objects which are to be monitored for
+     the settings object. This property's value is the empty list unless
+     otherwise specified.
+  : <dfn export for="environment settings object">
+      inherits Content Security Policies
+    </dfn>
+  :: A boolean value signifying whether or not the policies of an <a>embedding
+     <code>Document</code></a> ought to be applied (as described in
+     [[#get-policies]]). This property is <code>false</code> unless otherwise
+     specified.
+
+  A policy object is <dfn export local-lt="enforcing">enforced</dfn> for an
+  <a>environment settings object</a> by inserting it into the object's
+  <a>enforced Content Security Policies</a> list. A string is <a>enforced</a>
+  by <a>enforcing</a> each result of executing [[#parse-policy-string]] on the
+  string.
+
+  A policy object is <dfn export local-lt="monitoring">monitored</dfn> for an
+  <a>environment settings object</a> by inserting it into the object's
+  <a>monitored Content Security Policies</a> list. A string is <a>monitored</a>
+  by <a>monitoring</a> each result of executing [[#parse-policy-string]] on the
+  string.
+
+  <h4 id="apply-to-document">
+    Apply policies to a <code>Document</code> created via a <var>response</var>
   </h3>
 
   When <a lt="create a Document object">creating</a> a {{Document}} object
@@ -374,10 +753,10 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
           <var>response</var>'s <a attribute>header list</a> and
           <var>document</var>'s <a>incumbent settings object</a>.
 
-  <h3 id="apply-to-srcdoc-document">
-    Applying policies to IFrame <code>srcdoc</code> <code>Document</code>s
-  </h3>
-    
+  <h4 id="apply-to-srcdoc-document">
+    Apply policies to an <code>IFrame</code> <code>srcdoc</code>
+    <code>Document</code>
+  </h4>
 
   When <a lt="create a Document object">creating</a> a {{Document}} object
   (<var>document</var>) for <a>an iframe srcdoc document</a>:
@@ -386,9 +765,9 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
       <code><a>inherits Content Security Policies</a></code> property to
       <code>true</code>.
 
-  <h3 id="apply-to-worker">
-    Applying policies to a <code>Worker</code>
-  </h3>
+  <h4 id="apply-to-worker">
+    Apply policies to a <code>Worker</code>
+  </h4>
   
   When <a lt="run a worker">running a worker</a> <var>worker</var> for
   <a>environment settings object</a> <var>settings</var> successfully
@@ -409,9 +788,13 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   Note: This is using the WHATWG's definition of "run a worker", because
   the W3C's version has no concept of environment settings objects.
 
-  <h3 id="apply-via-meta">
-    Applying policies via <code>&lt;meta&gt;</code>
-  </h3>
+  ISSUE: Does this cover Service Workers?
+
+  <h4 id="apply-via-meta">
+    Apply policies to <var>document</var> via <code>&lt;meta&gt;</code>
+  </h4>
+
+  ISSUE: Monkey-patching! Move this to HTML.
 
   Add the following entry to the <a>pragma directives</a> for the <{meta}>
   element:
@@ -463,136 +846,49 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
     </dd>
   </dl>
 
-  <h3 id="multiple-policies">
-    The effect of multiple policies
-  </h3>
-
-  <em>This section is not normative.</em>
-
-  The above sections note that when multiple policies are present, each must be
-  enforced or reported, according to its type. An example will help clarify how
-  that ought to work in practice. The behavior of an <code>XMLHttpRequest</code>
-  might seem unclear given a site that, for whatever reason, delivered the
-  following HTTP headers:
-
-  <div class="example">
-    <pre>
-      Content-Security-Policy: default-src 'self' http://example.com http://example.net;
-                               connect-src 'none';
-      Content-Security-Policy: connect-src http://example.com/;
-                               script-src http://example.com/
-    </pre>
-  </div>
-
-  Is a connection to example.com allowed or not? The short answer is that the
-  connection is not allowed. Enforcing both policies means that a potential
-  connection would have to pass through both unscathed. Even though the second
-  policy would allow this connection, the first policy contains
-  <code>connect-src 'none'</code>, so its enforcement blocks the connection. The
-  impact is that adding additional policies to the list of policies to enforce
-  can <em>only</em> further restrict the capabilities of the protected resource.
-
-  To demonstrate that further, consider a script tag on this page. The first
-  policy would lock scripts down to <code>'self'</code>,
-  <code>http://example.com</code> and <code>http://example.net</code> via the
-  <code>default-src</code> directive. The second, however, would only allow
-  script from <code>http://example.com/</code>. Script will only load if it
-  meets both policy’s criteria: in this case, the only origin that can match
-  is <code>http://example.com</code>, as both policies allow it.
-</section>
-
-<!-- Big Text: Syntax -->
-<section>
-  <h2 id="syntax">
-    Policy Syntax
-  </h2>
-
-  Something something ABNF [[!RFC5234]].
-
-  Note: The <a>BWS</a>, <a>OWS</a>, <a>token</a>, and <a>quoted-string</a> rules
-  are defined in [[RFC7230]].
-
-  <pre>
-    <dfn grammar>policy-token</dfn>
-  </pre>
-</section>
-
-<!-- Big Text: Reporting -->
-<section>
-  <h2 id="reporting">
-    Reporting
-  </h2>
-</section>
-
-<!-- Big Text: Directives -->
-<section>
-  <h2 id="directives">
-    Directives
-  </h2>
-</section>
-
-<!-- Big Text: Algorithms -->
-<section>
-  <h2 id="algorithms">Algorithms</h2>
-
-  <h3 id="fetch-interface">Fetch Interface</h3>
-
-  This specification provides two algorithms which allow Fetch to make decisions
-  about whether or not a particular <a>request</a> should be blocked based on
-  its {{Request/client}}'s Content Security Policy [[!FETCH]]. The policy check
-  occurs twice: once at the top of Fetch, ensuring that outgoing requests
-  satisfy the relevant policy; and once at the bottom, ensuring that incoming
-  responses match as well (as they could have been modified in interesting ways
-  by an intermediate Service Worker). These algorithms can be considered the
-  public interface to the Content Security Policy specification:
-
-  <h4 id="should-block-request">
-    Should <var>request</var> be blocked by Content Security Policy?
-  </h4>
-
-  Given a <a>request</a> (<var>request</var>), this algorithm returns
-  <code>Blocked</code> or <code>Allowed</code> based on <var>request</var>'s
-  {{Request/client}}'s Content Security Policy.
-
-  Note: [[FETCH]] calls this algorithm as step #3 of its <a>Main Fetch</a>
-  algorithm.
-
-  1.  Let <var>client</var> be <var>request</var>'s {{Request/client}}.
-
-  2.  Return <code>Blocked</code>.
-
-  ISSUE: We should probably expand on this definition a bit.
-
-  <h4 id="should-block-response">
-    Should <var>response</var> to <var>request</var> be blocked by Content
-    Security Policy?
-  </h4>
-
-  Given a <a>response</a> (<var>response</var>) and a <a>request</a>
-  (<var>request</var>), this algorithm returns <code>Blocked</code> or
-  <code>Allowed</code> based on <var>request</var>'s {{Request/client}}'s
-  Content Security Policy.
-
-  Note: [[FETCH]] calls this algorithm as step #12 of its <a>Main Fetch</a>
-  algorithm.
-
-  1.  Let <var>client</var> be <var>request</var>'s {{Request/client}}.
-
-  2.  Return <code>Blocked</code>.
-
-  ISSUE: We should probably expand on this definition a bit.
-
-  <h3 id="internal-helpers">Internal Helpers</h3>
-
-  These algorithms are part of the internal processing model of Content Security
-  Policy, and are not meant to be called from other specifications.
+  <h3 id="algorithms-parsing">Parsing Algorithms</h3>
 
   <h4 id="parse-policy-string">
     Parse <var>string</var> as a Content Security Policy
   </h4>
 
-  Given a string (<var>string</var>), this algorithm will return a list of
-  policy objects. In the case of a fatal parse error, this list will be empty.
+  Given a <a>policy string</a> (<var>string</var>), this algorithm will return a
+  list of policy objects. In the case of a fatal parse error, this list will be
+  empty.
+
+  <h3 id="algorithms-matching">Matching Algorithms</h3>
+
+  <h4 id="match-url-to-source-list">
+    Does <var>url</var> match <var>source list</var>?
+  </h4>
+
+  Given a {{URL}} (<var>url</var>) and a <a>source list</a> (<var>list</var>),
+  this algorithm returns <code>Matches</code> or <code>Does Not Match</code>.
+
+  1.  For each <var>expression</var> in <var>list</var>:
+
+      1.  If [[#match-url-to-source-expression]] returns <code>Matches</code>
+          when executed upon <var>url</var> and <var>expression</var>, then
+          return <code>Matches</code>
+
+  2.  Return <code>Does Not Match</code>.
+
+  <h4 id="match-url-to-source-expression">
+    Does <var>url</var> match <var>source expression</var>?
+  </h4>
+
+  Given a {{URL}} (<var>url</var>) and a <a>source expression</a>
+  (<var>source</var>), this algorithm returns <code>Matches</code> or <code>Does
+  Not Match</code>.
+ 
+  1.  Return <code>Does Not Match</code>.
+
+  ISSUE: This might need a bit of polishing.
+
+  <h3 id="internal-helpers">Internal Helpers</h3>
+
+  These algorithms are part of the internal processing model of Content Security
+  Policy, and are not meant to be called from other specifications.
 
   <h4 id="get-policies">
     Gather policies for <var>environment settings object</var> and
@@ -647,6 +943,75 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
 
 </section>
 
+<!-- Big text: Security -->
+<section>
+  <h2 id="security-considerations">Security Considerations</h2>
+
+  <h3 id="security-nonces">Nonce Reuse</h3>
+
+  Nonces override the other restrictions present in the directive in which
+  they're delivered. It is critical, then, that they remain unguessable, as
+  bypassing a resource's policy is otherwise trivial.
+
+  If a server delivers a <a grammar>nonce-source</a> expression as part of a
+  <a>policy string</a>, the server MUST generate a unique value each time it
+  transmits a policy. The generated value SHOULD be at least 128 bits long
+  (before encoding), and SHOULD be generated via a cryptographically secure
+  random number generator in order to ensure that the value is difficult for
+  an attacker to predict.
+
+  Note: Using a nonce to whitelist inline script or style is less secure than
+  not using a nonce, as nonces override the restrictions in the directive in
+  which they are present. An attacker who can gain access to the nonce can
+  execute whatever script they like, whenever they like. That said, nonces
+  provide a substantial improvement over <a grammar>'unsafe-inline'</a> when
+  layering a content security policy on top of old code. When considering
+  <a grammar>'unsafe-inline'</a>, authors are encouraged to consider nonces
+  (or hashes) instead.
+</section>
+
+<!-- Big text: Authoring -->
+<section>
+  <h2 id="authoring-considerations">Authoring Considerations</h2>
+
+  <h3 id="multiple-policies">
+    The effect of multiple policies
+  </h3>
+
+  <em>This section is not normative.</em>
+
+  The above sections note that when multiple policies are present, each must be
+  enforced or reported, according to its type. An example will help clarify how
+  that ought to work in practice. The behavior of an <code>XMLHttpRequest</code>
+  might seem unclear given a site that, for whatever reason, delivered the
+  following HTTP headers:
+
+  <div class="example">
+    <pre>
+      Content-Security-Policy: default-src 'self' http://example.com http://example.net;
+                               connect-src 'none';
+      Content-Security-Policy: connect-src http://example.com/;
+                               script-src http://example.com/
+    </pre>
+  </div>
+
+  Is a connection to example.com allowed or not? The short answer is that the
+  connection is not allowed. Enforcing both policies means that a potential
+  connection would have to pass through both unscathed. Even though the second
+  policy would allow this connection, the first policy contains
+  <code>connect-src 'none'</code>, so its enforcement blocks the connection. The
+  impact is that adding additional policies to the list of policies to enforce
+  can <em>only</em> further restrict the capabilities of the protected resource.
+
+  To demonstrate that further, consider a script tag on this page. The first
+  policy would lock scripts down to <code>'self'</code>,
+  <code>http://example.com</code> and <code>http://example.net</code> via the
+  <code>default-src</code> directive. The second, however, would only allow
+  script from <code>http://example.com/</code>. Script will only load if it
+  meets both policy’s criteria: in this case, the only origin that can match
+  is <code>http://example.com</code>, as both policies allow it.
+</section>
+
 <!-- Big Text: IANA -->
 <section>
   <h2 id="iana-considerations">IANA Considerations</h2>
@@ -674,6 +1039,7 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
     <dt>Specification document</dt>
     <dd>This specification (See [[#csp-header]])</dd>
   </dl>
+</section>
 
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>
