@@ -468,7 +468,7 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
 
   A {{SecurityPolicy}} object has an internal slot named
   <dfn attribute for="SecurityPolicy">\[[policy]]</dfn>, which contains a
-  <a>policy</a>. Unless otherwise stated, it is <code>null</code>.
+  <a>policy</a>. Unless otherwise stated, its value is <code>null</code>.
 
   The <dfn for="SecurityPolicy" attribute>directives</dfn> attribute's getter
   returns a list of {{SecurityPolicyDirective}}s corresponding to
@@ -498,13 +498,13 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
 
   4.  Return <code>this</code>.
 
-  The <dfn method for="SecurityPolicy">requestMatches(request)</dfn> returns
-  <code>true</code> if [[#match-request-to-directive-list]] returns
+  The <dfn method for="SecurityPolicy">requestMatches(request)</dfn> method
+  returns <code>true</code> if [[#match-request-to-directive-list]] returns
   <code>Matches</code> when executed upon <var>request</var> and
   {{SecurityPolicy/[[policy]]}}'s <a for="policy">directive list</a>, and
   <code>false</code> otherwise.
 
-  The <dfn method for="SecurityPolicy">nodeMatches(node)</dfn> returns
+  The <dfn method for="SecurityPolicy">nodeMatches(node)</dfn> method returns
   <code>true</code> if [[#match-node-to-directive-list]] returns
   <code>Matches</code> when executed upon <var>node</var> and
   {{SecurityPolicy/[[policy]]}}'s <a for="policy">directive list</a>, and
@@ -545,42 +545,44 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
       readonly attribute DirectiveName name;  
     };
   </pre>
-  <dl dfn-for="SecurityPolicyDirective">
-    <dt><dfn attribute>name</dfn></dt>
-    <dd>
-      The directive's name. <code>script-src https://example.com/</code> will,
-      for example, produce a {{SecurityPolicyDirective}} object with a name of
-      "<code>script-src</code>".
-    </dd>
-    <dt><dfn method>requestMatches(request)</dfn></dt>
-    <dd>
-      This method returns <code>true</code> if the <var>request</var> provided
-      matches the directive.
+  
+  A {{SecurityPolicyDirective}} object has an internal slot named
+  <dfn attribute for="SecurityPolicyDirective">\[[directive]]</dfn>, which
+  contains a <a>directive</a>. Unless otherwise specified, its value is
+  <code>null</code>.
 
-      {{SecurityPolicyDirective}}'s implementation of this method always returns
-      <code>true</code>. Interfaces which inherit from
-      {{SecurityPolicyDirective}} are expected to override this method when
-      relevant.
+  The <dfn attribute for="SecurityPolicyDirective">name</dfn> attribute's
+  getter returns {{SecurityPolicyDirective/[[directive]]}}'s
+  <a for="directive">name</a>.
 
-      <pre class="argumentdef" for="SecurityPolicyDirective/requestMatches(request)">
-        request: The Request which will be matched against the directive.
-      </pre>
-    </dd>
-    <dt><dfn method>nodeMatches(node)</dfn></dt>
-    <dd>
-      This method returns <code>true</code> if the <var>node</var> provided
-      matches the directive.
-      
-      {{SecurityPolicyDirective}}'s implementation of this method always returns
-      <code>true</code>. Interfaces which inherit from
-      {{SecurityPolicyDirective}} are expected to override this method when
-      relevant.
+  The <dfn attribute for="SecurityPolicyDirective">value</dfn> attribute's
+  getter returns {{SecurityPolicyDirective/[[directive]]}}'s
+  <a for="directive">value</a>.
 
-      <pre class="argumentdef" for="SecurityPolicyDirective/nodeMatches(node)">
-        node: The Node which will be matched against the directive.
-      </pre>
-    </dd>
-  </dl>
+  The <dfn constructor for="SecurityPolicyDirective">SecurityPolicyDirective(name, value)</dfn>
+  constructor, when invoked, MUST execute the following steps:
+
+  1.  If <var>name</var> is not a valid {{DirectiveName}}, throw a
+      <code>SyntaxError</code> exception, and abort the remaining steps.
+
+  2.  Let <var>directive</var> be a new <a>directive</a> with a
+      <a for="directive">name</a> of <var>name</var> and a
+      <a for="directive">value</a> of <var>value</var>.
+
+  3.  Set <code>this@</code>{{SecurityPolicyDirective/[[directive]]}} to
+      <var>directive</var>.
+
+  4.  Return <code>this</code>.
+
+  The <dfn method for="SecurityPolicyDirective">requestMatches(request)</dfn>
+  method returns <code>true</code>.
+
+  The <dfn method for="SecurityPolicyDirective">nodeMatches(node)</dfn> method
+  returns <code>true</code>.
+
+  Note: Directives which operate on either {{Request}}s or {{Node}}s are
+  expected to inherit from {{SecurityPolicyDirective}} and override these
+  method implementations. {{SourceListDirective}} is one example of this.
 
   <h4 id="idl-sourcelistdirective">
     <code>SourceListDirective</code> Interface
@@ -593,19 +595,30 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   <pre class="idl">
     [Constructor(DOMString name, DOMString value), Exposed=(Window,Worker)]
     interface SourceListDirective : SecurityPolicyDirective {
-      readonly attribute sequence&lt;SourceExpression&gt; sources;
+      readonly attribute FrozenArray&lt;SourceExpression&gt; sources;
     };
   </pre>
-  <dl dfn-for="SourceListDirective">
-    <dt><dfn attribute>sources</dfn></dt>
-    <dd>
-      The list of <a>source expressions</a> parsed out of the directive's
-      <var>value</var>.
-    </dd>
-  </dl>
 
-  {{SourceListDirective}} overrides {{SecurityPolicyDirective}}'s implementation
-  of {{SecurityPolicyDirective/requestMatches(request)}} as follows:
+  The <dfn constructor for="SourceListDirective">SourceListDirective(name, value)</dfn>
+  constructor, when invoked, MUST execute the following steps:
+
+  1.  If <var>name</var> is not a valid {{DirectiveName}}, throw a
+      <code>SyntaxError</code> exception, and abort the remaining steps.
+
+  2.  Let <var>directive</var> be a new <a>directive</a> with a
+      <a for="directive">name</a> of <var>name</var> and a
+      <a for="directive">value</a> of <var>value</var>.
+
+  3.  Set <code>this@</code>{{SecurityPolicyDirective/[[directive]]}} to
+      <var>directive</var>.
+
+  4.  <code>this@</code>Set {{SourceListDirective/sources}} to the result of
+      executing [[#parse-source-list]] on <var>value</var>.
+
+  5.  Return <code>this</code>.
+
+  The <dfn method for="SourceListDirective">requestMatches(request)</dfn>
+  method, when invoked, MUST execute the following steps:
 
   1.  Let <var>url</var> be <var>request</var>'s {{Request/url}}.
 
@@ -618,8 +631,8 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
 
   3.  Return <code>false</code>.
 
-  {{SourceListDirective}} overrides {{SecurityPolicyDirective}}'s implementation
-  of {{SecurityPolicyDirective/nodeMatches(node)}} as follows:
+  The <dfn method for="SourceListDirective">nodeMatches(node)</dfn> method,
+  when invoked, MUST execute the following steps:
 
   1.  For each <var>expression</var> in this object's
       {{SourceListDirective/sources}} attribute:
@@ -1254,6 +1267,14 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   Given a <a>policy string</a> (<var>string</var>), this algorithm will return a
   list of <a>policies</a>. In the case of a fatal parse error, this list will be
   empty.
+
+  <h4 id="parse-source-list">
+    Parse <var>string</var> as a source list
+  </h4>
+
+  Given a <a>source list directive</a>'s <a for="directive">value</a>, this
+  algorithm will return a list of <a>source expressions</a>. In the case of a
+  fatal parse error, this list will be empty.
 
   <h3 id="algorithms-matching">Matching Algorithms</h3>
 
