@@ -204,6 +204,44 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
       2, has been removed.
 </section>
 
+<!-- Big Text: Framework -->
+<section>
+  <h2 id="framework">Framework</h2>
+
+  A <dfn local-lt="policies">policy</dfn> defines a set of allowed and
+  restricted behaviors, and has the following attributes:
+
+  :   <dfn for="policy">directive list</dfn>
+  ::  A set of <a>directives</a> that define the behaviors the policy
+      allows and restricts. Unless otherwise stated, its value is the empty set.
+  :   <dfn for="policy">action</dfn>
+  ::  Either "<code>enforce</code>", meaning that policy violation are actively
+      prevented, or "<code>report-only</code>", meaning that policy violations
+      are passively reported and allowed to proceed. Unless otherwise stated,
+      its value is "<code>enforce</code>".
+
+  A <dfn>directive</dfn> defines a specific behavior, and has the following
+  properties:
+
+  :   <dfn for="directive">name</dfn>
+  ::  One of "<code>base-uri</code>", "<code>child-src</code>",
+      "<code>connect-src</code>", "<code>default-src</code>",
+      "<code>font-src</code>", "<code>form-action</code>",
+      "<code>frame-ancestors</code>", "<code>img-src</code>",
+      "<code>media-src</code>", "<code>object-src</code>",
+      "<code>plugin-types</code>", "<code>report-uri</code>",
+      "<code>reports</code>", "<code>sandbox</code>",
+      "<code>script-src</code>", "<code>style-src</code>".
+      The behaviors associated with each possible value are described in
+      [[#csp-directives]].
+  :   <dfn for="directive">value</dfn>
+  ::  A string. Unless otherwise stated, its value is the empty string. Parsing
+      rules for <a>directive</a>'s values are described in [[#csp-directives]].
+
+  A <dfn>source list directive</dfn> is a specific type of <a>directive</a>
+  whose value is a space-separated list of source expressions.
+</section>
+
 <!-- Big Text: Delivery -->
 <section>
   <h2 id="policy-delivery">
@@ -354,14 +392,14 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   </h3>
 
   Developers may manipulate a page's policy via a JavaScript API which allows
-  construction of <dfn>policy objects</dfn>, and the application of those
+  construction of {{SecurityPolicy}} objects, and the application of those
   objects to an <a>environment settings object</a>.
 
   <h4 id="javascript-application">
     Applying a Policy
   </h4>
 
-  <a>Policy objects</a> can be applied to an <a>environment settings object</a>
+  A {{SecurityPolicy}} can be applied to an <a>environment settings object</a>
   via the following interfaces:
 
   <pre class="idl">
@@ -373,7 +411,7 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
     <dt><dfn method>applySecurityPolicy(policy)</dfn></dt>
     <dd>
       To execute this method, execute [[#apply-to-global-object]] on
-      <var>policy</var> and the {{Window}} object.
+      <var>policy</var>'s associated <a>policy</a> and the {{Window}} object.
     </dd>
   </dl>
 
@@ -386,7 +424,8 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
     <dt><dfn method>applySecurityPolicy(policy)</dfn></dt>
     <dd>
       To execute this method, execute [[#apply-to-global-object]] on
-      <var>policy</var> and the {{WorkerGlobalScope}} object.
+      <var>policy</var>'s associated <a>policy</a> and the {{WorkerGlobalScope}}
+      object.
     </dd>
   </dl>
 
@@ -411,62 +450,65 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   A policy object is defined via the following IDL:
 
   <pre class="idl">
-    enum SecurityPolicyMode {
-      "Enforce",
-      "ReportOnly"
+    enum SecurityPolicyAction {
+      "enforce",
+      "report-only"
     };
 
-    [Constructor(DOMString policy, SecurityPolicyMode mode)]
+    [Constructor(DOMString policy, SecurityPolicyAction action), Exposed=(Window,Worker)]
     interface SecurityPolicy {
       boolean requestMatches(Request request);
       boolean nodeMatches(Node node);
   
-      readonly attribute sequence&lt;SecurityPolicyDirective&gt; directives;
-      readonly attribute SecurityPolicyMode mode;
-      readonly attribute URL reportingEndpoint;
+      readonly attribute FrozenArray&lt;SecurityPolicyDirective&gt; directives;
+      readonly attribute SecurityPolicyAction action;
+      readonly attribute USVString reportingEndpoint;
     };
   </pre>
-  <dl dfn-for="SecurityPolicy">
-    <dt><dfn attribute>directives</dfn></dt>
-    <dd>
-      The <code>directives</code> attribute contains the set of directives which
-      were parsed out of the policy string.
-    </dd>
-    <dt><dfn attribute>mode</dfn></dt>
-    <dd>
-      Policy objects are either "Enforce"-mode, which blocks requests and
-      inline execution, or "ReportOnly"-mode, which does not.
-    </dd>
-    <dt><dfn attribute>reportingEndpoint</dfn></dt>
-    <dd>
-      If a <a>report-uri</a> directive is present, this attribute represents the
-      URL parsed out of its value.
-    </dd>
-    <dt><dfn method>requestMatches(request)</dfn></dt>
-    <dd>
-      This method returns <code>true</code> if the <var>request</var> provided
-      matches the relevant <a>request directive</a> in the policy object's
-      {{SecurityPolicy/directives}} list.
 
-      <pre class="argumentdef" for="SecurityPolicy/requestMatches(request)">
-        request: The Request which will be matched against the policy object's
-        directives list.
-      </pre>
-    </dd>
-    <dt><dfn method>nodeMatches(node)</dfn></dt>
-    <dd>
-      This method returns <code>true</code> if the <var>node</var> provided
-      matches the relevant <a>directive</a> in the policy object's
-      {{SecurityPolicy/directives}} list. For instance, a <{script}> element
-      might only match a <a>script-src</a> directive based on a <{script/nonce}>
-      attribute.
+  A {{SecurityPolicy}} object has an internal slot named
+  <dfn attribute for="SecurityPolicy">\[[policy]]</dfn>, which contains a
+  <a>policy</a>. Unless otherwise stated, it is <code>null</code>.
 
-      <pre class="argumentdef" for="SecurityPolicy/nodeMatches(node)">
-        node: The Node which will be matched against the policy object's
-        directives list.
-      </pre>
-    </dd>
-  </dl>
+  The <dfn for="SecurityPolicy" attribute>directives</dfn> attribute's getter
+  returns a list of {{SecurityPolicyDirective}}s corresponding to
+  {{SecurityPolicy/[[policy]]}}'s <a for="policy">directive list</a>
+
+  The <dfn for="SecurityPolicy" attribute>action</dfn> attribute's getter
+  returns the value of {{SecurityPolicy/[[policy]]}}'s <a for="policy">action</a>.
+
+  The <dfn for="SecurityPolicy" attribute>reportingEndpoint</dfn> attribute's
+  getter returns the serialization of the <a for="directive">value</a> of
+  the <a>directive</a> in {{SecurityPolicy/[[policy]]}}'s
+  <a for="policy">directive list</a> with a <a for="directive">name</a> of
+  "<code>report-uri</code>", if present. If no such directive is present, the
+  empty string is returned.
+
+  The <dfn constructor for="SecurityPolicy">SecurityPolicy(policy, action)</dfn>
+  constructor, when invoked, MUST execute the following steps:
+
+  1.  Let <var>policy list</var> be the result of executing
+      [[#parse-policy-string]] on <var>policy</var>.
+
+  2.  If <var>policy list</var> does not have exactly one element, throw a
+      <code>SyntaxError</code> exception, and abort the remaining steps.
+
+  3.  Set <code>this@</code>{{SecurityPolicy/[[policy]]}} to the only element
+      in <var>policy list</var>.
+
+  4.  Return <code>this</code>.
+
+  The <dfn method for="SecurityPolicy">requestMatches(request)</dfn> returns
+  <code>true</code> if [[#match-request-to-directive-list]] returns
+  <code>Matches</code> when executed upon <var>request</var> and
+  {{SecurityPolicy/[[policy]]}}'s <a for="policy">directive list</a>, and
+  <code>false</code> otherwise.
+
+  The <dfn method for="SecurityPolicy">nodeMatches(node)</dfn> returns
+  <code>true</code> if [[#match-node-to-directive-list]] returns
+  <code>Matches</code> when executed upon <var>node</var> and
+  {{SecurityPolicy/[[policy]]}}'s <a for="policy">directive list</a>, and
+  <code>false</code> otherwise.
 
   <h4 id="idl-securitypolicydirective">
     <code>SecurityPolicyDirective</code> Interface
@@ -476,11 +518,31 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   following IDL:
 
   <pre class="idl">
+    enum DirectiveName {
+      "base-uri",
+      "child-src",
+      "connect-src",
+      "default-src",
+      "font-src",
+      "form-action",
+      "frame-ancestors",
+      "img-src",
+      "media-src",
+      "object-src",
+      "plugin-types",
+      "report-uri",
+      "reports",
+      "sandbox",
+      "script-src",
+      "style-src"
+    };
+
+    [Constructor(DOMString name, DOMString value), Exposed=(Window,Worker)]
     interface SecurityPolicyDirective {
       boolean requestMatches(Request request);
       boolean nodeMatches(Node node);
 
-      readonly attribute DOMString name;  
+      readonly attribute DirectiveName name;  
     };
   </pre>
   <dl dfn-for="SecurityPolicyDirective">
@@ -529,7 +591,7 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   These are defined according to the following IDL:
 
   <pre class="idl">
-    [Constructor(DOMString name, DOMString value)]
+    [Constructor(DOMString name, DOMString value), Exposed=(Window,Worker)]
     interface SourceListDirective : SecurityPolicyDirective {
       readonly attribute sequence&lt;SourceExpression&gt; sources;
     };
@@ -578,7 +640,7 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   the following IDL:
 
   <pre class="idl">
-    [Constructor(DOMString value)]
+    [Constructor(DOMString value), Exposed=(Window,Worker)]
     interface SourceExpression {
       boolean urlMatches(USVString url);
       boolean nodeMatches(Node node);
@@ -773,7 +835,7 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
     Content Security Policy Directives
   </h2>
   
-  This specification defines a number of <dfn>directives</dfn> which allow
+  This specification defines a number of types of <a>directives</a> which allow
   developers to control certain aspects of their sites' behavior. The defined
   directives fall into one of several categories:
 
@@ -1028,13 +1090,13 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   : <dfn export for="environment settings object">
       enforced Content Security Policies
     </dfn>
-  :: A list of {{SecurityPolicy}} objects which are to be enforced for
-     the settings object. This property's value is the empty list unless
-     otherwise specified.
-  : <dfn export for="environment settings object">monitored Content Security Policies</dfn>
-  :: A list of {{SecurityPolicy}} objects which are to be monitored for
-     the settings object. This property's value is the empty list unless
-     otherwise specified.
+  :: A set of <a>policies</a> which are to be enforced for the settings object.
+     This property's value is the empty set unless otherwise specified.
+  : <dfn export for="environment settings object">
+      monitored Content Security Policies
+    </dfn>
+  :: A list of <a>policies</a> which are to be monitored for the settings
+     object. This property's value is the empty list unless otherwise specified.
   : <dfn export for="environment settings object">
       inherits Content Security Policies
     </dfn>
@@ -1043,13 +1105,13 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
      [[#get-policies]]). This property is <code>false</code> unless otherwise
      specified.
 
-  A policy object is <dfn export local-lt="enforcing">enforced</dfn> for an
+  A <a>policy</a> is <dfn export local-lt="enforcing">enforced</dfn> for an
   <a>environment settings object</a> by inserting it into the object's
   <a>enforced Content Security Policies</a> list. A string is <a>enforced</a>
   by <a>enforcing</a> each result of executing [[#parse-policy-string]] on the
   string.
 
-  A policy object is <dfn export local-lt="monitoring">monitored</dfn> for an
+  A <a>policy</a> is <dfn export local-lt="monitoring">monitored</dfn> for an
   <a>environment settings object</a> by inserting it into the object's
   <a>monitored Content Security Policies</a> list. A string is <a>monitored</a>
   by <a>monitoring</a> each result of executing [[#parse-policy-string]] on the
@@ -1175,12 +1237,12 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   1.  Let <var>settings</var> be the <a>relevant settings object</a> for
       <var>global object</var>.
 
-  2.  If <var>policy</var>'s {{SecurityPolicy/mode}} attribute is
-      "<code>Enforce</code>", <a>enforce</a> <var>policy</var> for
+  2.  If <var>policy</var>'s <a for="policy">action</a> attribute is
+      "<code>enforce</code>", <a>enforce</a> <var>policy</var> for
       <var>settings</var>.
 
-  3.  Otherwise, <var>policy</var>'s {{SecurityPolicy/mode}} attribute is
-      "<code>ReportOnly</code>", so <a>monitor</a> <var>policy</var> for
+  3.  Otherwise, <var>policy</var>'s <a for="policy">action</a> attribute is
+      "<code>report-only</code>", so <a>monitor</a> <var>policy</var> for
       <var>settings</var>.
 
   <h3 id="algorithms-parsing">Parsing Algorithms</h3>
@@ -1190,10 +1252,17 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   </h4>
 
   Given a <a>policy string</a> (<var>string</var>), this algorithm will return a
-  list of policy objects. In the case of a fatal parse error, this list will be
+  list of <a>policies</a>. In the case of a fatal parse error, this list will be
   empty.
 
   <h3 id="algorithms-matching">Matching Algorithms</h3>
+
+  <h4 id="match-request-to-directive-list">
+    Does <var>request</var> match <var>directive list</var>?
+  </h4>
+
+  ISSUE: Parse the request to determine which directive applies, find the
+  relevant directive in the list, and call [[#match-url-to-source-list]].
 
   <h4 id="match-url-to-source-list">
     Does <var>url</var> match <var>source list</var>?
@@ -1221,6 +1290,13 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   1.  Return <code>Does Not Match</code>.
 
   ISSUE: This might need a bit of polishing.
+
+  <h4 id="match-node-to-directive-list">
+    Does <var>node</var> match <var>directive list</var>?
+  </h4>
+
+  ISSUE: Parse the node to determine which directive applies, find the
+  relevant directive in the list, and call [[#match-node-to-source-list]].
 
   <h4 id="match-node-to-source-list">
     Does <var>node</var> match <var>source list</var>?
@@ -1261,7 +1337,7 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
 
   Given an <a>environment settings object</a> (<var>settings</var>), and a
   <var>disposition</var> of either <code>Enforce</code> or
-  <code>Monitor</code> this algorithm returns a list of policy objects which
+  <code>Monitor</code> this algorithm returns a list of <a>policies</a> which
   ought to be considered.
 
   In order to properly deal with inheritance, this algorithm will walk through
