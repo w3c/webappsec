@@ -40,14 +40,18 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: embedded-content-0.html
       text: an iframe srcdoc document
     urlPrefix: browsers.html
+      text: active document
       text: browsing context
       text: create a document object
+      text: creator document
       text: nested browsing context
       text: nested through; url: browsing-context-nested-through
     urlPrefix: webappapis.html
       text: environment settings object; url: settings-object
+      text: global object
       text: incumbent settings object
-      text: relevant settings object for a global object
+      text: relevant settings object; url: relevant-settings-object-for-a-global-object
+      text: responsible browsing context
     urlPrefix: infrastructure.html
       text: ASCII case-insensitive match; url: ascii-case-insensitive
       text: reflect
@@ -1024,11 +1028,11 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   : <dfn export for="environment settings object">
       enforced Content Security Policies
     </dfn>
-  :: A list of Content Security Policy objects which are to be enforced for
+  :: A list of {{SecurityPolicy}} objects which are to be enforced for
      the settings object. This property's value is the empty list unless
      otherwise specified.
   : <dfn export for="environment settings object">monitored Content Security Policies</dfn>
-  :: A list of Content Security Policy objects which are to be monitored for
+  :: A list of {{SecurityPolicy}} objects which are to be monitored for
      the settings object. This property's value is the empty list unless
      otherwise specified.
   : <dfn export for="environment settings object">
@@ -1168,9 +1172,8 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
     Apply <var>policy</var> to <var>global object</var>
   </h4>
 
-  1.  Let <var>settings</var> be the
-      <a lt="relevant settings object for a global object">relevant settings
-      object</a> for <var>global object</var>.
+  1.  Let <var>settings</var> be the <a>relevant settings object</a> for
+      <var>global object</var>.
 
   2.  If <var>policy</var>'s {{SecurityPolicy/mode}} attribute is
       "<code>Enforce</code>", <a>enforce</a> <var>policy</var> for
@@ -1266,9 +1269,42 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
   {{Document}} <a lt="nested through">through which</a> <var>document</var>'s
   <a>browsing context</a> is nested.
 
-  1.  If <var>disposition</var> is <code>Enforce</code>:
+  1.  Let <var>policies</var> be an empty list.
 
-  2.  Otherwise, <var>disposition</var> is <code>Monitor</code>:
+  2.  Let <var>effective policies</var> be <var>settings</var>' <a>enforced
+      Content Security Policies</a> attribute if <var>disposition</var> is
+      <code>Enforce</code>, and <var>settings</var>' <a>monitored Content
+      Security Policies</a> otherwise.
+
+  3.  For each <var>policy</var> in <var>effective policies</var>:
+    
+      1.  Push <var>policy</var> into <var>policies</var>.
+
+  4.  If <var>settings</var>' <a>inherits Content Security Policies</a>
+      attribute is <code>true</code>:
+
+      1.  If <var>settings</var>' <a>global object</a> is a {{Window}}:
+
+          1.  Let <var>parent</var> be <var>settings</var>' <a>responsible
+              browsing context</a>'s <a>active Document</a>'s <a>creator
+              Document</a>'s <a>global object</a>'s <a>relevant settings
+              object</a>.
+
+          2.  Let <var>policies to inherit</var> be the result of executing
+              [[#get-policies]] on <var>parent</var> and
+              <var>disposition</var>.
+
+          3.  For each <var>policy</var> in <var>policies to inherit</var>:
+    
+              1.  Push <var>policy</var> into <var>policies</var>.
+
+      2.  Otherwise, <var>settings</var>' <a>global object</a> is a
+          {{WorkerGlobalScope}}:
+
+          1.  ISSUE: I have no idea what to do here. Anne suggests
+              monkey-patching <a>run a worker</a>.
+
+  5.  Return <var>policies</var>.
 
   <h4 id="apply-policy-from-headers">
     Apply policies from <var>header list</var> to <var>environment settings

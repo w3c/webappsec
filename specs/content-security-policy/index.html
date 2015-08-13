@@ -1818,7 +1818,7 @@ directive-value = &lt;URL> ; TODO: Figure out what to use here.
       
 
      <dd data-md="">
-      <p>A list of Content Security Policy objects which are to be enforced for
+      <p>A list of <code class="idl"><a data-link-type="idl" href="#securitypolicy">SecurityPolicy</a></code> objects which are to be enforced for
  the settings object. This property’s value is the empty list unless
  otherwise specified.</p>
       
@@ -1828,7 +1828,7 @@ directive-value = &lt;URL> ; TODO: Figure out what to use here.
       
 
      <dd data-md="">
-      <p>A list of Content Security Policy objects which are to be monitored for
+      <p>A list of <code class="idl"><a data-link-type="idl" href="#securitypolicy">SecurityPolicy</a></code> objects which are to be monitored for
  the settings object. This property’s value is the empty list unless
  otherwise specified.</p>
       
@@ -2055,9 +2055,8 @@ directive-value = &lt;URL> ; TODO: Figure out what to use here.
 
     <ol>
      <li data-md="">
-      <p>Let <var>settings</var> be the
-  <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#relevant-settings-object-for-a-global-object">relevant settings
-  object</a> for <var>global object</var>.</p>
+      <p>Let <var>settings</var> be the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#relevant-settings-object-for-a-global-object">relevant settings object</a> for
+  <var>global object</var>.</p>
       
 
 
@@ -2214,12 +2213,87 @@ directive-value = &lt;URL> ; TODO: Figure out what to use here.
 
     <ol>
      <li data-md="">
-      <p>If <var>disposition</var> is <code>Enforce</code>:</p>
+      <p>Let <var>policies</var> be an empty list.</p>
       
 
 
      <li data-md="">
-      <p>Otherwise, <var>disposition</var> is <code>Monitor</code>:</p>
+      <p>Let <var>effective policies</var> be <var>settings</var>' <a data-link-type="dfn" href="#enforced-content-security-policies">enforced
+  Content Security Policies</a> attribute if <var>disposition</var> is
+  <code>Enforce</code>, and <var>settings</var>' <a data-link-type="dfn" href="#monitored-content-security-policies">monitored Content
+  Security Policies</a> otherwise.</p>
+      
+
+
+     <li data-md="">
+      <p>For each <var>policy</var> in <var>effective policies</var>:</p>
+      
+
+
+      <ol>
+       <li data-md="">
+        <p>Push <var>policy</var> into <var>policies</var>.</p>
+        
+</ol>
+      
+
+     <li data-md="">
+      <p>If <var>settings</var>' <a data-link-type="dfn" href="#inherits-content-security-policies">inherits Content Security Policies</a>
+  attribute is <code>true</code>:</p>
+      
+
+
+      <ol>
+       <li data-md="">
+        <p>If <var>settings</var>' <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#global-object">global object</a> is a <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/browsers.html#window">Window</a></code>:</p>
+        
+
+
+        <ol>
+         <li data-md="">
+          <p>Let <var>parent</var> be <var>settings</var>' <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-browsing-context">responsible
+  browsing context</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#active-document">active Document</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#creator-document">creator
+  Document</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#global-object">global object</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#relevant-settings-object-for-a-global-object">relevant settings
+  object</a>.</p>
+          
+
+
+         <li data-md="">
+          <p>Let <var>policies to inherit</var> be the result of executing
+  <a href="#get-policies">§6.5.1 Gather policies for environment settings object and
+    disposition</a> on <var>parent</var> and
+  <var>disposition</var>.</p>
+          
+
+
+         <li data-md="">
+          <p>For each <var>policy</var> in <var>policies to inherit</var>:</p>
+          
+
+
+          <ol>
+           <li data-md="">
+            <p>Push <var>policy</var> into <var>policies</var>.</p>
+            
+</ol></ol>
+        
+
+       <li data-md="">
+        <p>Otherwise, <var>settings</var>' <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#global-object">global object</a> is a
+  <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/workers.html#workerglobalscope">WorkerGlobalScope</a></code>:</p>
+        
+
+
+        <ol>
+         <li data-md="">
+          <p class="issue" id="issue-aafbdf7d"><a class="self-link" href="#issue-aafbdf7d"></a> I have no idea what to do here. Anne suggests
+  monkey-patching <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/workers.html#run-a-worker">run a worker</a>.</p>
+          
+</ol></ol>
+      
+
+     <li data-md="">
+      <p>Return <var>policies</var>.</p>
       
 </ol>
   
@@ -2652,13 +2726,16 @@ Content-Security-Policy: connect-src http://example.com/;
    <li><a data-link-type="biblio" href="#biblio-html5">[html5]</a> defines the following terms:
     <ul>
      <li><a href="http://www.w3.org/TR/html5/dom.html#document">Document</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#active-document">active document</a>
      <li><a href="http://www.w3.org/TR/html5/embedded-content-0.html#an-iframe-srcdoc-document">an iframe srcdoc document</a>
      <li><a href="http://www.w3.org/TR/html5/infrastructure.html#ascii-case-insensitive">ascii case-insensitive match</a>
      <li><a href="http://www.w3.org/TR/html5/document-metadata.html#the-base-element">base</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#browsing-context">browsing context</a>
      <li><a href="http://www.w3.org/TR/html5/document-metadata.html#attr-meta-content">content</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#create-a-document-object">create a document object</a>
+     <li><a href="http://www.w3.org/TR/html5/browsers.html#creator-document">creator document</a>
      <li><a href="http://www.w3.org/TR/html5/webappapis.html#settings-object">environment settings object</a>
+     <li><a href="http://www.w3.org/TR/html5/webappapis.html#global-object">global object</a>
      <li><a href="http://www.w3.org/TR/html5/document-metadata.html#the-head-element">head</a>
      <li><a href="http://www.w3.org/TR/html5/document-metadata.html#attr-meta-http-equiv">http-equiv</a>
      <li><a href="http://www.w3.org/TR/html5/embedded-content-0.html#the-iframe-element">iframe</a>
@@ -2669,7 +2746,8 @@ Content-Security-Policy: connect-src http://example.com/;
      <li><a href="http://www.w3.org/TR/html5/browsers.html#browsing-context-nested-through">nested through</a>
      <li><a href="http://www.w3.org/TR/html5/document-metadata.html#pragma-directives">pragma directives</a>
      <li><a href="http://www.w3.org/TR/html5/infrastructure.html#reflect">reflect</a>
-     <li><a href="http://www.w3.org/TR/html5/webappapis.html#relevant-settings-object-for-a-global-object">relevant settings object for a global object</a>
+     <li><a href="http://www.w3.org/TR/html5/webappapis.html#relevant-settings-object-for-a-global-object">relevant settings object</a>
+     <li><a href="http://www.w3.org/TR/html5/webappapis.html#responsible-browsing-context">responsible browsing context</a>
      <li><a href="http://www.w3.org/TR/html5/scripting-1.html#the-script-element">script</a>
      <li><a href="http://www.w3.org/TR/html5/embedded-content-0.html#attr-iframe-srcdoc">srcdoc</a>
      <li><a href="http://www.w3.org/TR/html5/document-metadata.html#the-style-element">style</a>
@@ -2825,5 +2903,7 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://h
    <div class="issue"> Wire all this up once the directives exist and the policy
           object is defined.<a href="#issue-edbe0d6a"> ↵ </a></div>
    <div class="issue"> This might need a bit of polishing.<a href="#issue-4ba1072f"> ↵ </a></div>
-   <div class="issue"> This might need a bit of polishing.<a href="#issue-4ba1072f0"> ↵ </a></div></div></body>
+   <div class="issue"> This might need a bit of polishing.<a href="#issue-4ba1072f0"> ↵ </a></div>
+   <div class="issue"> I have no idea what to do here. Anne suggests
+  monkey-patching <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/workers.html#run-a-worker">run a worker</a>.<a href="#issue-aafbdf7d"> ↵ </a></div></div></body>
 </html>
