@@ -240,6 +240,19 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
 
   A <dfn>source list directive</dfn> is a specific type of <a>directive</a>
   whose value is a space-separated list of source expressions.
+
+  The <dfn local-lt="effective directive name">effective directive name for a
+  <code>Request</code></dfn> is the name of the <a>directive</a> which will
+  determine whether the request will be allowed or blocked.
+
+  The <dfn local-lt="controlling directive">controlling directive for a
+  <code>Request</code></dfn> is the <a>directive</a> which, given the
+  {{Request}}'s properties, determines whether it will be allowed or
+  blocked. This will either be a <a>directive</a> whose name is the <a>effective
+  directive name</a>, a <a>directive</a> whose name is <code>default-src</code>,
+  or <code>null</code>. A detailed definition can be found in
+  [[#get-controlling-directive]].
+
 </section>
 
 <!-- Big Text: Delivery -->
@@ -1258,6 +1271,38 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
       "<code>report-only</code>", so <a>monitor</a> <var>policy</var> for
       <var>settings</var>.
 
+  <h4 id="apply-policy-from-headers">
+    Apply policies from <var>header list</var> to <var>environment settings
+    object</var>
+  </h4>
+
+  Given a <a>response</a>'s <a attribute>header list</a> (<var>header
+  list</var>) and an <a>environment settings object</a> (<var>settings</var>),
+  this algorithm extracts the policies which ought to be <a>enforced</a> and
+  <a>monitored</a> for the settings object, and does so:
+
+  1.  Let <var>policy to enforce</var> be the result of
+      <a lt="parse a header value">parsing</a>
+      <a><code>Content-Security-Policy</code></a> in
+      <var>header list</var>.
+
+  2.  Let <var>policies</var> be the result of executing
+      [[#parse-policy-string]] on <var>policy to enforce</var>.
+
+  3.  <a>Enforce</a> each policy object in <var>policies</var> on
+      <var>settings</var>.
+
+  4.  Let <var>policy to monitor</var> be the result of
+      <a lt="parse a header value">parsing</a>
+      <a><code>Content-Security-Policy-Report-Only</code></a> in
+      <var>header list</var>.
+
+  5.  Let <var>policies</var> be the result of executing
+      [[#parse-policy-string]] on <var>policy to monitor</var>.
+
+  6.  <a>Monitor</a> each policy object in <var>policies</var> on
+      <var>settings</var>.
+
   <h3 id="algorithms-parsing">Parsing Algorithms</h3>
 
   <h4 id="parse-policy-string">
@@ -1403,38 +1448,16 @@ spec: HTML; text: run a worker; url: https://html.spec.whatwg.org/multipage/work
 
   5.  Return <var>policies</var>.
 
-  <h4 id="apply-policy-from-headers">
-    Apply policies from <var>header list</var> to <var>environment settings
-    object</var>
+  <h4 id="get-controlling-directive">
+    Get the controlling directive for <var>Request</var> from <var>policy</var>
   </h4>
 
-  Given a <a>response</a>'s <a attribute>header list</a> (<var>header
-  list</var>) and an <a>environment settings object</a> (<var>settings</var>),
-  this algorithm extracts the policies which ought to be <a>enforced</a> and
-  <a>monitored</a> for the settings object, and does so:
+  Given a {{Request}} object (<var>request</var>), and a <a>policy</a>
+  (<var>policy</var>), this algorithm returns the <a>controlling directive</a>
+  which controls the request. If no such directive is present in the
+  given policy, this algorithm returns <code>null</code>.
 
-  1.  Let <var>policy to enforce</var> be the result of
-      <a lt="parse a header value">parsing</a>
-      <a><code>Content-Security-Policy</code></a> in
-      <var>header list</var>.
-
-  2.  Let <var>policies</var> be the result of executing
-      [[#parse-policy-string]] on <var>policy to enforce</var>.
-
-  3.  <a>Enforce</a> each policy object in <var>policies</var> on
-      <var>settings</var>.
-
-  4.  Let <var>policy to monitor</var> be the result of
-      <a lt="parse a header value">parsing</a>
-      <a><code>Content-Security-Policy-Report-Only</code></a> in
-      <var>header list</var>.
-
-  5.  Let <var>policies</var> be the result of executing
-      [[#parse-policy-string]] on <var>policy to monitor</var>.
-
-  6.  <a>Monitor</a> each policy object in <var>policies</var> on
-      <var>settings</var>.
-
+  1.  Return <code>null</code>.
 </section>
 
 <!-- Big text: Security -->

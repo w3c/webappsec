@@ -300,6 +300,10 @@ of security-relevant policy decisions.</p>
         <li><a href="#apply-to-global-object"><span class="secno">7.2.5</span> <span class="content">
     Apply <var>policy</var> to <var>global object</var>
   </span></a>
+        <li><a href="#apply-policy-from-headers"><span class="secno">7.2.6</span> <span class="content">
+    Apply policies from <var>header list</var> to <var>environment settings
+    object</var>
+  </span></a>
        </ul>
       <li><a href="#algorithms-parsing"><span class="secno">7.3</span> <span class="content">Parsing Algorithms</span></a>
        <ul class="toc">
@@ -337,9 +341,8 @@ of security-relevant policy decisions.</p>
     Gather policies for <var>environment settings object</var> and
     <var>disposition</var>
   </span></a>
-        <li><a href="#apply-policy-from-headers"><span class="secno">7.5.2</span> <span class="content">
-    Apply policies from <var>header list</var> to <var>environment settings
-    object</var>
+        <li><a href="#get-effective-directive"><span class="secno">7.5.2</span> <span class="content">
+    Get the effective directive for <var>Request</var> from <var>policy</var>
   </span></a>
        </ul>
      </ul>
@@ -1885,7 +1888,7 @@ directive-value = &lt;URL> ; TODO: Figure out what to use here.
 
       <ol>
        <li data-md="">
-        <p>Execute <a href="#apply-policy-from-headers">§7.5.2 Apply policies from header list to environment settings
+        <p>Execute <a href="#apply-policy-from-headers">§7.2.6 Apply policies from header list to environment settings
     object</a> on
   <var>response</var>’s <a class="idl-code" data-link-type="attribute" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a> and
   <var>document</var>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>.</p>
@@ -1942,7 +1945,7 @@ directive-value = &lt;URL> ; TODO: Figure out what to use here.
 
       <ol>
        <li data-md="">
-        <p>Execute <a href="#apply-policy-from-headers">§7.5.2 Apply policies from header list to environment settings
+        <p>Execute <a href="#apply-policy-from-headers">§7.2.6 Apply policies from header list to environment settings
     object</a> on
   the <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>’s <a class="idl-code" data-link-type="attribute" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a> and
   <var>settings</var>.</p>
@@ -2061,6 +2064,59 @@ directive-value = &lt;URL> ; TODO: Figure out what to use here.
      <li data-md="">
       <p>Otherwise, <var>policy</var>’s <a data-link-type="dfn" href="#type">type</a> attribute is
   "<code>report-only</code>", so <a data-link-type="dfn" href="#monitored">monitor</a> <var>policy</var> for
+  <var>settings</var>.</p>
+      
+</ol>
+  
+    <h4 class="heading settled" data-level="7.2.6" id="apply-policy-from-headers"><span class="secno">7.2.6. </span><span class="content">
+    Apply policies from <var>header list</var> to <var>environment settings
+    object</var>
+  </span><a class="self-link" href="#apply-policy-from-headers"></a></h4>
+
+
+    <p>Given a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>’s <a class="idl-code" data-link-type="attribute" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a> (<var>header
+  list</var>) and an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#settings-object">environment settings object</a> (<var>settings</var>),
+  this algorithm extracts the policies which ought to be <a data-link-type="dfn" href="#enforced">enforced</a> and
+  <a data-link-type="dfn" href="#monitored">monitored</a> for the settings object, and does so:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>Let <var>policy to enforce</var> be the result of
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse">parsing</a>
+  <a data-link-type="dfn" href="#content_security_policy"><code>Content-Security-Policy</code></a> in
+  <var>header list</var>.</p>
+      
+
+
+     <li data-md="">
+      <p>Let <var>policies</var> be the result of executing
+  <a href="#parse-policy-string">§7.3.1 Parse string as a Content Security Policy</a> on <var>policy to enforce</var>.</p>
+      
+
+
+     <li data-md="">
+      <p><a data-link-type="dfn" href="#enforced">Enforce</a> each policy object in <var>policies</var> on
+  <var>settings</var>.</p>
+      
+
+
+     <li data-md="">
+      <p>Let <var>policy to monitor</var> be the result of
+  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse">parsing</a>
+  <a data-link-type="dfn" href="#content_security_policy_report_only"><code>Content-Security-Policy-Report-Only</code></a> in
+  <var>header list</var>.</p>
+      
+
+
+     <li data-md="">
+      <p>Let <var>policies</var> be the result of executing
+  <a href="#parse-policy-string">§7.3.1 Parse string as a Content Security Policy</a> on <var>policy to monitor</var>.</p>
+      
+
+
+     <li data-md="">
+      <p><a data-link-type="dfn" href="#monitored">Monitor</a> each policy object in <var>policies</var> on
   <var>settings</var>.</p>
       
 </ol>
@@ -2316,59 +2372,22 @@ directive-value = &lt;URL> ; TODO: Figure out what to use here.
       
 </ol>
   
-    <h4 class="heading settled" data-level="7.5.2" id="apply-policy-from-headers"><span class="secno">7.5.2. </span><span class="content">
-    Apply policies from <var>header list</var> to <var>environment settings
-    object</var>
-  </span><a class="self-link" href="#apply-policy-from-headers"></a></h4>
+    <h4 class="heading settled" data-level="7.5.2" id="get-effective-directive"><span class="secno">7.5.2. </span><span class="content">
+    Get the effective directive for <var>Request</var> from <var>policy</var>
+  </span><a class="self-link" href="#get-effective-directive"></a></h4>
 
 
-    <p>Given a <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response">response</a>’s <a class="idl-code" data-link-type="attribute" href="https://fetch.spec.whatwg.org/#concept-response-header-list">header list</a> (<var>header
-  list</var>) and an <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#settings-object">environment settings object</a> (<var>settings</var>),
-  this algorithm extracts the policies which ought to be <a data-link-type="dfn" href="#enforced">enforced</a> and
-  <a data-link-type="dfn" href="#monitored">monitored</a> for the settings object, and does so:</p>
+    <p>Given a <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> object (<var>request</var>), and a <a data-link-type="dfn" href="#policy">policy</a>
+  (<var>policy</var>), this algorithm returns the <a data-link-type="dfn">effective directive</a>
+  which controls the request. If no such directive is present in the
+  given policy, this algorithm returns <code>null</code>.</p>
 
 
     <ol>
      <li data-md="">
-      <p>Let <var>policy to enforce</var> be the result of
-  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse">parsing</a>
-  <a data-link-type="dfn" href="#content_security_policy"><code>Content-Security-Policy</code></a> in
-  <var>header list</var>.</p>
+      <p>Return <code>null</code>.</p>
       
-
-
-     <li data-md="">
-      <p>Let <var>policies</var> be the result of executing
-  <a href="#parse-policy-string">§7.3.1 Parse string as a Content Security Policy</a> on <var>policy to enforce</var>.</p>
-      
-
-
-     <li data-md="">
-      <p><a data-link-type="dfn" href="#enforced">Enforce</a> each policy object in <var>policies</var> on
-  <var>settings</var>.</p>
-      
-
-
-     <li data-md="">
-      <p>Let <var>policy to monitor</var> be the result of
-  <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-header-parse">parsing</a>
-  <a data-link-type="dfn" href="#content_security_policy_report_only"><code>Content-Security-Policy-Report-Only</code></a> in
-  <var>header list</var>.</p>
-      
-
-
-     <li data-md="">
-      <p>Let <var>policies</var> be the result of executing
-  <a href="#parse-policy-string">§7.3.1 Parse string as a Content Security Policy</a> on <var>policy to monitor</var>.</p>
-      
-
-
-     <li data-md="">
-      <p><a data-link-type="dfn" href="#monitored">Monitor</a> each policy object in <var>policies</var> on
-  <var>settings</var>.</p>
-      
-</ol>
-</section>
+</ol></section>
 
 
 
