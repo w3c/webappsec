@@ -29,9 +29,9 @@ impunity. Ideally, authors would not only be able to pin the keys of a
 server, but also pin the _content_, ensuring that an exact representation of
 a resource, and _only_ that representation, loads and executes.
 
-This document specifies such a validation scheme, extending several HTML
-elements with an `integrity` attribute that contains a cryptographic hash of
-the representation of the resource the author expects to load. For instance,
+This document specifies such a validation scheme, extending two HTML elements
+and the `fetch()` API with an `integrity` attribute that contains a cryptographic hash
+of the representation of the resource the author expects to load. For instance,
 an author may wish to load some framework from a shared server rather than hosting it
 on their own origin. Specifying that the _expected_ SHA-256 hash of
 `https://example.com/example-framework.js`
@@ -60,7 +60,7 @@ and future versions of the specification are likely to expand this coverage.
 <section>
 ### Goals
 
-1.  Compromise of the third-party service should not automatically mean
+1.  Compromise of a third-party service should not automatically mean
     compromise of every site which includes its scripts. Content authors
     will have a mechanism by which they can specify expectations for
     content they load, meaning for example that they could load a
@@ -243,7 +243,7 @@ request's [integrity metadata][], and MAY support additional hash functions.
 #### Agility
 
 Multiple sets of [integrity metadata][] may be associated with a single
-resource in order to provide agility in the face of future discoveries.
+resource in order to provide agility in the face of future cryptographic discoveries.
 For example, the resource described in the previous section may be described
 by either of the following hash expressions:
 
@@ -264,8 +264,8 @@ set][get-the-strongest]" algorithms).
 
 When a hash function is determined to be insecure, user agents SHOULD deprecate
 and eventually remove support for integrity validation using that hash
-function. User agents MAY check the validity of hashes which use a deprecated
-function.
+function. User agents MAY check the validity of responses using a digest based on
+a deprecated function.
 
 To allow authors to switch to stronger hash functions without being held back by older
 user agents, validation using unsupported hash functions acts like no integrity value 
@@ -277,7 +277,7 @@ stronger hash functions as they become available.
 <section>
 #### Priority
 
-User agents must provide a mechanism of determining the relative priority of two
+User agents must provide a mechanism for determining the relative priority of two
 hash functions and return the empty string if the priority is equal. That is, if
 a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
 b)</dfn> it would return the hash function the user agent considers the most
@@ -329,12 +329,12 @@ resources accessed over a `file` scheme URL are unlikely to be
 eligible for integrity checks.
 {:.note}
 
-One should note that being a [secure document][] (e.g. a document delivered
+One should note that being a [secure document][] (e.g., a document delivered
 over HTTPS) is not necessary for the use of integrity validation. Because
 resource integrity is only an application level security tool, and it does not
 change the security state of the user agent, a [secure document] is
-unnecessary. However, if integrity is used in other than a [secure document][] (e.g.
-a document delivered over HTTP), authors should be aware that the integrity
+unnecessary. However, if integrity is used in something other than a [secure document][]
+(e.g., a document delivered over HTTP), authors should be aware that the integrity
 provides <em>no security guarantees at all</em>. For this reason, authors should
 only deliver integrity metadata on a [potentially secure origin][].  See
 [Non-secure contexts remain non-secure][] for more discussion.
@@ -354,7 +354,7 @@ The following algorithm details these restrictions:
     <var>resource</var>'s origin, return `true`.
 4.  Return `false`.
 
-Step 3 returns `true` if the fetch was a CORS-enabled request. If the
+Step 2 returns `true` if the fetch was a CORS-enabled request. If the
 fetch failed the CORS checks, it won't be available to us for integrity
 checking because it won't have loaded successfully.
 {:.note}
@@ -600,7 +600,7 @@ integrity check <em>and</em> MUST return a network error, as described in
 [Modifications to Fetch][].
 
 On a failed integrity check, an <code>error</code> event is thrown. Developers
-wishing to provide a canonical fallback resource (e.g. a resource not served
+wishing to provide a canonical fallback resource (e.g., a resource not served
 from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
 <code>error</code> event and provide an appropriate handler to replace the
 failed resource with a different one.
@@ -679,8 +679,8 @@ with a value of [`no-transform`][notransform].
 <section>
 ### Non-secure contexts remain non-secure
 
-[Integrity metadata][] delivered to a context that is not a [secure context],
-such as an only protects an origin against a compromise of the
+[Integrity metadata][] delivered by a context that is not a [secure context],
+such as an HTTP page, only protects an origin against a compromise of the
 server where an external resources is hosted. Network attackers can alter the
 digest in-flight (or remove it entirely, or do absolutely anything else to the
 document), just as they could alter the response the hash is meant to validate.
@@ -722,7 +722,7 @@ logged into a particular service.
 Moreover, attackers can brute-force specific values in an otherwise
 static resource: consider a JSON response that looks like this:
 
-    {'status': 'authenticated', 'username': 'Stephan Falken'}
+    {'status': 'authenticated', 'username': 'admin'}
 {:.example}
 
 An attacker can precompute hashes for the response with a variety of
@@ -740,8 +740,9 @@ Much of the content here is inspired heavily by Gervase
 Markham's [Link Fingerprints][] concept, as well as WHATWG's [Link Hashes][].
 
 A special thanks to Mike West of Google, Inc. for his invaluable contributions
-to the initial version of this spec. Additonally, Brad Hill, Anne van Kesteren, Mark Nottingham, 
-Dan Veditz, Eduardo Vela, Tanvi Vyas, and Michal Zalewski provided invaluable feedback.
+to the initial version of this spec. Additonally, Brad Hill, Anne van Kesteren,
+Jonathan Kingston, Mark Nottingham, Dan Veditz, Eduardo Vela, Tanvi Vyas, and
+Michal Zalewski provided invaluable feedback.
 
 
 [Link Fingerprints]: http://www.gerv.net/security/link-fingerprints/
