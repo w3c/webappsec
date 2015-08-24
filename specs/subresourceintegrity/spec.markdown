@@ -30,7 +30,7 @@ server, but also pin the _content_, ensuring that an exact representation of
 a resource, and _only_ that representation, loads and executes.
 
 This document specifies such a validation scheme, extending two HTML elements
-and the `fetch()` API with an `integrity` attribute that contains a cryptographic hash
+with an `integrity` attribute that contains a cryptographic hash
 of the representation of the resource the author expects to load. For instance,
 an author may wish to load some framework from a shared server rather than hosting it
 on their own origin. Specifying that the _expected_ SHA-256 hash of
@@ -467,64 +467,6 @@ warning message to the developer console to explain this failure.
 </section><!-- Algorithms -->
 
 <section>
-### Modifications to Fetch
-
-The Fetch specification should contain the following modifications in order
-to enable the rest of this specification's work [[!FETCH]]:
-
-1.  The following text should be added to [section 2.1.4][fetch-requests]: "A
-    [request][fetch-request] has an associated [integrity metadata][].
-    Unless stated otherwise, a request's integrity metadata is the empty
-    string."
-
-2.  Perform the following step between steps 10 and 11 in the "[main fetch][]"
-    algorithm:
-
-    1. If <var>request</var>'s integrity metadata is a non-empty string and
-       <var>response</var> is not a [network error][]:
-        1.  Wait for either end-of-file to have been pushed to
-            <var>response</var>'s body or for <var>response</var> to have a
-            [termination reason][].
-        2.  If <var>response</var> does not have a [termination reason][] and
-            <var>response</var> does not [match][] the [integrity metadata][] of
-            the <var>request</var>, set <var>response</var> to a
-            [network error][].
-
-3. Add the following to the [Request class definition][fetch-request-api]:
-
-    1. Add the following attribute to the <code>Request</code> class after the
-       <code>redirect</code> attribute as follows:
-
-            readonly attribute DOMString integrity;
-    2. Add the following member to the end of the <code>RequestInit</code>
-       dictionary:
-
-            DOMString integrity = "";
-
-    3. In step 4 of the constructor, modify the end of the step to read, "and
-       [integrity][integrity metadata] is <var>request</var>'s
-       [integrity][integrity metadata]."
-
-    4. Perform the following steps after step 19 of the constructor:
-       1. Set <var>request</var>'s [integrity][integrity metadata] to the value
-          of <var>init</var>'s [integrity][integrity metadata] member.
-
-    5. Add the following to the list of descriptions after the constructor:
-
-       "The <code>integrity</code> attribute's getter must return
-       [request][fetch-request]'s <var>integrity</var>."
-
-[fetch-requests]: https://fetch.spec.whatwg.org/#requests
-[fetch-request]: https://fetch.spec.whatwg.org/#concept-request
-[fetch-request-api]: https://fetch.spec.whatwg.org/#request
-[basic fetch]: https://fetch.spec.whatwg.org/#basic-fetch
-[CORS fetch with preflight]: https://fetch.spec.whatwg.org/#cors-fetch-with-preflight
-[main fetch]: https://fetch.spec.whatwg.org/#main-fetch
-[termination reason]: https://fetch.spec.whatwg.org/#concept-response-termination-reason
-[network error]: https://fetch.spec.whatwg.org/#concept-network-error
-</section>
-
-<section>
 ### Verification of HTML document subresources
 
 A variety of HTML elements result in requests for resources that are to be
@@ -598,9 +540,8 @@ attribute DOMString integrity
 <section>
 #### Handling integrity violations
 
-The user agent MUST refuse to render or execute responses that fail an
-integrity check <em>and</em> MUST return a network error, as described in
-[Modifications to Fetch][].
+The user agent will refuse to render or execute responses that fail an integrity
+check, instead returning a network error as defined in Fetch [[!FETCH]].
 
 On a failed integrity check, an <code>error</code> event is thrown. Developers
 wishing to provide a canonical fallback resource (e.g., a resource not served
@@ -609,7 +550,6 @@ from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
 failed resource with a different one.
 {:.note}
 
-[Modifications to Fetch]: #modifications-to-fetch
 </section>
 
 <section>
