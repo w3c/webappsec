@@ -153,9 +153,9 @@ impunity. Ideally, authors would not only be able to pin the keys of a
 server, but also pin the <em>content</em>, ensuring that an exact representation of
 a resource, and <em>only</em> that representation, loads and executes.</p>
 
-  <p>This document specifies such a validation scheme, extending several HTML
-elements with an <code>integrity</code> attribute that contains a cryptographic hash of
-the representation of the resource the author expects to load. For instance,
+  <p>This document specifies such a validation scheme, extending two HTML elements
+and the <code>fetch()</code> API with an <code>integrity</code> attribute that contains a cryptographic hash
+of the representation of the resource the author expects to load. For instance,
 an author may wish to load some framework from a shared server rather than hosting it
 on their own origin. Specifying that the <em>expected</em> SHA-256 hash of
 <code>https://example.com/example-framework.js</code>
@@ -182,7 +182,7 @@ and future versions of the specification are likely to expand this coverage.</p>
 
     <ol>
       <li>
-        <p>Compromise of the third-party service should not automatically mean
+        <p>Compromise of a third-party service should not automatically mean
 compromise of every site which includes its scripts. Content authors
 will have a mechanism by which they can specify expectations for
 content they load, meaning for example that they could load a
@@ -362,7 +362,7 @@ request’s <a href="#dfn-integrity-metadata">integrity metadata</a>, and MAY su
       <h4 id="agility">Agility</h4>
 
       <p>Multiple sets of <a href="#dfn-integrity-metadata">integrity metadata</a> may be associated with a single
-resource in order to provide agility in the face of future discoveries.
+resource in order to provide agility in the face of future cryptographic discoveries.
 For example, the resource described in the previous section may be described
 by either of the following hash expressions:</p>
 
@@ -385,8 +385,8 @@ set</a>” algorithms).</p>
 
       <p>When a hash function is determined to be insecure, user agents SHOULD deprecate
 and eventually remove support for integrity validation using that hash
-function. User agents MAY check the validity of hashes which use a deprecated
-function.</p>
+function. User agents MAY check the validity of responses using a digest based on
+a deprecated function.</p>
 
       <p>To allow authors to switch to stronger hash functions without being held back by older
 user agents, validation using unsupported hash functions acts like no integrity value 
@@ -399,7 +399,7 @@ stronger hash functions as they become available.</p>
     <section>
       <h4 id="priority">Priority</h4>
 
-      <p>User agents must provide a mechanism of determining the relative priority of two
+      <p>User agents must provide a mechanism for determining the relative priority of two
 hash functions and return the empty string if the priority is equal. That is, if
 a user agent implemented a function like <dfn>getPrioritizedHashFunction(a,
 b)</dfn> it would return the hash function the user agent considers the most
@@ -451,12 +451,12 @@ globally unique identifiers for each file URI. This means that
 resources accessed over a <code>file</code> scheme URL are unlikely to be
 eligible for integrity checks.</p>
 
-      <p>One should note that being a <a href="#dfn-secure-document">secure document</a> (e.g. a document delivered
+      <p>One should note that being a <a href="#dfn-secure-document">secure document</a> (e.g., a document delivered
 over HTTPS) is not necessary for the use of integrity validation. Because
 resource integrity is only an application level security tool, and it does not
 change the security state of the user agent, a <a href="#dfn-secure-document">secure document</a> is
-unnecessary. However, if integrity is used in other than a <a href="#dfn-secure-document">secure document</a> (e.g.
-a document delivered over HTTP), authors should be aware that the integrity
+unnecessary. However, if integrity is used in something other than a <a href="#dfn-secure-document">secure document</a>
+(e.g., a document delivered over HTTP), authors should be aware that the integrity
 provides <em>no security guarantees at all</em>. For this reason, authors should
 only deliver integrity metadata on a <a href="#dfn-potentially-secure-origin">potentially secure origin</a>.  See
 <a href="#non-secure-contexts-remain-non-secure-1">Non-secure contexts remain non-secure</a> for more discussion.</p>
@@ -473,7 +473,7 @@ return <code>true</code>.</li>
         <li>Return <code>false</code>.</li>
       </ol>
 
-      <p class="note">Step 3 returns <code>true</code> if the fetch was a CORS-enabled request. If the
+      <p class="note">Step 2 returns <code>true</code> if the fetch was a CORS-enabled request. If the
 fetch failed the CORS checks, it won’t be available to us for integrity
 checking because it won’t have loaded successfully.</p>
 
@@ -741,7 +741,7 @@ integrity check <em>and</em> MUST return a network error, as described in
 <a href="#modifications-to-fetch">Modifications to Fetch</a>.</p>
 
     <p class="note">On a failed integrity check, an <code>error</code> event is thrown. Developers
-wishing to provide a canonical fallback resource (e.g. a resource not served
+wishing to provide a canonical fallback resource (e.g., a resource not served
 from a CDN, perhaps from a secondary, trusted, but slower source) can catch this
 <code>error</code> event and provide an appropriate handler to replace the
 failed resource with a different one.</p>
@@ -811,8 +811,8 @@ with a value of <a href="http://tools.ietf.org/html/rfc7234#section-5.2.1.6"><co
   <section>
     <h3 id="non-secure-contexts-remain-non-secure">Non-secure contexts remain non-secure</h3>
 
-    <p><a href="#dfn-integrity-metadata">Integrity metadata</a> delivered to a context that is not a <a href="#dfn-secure-context">secure context</a>,
-such as an only protects an origin against a compromise of the
+    <p><a href="#dfn-integrity-metadata">Integrity metadata</a> delivered by a context that is not a <a href="#dfn-secure-context">secure context</a>,
+such as an HTTP page, only protects an origin against a compromise of the
 server where an external resources is hosted. Network attackers can alter the
 digest in-flight (or remove it entirely, or do absolutely anything else to the
 document), just as they could alter the response the hash is meant to validate.
@@ -854,7 +854,7 @@ logged into a particular service.</p>
     <p>Moreover, attackers can brute-force specific values in an otherwise
 static resource: consider a JSON response that looks like this:</p>
 
-    <pre class="example"><code>{'status': 'authenticated', 'username': 'Stephan Falken'}
+    <pre class="example"><code>{'status': 'authenticated', 'username': 'admin'}
 </code></pre>
 
     <p>An attacker can precompute hashes for the response with a variety of
@@ -874,8 +874,9 @@ to load the document.</p>
 Markham’s <a href="http://www.gerv.net/security/link-fingerprints/">Link Fingerprints</a> concept, as well as WHATWG’s <a href="https://wiki.whatwg.org/wiki/Link_Hashes">Link Hashes</a>.</p>
 
   <p>A special thanks to Mike West of Google, Inc. for his invaluable contributions
-to the initial version of this spec. Additonally, Brad Hill, Anne van Kesteren, Mark Nottingham, 
-Dan Veditz, Eduardo Vela, Tanvi Vyas, and Michal Zalewski provided invaluable feedback.</p>
+to the initial version of this spec. Additonally, Brad Hill, Anne van Kesteren,
+Jonathan Kingston, Mark Nottingham, Dan Veditz, Eduardo Vela, Tanvi Vyas, and
+Michal Zalewski provided invaluable feedback.</p>
 
 </section>
 
