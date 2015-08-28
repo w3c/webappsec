@@ -334,7 +334,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
   <ol>
     <li>
       The following changes are backwards incompatible with the majority of
-      user agent's implementations of CSP 1:
+      user agent's implementations of Level 1:
 
       <ol>
         <li>
@@ -342,13 +342,13 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
           resource being loaded is the result of a redirect, as described in
           [[#source-list-paths-and-redirects]].
           
-          Note: Paths are technically new in CSP2, but they were already
+          Note: Paths are technically new in Level 2, but they were already
           implemented in many user agents before this revision of CSP was
           completed, so noting the change here seems reasonable.
         </li>
         <li>
-          A <a>protected resource</a>'s ability to load Workers is now controlled
-          via <a><code>child-src</code></a> rather than
+          A <a>protected resource</a>'s ability to load Workers [[!WORKERS]]
+          is now controlled via <a><code>child-src</code></a> rather than
           <a><code>script-src</code></a>.
         </li>
         <li>
@@ -380,6 +380,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
           <a><code>frame-ancestors</code></a> controls the <a>protected
           resource</a>'s ability be embedded in other documents. It is meant
           to supplant the <code>X-Frame-Options</code> HTTP request header.
+          [[!RFC7034]]
         </li>
         <li>
           <a><code>plugin-types</code></a> controls the <a>protected
@@ -465,8 +466,9 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
       of directives defined by this specification can be found in
       [[#directives]].
 
-      Each directives has a <strong>name</strong> and a <strong>value</strong>;
-      a detailed grammar can be found in [[#syntax-and-algorithms]].
+      Each directive has a <strong>name</strong> and <strong>value</strong>; 
+      <strong>value</strong>  may be optional for some directives.
+      A detailed grammar can be found in [[#syntax-and-algorithms]].
     </dd>
     <dt>
       <dfn export>protected resource</dfn>
@@ -636,10 +638,10 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
 
     Authors are <em>strongly encouraged</em> to place <{meta}> elements as early
     in the document as possible, because policies in <{meta}> elements are not
-    applied to content which preceeds them. In particular, note that resources
+    applied to content which preceds them. In particular, note that resources
     fetched or prefetched using the <code>Link</code> HTTP response header
     field, and resources fetched or prefetched using <{link}> and <{script}>
-    elements which preceed a <{meta}>-delivered policy will not be blocked.
+    elements which precede a <{meta}>-delivered policy will not be blocked.
 
     Note: A <a>policy</a> specified via a <{meta}> element will be enforced
     along with any other policies active for the protected resource, regardless
@@ -687,7 +689,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
   </section>
 
   <section>
-    <h3 id="enforcing-multiple-policies">Enforcing multiple policies.</h3>
+    <h3 id="enforcing-multiple-policies">Enforcing multiple policies</h3>
 
     <em>This section is not normative.</em>
 
@@ -786,11 +788,11 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
           <th rowspan="2">Top-level Contexts</th>
 
           <td>HTML as a new, top-level browsing context</td>
-          <td>The policy delivered with the resource</td>
+          <td>The policy delivered with the resource applies.</td>
         </tr>
         <tr>
           <td>SVG, as a top-level document</td>
-          <td>Policy delivered with the resource</td>
+          <td>The policy delivered with the resource applies.</td>
         </tr>
 
         <tr class="section">
@@ -800,27 +802,36 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
             Any resource included via <{iframe}>, <{object}>, or <{embed}>
           </td>
           <td>
-            The policy of the embedding resource controls <em>what</em> may be
-            embedded. The embedded resource, however, is controlled by the
-            policy delivered with the resource, or the policy of the embedding
-            resource if the embedded resource is a <a>globally unique
-            identifier</a> (or a <{iframe/srcdoc}> frame).
+            Unless the embedded resource is a globally unique identifier (or a
+            srcdoc iframe), the embedded resource is controlled by the policy
+            delivered with the resource. If the embedded resource is a globally
+            unique identifier or srcdoc iframe, it inherits the policy of the
+            context creating it.  (The frame-src and
+            child-src directives of the embedding context only control
+            what resources are eligible for embedding in that context, not the
+            behavior of the resource once embedded.)
           </td>
         </tr>
         <tr>
           <td>SVG, as an embedded document</td>
           <td>
-            The policy delivered with the resource, or policy of the creating
-            context if created from a <a>globally unique identifier</a>.
+            Unless the resource is a globally unique identifier,
+            it is controlled by the policy
+            delivered with the resource. If a globally
+            unique identifier, it inherits the policy of the
+            context creating it.
           </td>
         </tr>
         <tr>
           <td>
-            JavaScript, as a Worker, Shared Worker or Service Worker
+            JavaScript, as a Worker, Shared Worker, or Service Worker
           </td>
           <td>
-            The policy delivered with the resource, or policy of the creating
-            context if created from a <a>globally unique identifier</a>
+            Unless the resource is a globally unique identifier,
+            it is controlled by the
+            policy delivered with the resource. If a globally
+            unique identifier, it inherits the policy of the
+            context creating it.
           </td>
         </tr>
 
@@ -828,31 +839,31 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
           <th rowspan="7">Subresources</th>
 
           <td>SVG, inlined via <{svg}></td>
-          <td>Policy of the including context</td>
+          <td>The policy of the including context applies.</td>
         </tr>
         <tr>
           <td>SVG, as a resource document</td>
-          <td>Policy of the including context</td>
+          <td>The policy of the including context applies.</td>
         </tr>
         <tr>
           <td>HTML via XMLHttpRequest</td>
-          <td>Policy of the context that performed the fetch</td>
+          <td>The policy of the context that performed the fetch applies.</td>
         </tr>
         <tr>
           <td>Image via <{img}> element</td>
-          <td>Policy of the including context</td>
+          <td>The policy of the including context applies.</td>
         </tr>
         <tr>
           <td>JavaScript via a <{script}> element</td>
-          <td>Policy of the including context</td>
+          <td>The policy of the including context applies.</td>
         </tr>
         <tr>
           <td>SVG, via <{img}></td>
-          <td>No policy; should be just as safe as JPG</td>
+          <td>No policy applies; this should be just as safe as JPG.</td>
         </tr>
         <tr>
           <td>SVG, as a WebFont</td>
-          <td>No policy; should be just as safe as WOFF</td>
+          <td>No policy applies; this should be just as safe as WOFF.</td>
         </tr>
       </tbody>
     </table>
@@ -1093,14 +1104,14 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
 
               <ol>
                 <li>
-                  the scheme of the protected resource's URL is a case
+                  The scheme of the protected resource's URL is a case
                   insensitive match for <code>HTTP</code>, and
                   <var>url-scheme</var> is <strong>not</strong> a case
                   insensitive match for either <code>HTTP</code> or
-                  <code>HTTPS</code>
+                  <code>HTTPS</code>.
                 </li>
                 <li>
-                  the scheme of the protected resource's URL is
+                  The scheme of the protected resource's URL is
                   <strong>not</strong> a case insensitive match for
                   <code>HTTP</code>, and <var>url-scheme</var> is
                   <strong>not</strong> a case insensitive match
@@ -1153,12 +1164,12 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
 
               <ol>
                 <li>
-                  <code><a>port-part</a></code> does <strong>not</strong>
-                  contain an U+002A ASTERISK character (<code>*</code>)
+                  The <code><a>port-part</a></code> does <strong>not</strong>
+                  contain an U+002A ASTERISK character. (<code>*</code>)
                 </li>
                 <li>
-                  <code><a>port-part</a></code> does <strong>not</strong>
-                  represent the same number as <var>url-port</var>
+                  The <code><a>port-part</a></code> does <strong>not</strong>
+                  represent the same number as <var>url-port</var>.
                 </li>
               </ol>
             </li>
@@ -1319,7 +1330,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
         </ol>
 
         Note: Query strings have no impact on matching: the source
-        expression <code>example.com/file</code> matches all of
+        expression <code>example.com/file</code> matches each of
         <code>https://example.com/file</code>,
         <code>https://example.com/file?key=value</code>,
         <code>https://example.com/file?key=notvalue</code>, and
@@ -1349,9 +1360,8 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
         </ul>
 
         This restriction reduces the granularity of a document's
-        policy when redirects are in play, which isn't wonderful, but
-        given that we certainly don't want to allow brute-forcing paths
-        after redirects, it seems a reasonable compromise.
+        policy when redirects are in play, a necessary compromise to
+        avoid brute-forced information leaks of this type.
 
         The relatively long thread
         <a href="https://lists.w3.org/Archives/Public/public-webappsec/2014Feb/0036.html">"Remove paths from CSP?"</a>
@@ -1414,7 +1424,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
       <{style}>.
 
       The <dfn>digest of <var>element</var>'s content</dfn> for is the result
-      of applying an <var>algorithm</var> to the <a>element's content</a>.
+      of applying a <var>hashing algorithm</var> to the <a>element's content</a>.
 
       To determine whether <var>element</var> has a <dfn>valid hash</dfn> for
       a <var>set of source expressions</var>, execute the following steps:
@@ -1426,19 +1436,19 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
 
         <li>For each <var>hash</var> in <var>hashes</var>:
           <ol>
-            <li>Let <var>algorithm</var> be:
+            <li>Let <var>hashing algorithm</var> be:
               <ul>
                 <li><a>SHA-256</a> if the <code><a>hash-algo</a></code>
                 component of <var>hash</var> is an <a>ASCII case-insensitive
-                match</a> for the string "sha256"</li>
+                match</a> for the string "sha256".</li>
 
                 <li><a>SHA-384</a> if the <code><a>hash-algo</a></code>
                 component of <var>hash</var> is an <a>ASCII case-insensitive
-                match</a> for the string "sha384"</li>
+                match</a> for the string "sha384".</li>
 
                 <li><a>SHA-512</a> if the <code><a>hash-algo</a></code>
                 component of <var>hash</var> is an <a>ASCII case-insensitive
-                match</a> for the string "sha512"</li>
+                match</a> for the string "sha512".</li>
               </ul>
             </li>
 
@@ -1448,7 +1458,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
             <li>Let <var>actual</var> be the
             <a href="https://tools.ietf.org/html/rfc4648#section-4">base64
             encoding</a> of the binary <a>digest of <var>element</var>'s
-            content</a> using the <var>algorithm</var> algorithm.</li>
+            content</a> using the <var>hashing algorithm</var>.</li>
 
             <li>If <var>actual</var> is a case-sensitive match for
             <var>expected</var>, return <strong>true</strong> and abort these
@@ -1756,7 +1766,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
   </section>
 
   <section>
-    <h3 id="processing-model-iframe-srcdoc"><code>srcdoc</code> IFrames</h3>
+    <h3 id="processing-model-iframe-srcdoc"><code>srcdoc</code> iframes</h3>
 
     Whenever a user agent creates <a spec="HTML5">an <code>iframe</code>
     <code>srcdoc</code> document</a> in a browsing context nested in the
@@ -2077,7 +2087,8 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
     sources</a>.
 
     Step 4 of the algorithm defined in HTML5 to obtain a
-    <em>document's base URL</em> MUST be changed to:
+    <em>document's base URL</em> (resolution of the <code>href</code> attribute
+      of the <code>base</code> element) MUST be changed to:
 
     <ol start="4">
       <li>If the previous step was not successful, or the result of the
@@ -2185,7 +2196,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
 
       <li>Pinging an endpoint during <a href="https://html.spec.whatwg.org/multipage/semantics.html#hyperlink-auditing">hyperlink auditing</a>.</li>
 
-      <li>Sending a beacon via the <a href="http://www.w3.org/TR/beacon/#sec-sendBeacon-method"><code>sendBeacon()</code></a> method [[!BEACON]]</li>
+      <li>Sending a beacon via the <a href="http://www.w3.org/TR/beacon/#sec-sendBeacon-method"><code>sendBeacon()</code></a> method. [[!BEACON]]</li>
     </ul>
     <section class="informative">
       <h4 id="connect-src-usage">Usage</h4>
@@ -2197,19 +2208,19 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
       maintains an open HTTP connection to a server in order to receive push
       notifications, <code>WebSockets</code> open a bidirectional communication
       channel between your browser and a server, and <code>XMLHttpRequest</code>
-      makes arbitrary HTTP requests on your behalf. These are powerful APIs that
+      allows arbitrary HTTP requests. These are powerful APIs that
       enable useful functionality, but also provide tempting avenues for data
       exfiltration.
 
-      The <code>connect-src</code> directive allows you to ensure that
-      these sorts of connections are only opened to origins you trust.
+      The <code>connect-src</code> directive allows restricting these sorts of
+      connections to the those matching the source expressions list.
       Sending a policy that defines a list of source expressions for this
       directive is straightforward. For example, to limit connections to
       only <code>example.com</code>, send the following header:
 
       <pre>Content-Security-Policy: <a>connect-src</a> example.com</pre>
 
-      All of the following will fail with the preceding directive in
+      Each of the following will fail with the preceding directive in
       place:
 
       <ul>
@@ -2441,7 +2452,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
 
               <li>Take one of the following actions:
                 
-                <ol>
+                <ul>
                   <li>
                     Act as if it received an empty <a>HTTP 200 response</a>.
                   </li>
@@ -2450,7 +2461,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
                     the option of opening the blocked page in a new <a>top-level
                     browsing context</a>.
                   </li>
-                </ol>
+                </ul>
               </li>
 
               <li>
@@ -2470,7 +2481,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
     </ol>
 
     Steps 3.2.2 and 3.2.3 ensure that the blocked frame appears to be a
-    normal cross-origin document's load. If these steps are ignored,
+    normal cross-origin document load. If these steps are ignored,
     leakage of a document's policy state is possible.
 
     The <code>frame-ancestors</code> directive MUST be ignored
@@ -2519,7 +2530,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
       scenarios involving embedded application components that are multiple levels
       below the top-level browsing context.
 
-      Many common scenarios for permissioned embedding (e.g. embeddable payment,
+      Many common scenarios for embedding (e.g. embeddable payment,
       sharing or social apps) involve potentially many hundreds or thousands of
       valid <code>source-list</code> expressions, but it is strongly recommended
       against accommodating such scenarios with a static
@@ -3123,7 +3134,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
         <li><code><a element-attr>allow-pointer-lock</a></code></li>
         <li><code><a element-attr>allow-popups</a></code></li>
         <li><code><a element-attr>allow-same-origin</a></code></li>
-        <li><code><a element-attr>allow-scripts</a></code>, and</li>
+        <li><code><a element-attr>allow-scripts</a></code></li>
         <li><code><a element-attr>allow-top-navigation</a></code></li>
       </ul>
 
@@ -3387,7 +3398,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
     <h3 id="directive-style-src"><code>style-src</code></h3>
 
     The <code><dfn>style-src</dfn></code> directive restricts which styles the
-    user may applies to the protected resource. The syntax for the name and
+    user agent applies to the protected resource. The syntax for the name and
     value of the directive are described by the following ABNF grammar:
 
     <pre>
@@ -3457,7 +3468,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
       </li>
       <li>
         Requesting an external stylesheet when processing a <code>Link</code>
-        HTTP response header field [[!RFC5988]].
+        HTTP response header field. [[!RFC5988]]
 
         Note: As this stylesheet might be prefetched before a {{Document}}
         actually exists, user agents will need to carefully consider how to
@@ -3766,7 +3777,7 @@ spec: FIPS180; urlPrefix: http://csrc.nist.gov/publications/fips/fips180-4/fips-
         Content-Security-Policy: style-src 'none'
       </pre>
 
-      namely, both must block requests for the stylesheet. To fulfil this
+      namely, both must block requests for the stylesheet. To meet this
       requirement user agents MUST wait until all headers have been processed
       before beginning to prefetch resources.
     </li>
