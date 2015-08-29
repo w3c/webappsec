@@ -41,11 +41,10 @@ spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
     text: main fetch
     text: append; url: concept-header-list-append
     text: request; url: concept-request
+    text: navigation request
   type: attribute
     text: url; for: request; url: concept-request-url
     text: client; for: request; url: concept-request-client
-    text: context; for: request; url: concept-request-context
-    text: context-frame-type; for: request; url: concept-request-context-frame-type
     text: header-list; for: request; url: concept-request-header-list
 spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
   type: dfn
@@ -536,7 +535,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       <dfn for="insecure requests policy" value export>Upgrade</dfn>. It is
       set to <a value>Do Not Upgrade</a> unless otherwise specified. This policy
       is checked in [[#upgrade-request]] in order to determine whether or not
-      non-navigational requests and form submissions should be upgraded during
+      non-navigation requests and form submissions should be upgraded during
       <a>fetching</a>.
     </li>
     <li>
@@ -545,7 +544,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       contains a set of ({{URL/host}}, {{URL/port}}) tuples to which navigations
       ought to be upgraded. Its value is the empty set unless otherwise
       specified. This set is checked in [[#upgrade-request]] in order to
-      determine whether or not navigational requests should be upgraded.
+      determine whether or not <a>navigation requests</a> should be upgraded.
     </li>
   </ol>
 
@@ -622,8 +621,8 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   doing otherwise could have negative consequences for the site's users.
  
   Rather than relying on user-agent sniffing to make this decision, user agents
-  can advertise their upgrade capability when making navigational requests by
-  including an <a><code>Upgrade-Insecure-Requests</code> header field</a> as
+  can advertise their upgrade capability when making <a>navigation requests</a>
+  by including an <a><code>Upgrade-Insecure-Requests</code> header field</a> as
   described in [[#preference]].
 
   <h4 id="preference">
@@ -875,22 +874,22 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <a for="request" attribute>url</a> if the <a for="request" attribute>client</a> from which the request originates
   has opted-in to upgrades. It will also inject an
   <a><code>Upgrade-Insecure-Requests</code> header field</a> header for
-  insecure navigational requests in order to improve a server's ability to
+  insecure <a>navigation requests</a> in order to improve a server's ability to
   feature-detect a client's upgrade capabilities.
 
-  We will not upgrade cross-origin navigational requests, with the exception of
-  form submissions. Form submissions will be upgraded to mitigate the risk of
-  data leakage via plaintext submissions.
+  We will not upgrade cross-origin <a>navigation requests</a>, with the
+  exception of form submissions. Form submissions will be upgraded to mitigate
+  the risk of data leakage via plaintext submissions.
 
   Note: This algorithm is called as step #3 of the <a>Main Fetch</a> algorithm.
 
   <ol>
     <li>
-      If <var>request</var>'s <a for="request" attribute>context-frame-type</a> is
-      <code>top-level</code>, <code>nested</code>, or <code>auxiliary</code>,
-      <a>append</a> a header named <code>Upgrade-Insecure-Requests</code> with a
-      value of <code>1</code> to <var>request</var>'s <a for="request" attribute>header-list</a> if
-      any of the following criteria are met:
+      If <var>request</var> is a <a>navigation request</a>, <a>append</a> a
+      header named <code>Upgrade-Insecure-Requests</code> with a value of
+      <code>1</code> to <var>request</var>'s
+      <a for="request" attribute>header-list</a> if any of the following
+      criteria are met:
 
       <ol>
         <li>
@@ -908,14 +907,12 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
       requests, as discussed in [[#preference]].
     </li>
     <li>
-      If <var>request</var>'s <a for="request" attribute>context-frame-type</a> is
-      <code>top-level</code> or <code>auxiliary</code>, then:
+      If <var>request</var> is a <a>navigation request</a>, then:
 
       <ol>
         <li>
-          If <var>request</var>'s <a for="request" attribute>context</a> is <code>form</code>,
-          skip the remaining substeps, and continue upgrading
-          <var>request</var>.
+          If <var>request</var> is a form submission, skip the remaining
+          substeps, and continue upgrading <var>request</var>.
         </li>
         <li>
           Let <var>tuple</var> be a tuple of <var>request</var>'s
@@ -926,7 +923,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
           <a>upgrade insecure navigations set</a>, then skip the remaining
           substeps, and continue upgrading <var>request</var>.
 
-          Note: We only upgrade top-level navigational requests for hosts
+          Note: We only upgrade top-level <a>navigation requests</a> for hosts
           that have explicitly opted-into the behavior for a particular
           <a>protected resource</a>, as described in [[#examples]]. Performing
           upgrades for navigations to third-party resources brings a
@@ -1100,7 +1097,7 @@ spec: RFC7240; urlPrefix: https://tools.ietf.org/html/rfc7240
   <h2 id="performance">Performance Considerations</h2>
 
   The upgrade mechanism specified here adds <code>Upgrade-Insecure-Requests:
-  1\r\n</code> to every outgoing navigational request to non-<a>preloadable
+  1\r\n</code> to every outgoing <a>navigation request</a> to non-<a>preloadable
   HSTS hosts</a> (as discussed at length on public-webappsec@, and
   <a href="https://github.com/w3c/webappsec/issues/216">w3c/webappsec#216</a>).
   The advantages and intent of the header are laid out in [[#preference]], and
