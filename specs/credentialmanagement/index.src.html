@@ -69,6 +69,7 @@ spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
     text: request; url: concept-request
     text: network error; url: concept-network-error
     text: extracting a MIME type; url: concept-header-extract-mime-type
+    text: consume body; url: concept-Body-consume-body
   type: interface
     text: RequestInit
     text: RequestInfo
@@ -76,6 +77,9 @@ spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
     text: Request
   type: method
     text: fetch(); url: dom-global-fetch
+  type: constructor
+    text: Request(); url: dom-request
+    text: Response(); url: dom-response
 spec: CSP2; urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/
   type: dfn
     text: form-action; url: directive-form-action
@@ -84,13 +88,23 @@ spec: CSP2; urlPrefix: https://w3c.github.io/webappsec/specs/content-security-po
     text: script-src; url: directive-script-src
     text: object-src; url: directive-object-src
 spec: XHR; urlPrefix: https://xhr.spec.whatwg.org/
+  type: dfn
+    text: extract; url: concept-fetchbodyinit-extract
+    text: entry; for: FormData; url: concept-formdata-entry
   type: interface
     text: XMLHttpRequest; url: interface-xmlhttprequest
     text: FormData; url: interface-formdata
   type: method
     text: append(); for: FormData; url: dom-formdata-append
+    text: get(); for: FormData; url: dom-formdata-get
+    text: getAll(); for: FormData; url: dom-formdata-getAll
+    text: send(); for: XMLHttpRequest; url: dom-xmlhttprequest-send
+  type: attribute
+    text: value; for: entry; url: concept-formdata-entry-value
+    text: name; for: entry; url: concept-formdata-entry-name
   type: constructor
-    text: XMLHttpget(); for: XMLHttpRequest; url: dom-xmlhttprequest
+    text: XMLHttpRequest(); for: XMLHttpRequest; url: dom-xmlhttprequest
+    text: FormData(); for: FormData; url: dom-formdata
 spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
   type: dfn
     text: type name; url: dfn-type-name
@@ -249,7 +263,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 return;
               }
               if (credential.type == "<a const>password</a>") {
-                credential.<a method lt="send()">send</a>("https://example.com/loginEndpoint")
+                fetch("https://example.com/loginEndpoint", { body: credential.<a>toFormData()</a> })
                   .then(function (response) {
                     // Notify the user that signin succeeded! Do amazing, signed-in things!
                   });
@@ -300,7 +314,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 // ...
                 }
               } else {
-                credential.<a method lt="send()">send</a>("https://example.com/loginEndpoint")
+                fetch("https://example.com/loginEndpoint", { body: credential.<a>toFormData()</a> })
                   .then(function (response) { ... })
                   .catch(function (response) { ... });
               }
@@ -319,16 +333,18 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     website to tell the credential manager that sign-in succeeded.
 
     <div class="example">
-      If a user is signed in by calling {{send()}} on a {{PasswordCredential}}
-      object, then we can check the response to determine whether the user
-      was signed in successfully, and notify the user agent accordingly:
+      If a user is signed in by calling {{PasswordCredential/toFormData()}} on
+      a {{PasswordCredential}} object, and submitting that data to a sign-in
+      endpoint via {{fetch()}} then we can check the response to determine
+      whether the user was signed in successfully, and notify the user agent
+      accordingly:
 
       <pre>
         var credential = new <a idl>PasswordCredential</a>({
           "<a idl for="CredentialData">id</a>": "JaneDoe98",
           "<a idl for="PasswordCredentialData">password</a>": "MfPeRQq5P3yVry68Q4KZMMhB"
         });
-        credential.send("https://example.com/sign-in/")
+        fetch("https://example.com/sign-in/", { body: credential.<a>toFormData()</a> })
           .then(function (response) {
             if (response.status == 200)
               navigator.<a attribute>credentials</a>.<a idl lt="store()">store</a>(credential);
@@ -586,28 +602,33 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       DOMString password;
     };
 
+    dictionary FormDataOptions {
+      DOMString idName = "username";
+      DOMString passwordName = "password";
+    };
+
     [Constructor(PasswordCredentialData data), Exposed=Window]
     interface PasswordCredential : LocallyStoredCredential {
-      Promise&lt;Response&gt; send(USVString url);
+      Promise&lt;FormData&gt; toFormData(FormDataOptions formDataOptions);
     };
   </pre>
   <dl dfn-for="PasswordCredential">
-    <dt><dfn method lt="send(url)">send(url)</dfn></dt>
+    <dt><dfn method lt="toFormData(formDataOptions)">toFormData(formDataOptions)</dfn></dt>
     <dd>
-      This method can be used to transmit the username and password information
-      represented by this object to a same-origin endpoint in order to sign a
-      user into a website. The user agent MUST execute the algorithm described
-      in [[#send-passwordcredential]] when this method is executed.
+      This method will generate an <a>opaque <code>FormData</code> object</a>
+      containing the {{Credential/id}} and {{PasswordCredential/[[password]]}}
+      associated with this credential, which can then be used to asynchronously
+      sign a user into an origin via Fetch.
 
-      ISSUE(w3c/webappsec#241): We need the ability to add additional
-      information to the request (CSRF tokens, etc).
+      The user agent MUST execute the algorithm described in
+      [[#generate-formdata]] when this method is executed.
 
       ISSUE(w3c/webappsec#288): Probably not something for v1, but an
       interesting option would be to provide a hash function here that the user
       agent would apply to the password before sending it over the wire.
 
-      <pre class="argumentdef" for="PasswordCredential/send(url)">
-        url: The same-origin endpoint to which the Credential will be POSTed.
+      <pre class="argumentdef" for="PasswordCredential/toFormData(formDataOptions)">
+        formDataOptions: A set of options governing the {{FormData}} object's construction.
       </pre>
     </dd>
     <dt>{{[[type]]}}</dt>
@@ -620,8 +641,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   All {{PasswordCredential}} objects have an internal slot named
   <dfn attribute for="PasswordCredential">\[[password]]</dfn> which stores the
   credential's password. This property is not directly exposed to the web, but
-  used to construct the {{RequestInit}} object generated during
-  {{PasswordCredential/send()}}.
+  used to construct the {{FormData}} object generated during
+  {{PasswordCredential/toFormData()}}.
 
   <h5 id="passwordcredential-matching">
     Matching Algorithm
@@ -915,6 +936,160 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   U+002F SOLIDUS ("<code>/</code>"), but user agents SHOULD accept them
   silently: <code>https://accounts.google.com/</code> is clearly intended to
   be the same as <code>https://accounts.google.com</code>.
+
+  <h3 id="opaque-formdata">Opaque <code>FormData</code> objects</h3>
+
+  {{FormData}} objects have a <dfn>opaque flag</dfn>, unset by default,
+  and set only if the object is constructed from a {{PasswordCredential}}.
+  Opaque {{FormData}} objects return <code>null</code> and the empty sequence
+  when their {{FormData/get()}} and {{FormData/getAll()}} methods are executed,
+  respectively. Further, data from opaque {{FormData}} objects can only be
+  <a>extracted</a> in the context of executing {{XMLHttpRequest}}'s
+  {{XMLHttpRequest/send()}} method.
+  
+  <dfn local-lt="opaque">Opaque <code>FormData</code> objects</dfn> have the
+  following properties:
+
+  <ol>
+    <li>
+      Whenever the user agent would execute an opaque {{FormData}} object's
+      {{FormData/get()}} method, it MUST return <code>null</code>.
+    </li>
+    <li>
+      Whenever the user agent would execute an opaque {{FormData}} object's
+      {{FormData/getAll()}} method, it MUST return the empty sequence.
+    </li>
+    <li>
+      Whenever the user agent would <a lt="extract">extract a byte stream and
+      <code>Content-Type</code></a> from an opaque {{FormData}} object
+      <var>formdata</var>, first the following steps:
+
+      <ol>
+        <li>
+          If the extraction algorithm is not being executed in the context of
+          either {{XMLHttpRequest}}'s {{XMLHttpRequest/send()}} method, or
+          Fetch's {{Request()}} or {{Response()}} constructors, then:
+
+          <ol>
+            <li>
+              Abort the extraction algorithm and return the result of executing
+              the <a lt="extract">extract a byte stream and
+              <code>Content-Type</code></a> algorithm on a new (empty)
+              {{FormData}} object.
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li>
+      TODO.
+
+      ISSUE: Determine the right spec text to impart the following: When a request
+      is handed off to Fetch, mark it as opaque if its body is populated from an
+      opaque {{FormData}} object, or if it is the result of a form submission with
+      opaque contents.
+    </li>
+  </ol>
+
+  <h4 id="opaque-formdata-algorithms">
+    Algorithm Modifications
+  </h4>
+
+  ISSUE: Monkey-patching! Hooray! Talk with Anne, et al.
+
+  <h5 id="monkey-patching-xhr-2">XHR: <code>FormData</code>'s <code>get()</code></h5>
+
+  Redefine {{FormData}}'s {{FormData/get()}} method as follows:
+
+  <ol>
+    <li>If the <a>opaque flag</a> is set, return <code>null</code>.</li>
+    <li>
+      Otherwise, return the {{entry/value}} of the first <a>entry</a> whose
+      {{entry/name}} is  is <var>name</var>, and <code>null</code> if no such
+      <a>entry</a> exists.
+    </li>
+  </ol>
+
+  <h5 id="monkey-patching-xhr-3">XHR: <code>FormData</code>'s <code>getAll()</code></h5>
+
+  Redefine {{FormData}}'s {{FormData/getAll()}} method as follows:
+
+  <ol>
+    <li>If the <a>opaque flag</a> is set, return the empty sequence.</li>
+    <li>
+      Otherwise, return the {{entry/value}}s of all <a>entries</a> whose
+      {{entry/name}} is <var>name</var>, in list order, and the empty sequence
+      if no such <a>entry</a> exists.
+    </li>
+  </ol>
+
+  <h5 id="monkey-patching-fetch-1">Fetch: <code>Request</code> objects</h5>
+
+  Add a new <dfn>opaque request flag</dfn> to Fetch's {{Request}} objects. This
+  flag is unset unless otherwise specified.
+
+  <h5 id="monkey-patching-fetch-2">Fetch: <code>Request</code>'s constructor</h5>
+
+  Add the following step after step 3 of step 17 of Fetch's {{Request()}}
+  constructor:
+
+  <ol>
+    <li>
+      If <var>init</var>'s <code>body</code> member is a {{FormData}} object
+      whose <a>opaque flag</a> is set, set <var>r</var>'s <strong>opaque
+      flag</strong>.
+    </li>
+  </ol>
+
+  <h5 id="monkey-patching-fetch-3">Fetch: <code>Body</code>'s <code>consume body</code></h5>
+
+  Insert the following step after step 2 of step 3 of Fetch's <a>consume
+  body</a> algorithm:
+
+  <ol start="3">
+    <li>
+      If <var>object</var>'s <a>opaque request flag</a> is set, set
+      <var>stream</var> to an empty byte sequence.
+    </li>
+  </ol>
+
+  <h5 id="monkey-patching-fetch-4">Fetch: Extract a byte stream</h5>
+
+  Redefine the {{FormData}} case of Fetch's <a lt="extract">extract a byte
+  stream and <code>Content-Type</code></a> algorithm as follows:
+
+  <ol>
+    <li>
+      If <var>object</var>'s <a>opaque flag</a> is <strong>not</strong> set,
+      or if the extraction algorithm is being executed in the context of
+      {{XMLHttpRequest}}'s {{XMLHttpRequest/send()}} method or Fetch's
+      {{Request()}} constructor, then:
+
+      <ol>
+        <li>
+          Push the result of running the multipart/form-data encoding algorithm, with object as form data set and with utf-8 as the explicit character encoding, to stream.
+        </li>
+        <li>
+          Set Content-Type to `multipart/form-data;boundary=`, followed by the multipart/form-data boundary string generated by the multipart/form-data encoding algorithm.
+        </li>
+      </ol>
+
+    </li>
+    <li>
+      Otherwise, set <var>Content-Type</var> to <code>text/plain;charset=UTF-8</code>.
+
+      Note: In this case (e.g. <var>object</var> is opaque
+      and the algorithm isn't being executed as a result of
+      <code>XHR.send()</code>), <var>stream</var> will remain an empty byte
+      stream.
+    </li>
+  </ol>
+
+  <h5 id="monkey-patching-serviceworkers-1">Service Worker: Handle a Fetch</h5>
+
+  ISSUE: Figure out the right way to monkey-patch Service Worker's
+  <a href="https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#handle-a-fetch">Handle a Fetch</a>
+  algorithm to do the right thing with opaque requests.
 </section>
 
 <!--
@@ -1237,90 +1412,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h4 id="send-passwordcredential">
-    Send <var>passwordCredential</var> to <var>url</var>.
-  </h4>
-
-  Given an endpoint URL (<var>url</var>) this method will <code>POST</code>
-  the credential information from a {{PasswordCredential}} (<var>credential</var>)
-  to <var>url</var>. In order to mitigate the risk of data leakage,
-  <var>url</var> MUST be same-origin with <var>credential</var>'s
-  internal {{[[origin]]}} slot.
-
-  <ol>
-    <li>
-      Let <var>endpoint</var> be the result of running <var>url</var> through
-      the <a>URL parser</a>.
-    </li>
-    <li>
-      Return a promise rejected with a <code>TypeError</code> if
-      <var>endpoint</var> is not a valid {{URL}} <strong>and</strong> terminate
-      this algorithm.
-    </li>
-    <li>
-      Let <var>environment</var> be the <a>incumbent settings object</a>.
-    </li>
-    <li>
-      Return a promise rejected with a <code>SecurityError</code>
-      <strong>and</strong> terminate this algorithm if any of the following
-      conditions are true:
-
-      <ol>
-        <li>
-          [[#is-match]] returns <code>No Match</code> when executed upon
-          <var>credential</var> and <var>endpoint</var>'s {{URL/origin}}.
-        </li>
-        <li>
-          [[#is-match]] returns <code>No Match</code> when executed upon
-          <var>credential</var> and <var>environment</var>'s <a>origin</a>.
-        </li>
-        <li>
-          <var>environment</var>'s <a>responsible browsing context</a> is not a
-          <a>top-level browsing context</a>
-        </li>
-        <li>
-          <var>environment</var> is not a <a>privileged context</a>
-        </li>
-      </ol>
-
-      Note: We reject the promise here if {{send()}} is called on an origin that
-      isn't at least a <a>registerable domain</a>-match with the credential's
-      origin, and in a context that meets the same requirement. That is,
-      <code>https://admin.nytimes.com/</code> could submit credentials to
-      <code>https://myaccount.example.com/</code>.
-    </li>
-    <li>
-      Let <var>init</var> be a new {{RequestInit}} object whose
-      <code>credentials</code> member is set to "<code>same-origin</code>",
-      <code>mode</code> member is set to "<code>POST</code>",
-      <code>redirect</code> member is set to "<code>error</code>", and
-      <code>body</code> member is a new {{FormData}} object.
-
-      ISSUE(w3c/webappsec#231): Should we introduce a new Fetch context?
-      <code>credential</code> or something?
-    </li>
-    <li>
-      Execute the initial value of {{FormData/append()}} on <var>init</var>'s
-      <code>body</code> member, with a <code>name</code> of
-      "<code>id</code>", and a <code>value</code> of
-      <var>credential</var>'s {{Credential/id}}.
-    </li>
-    <li>
-      Execute the initial value of {{FormData/append()}} on <var>init</var>'s
-      <code>body</code> member, with a <code>name</code> of
-      "<code>password</code>", and a <code>value</code> of
-      <var>credential</var>'s {{[[password]]}} slot.
-    </li>
-    <li>
-      Return the promise that results from executing the initial value of
-      {{fetch()}} on <var>url</var> and <var>init</var>.
-    </li>
-  </ol>
-
-  ISSUE(w3c/webappsec#241): The "id" and "password" names need to be
-  configurable. This is wrapped up in the general question of how to present
-  the functionality: via <code>fetch()</code>, or <code>send()</code>.
-
   <h4 id="store-locallystoredcredential">
     Store <code>LocallyStoredCredential</code>
   </h4>
@@ -1430,6 +1521,70 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Return <var>credential</var>.
     </li>
   </ol>
+
+  <h3 id="processing-password">
+    Processing <code>PasswordCredential</code>s
+  </h3>
+
+  <h4 id="generate-formdata">
+    Generate a <code>FormData</code> object from <var>password credential</var>
+  </h4>
+
+  Given a {{FormDataOptions}} (<var>options</var>) and a {{PasswordCredential}}
+  (<var>credential</var>), this method will create an <a>opaque</a> {{FormData}}
+  object which can be used to submit the credential information to a sign-in
+  endpoint.
+
+  <ol>
+    <li>
+      Let <var>environment</var> be the <a>incumbent settings object</a>.
+    </li>
+    <li>
+      Return a promise rejected with a <code>SecurityError</code>
+      <strong>and</strong> terminate this algorithm if any of the following
+      conditions are true:
+
+      <ol>
+        <li>
+          [[#is-match]] returns <code>No Match</code> when executed upon
+          <var>credential</var> and <var>environment</var>'s <a>origin</a>.
+        </li>
+        <li>
+          <var>environment</var> is not a <a>privileged context</a>
+        </li>
+      </ol>
+    </li>
+    <li>
+      Let <var>promise</var> be a newly created <code>Promise</code> object.
+    </li>
+    <li>
+      Return <var>promise</var>, and execute the remaining steps asynchronously.
+    </li>
+    <li>
+      Let <var>fd</var> be a new {{FormData}} object.
+    </li>
+    <li>
+      Set <var>fd</var>'s <a>opaque flag</a>.
+    </li>
+    <li>
+      Append a new <a>entry</a> to <var>fd</var>'s list of <a>entries</a> whose
+      {{entry/name}} is <var>option</var>'s {{FormDataOptions/idName}}, and
+      whose value is <var>credential</var>'s {{Credential/id}}.
+    </li>
+    <li>
+      Append a new <a>entry</a> to <var>fd</var>'s list of <a>entries</a> whose
+      {{entry/name}} is <var>option</var>'s {{FormDataOptions/passwordName}},
+      and whose value is <var>credential</var>'s
+      {{PasswordCredential/[[password]]}}.
+    </li>
+    <li>
+      Resolve <var>promise</var> with <var>fd</var>.
+    </li>
+  </ol>
+
+  <h3 id="helpers">
+    Helpful Algorithms
+  </h3>
 
   <h4 id="require-user-mediation-for-origin">
     Require user mediation for <var>origin</var>
@@ -1784,9 +1939,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   {{PasswordCredential}}s further mitigate the risk of data leakage by never
   exposing the {{[[password]]}} slot directly to a page's JavaScript, but
-  instead performing asynchronous submission via {{PasswordCredential/send()}},
-  which verifies that the endpoint is a valid one for the credential before
-  submission.
+  instead constructing an <a>opaque</a> {{FormData}} object via
+  {{PasswordCredential/toFormData()}}.
 
   Additionally, authors SHOULD mitigate the risk of leakage by setting a
   reasonable Content Security Policy [[!CSP2]] which restricts the origins to
@@ -1797,8 +1951,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <ol>
     <li>
       <code><a>connect-src</a></code> further restricts the origins to which
-      {{PasswordCredential/send()}} may submit data (which mitigates the risk of
-      redirect-based attacks.
+      {{fetch()}} may submit data (which mitigates the risk of redirect-based
+      attacks).
     </li>
     <li>
       <code><a>child-src</a></code> restricts the nested browsing
@@ -1809,14 +1963,15 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h3 id="security-same-origin-leakage">Same-origin Leakage</h3>
 
-  Cross-site scripting attacks could make it possible to exploit {{send()}} in
-  order to leak credential information via a vulnerable same-origin endpoint.
-  To mitigate this kind of risk, authors SHOULD set a reasonable Content
-  Security Policy [[!CSP2]] which restricts the kinds of content which can
-  execute in their sites' context. In particular, authors should ensure that
-  both <code><a>script-src</a></code> and <code><a>object-src</a></code>
-  directives are set in any policy they specify in order to ensure that only
-  trusted script is executed on a page with access to a user's credentials.
+  Cross-site scripting attacks could make it possible to exploit
+  {{PasswordCredential/toFormData()}} and {{fetch()}} in order to leak
+  credential information via a vulnerable same-origin endpoint. To mitigate
+  this kind of risk, authors SHOULD set a reasonable Content Security Policy
+  which restricts the kinds of content which can execute in their sites'
+  context. [[!CSP2]] Moreover, authors should ensure that both
+  <code><a>script-src</a></code> and <code><a>object-src</a></code> directives
+  are set in any policy they specify in order to ensure that only trusted
+  script is executed on a page with access to a user's credentials.
 
   <h3 id="security-origin-confusion">Origin Confusion</h3>
 
