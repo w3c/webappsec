@@ -80,7 +80,7 @@ upgrade/published/WD.html: upgrade/index.src.html
 	bikeshed -f spec --md-status=WD ./upgrade/index.src.html ./upgrade/published/WD.html
 
 upgrade/published/2015-09-CR.html: upgrade/index.src.html
-	bikeshed -f spec --md-status=CR --md-date=2015-09-01 --md-deadline=2015-11-01 ./upgrade/index.src.html ./upgrade/published/2015-09-CR.html
+	bikeshed -f spec --md-status=CR --md-date=2015-09-03 --md-deadline=2015-10-03 ./upgrade/index.src.html ./upgrade/published/2015-09-CR.html
 
 publish:
 	git push origin master master:gh-pages
