@@ -1,0 +1,219 @@
+<pre class='metadata'>
+Title: User Interface Directives for Content Security Policy
+Status: ED
+Group: WebAppSec
+ED: https://w3c.github.io/webappsec/specs/uisecurity/
+Shortname: UI Security
+Level: 1
+Editor: Brad Hill, Facebook, hillbrad@fb.com
+!Author: Dan Kaminsky, Invited Expert
+!Author: David Lin-Shung Huang, Carnegie Mellon University
+!Author: Giorgio Maone, Invited Expert
+Abstract:
+  UI Security defines directives for Content Security Policy
+  to specify input protections for a web resource's to protect
+  against "UI Redressing" attacks, of which "clickjacking" is one.
+Indent: 4
+</pre>
+
+<!--
+████ ██    ██ ████████ ████████   ███████
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████
+-->
+<section>
+    <h2 id="intro">Introduction</h2>
+
+    <em>This section is not normative.</em>
+
+    This document defines User Interface Security directives
+    for Content Security Policy, a mechanism web applications
+    can use to mitigate some of the risks of
+    User Interface (UI) Redressing UIREDRESS
+    (AKA "Clickjacking") vulnerabilities that can lead to fraudulent
+    actions not intended by the user.
+
+    Content Security Policy (CSP) is a declarative policy that
+    lets the authors (or server administrators) of a web application
+    restrict the behavior of a document, e.g.  the origins where it can
+    load its resources from or the ways it can execute scripts.  This
+    document defines new directives for CSP to restrict the presentation
+    and/or the interactivity of a resource when its interaction with the
+    user may be happening in an ambiguous or deceitful context due to the
+    spatial and/or temporal contiguity with other content displayed by the
+    user agent.
+
+    In some UI Redressing attacks (also known as Clickjacking), a malicious web
+    application presents a user interface of another web application in a
+    manipulated context to the user, e.g. by partially obscuring the genuine
+    user interface with opaque layers on top, hence tricking the user to click
+    on a button out of context.
+
+    Existing anti-clickjacking measures including frame-busting FRAMEBUSTING
+    code and <code>X-Frame-Options</code> cannot be used to protect resources where
+    the set of origins that should be allowed and disallowed is unknown, where
+    attacks might come from origins intended to be allowed by a use scenario,
+    or defend against timing-based attacks involving multiple windows instead
+    of multiple frames.  Frame-busting scripts also rely on browser behavior
+    that has not been engineered to provide a security guarantee.  As a
+    consequence, such scripts may be unreliable if loaded inside a sandbox
+    or otherwise disabled.
+
+    The User Interface Security directives provide a new mechanism to allow web
+    applications to enable heuristic input protections for its user interface.
+    To mitigate UI redressing, for example, a web application can request that
+    a user interface element should be fully visible for a minimum period of
+    time before a user input can be delivered.
+
+    The User Interface Security directive can often be applied to existing
+    applications with few or no changes, but the heuristic hints supplied by
+    the policy may require considerable experimental fine-tuning to achieve
+    an acceptable error rate.
+
+    A user agent that understands the directives in this document should
+    ignore the <code>X-Frame-Options</code> header, when present, if User
+    Interface Security directives are also present in a
+    Content-Security-Policy header. This is to allow resources to only be
+    embedded if the mechanisms described in this specification are enforced,
+    and more restrictive <code>X-Frame-Options</code> policies applied
+    in non-conformant user agents. TODO: how to interact with frame-ancestors?
+    
+    A user agent may implement the core directives of CSP independently
+    from the directives in this specification, but this specification requires
+    the policy conveyance and reporting mechanisms described in CSP.  The
+    interpretation of terms imported into this document from CSP may vary
+    depending on the level implemented by the user agent.  For example,
+    a <code>source-expression</code> in Content Security Policy Level 1 is
+    at the granularity of an <code>origin</code> [[!ORIGIN]] but may be
+    more granular in higher conformance levels.</p>
+
+    Application authors should transmit the directives in this specification
+    as part of a single, complete Content Security Policy, as indicated by
+    that specification.
+</section>
+<section>
+    <h2 id="additional_conformance">Additional Conformance Notes</h2>
+
+    <em>This section is not normative.</em>
+
+    UI Redressing attacks rely on fooling the subjective perceptions of
+    human actors to induce them to interact with a web application out of
+    its intended context.  Because of this, the specific mechanisms which
+    may be used in attack and defense may vary greatly with the details of
+    a user agent implementation.  For example, attacks which rely on
+    redressing the cursor may not apply in a touch environment, or entire
+    classes of attack may be impossible on a text-only browser or screen
+    reader.
+
+    Similarly, the implementation of the policies specified herein is highly
+    dependent on internal architecture and implementation strategies of
+    the user agent; such strategies may vary greatly between user agents
+    or even across versions of a single user agent.
+
+    This specification provides a normative means by which a resource
+    owner can communicate to a user agent its desire for additional
+    protective measures, actions to take if violations are detected,
+    and tuning hints which may be useful for certain means of
+    implementation.
+
+    A user agent is conformant if it understands these directives and
+    makes a best effort to provide the desired security properties.
+    This might include doing nothing, e.g. in the case of a screen
+    reader that does not support embedded resources in a manner
+    subject to any of the attack classes of concern.
+
+    While the indeterminacy of the user agent implementation protects
+    applications from needing to constantly update their policies as
+    user agents make internal changes, application authors should
+    understand that even a conformant user agent cannot make
+    perfect security guarantees against UI Redressing.
+    Some potential checks suggested here might not be made as a
+    consequence of implementation strategies, or to avoid unacceptable
+    performance costs, and the intrepretation of policies
+    might differ among user agents. (e.g. a tolerance hint may appy
+    strictly to rectangular clipping in one implementation but
+    to pixel or sub-pixel comparisions in another)
+    
+    These directives should be used as part of a comprehensive risk
+    mitigation strategy with an appropriate understanding of their
+    limitations.
+</section>
+<section>
+    <h2 id="sec-directives">Directives</h2>
+
+    This section describes the content security policy
+    directives introduced in this specification.
+
+
+    <section id="input-protection">
+        <h3><code>input-protection</code></h3>
+
+        The <code>input-protection</code> directive, if present or
+        implied, instructs the user agent to apply the heuristic UI
+        redressing protections described in the Input
+        Protection Heuristic section to user input events, such as
+        <code>click</code>, <code>keypress</code>, <code>touch</code>, and
+        <code>drag</code>, before they are delivered to the resource.
+
+        If the <code>input-protection</code> directive is set as
+        part of a <code>Content-Security-Policy</code>, triggering of
+        the heuristic should cancel delivery of the UI event to the
+        target and cause a violation report to be sent.  If set as
+        part of a <code>Content-Security-Policy-Report-Only</code>,
+        triggering of the heuristic should result in the event being
+        delivered with the <code>unsafe</code> attribute on the
+        <code>UIEvent</code> set to <code>true</code>
+        and cause a violation report to be sent. (TODO: Pointer Events?)
+
+        The optional directive value allows resource authors to
+        provide <a href="#input-protection-options">options</a>
+        for heuristic tuning in the form of space-separated
+        <code>option-name=option-value</code> pairs.
+
+        <pre>
+directive-name    = "input-protection"
+directive-value   = ["display-time=" num-val] ["tolerance=" num-val]
+        </pre>
+
+        If the policy does not contain a value for this directive
+        or any of the hint name=value pairs are absent, the user
+        agent SHOULD apply default values for hints as described
+        in the following.
+
+        <dl id="input-protection-options">
+            <dt>
+                <code>display-time</code>
+            </dt>
+            <dd>
+                is a numeric value from 0 to 10000 that specifies how long, in
+                milliseconds, the screen area containing the protected user
+                interface must have been displayed continuously and unchanged
+                when the event is processed.
+                
+                If not specified, it defaults to 800. If a value out of the
+                range stated above is specified, it defaults to the nearest
+                value between the lower and the higher bounds.
+            </dd>
+
+            <dt>
+                <code>tolerance</code>
+            </dt>
+            <dd>
+                is a numeric value from 0 to 99 that defines a difference
+                threshold at which the input protection heuristic triggers a
+                violation. The calculation of "difference" is implementation
+                dependent and might refer, e.g., to the percentage of a
+                protected viewport that is clipped by other content, to
+                pixel-by-pixel comparisions of a protected area between a
+                "user" and "control" image, or even sub-pixel comparisions
+                which might account for opacity or blurring transforms.
+                A value of 0 indicates that no difference is
+                permitted. A value of 99 provides little to no
+                practical protection. If not specified, it defaults to 0.
+            </dd>
+        </dl>
+</section>
