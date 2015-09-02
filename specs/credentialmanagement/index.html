@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Credential Management Level 1</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-09-01">1 September 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-09-02">2 September 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -179,13 +179,6 @@ store user credentials for future use.</p>
         <li><a href="#examples-sign-up"><span class="secno">1.2.4</span> <span class="content">Sign-Up</span></a>
         <li><a href="#examples-change-password"><span class="secno">1.2.5</span> <span class="content">Change Password</span></a>
        </ul>
-      <li><a href="#existing-solutions"><span class="secno">1.3</span> <span class="content">
-      Haven’t we done this before? What about [<em>insert technology here</em>]?
-    </span></a>
-       <ul class="toc">
-        <li><a href="#existing-solutions-browserid"><span class="secno">1.3.1</span> <span class="content">BrowserID/Persona</span></a>
-        <li><a href="#existing-solutions-webid"><span class="secno">1.3.2</span> <span class="content">WebID</span></a>
-       </ul>
      </ul>
     <li><a href="#terms"><span class="secno">2</span> <span class="content">Key Concepts and Terminology</span></a>
     <li><a href="#interfaces"><span class="secno">3</span> <span class="content">Interfaces</span></a>
@@ -232,11 +225,9 @@ store user credentials for future use.</p>
          <ul class="toc">
           <li><a href="#monkey-patching-xhr-2"><span class="secno">3.3.1.1</span> <span class="content">XHR: <code>FormData</code>’s <code>get()</code></span></a>
           <li><a href="#monkey-patching-xhr-3"><span class="secno">3.3.1.2</span> <span class="content">XHR: <code>FormData</code>’s <code>getAll()</code></span></a>
-          <li><a href="#monkey-patching-fetch-1"><span class="secno">3.3.1.3</span> <span class="content">Fetch: <code>Request</code> objects</span></a>
+          <li><a href="#monkey-patching-fetch-1"><span class="secno">3.3.1.3</span> <span class="content">Fetch: <code>Body</code> objects</span></a>
           <li><a href="#monkey-patching-fetch-2"><span class="secno">3.3.1.4</span> <span class="content">Fetch: <code>Request</code>’s constructor</span></a>
-          <li><a href="#monkey-patching-fetch-3"><span class="secno">3.3.1.5</span> <span class="content">Fetch: <code>Body</code>’s <code>consume body</code></span></a>
-          <li><a href="#monkey-patching-fetch-4"><span class="secno">3.3.1.6</span> <span class="content">Fetch: Extract a byte stream</span></a>
-          <li><a href="#monkey-patching-serviceworkers-1"><span class="secno">3.3.1.7</span> <span class="content">Service Worker: Handle a Fetch</span></a>
+          <li><a href="#monkey-patching-serviceworkers-1"><span class="secno">3.3.1.5</span> <span class="content">Service Worker: Handle a Fetch</span></a>
          </ul>
        </ul>
      </ul>
@@ -498,7 +489,7 @@ store user credentials for future use.</p>
      
 
     
-     <div class="example" id="example-dfeac872"><a class="self-link" href="#example-dfeac872"></a>
+     <div class="example" id="example-3fa26cdb"><a class="self-link" href="#example-3fa26cdb"></a>
       
       <pre>navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialcontainer-get">get</a>({ "<a class="idl-code" data-link-type="dict-member" href="#dom-credentialrequestoptions-password">password</a>": true }).then(
     function(credential) {
@@ -510,7 +501,7 @@ store user credentials for future use.</p>
         return;
       }
       if (credential.type == "<a class="idl-code" data-link-type="const" href="#dom-passwordcredential-password">password</a>") {
-        fetch("https://example.com/loginEndpoint", { body: credential.<a data-link-type="functionish" href="#dom-passwordcredential-toformdata">toFormData()</a> })
+        fetch("https://example.com/loginEndpoint", { body: credential.<a data-link-type="functionish" href="#dom-passwordcredential-toformdata">toFormData()</a>, method: "POST" })
           .then(function (response) {
             // Notify the user that signin succeeded! Do amazing, signed-in things!
           });
@@ -535,7 +526,7 @@ store user credentials for future use.</p>
      
 
     
-     <div class="example" id="example-50e34d40"><a class="self-link" href="#example-50e34d40"></a>
+     <div class="example" id="example-97ec2080"><a class="self-link" href="#example-97ec2080"></a>
       
       <pre>navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialcontainer-get">get</a>({
   "<a class="idl-code" data-link-type="dict-member" href="#dom-credentialrequestoptions-password">password</a>": true,
@@ -569,7 +560,7 @@ store user credentials for future use.</p>
         // ...
         }
       } else {
-        fetch("https://example.com/loginEndpoint", { body: credential.<a data-link-type="functionish" href="#dom-passwordcredential-toformdata">toFormData()</a> })
+        fetch("https://example.com/loginEndpoint", { body: credential.<a data-link-type="functionish" href="#dom-passwordcredential-toformdata">toFormData()</a>, method: "POST" })
           .then(function (response) { ... })
           .catch(function (response) { ... });
       }
@@ -597,7 +588,7 @@ store user credentials for future use.</p>
      
 
     
-     <div class="example" id="example-6e892091"><a class="self-link" href="#example-6e892091"></a>
+     <div class="example" id="example-f385fb38"><a class="self-link" href="#example-f385fb38"></a>
       If a user is signed in by calling <code class="idl"><a data-link-type="idl" href="#dom-passwordcredential-toformdata">toFormData()</a></code> on
       a <code class="idl"><a data-link-type="idl" href="#passwordcredential">PasswordCredential</a></code> object, and submitting that data to a sign-in
       endpoint via <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-global-fetch">fetch()</a></code> then we can check the response to determine
@@ -609,7 +600,7 @@ store user credentials for future use.</p>
   "<a data-link-type="idl" href="#dom-credentialdata-id">id</a>": "JaneDoe98",
   "<a data-link-type="idl" href="#dom-passwordcredentialdata-password">password</a>": "MfPeRQq5P3yVry68Q4KZMMhB"
 });
-fetch("https://example.com/sign-in/", { body: credential.<a data-link-type="functionish" href="#dom-passwordcredential-toformdata">toFormData()</a> })
+fetch("https://example.com/sign-in/", { body: credential.<a data-link-type="functionish" href="#dom-passwordcredential-toformdata">toFormData()</a>, method: "POST" })
   .then(function (response) {
     if (response.status == 200)
       navigator.<a class="idl-code" data-link-type="attribute" href="#dom-navigator-credentials">credentials</a>.<a data-link-type="idl" href="#dom-credentialcontainer-store">store</a>(credential);
@@ -667,59 +658,6 @@ fetch("https://example.com/sign-in/", { body: credential.<a data-link-type="func
     modifications: if the user changes her credentials, the website can notify
     the user agent that she’s successfully signed in with new credentials. The
     user agent can then update the credentials it stores.</p>
-     
-  
-    </section>
-
-  
-    <section>
-    
-     <h3 class="heading settled" data-level="1.3" id="existing-solutions"><span class="secno">1.3. </span><span class="content">
-      Haven’t we done this before? What about [<em>insert technology here</em>]?
-    </span><a class="self-link" href="#existing-solutions"></a></h3>
-     
-
-    
-     <h4 class="heading settled" data-level="1.3.1" id="existing-solutions-browserid"><span class="secno">1.3.1. </span><span class="content">BrowserID/Persona</span><a class="self-link" href="#existing-solutions-browserid"></a></h4>
-     
-
-
-     <p>BrowserID is a proposal for an API which allows websites to request an
-    assertion of a user’s email address ownership. <a data-link-type="biblio" href="#biblio-browserid">[BROWSERID]</a></p>
-     
-
-
-     <p>The API specified here does not attempt to assert the user’s identity
-    directly: it only provides a more direct interface to the user agent’s
-    <a data-link-type="dfn" href="#credential-store">credential store</a>. Assertions about identity would still rely on
-    <a data-link-type="dfn" href="#federated-identity-provider">federated identity provider</a>’s particular SDKs and workflows.</p>
-     
-
-
-     <p>BrowserID is complementary to this API, and could be tacked onto the
-    <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> flow at some point in the future. For example, a
-    user who chooses a <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> whose origin supports
-    BrowserID could perform the authentication steps in the background by
-    passing the user’s email address and public key to the relevant
-    <a data-link-type="dfn" href="#federated-identity-provider">identity provider</a>, and adding a new property to the
-    <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> given back to the website which contains the
-    signed certificate asserting the user’s identity.</p>
-     
-
-
-     <p>This document doesn’t specify any of that behavior, but is designed with
-    it in mind: the immediate goal is to give websites more direct access to
-    the user agent’s existing credential manager, as federations are completely
-    unsupported at the moment. Generating assertions is an obvious next step.
-    See <a href="#future-work">§9 Future Work</a> for other thoughts on the subject.</p>
-     
-
-    
-     <h4 class="heading settled" data-level="1.3.2" id="existing-solutions-webid"><span class="secno">1.3.2. </span><span class="content">WebID</span><a class="self-link" href="#existing-solutions-webid"></a></h4>
-     
-
-
-     <p>TODO</p>
      
   
     </section>
@@ -1651,105 +1589,121 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
     </ol>
 
   
-    <h5 class="heading settled" data-level="3.3.1.3" id="monkey-patching-fetch-1"><span class="secno">3.3.1.3. </span><span class="content">Fetch: <code>Request</code> objects</span><a class="self-link" href="#monkey-patching-fetch-1"></a></h5>
+    <h5 class="heading settled" data-level="3.3.1.3" id="monkey-patching-fetch-1"><span class="secno">3.3.1.3. </span><span class="content">Fetch: <code>Body</code> objects</span><a class="self-link" href="#monkey-patching-fetch-1"></a></h5>
 
 
-    <p>Add a new <dfn data-dfn-type="dfn" data-noexport="" id="opaque-request-flag">opaque request flag<a class="self-link" href="#opaque-request-flag"></a></dfn> to Fetch’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#request">Request</a></code> objects. This
-  flag is unset unless otherwise specified.</p>
+    <p>Add a new <dfn class="idl-code" data-dfn-for="Body" data-dfn-type="attribute" data-export="" id="dom-body-opaque-flag">opaque flag<a class="self-link" href="#dom-body-opaque-flag"></a></dfn> to Fetch’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#body">Body</a></code>
+  interface. This flag is unset unless otherwise specified.</p>
+
+
+    <p>Replace the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-Body-arrayBuffer">arrayBuffer()</a></code> method’s definition with:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>If the <a class="idl-code" data-link-type="attribute" href="#dom-body-opaque-flag">opaque flag</a> is set, return a
+  <code>Promise</code> rejected with a <code>TypeError</code>.</p>
+      
+
+
+     <li data-md="">
+      <p>Return the result of running <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-Body-consume-body">consume body</a> with
+  <var>ArrayBuffer</var>.</p>
+      
+</ol>
+
+    <p>Replace the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-Body-blob">blob()</a></code> method’s definition with:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>If the <a class="idl-code" data-link-type="attribute" href="#dom-body-opaque-flag">opaque flag</a> is set, return a
+  <code>Promise</code> rejected with a <code>TypeError</code>.</p>
+      
+
+
+     <li data-md="">
+      <p>Return the result of running <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-Body-consume-body">consume body</a> with
+  <var>Blob</var>.</p>
+      
+</ol>
+
+    <p>Replace the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-Body-formData">formData()</a></code> method’s definition with:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>If the <a class="idl-code" data-link-type="attribute" href="#dom-body-opaque-flag">opaque flag</a> is set, return a
+  <code>Promise</code> rejected with a <code>TypeError</code>.</p>
+      
+
+
+     <li data-md="">
+      <p>Return the result of running <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-Body-consume-body">consume body</a> with
+  <var>FormData</var>.</p>
+      
+</ol>
+
+    <p>Replace the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-Body-json">json()</a></code> method’s definition with:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>If the <a class="idl-code" data-link-type="attribute" href="#dom-body-opaque-flag">opaque flag</a> is set, return a
+  <code>Promise</code> rejected with a <code>TypeError</code>.</p>
+      
+
+
+     <li data-md="">
+      <p>Return the result of running <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-Body-consume-body">consume body</a> with
+  <var>JSON</var>.</p>
+      
+</ol>
+
+    <p>Replace the <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-Body-text">text()</a></code> method’s definition with:</p>
+
+
+    <ol>
+     <li data-md="">
+      <p>If the <a class="idl-code" data-link-type="attribute" href="#dom-body-opaque-flag">opaque flag</a> is set, return a
+  <code>Promise</code> rejected with a <code>TypeError</code>.</p>
+      
+
+
+     <li data-md="">
+      <p>Return the result of running <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-Body-consume-body">consume body</a> with
+  <var>text</var>.</p>
+      
+</ol>
+
+    <p class="note" role="note">Note: We reject each of the accessor methods' <code>Promise</code>s, which
+  which means that the body remains unconsumed.</p>
 
   
     <h5 class="heading settled" data-level="3.3.1.4" id="monkey-patching-fetch-2"><span class="secno">3.3.1.4. </span><span class="content">Fetch: <code>Request</code>’s constructor</span><a class="self-link" href="#monkey-patching-fetch-2"></a></h5>
 
 
-    <p>Add the following step after step 3 of step 17 of Fetch’s <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-request">Request()</a></code>
-  constructor:</p>
+    <p>Perform the following after step 33 of the current <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-request">Request()</a></code> constructor:</p>
 
   
-    <ol>
+    <ol start="34">
     
      <li>
-      If <var>init</var>’s <code>body</code> member is a <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> object
-      whose <a data-link-type="dfn" href="#opaque-flag">opaque flag</a> is set, set <var>r</var>’s <strong>opaque
-      flag</strong>.
+      If <var>init</var>’s body member is a <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> object whose <a data-link-type="dfn" href="#opaque-flag">opaque
+      flag</a> is set, or <var>input</var>’s <a class="idl-code" data-link-type="attribute" href="#dom-body-opaque-flag">opaque
+      flag</a> is set, set <var>r</var>’s <a class="idl-code" data-link-type="attribute" href="#dom-body-opaque-flag">opaque
+      flag</a>.
     
      
   
     </ol>
 
   
-    <h5 class="heading settled" data-level="3.3.1.5" id="monkey-patching-fetch-3"><span class="secno">3.3.1.5. </span><span class="content">Fetch: <code>Body</code>’s <code>consume body</code></span><a class="self-link" href="#monkey-patching-fetch-3"></a></h5>
+    <h5 class="heading settled" data-level="3.3.1.5" id="monkey-patching-serviceworkers-1"><span class="secno">3.3.1.5. </span><span class="content">Service Worker: Handle a Fetch</span><a class="self-link" href="#monkey-patching-serviceworkers-1"></a></h5>
 
 
-    <p>Insert the following step after step 2 of step 3 of Fetch’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-Body-consume-body">consume
-  body</a> algorithm:</p>
-
-  
-    <ol start="3">
-    
-     <li>
-      If <var>object</var>’s <a data-link-type="dfn" href="#opaque-request-flag">opaque request flag</a> is set, set
-      <var>stream</var> to an empty byte sequence.
-    
-     
-  
-    </ol>
-
-  
-    <h5 class="heading settled" data-level="3.3.1.6" id="monkey-patching-fetch-4"><span class="secno">3.3.1.6. </span><span class="content">Fetch: Extract a byte stream</span><a class="self-link" href="#monkey-patching-fetch-4"></a></h5>
-
-
-    <p>Redefine the <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> case of Fetch’s <a data-link-type="dfn" href="https://xhr.spec.whatwg.org/#concept-fetchbodyinit-extract">extract a byte
-  stream and <code>Content-Type</code></a> algorithm as follows:</p>
-
-  
-    <ol>
-    
-     <li>
-      If <var>object</var>’s <a data-link-type="dfn" href="#opaque-flag">opaque flag</a> is <strong>not</strong> set,
-      or if the extraction algorithm is being executed in the context of
-      <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-xmlhttprequest">XMLHttpRequest</a></code>'s <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send">send()</a></code> method or Fetch’s
-      <code class="idl"><a data-link-type="idl" href="https://fetch.spec.whatwg.org/#dom-request">Request()</a></code> constructor, then:
-
-      
-      <ol>
-        
-       <li>
-          Push the result of running the multipart/form-data encoding algorithm, with object as form data set and with utf-8 as the explicit character encoding, to stream.
-        
-       
-        
-       <li>
-          Set Content-Type to `multipart/form-data;boundary=`, followed by the multipart/form-data boundary string generated by the multipart/form-data encoding algorithm.
-        
-       
-      
-      </ol>
-      
-
-    
-     
-    
-     <li>
-      Otherwise, set <var>Content-Type</var> to <code>text/plain;charset=UTF-8</code>.
-
-
-      <p class="note" role="note">Note: In this case (e.g. <var>object</var> is opaque
-      and the algorithm isn’t being executed as a result of
-      <code>XHR.send()</code>), <var>stream</var> will remain an empty byte
-      stream.</p>
-      
-    
-     
-  
-    </ol>
-
-  
-    <h5 class="heading settled" data-level="3.3.1.7" id="monkey-patching-serviceworkers-1"><span class="secno">3.3.1.7. </span><span class="content">Service Worker: Handle a Fetch</span><a class="self-link" href="#monkey-patching-serviceworkers-1"></a></h5>
-
-
-    <p class="issue" id="issue-7ac73c88"><a class="self-link" href="#issue-7ac73c88"></a> Figure out the right way to monkey-patch Service Worker’s
-  <a href="https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#handle-a-fetch">Handle a Fetch</a>
-  algorithm to do the right thing with opaque requests.</p>
+    <p class="issue" id="issue-be0db764"><a class="self-link" href="#issue-be0db764"></a> Currently, we’re not protecting requests with opaque bodies from
+  Service Worker interception. Should we?</p>
 </section>
 
 
@@ -3404,9 +3358,12 @@ partial dictionary CredentialRequestOptions {
      <li><a href="#dom-locallystoredcredential-name">attribute for LocallyStoredCredential</a><span>, in §3.1.2</span>
     </ul>
    <li><a href="#opaque-formdata-objects">opaque</a><span>, in §3.3</span>
-   <li><a href="#opaque-flag">opaque flag</a><span>, in §3.3</span>
+   <li>opaque flag
+    <ul>
+     <li><a href="#opaque-flag">definition of</a><span>, in §3.3</span>
+     <li><a href="#dom-body-opaque-flag">attribute for Body</a><span>, in §3.3.1.3</span>
+    </ul>
    <li><a href="#opaque-formdata-objects">Opaque FormData objects</a><span>, in §3.3</span>
-   <li><a href="#opaque-request-flag">opaque request flag</a><span>, in §3.3.1.3</span>
    <li><a href="#dom-credentialcontainer-get-options-options">options</a><span>, in §3.2</span>
    <li><a href="#options-matching-algorithm">options matching
   algorithm</a><span>, in §3.1.2</span>
@@ -3453,11 +3410,16 @@ partial dictionary CredentialRequestOptions {
     </ul>
    <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
     <ul>
-     <li><a href="https://fetch.spec.whatwg.org/#request">Request</a>
+     <li><a href="https://fetch.spec.whatwg.org/#body">Body</a>
      <li><a href="https://fetch.spec.whatwg.org/#dom-request">Request()</a>
      <li><a href="https://fetch.spec.whatwg.org/#dom-response">Response()</a>
+     <li><a href="https://fetch.spec.whatwg.org/#dom-Body-arrayBuffer">arrayBuffer()</a>
+     <li><a href="https://fetch.spec.whatwg.org/#dom-Body-blob">blob()</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-Body-consume-body">consume body</a>
      <li><a href="https://fetch.spec.whatwg.org/#dom-global-fetch">fetch()</a>
+     <li><a href="https://fetch.spec.whatwg.org/#dom-Body-formData">formData()</a>
+     <li><a href="https://fetch.spec.whatwg.org/#dom-Body-json">json()</a>
+     <li><a href="https://fetch.spec.whatwg.org/#dom-Body-text">text()</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-html5">[html5]</a> defines the following terms:
     <ul>
@@ -3649,9 +3611,8 @@ dictionary <a href="#dictdef-federatedcredentialrequestoptions">FederatedCredent
       opaque <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> object, or if it is the result of a form submission with
       opaque contents.<a href="#issue-6636b845"> ↵ </a></div>
    <div class="issue"> Monkey-patching! Hooray! Talk with Anne, et al.<a href="#issue-020f94b2"> ↵ </a></div>
-   <div class="issue"> Figure out the right way to monkey-patch Service Worker’s
-  <a href="https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#handle-a-fetch">Handle a Fetch</a>
-  algorithm to do the right thing with opaque requests.<a href="#issue-7ac73c88"> ↵ </a></div>
+   <div class="issue"> Currently, we’re not protecting requests with opaque bodies from
+  Service Worker interception. Should we?<a href="#issue-be0db764"> ↵ </a></div>
    <div class="issue"> This is terribly hand-wavey. The intent is
       clear, but I need to do the work to walk through the list of DOMStrings
       and convert them to interfaces and etc. Busywork for later. <a href="https://github.com/w3c/webappsec/issues/289">&lt;https://github.com/w3c/webappsec/issues/289></a><a href="#issue-6005a2a4"> ↵ </a></div>
