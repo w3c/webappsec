@@ -27,6 +27,7 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: infrastructure.html
       text: resolve a url
       text: structured clone
+      text: internal structured cloning algorithm
     urlPrefix: forms.html
       text: autocomplete
     urlPrefix: browsers.html
@@ -75,8 +76,14 @@ spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
     text: RequestInfo
     text: Response
     text: Request
+    text: Body
   type: method
     text: fetch(); url: dom-global-fetch
+    text: arrayBuffer(); for: Body; url: dom-Body-arrayBuffer
+    text: blob(); for: Body; url: dom-Body-blob
+    text: formData(); for: Body; url: dom-Body-formData
+    text: json(); for: Body; url: dom-Body-json
+    text: text(); for: Body; url: dom-Body-text
   type: constructor
     text: Request(); url: dom-request
     text: Response(); url: dom-response
@@ -109,6 +116,7 @@ spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
   type: dfn
     text: type name; url: dfn-type-name
     text: dictionary member; url: dfn-dictionary-member
+    text: value pairs to iterate over; url: dfn-value-pairs-to-iterate-over
   type: interface
     text: USVString; url: idl-USVString
     text: object; url: idl-object
@@ -263,7 +271,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 return;
               }
               if (credential.type == "<a const>password</a>") {
-                fetch("https://example.com/loginEndpoint", { body: credential.<a>toFormData()</a> })
+                fetch("https://example.com/loginEndpoint", { body: credential.<a>toFormData()</a>, method: "POST" })
                   .then(function (response) {
                     // Notify the user that signin succeeded! Do amazing, signed-in things!
                   });
@@ -314,7 +322,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                 // ...
                 }
               } else {
-                fetch("https://example.com/loginEndpoint", { body: credential.<a>toFormData()</a> })
+                fetch("https://example.com/loginEndpoint", { body: credential.<a>toFormData()</a>, method: "POST" })
                   .then(function (response) { ... })
                   .catch(function (response) { ... });
               }
@@ -344,7 +352,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           "<a idl for="CredentialData">id</a>": "JaneDoe98",
           "<a idl for="PasswordCredentialData">password</a>": "MfPeRQq5P3yVry68Q4KZMMhB"
         });
-        fetch("https://example.com/sign-in/", { body: credential.<a>toFormData()</a> })
+        fetch("https://example.com/sign-in/", { body: credential.<a>toFormData()</a>, method: "POST" })
           .then(function (response) {
             if (response.status == 200)
               navigator.<a attribute>credentials</a>.<a idl lt="store()">store</a>(credential);
@@ -387,41 +395,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     the user agent that she's successfully signed in with new credentials. The
     user agent can then update the credentials it stores.
   </section>
-
-  <section>
-    <h3 id="existing-solutions">
-      Haven't we done this before? What about [<em>insert technology here</em>]?
-    </h3>
-
-    <h4 id="existing-solutions-browserid">BrowserID/Persona</h4>
-
-    BrowserID is a proposal for an API which allows websites to request an
-    assertion of a user's email address ownership. [[BROWSERID]]
-
-    The API specified here does not attempt to assert the user's identity
-    directly: it only provides a more direct interface to the user agent's
-    <a>credential store</a>. Assertions about identity would still rely on
-    <a>federated identity provider</a>'s particular SDKs and workflows.
-
-    BrowserID is complementary to this API, and could be tacked onto the
-    {{FederatedCredential}} flow at some point in the future. For example, a
-    user who chooses a {{FederatedCredential}} whose origin supports
-    BrowserID could perform the authentication steps in the background by
-    passing the user's email address and public key to the relevant
-    <a>identity provider</a>, and adding a new property to the
-    {{FederatedCredential}} given back to the website which contains the
-    signed certificate asserting the user's identity.
-
-    This document doesn't specify any of that behavior, but is designed with
-    it in mind: the immediate goal is to give websites more direct access to
-    the user agent's existing credential manager, as federations are completely
-    unsupported at the moment. Generating assertions is an obvious next step.
-    See [[#future-work]] for other thoughts on the subject.
-
-    <h4 id="existing-solutions-webid">WebID</h4>
-
-    TODO
-  </section>
 </section>
 
 <!--
@@ -459,7 +432,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     <dd>
       A <strong>credential store</strong> is an opaque storage mechanism which
       offers a user agent the ability to save, retrieve, and modify
-      {{LocallyStoredCredential}} objects; and to mark <a>origins</a> with a
+      {{Credential}} objects; and to mark <a>origins</a> with a
       <dfn>requires user mediation</dfn> flag. The implementation is
       vendor-specific, and the interface provided is not exposed to the web.
 
@@ -499,12 +472,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <h3 id="interfaces-credential-types">Credential Types</h3>
 
   This document defines a generic and extensible {{Credential}} interface from
-  which all <a>credentials</a> will inherit, and a slightly less-generic
-  {{LocallyStoredCredential}}, which defines the specific attributes shared
+  which all <a>credentials</a> will inherit, and a slightly less generic
+  {{OriginBoundCredential}}, which defines the specific attributes shared
   by any <a>Credential</a> persisted in user agent's <a>credential store</a>.
 
   {{PasswordCredential}} and {{FederatedCredential}} both inherit from
-  {{LocallyStoredCredential}}, and, as you might expect, are the concrete types
+  {{OriginBoundCredential}}, and, as you might expect, are the concrete types
   mapped to <a>password credentials</a> and <a>federated credentials</a>,
   respectively.
 
@@ -547,27 +520,27 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   </dl>
 
   {{Credential}} objects implement {{Transferable}}, and MUST support the
-  the <a>structured clone</a> algorithm by defining a cloning mechanism.
-
-  ISSUE(w3c/webappsec#287): Define cloning algorithms.
+  the <a>structured clone</a> algorithm. Unless otherwise specified, the cloning
+  mechanism for all objects which implement {{Credential}} is defined in
+  [[#clone-credential]].
 
   <pre class="idl">
-    dictionary LocallyStoredCredentialData : CredentialData {
+    dictionary OriginBoundCredentialData : CredentialData {
       DOMString name;
       USVString iconURL;
     };
 
-    interface LocallyStoredCredential : Credential {
+    interface OriginBoundCredential : Credential {
       readonly attribute DOMString name;
       readonly attribute USVString iconURL;
     };
   </pre>
 
-  <h4 id="interfaces-credential-types-locallystoredcredential">
-    <code>LocallyStoredCredential</code>
+  <h4 id="interfaces-credential-types-originboundcredential">
+    <code>OriginBoundCredential</code>
   </h4>
 
-  <dl dfn-for="LocallyStoredCredential">
+  <dl dfn-for="OriginBoundCredential">
     <dt><dfn attribute>name</dfn></dt>
     <dd>
       A name associated with the credential, intended as a human-understandable
@@ -585,20 +558,20 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dd>
     <dt><dfn attribute>\[[origin]]</dfn></dt>
     <dd>
-      All {{LocallyStoredCredential}} objects have an internal slot named
-      {{[[origin]]}}, which stores the <a>origin</a> for which the
-      credential was saved. This property is not directly exposed to the web.
+      All {{OriginBoundCredential}} objects have an internal slot named
+      {{[[origin]]}}, which stores the <a>origin</a> to which the credential is
+      bound. This property is not directly exposed to the web.
     </dd>
   </dl>
 
-  All {{LocallyStoredCredential}} objects MUST define an <dfn>options matching
+  All {{OriginBoundCredential}} objects MUST define an <dfn>options matching
   algorithm</dfn> which returns <dfn><code>Match</code></dfn> if the object
   matches a {{CredentialRequestOptions}} object, and <dfn><code>Does Not
   Match</code></dfn> otherwise.
 
   <h4 id="interfaces-credential-types-passwordcredential"><code>PasswordCredential</code></h4>
   <pre class="idl">
-    dictionary PasswordCredentialData : LocallyStoredCredentialData {
+    dictionary PasswordCredentialData : OriginBoundCredentialData {
       DOMString password;
     };
 
@@ -608,7 +581,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     };
 
     [Constructor(PasswordCredentialData data), Exposed=Window]
-    interface PasswordCredential : LocallyStoredCredential {
+    interface PasswordCredential : OriginBoundCredential {
       FormData toFormData(optional FormDataOptions formDataOptions);
     };
   </pre>
@@ -622,10 +595,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
       The user agent MUST execute the algorithm described in
       [[#generate-formdata]] when this method is executed.
-
-      ISSUE(w3c/webappsec#288): Probably not something for v1, but an
-      interesting option would be to provide a hash function here that the user
-      agent would apply to the password before sending it over the wire.
 
       <pre class="argumentdef" for="PasswordCredential/toFormData(formDataOptions)">
         formDataOptions: A set of options governing the {{FormData}} object's construction.
@@ -653,13 +622,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 
   <h4 id="interfaces-credential-types-federatedcredential"><code>FederatedCredential</code></h4>
   <pre class="idl">
-    dictionary FederatedCredentialData : LocallyStoredCredentialData {
+    dictionary FederatedCredentialData : OriginBoundCredentialData {
       USVString provider;
       DOMString protocol;
     };
 
     [Constructor(FederatedCredentialData data), Exposed=Window]
-    interface FederatedCredential : LocallyStoredCredential {
+    interface FederatedCredential : OriginBoundCredential {
       readonly attribute USVString provider;
       readonly attribute DOMString? protocol;
     };
@@ -807,10 +776,6 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       is called.
     </dd>
   </dl>
-
-  ISSUE(w3c/webappsec#250): We should support explicit sign-up via
-  {{PasswordCredential}}s with generated passwords. Perhaps something similar to
-  iOS8's <code>SecCreateSharedWebCredentialPassword</code>.
 
   <h4 id="interfaces-request-options">
     <code>get()</code> Parameters
@@ -960,34 +925,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       {{FormData/getAll()}} method, it MUST return the empty sequence.
     </li>
     <li>
-      Whenever the user agent would <a lt="extract">extract a byte stream and
-      <code>Content-Type</code></a> from an opaque {{FormData}} object
-      <var>formdata</var>, first the following steps:
-
-      <ol>
-        <li>
-          If the extraction algorithm is not being executed in the context of
-          either {{XMLHttpRequest}}'s {{XMLHttpRequest/send()}} method, or
-          Fetch's {{Request()}} or {{Response()}} constructors, then:
-
-          <ol>
-            <li>
-              Abort the extraction algorithm and return the result of executing
-              the <a lt="extract">extract a byte stream and
-              <code>Content-Type</code></a> algorithm on a new (empty)
-              {{FormData}} object.
-            </li>
-          </ol>
-        </li>
-      </ol>
-    </li>
-    <li>
-      TODO.
-
-      ISSUE: Determine the right spec text to impart the following: When a request
-      is handed off to Fetch, mark it as opaque if its body is populated from an
-      opaque {{FormData}} object, or if it is the result of a form submission with
-      opaque contents.
+      The opaqueness of a {{FormData}} object taints {{Request}} objects
+      created from them. The {{Body}} accessor methods will reject with a
+      <code>TypeError</code>.
     </li>
   </ol>
 
@@ -996,6 +936,23 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   </h4>
 
   ISSUE: Monkey-patching! Hooray! Talk with Anne, et al.
+
+  <h5 id="monkey-patching-xhr-1">XHR: <code>FormData</code> Iteration</code></h5>
+
+  Replace the following text from {{FormData}}:
+
+  <blockquote>
+    The <a>value pairs to iterate over</a> are the <a>entries</a> with the key
+    being the {{entry/name}} and the value the {{entry/value}}.
+  </blockquote>
+
+  With:
+
+  <blockquote>
+    The <a>value pairs to iterate over</a> is an empty list if the <a>opaque
+    flag</a> is set, otherwise the <a>entries</a> with the key being the
+    {{entry/name}} and the value the {{entry/value}}.
+  </blockquote>
 
   <h5 id="monkey-patching-xhr-2">XHR: <code>FormData</code>'s <code>get()</code></h5>
 
@@ -1023,73 +980,71 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h5 id="monkey-patching-fetch-1">Fetch: <code>Request</code> objects</h5>
+  <h5 id="monkey-patching-fetch-1">Fetch: <code>Body</code> objects</h5>
 
-  Add a new <dfn>opaque request flag</dfn> to Fetch's {{Request}} objects. This
-  flag is unset unless otherwise specified.
+  Add a new <dfn attribute for="Body">opaque flag</dfn> to Fetch's {{Body}}
+  interface. This flag is unset unless otherwise specified.
+
+  Replace the {{Body/arrayBuffer()}} method's definition with:
+
+  1.  If the <a attribute for="Body">opaque flag</a> is set, return a
+      <code>Promise</code> rejected with a <code>TypeError</code>.
+
+  2.  Return the result of running <a>consume body</a> with
+      <var>ArrayBuffer</var>.
+
+  Replace the {{Body/blob()}} method's definition with:
+
+  1.  If the <a attribute for="Body">opaque flag</a> is set, return a
+      <code>Promise</code> rejected with a <code>TypeError</code>.
+
+  2.  Return the result of running <a>consume body</a> with
+      <var>Blob</var>.
+
+  Replace the {{Body/formData()}} method's definition with:
+
+  1.  If the <a attribute for="Body">opaque flag</a> is set, return a
+      <code>Promise</code> rejected with a <code>TypeError</code>.
+
+  2.  Return the result of running <a>consume body</a> with
+      <var>FormData</var>.
+
+  Replace the {{Body/json()}} method's definition with:
+
+  1.  If the <a attribute for="Body">opaque flag</a> is set, return a
+      <code>Promise</code> rejected with a <code>TypeError</code>.
+
+  2.  Return the result of running <a>consume body</a> with
+      <var>JSON</var>.
+
+  Replace the {{Body/text()}} method's definition with:
+
+  1.  If the <a attribute for="Body">opaque flag</a> is set, return a
+      <code>Promise</code> rejected with a <code>TypeError</code>.
+
+  2.  Return the result of running <a>consume body</a> with
+      <var>text</var>.
+
+  Note: We reject each of the accessor methods' <code>Promise</code>s, which
+  which means that the body remains unconsumed.
 
   <h5 id="monkey-patching-fetch-2">Fetch: <code>Request</code>'s constructor</h5>
 
-  Add the following step after step 3 of step 17 of Fetch's {{Request()}}
-  constructor:
+  Perform the following after step 33 of the current {{Request()}} constructor:
 
-  <ol>
+  <ol start="34">
     <li>
-      If <var>init</var>'s <code>body</code> member is a {{FormData}} object
-      whose <a>opaque flag</a> is set, set <var>r</var>'s <strong>opaque
-      flag</strong>.
-    </li>
-  </ol>
-
-  <h5 id="monkey-patching-fetch-3">Fetch: <code>Body</code>'s <code>consume body</code></h5>
-
-  Insert the following step after step 2 of step 3 of Fetch's <a>consume
-  body</a> algorithm:
-
-  <ol start="3">
-    <li>
-      If <var>object</var>'s <a>opaque request flag</a> is set, set
-      <var>stream</var> to an empty byte sequence.
-    </li>
-  </ol>
-
-  <h5 id="monkey-patching-fetch-4">Fetch: Extract a byte stream</h5>
-
-  Redefine the {{FormData}} case of Fetch's <a lt="extract">extract a byte
-  stream and <code>Content-Type</code></a> algorithm as follows:
-
-  <ol>
-    <li>
-      If <var>object</var>'s <a>opaque flag</a> is <strong>not</strong> set,
-      or if the extraction algorithm is being executed in the context of
-      {{XMLHttpRequest}}'s {{XMLHttpRequest/send()}} method or Fetch's
-      {{Request()}} constructor, then:
-
-      <ol>
-        <li>
-          Push the result of running the multipart/form-data encoding algorithm, with object as form data set and with utf-8 as the explicit character encoding, to stream.
-        </li>
-        <li>
-          Set Content-Type to `multipart/form-data;boundary=`, followed by the multipart/form-data boundary string generated by the multipart/form-data encoding algorithm.
-        </li>
-      </ol>
-
-    </li>
-    <li>
-      Otherwise, set <var>Content-Type</var> to <code>text/plain;charset=UTF-8</code>.
-
-      Note: In this case (e.g. <var>object</var> is opaque
-      and the algorithm isn't being executed as a result of
-      <code>XHR.send()</code>), <var>stream</var> will remain an empty byte
-      stream.
+      If <var>init</var>'s body member is a {{FormData}} object whose <a>opaque
+      flag</a> is set, or <var>input</var>'s <a attribute for="Body">opaque
+      flag</a> is set, set <var>r</var>'s <a attribute for="Body">opaque
+      flag</a>.
     </li>
   </ol>
 
   <h5 id="monkey-patching-serviceworkers-1">Service Worker: Handle a Fetch</h5>
 
-  ISSUE: Figure out the right way to monkey-patch Service Worker's
-  <a href="https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#handle-a-fetch">Handle a Fetch</a>
-  algorithm to do the right thing with opaque requests.
+  ISSUE: Currently, we're not protecting requests with opaque bodies from
+  Service Worker interception. Should we?
 </section>
 
 <!--
@@ -1147,12 +1102,30 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </ol>
     </li>
     <li>
-      Let <var>type</var> be lowest common ancestor interface of the types
-      referenced in <var>types</var>.
+      Let <var>types</var> be an empty set.
+    </li>
+    <li>
+      For each <var>key</var> in <var>options</var>:
 
-      ISSUE(w3c/webappsec#289): This is terribly hand-wavey. The intent is
-      clear, but I need to do the work to walk through the list of DOMStrings
-      and convert them to interfaces and etc. Busywork for later.
+      <ol>
+        <li>
+          Let <var>interface</var> be the interface whose name is
+          <var>key</var>, or <code>null</code> if no interface's name
+          matches.
+        </li>
+        <li>
+          If <var>interface</var> is not <code>null</code>, insert
+          <var>interface</var> into <var>possible types</var>.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Let <var>type</var> be the lowest common ancestor interface of the
+      interfaces contained in <var>types</var>.
+
+      Note: That is, given a set containing {{PasswordCredential}} and
+      {{FederatedCredential}}, <var>type</var> will be
+      {{OriginBoundCredential}}.
     </li>
     <li>
       Return a <code>Promise</code> rejected with <code>TypeMismatchError</code>
@@ -1168,12 +1141,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Switch on <var>type</var>, and execute the associated steps:
 
       <dl>
-        <dt>{{LocallyStoredCredential}}</dt>
+        <dt>{{FederatedCredential}}</dt>
+        <dt>{{OriginBoundCredential}}</dt>
+        <dt>{{PasswordCredential}}</dt>
         <dd>
           <ol>
             <li>
               Let <var>result</var> be the result of executing
-              [[#request-locallystoredcredential-without-mediation]],
+              [[#request-originboundcredential-without-mediation]],
               passing in <var>origin</var>, <var>types</var> and
               <var>options</var>.
             </li>
@@ -1183,11 +1158,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
               algorithm.
             </li>
             <li>
-              If <var>request</var>'s {{CredentialRequestOptions/suppressUI}}
+              If <var>options</var>'s {{CredentialRequestOptions/suppressUI}}
               is <code>true</code>, resolve <var>promise</var> with
               <var>undefined</var>, and terminate this algorithm.
-
-              ISSUE: Do something here. Maybe this should be part of options?
             </li>
             <li>
               If this algorithm would not be <a>allowed to show a popup</a>,
@@ -1199,7 +1172,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
             </li>
             <li>
               Resolve <var>promise</var> with the result of executing
-              [[#request-locallystoredcredential-with-mediation]],
+              [[#request-originboundcredential-with-mediation]],
               passing in <var>origin</var>, <var>types</var>, and
               <var>options</var>.
             </li>
@@ -1214,20 +1187,18 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  ISSUE(w3c/webappsec#256): How do we deal with a future in which
-  {{LocallyStoredCredential}} isn't the only type? For example, how could an
-  author pull some "RemoteCredential" that required interaction with a
-  third-party, but fall back to a {{PasswordCredential}}? For the moment, we're
-  resolving this by rejecting the promise if the types listed in
-  {{CredentialContainer/get()}}'s {{options!!argument}} aren't all instances of
-  the same type, but that seems like something we'd want to fix.
+  Note: Currently, we reject a call to {{CredentialContainer/get()}} if the
+  <var>options</var> provided specify a set of {{Credential}} types that don't
+  play well together (e.g. some future "NeedsLotsOfUserInteractionCredential"
+  type in the same request as an {{PasswordCredential}}). We may wish to define
+  a more graceful fallback mechanism if/when new credential types are defined.
 
   <h4 id="store-credential">
     Store a <code>Credential</code>
   </h4>
 
   Given a {{Credential}} object (<var>credential</var>), this algorithm executes
-  a type-specific storage algorithm. {{LocallyStoredCredential}} objects will
+  a type-specific storage algorithm. {{OriginBoundCredential}} objects will
   be persisted to the user agent's <a>credential store</a>. Future object types
   could, for instance, be persisted to some other (potentially remote) storage
   mechanism.
@@ -1270,12 +1241,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Switch on <var>type</var>, and execute the associated steps:
 
       <dl>
-        <dt>{{LocallyStoredCredential}}</dt>
+        <dt>{{OriginBoundCredential}}</dt>
         <dd>
           <ol>
             <li>
               Resolve <var>promise</var> with the result of executing
-              [[#store-locallystoredcredential]],
+              [[#store-originboundcredential]],
               passing in <var>credential</var> and <var>origin</var>.
             </li>
           </ol>
@@ -1289,18 +1260,64 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h3 id="processing-locallystored">
-    Processing <code>LocallyStoredCredential</code>s
+  <h4 id="clone-credential">
+    Clone <var>credential</var>
+  </h4>
+
+  Given a {{Credential}} (<var>input</var>), the following algorithm
+  defines the way in which a <a>structured clone</a> will be produced. This
+  algorithm plugs into the <a>internal structured cloning algorithm</a>
+  defined in [[HTML]]:
+
+  <ol>
+    <li>
+      Let <var>output</var> be a {{Credential}} object of the same type as
+      <var>input</var>'s <code>constructor</code>.
+    </li>
+    <li>
+      For each internal slot on <var>input</var>:
+
+      <ol>
+        <li>
+          Let <var>name</var> be the name of the slot.
+        </li>
+        <li>
+          Let <var>source value</var> be the slot's value.
+        </li>
+        <li>
+          Let <var>cloned value</var> be the result of invoking the <a>internal
+          structured cloning algorithm</a> with <var>source value</var> as the
+          "<code>input</code>" argument, and <var>memory</var> as the
+          "<code>memory</code>" argument.
+        </li>
+        <li>
+          If an exception results from the previous step, abort the overall
+          <a>structured clone</a> algorithm, and pass that exception through
+          to the caller.
+        </li>
+        <li>
+          Add a new slot to <var>output</var> having name <var>name</var> and
+          value <var>cloned value</var>.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Set <var>deep clone</var> to <code>own</code>.
+    </li>
+  </ol>
+
+  <h3 id="processing-originbound">
+    Processing <code>OriginBoundCredential</code>s
   </h3>
 
-  <h4 id="gather-locallystoredcredentials">
-    Gather <code>LocallyStoredCredential</code>s
+  <h4 id="gather-originboundcredentials">
+    Gather <code>OriginBoundCredential</code>s
   </h4>
 
   Given an <a>origin</a> (<var>origin</var>), and a sequence of {{DOMString}}
   (<var>types</var>), and an {{CredentialRequestOptions}} dictionary
   (<var>options</var>), this algorithm returns a sequence of
-  {{LocallyStoredCredential}} from the user agent's <a>credential store</a>
+  {{OriginBoundCredential}} from the user agent's <a>credential store</a>
   which are potential candidates:
 
   <ol>
@@ -1330,13 +1347,13 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h4 id="request-locallystoredcredential-without-mediation">
-    Request a <code>LocallyStoredCredential</code> <em>without</em> user mediation
+  <h4 id="request-originboundcredential-without-mediation">
+    Request a <code>OriginBoundCredential</code> <em>without</em> user mediation
   </h4>
 
-  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
+  This algorithm accepts an <a>origin</a> (<var>origin</var>), a set of
   type names (<var>types</var>) and an {{CredentialRequestOptions}} dictionary
-  (<var>options</var>), and returns either a single {{LocallyStoredCredential}}
+  (<var>options</var>), and returns either a single {{OriginBoundCredential}}
   object <strong>if and only if</strong> one can be provided without user
   mediation, or <code>null</code> if not.
 
@@ -1351,7 +1368,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
     <li>
       Let <var>credentials</var> be the result of executing
-      [[#gather-locallystoredcredentials]] on <var>origin</var>,
+      [[#gather-originboundcredentials]] on <var>origin</var>,
       <var>types</var>, and <var>options</var>.
     </li>
     <li>
@@ -1375,19 +1392,19 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   recommend that this algorithm always return <code>null</code> when the user
   has enabled private browsing.
 
-  <h4 id="request-locallystoredcredential-with-mediation">
-    Request a <code>LocallyStoredCredential</code> with user mediation
+  <h4 id="request-originboundcredential-with-mediation">
+    Request a <code>OriginBoundCredential</code> with user mediation
   </h4>
 
-  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
+  This algorithm accepts an <a>origin</a> (<var>origin</var>), a set of
   type names (<var>types</var>) and an {{CredentialRequestOptions}} dictionary
-  (<var>options</var>), and returns either a single {{LocallyStoredCredential}}
+  (<var>options</var>), and returns either a single {{OriginBoundCredential}}
   object, or <code>null</code> if none can be provided.
 
   <ol>
     <li>
       Let <var>credentials</var> be the result of executing
-      [[#gather-locallystoredcredentials]] on <var>origin</var>,
+      [[#gather-originboundcredentials]] on <var>origin</var>,
       <var>types</var>, and <var>options</var>.
     </li>
       This requirement only applies if we would show UI to the user.
@@ -1412,11 +1429,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
-  <h4 id="store-locallystoredcredential">
-    Store <code>LocallyStoredCredential</code>
+  <h4 id="store-originboundcredential">
+    Store <code>OriginBoundCredential</code>
   </h4>
 
-  This algorithm accepts a {{LocallyStoredCredential}} (<var>credential</var>),
+  This algorithm accepts a {{OriginBoundCredential}} (<var>credential</var>),
   and an <a>origin</a> (<var>origin</var>), and hands it to the internal
   credential manager for processing. It returns <var>credential</var> regardless
   of whether the user allows or disallows the credential to be persisted to the
@@ -1428,9 +1445,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       serialization</a> of <var>origin</var>.
     </li>
     <li>
-      If <var>credential</var>'s {{LocallyStoredCredential/iconURL}} is an
+      If <var>credential</var>'s {{OriginBoundCredential/iconURL}} is an
       <a><i lang="la">a priori</i> insecure URL</a>, set <var>credential</var>'s
-      {{LocallyStoredCredential/iconURL}} to the empty string.
+      {{OriginBoundCredential/iconURL}} to the empty string.
     </li>
     <li>
       Switch on <var>credential</var>'s primary interface, and execute the
@@ -1461,15 +1478,15 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                     </li>
                     <li>
                       Set <var>storedCredential</var>'s
-                      {{LocallyStoredCredential/name}} to the
+                      {{OriginBoundCredential/name}} to the
                       value of <var>credential</var>'s
-                      {{LocallyStoredCredential/name}}.
+                      {{OriginBoundCredential/name}}.
                     </li>
                     <li>
                       Set <var>storedCredential</var>'s
-                      {{LocallyStoredCredential/iconURL}} to
+                      {{OriginBoundCredential/iconURL}} to
                       the value of <var>credential</var>'s
-                      {{LocallyStoredCredential/iconURL}}.
+                      {{OriginBoundCredential/iconURL}}.
                     </li>
                   </ol>
                 </li>
@@ -1606,7 +1623,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <ol>
     <li>
       Let <var>origin A</var> be the value of <var>credential</var>'s
-      {{LocallyStoredCredential/[[origin]]}} slot.
+      {{OriginBoundCredential/[[origin]]}} slot.
     </li>
     <li>
       If <var>origin A</var> is <a>the same</a> as <var>origin B</var>, return
@@ -1790,7 +1807,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           <dl>
             <dt>{{FederatedCredential}}</dt>
             <dd>
-              When executing the [[#gather-locallystoredcredentials]] algorithm,
+              When executing the [[#gather-originboundcredentials]] algorithm,
               a user agent SHOULD populate the <a>chooser</a> with options based
               on the following heuristic:
 
@@ -2028,14 +2045,17 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   <h3 id="privacy-chooser-leakage">Chooser Leakage</h3>
 
   If a user agent displays images supplied by a website or federation (for
-  example, if a {{Credential}}'s {{LocallyStoredCredential/iconURL}} is displayed),
+  example, if a {{Credential}}'s {{OriginBoundCredential/iconURL}} is displayed),
   requests for these images MUST NOT be directly tied to instantiating the
   chooser in order to avoid leaking chooser usage. One option would be to fetch
   the images in the background when saving or updating a {{Credential}}, and to
   cache them for the lifetime of the {{Credential}}.
 
   Further, these images MUST be fetched with the <code>credentials</code> mode
-  set to "<code>omit</code>".
+  set to "<code>omit</code>", the <code>skip-service-worker flag</code> set, the
+  <code>client</code> set to <code>null</code>, the <code>initiator</code> set
+  to the empty string, and the <code>destination</code> set to
+  <code>subresource</code>.
 
   <h3 id="locally-stored-data">Locally Stored Data</h3>
 
@@ -2062,9 +2082,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
 <section>
   <h2 id="implementation-considerations">Implementation Considerations</h2>
 
-  <h3 id="implementation-for-authors">Website Authors</h3>
-
   <em>This section is non-normative.</em>
+
+  <h3 id="implementation-for-authors">Website Authors</h3>
 
   ISSUE(w3c/webappsec#290): Add some thoughts here about when and how the API
   should be used, especially with regard to {{suppressUI}}.
