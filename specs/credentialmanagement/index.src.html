@@ -27,6 +27,7 @@ spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
     urlPrefix: infrastructure.html
       text: resolve a url
       text: structured clone
+      text: internal structured cloning algorithm
     urlPrefix: forms.html
       text: autocomplete
     urlPrefix: browsers.html
@@ -519,9 +520,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   </dl>
 
   {{Credential}} objects implement {{Transferable}}, and MUST support the
-  the <a>structured clone</a> algorithm by defining a cloning mechanism.
-
-  ISSUE(w3c/webappsec#287): Define cloning algorithms.
+  the <a>structured clone</a> algorithm. Unless otherwise specified, the cloning
+  mechanism for all objects which implement {{Credential}} is defined in
+  [[#clone-credential]].
 
   <pre class="idl">
     dictionary LocallyStoredCredentialData : CredentialData {
@@ -1238,6 +1239,52 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
           When new credential types are defined in the future, they'll go here.
         </dd>
       </dl>
+    </li>
+  </ol>
+
+  <h4 id="clone-credential">
+    Clone <var>credential</var>
+  </h4>
+
+  Given a {{Credential}} (<var>input</var>), the following algorithm
+  defines the way in which a <a>structured clone</a> will be produced. This
+  algorithm plugs into the <a>internal structured cloning algorithm</a>
+  defined in [[HTML]]:
+
+  <ol>
+    <li>
+      Let <var>output</var> be a {{Credential}} object of the same type as
+      <var>input</var>'s <code>constructor</code>.
+    </li>
+    <li>
+      For each internal slot on <var>input</var>:
+
+      <ol>
+        <li>
+          Let <var>name</var> be the name of the slot.
+        </li>
+        <li>
+          Let <var>source value</var> be the slot's value.
+        </li>
+        <li>
+          Let <var>cloned value</var> be the result of invoking the <a>internal
+          structured cloning algorithm</a> with <var>source value</var> as the
+          "<code>input</code>" argument, and <var>memory</var> as the
+          "<code>memory</code>" argument.
+        </li>
+        <li>
+          If an exception results from the previous step, abort the overall
+          <a>structured clone</a> algorithm, and pass that exception through
+          to the caller.
+        </li>
+        <li>
+          Add a new slot to <var>output</var> having name <var>name</var> and
+          value <var>cloned value</var>.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Set <var>deep clone</var> to <code>own</code>.
     </li>
   </ol>
 
