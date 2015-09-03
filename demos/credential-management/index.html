@@ -1,0 +1,95 @@
+<style>
+  button {
+    display: block;
+  }
+
+  div {
+    display: none;
+  }
+</style>
+<button id="signin-button">Sign In</button>
+<button id="signout-button">Sign Out</button>
+<div>
+  <form id="signin">
+    <h2>Sign In!</h2>
+    <label for="username">Username:</label>
+    <input id="username" name="username" autocomplete="username"></input>
+    <label for="password">Password:</label>
+    <input id="password" name="password" autocomplete="current-password"></input>
+    <input type="submit">
+  </form>
+  <form id="signup">
+    <h2>Sign Up!</h2>
+    <label for="username-signup">Username:</label>
+    <input id="username-signup" name="username" autocomplete="username"></input>
+    <label for="password-signup">Password:</label>
+    <input id="password-signup" name="password" autocomplete="new-password"></input>
+    <input type="submit">
+  </form>
+</div>
+<script>
+  // Attempt to automatically sign a user in.
+  if (navigator.credentials) {
+    console.log("Automagical sign in?");
+    navigator.credentials.get({
+      'password': true,
+      'suppressUI': true
+    }).then(function (credential) {
+      if (credential) {
+        console.log("Got credentials! Signing in!");
+        document.querySelector('button').innerText = "Signed in!";
+        return;
+      }
+
+      console.log("No credentials. Sadness abounds.");
+    });
+  }
+
+  // When a user clicks on the sign in button, grab a credential, or render a sign in form.
+  document.querySelector('button').addEventListener('click', function () {
+    if (navigator.credentials) {
+      console.log("Manually-toggled credentials.get!");
+      navigator.credentials.get({ 'password': true }).then(function (credential) {
+        if (!credential) {
+          console.log("Still no credentials. Moar sadness.");
+          toggleSignInForm();
+          return;
+        }
+
+        console.log("Got credentials! Signing in!");
+        document.querySelector('button').innerText = "Signing in!";
+      });
+    } else {
+      toggleSignInForm();
+    }
+  });
+
+  function toggleSignInForm() {
+    document.querySelector('button').style.display = 'none';
+    document.querySelector('div').style.display = 'block';
+  }
+
+  // Capture "Sign Up" calls, store credentials.
+  document.querySelector('#signup').addEventListener('submit', function (e) {
+    if (navigator.credentials) {
+      console.log("Creating credentials!");
+      var c = new PasswordCredential(
+          document.querySelector('#username-signup').value,
+          document.querySelector('#password-signup').value
+      );
+      navigator.credentials.store(c).then(function () {
+        console.log("Stored credential!");
+      });
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Capture "sign out" calls.
+  document.querySelector('#signout-button').addEventListener('click', function () {
+    navigator.credentials.requireUserMediation();
+  });
+
+  [].forEach.call(document.querySelectorAll('input[type=submit]'), function(el) {
+  });
+</script>
