@@ -1102,12 +1102,30 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       </ol>
     </li>
     <li>
-      Let <var>type</var> be lowest common ancestor interface of the types
-      referenced in <var>types</var>.
+      Let <var>types</var> be an empty set.
+    </li>
+    <li>
+      For each <var>key</var> in <var>options</var>:
 
-      ISSUE(w3c/webappsec#289): This is terribly hand-wavey. The intent is
-      clear, but I need to do the work to walk through the list of DOMStrings
-      and convert them to interfaces and etc. Busywork for later.
+      <ol>
+        <li>
+          Let <var>interface</var> be the interface whose name is
+          <var>key</var>, or <code>null</code> if no interface's name
+          matches.
+        </li>
+        <li>
+          If <var>interface</var> is not <code>null</code>, insert
+          <var>interface</var> into <var>possible types</var>.
+        </li>
+      </ol>
+    </li>
+    <li>
+      Let <var>type</var> be the lowest common ancestor interface of the
+      interfaces contained in <var>types</var>.
+
+      Note: That is, given a set containing {{PasswordCredential}} and
+      {{FederatedCredential}}, <var>type</var> will be
+      {{OriginBoundCredential}}.
     </li>
     <li>
       Return a <code>Promise</code> rejected with <code>TypeMismatchError</code>
@@ -1123,7 +1141,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Switch on <var>type</var>, and execute the associated steps:
 
       <dl>
+        <dt>{{FederatedCredential}}</dt>
         <dt>{{OriginBoundCredential}}</dt>
+        <dt>{{PasswordCredential}}</dt>
         <dd>
           <ol>
             <li>
@@ -1331,7 +1351,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     Request a <code>OriginBoundCredential</code> <em>without</em> user mediation
   </h4>
 
-  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
+  This algorithm accepts an <a>origin</a> (<var>origin</var>), a set of
   type names (<var>types</var>) and an {{CredentialRequestOptions}} dictionary
   (<var>options</var>), and returns either a single {{OriginBoundCredential}}
   object <strong>if and only if</strong> one can be provided without user
@@ -1376,7 +1396,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     Request a <code>OriginBoundCredential</code> with user mediation
   </h4>
 
-  This algorithm accepts an <a>origin</a> (<var>origin</var>), a sequence of
+  This algorithm accepts an <a>origin</a> (<var>origin</var>), a set of
   type names (<var>types</var>) and an {{CredentialRequestOptions}} dictionary
   (<var>options</var>), and returns either a single {{OriginBoundCredential}}
   object, or <code>null</code> if none can be provided.
