@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Mixed Content</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-08-11">11 August 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-09-04">4 September 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -545,20 +545,13 @@ encrypted and authenticated document.</p>
      
 
 
-     <p>These resource types map to the following Fetch <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">request contexts</a>:
-    <code>audio</code>, <code>image</code>, <code>prefetch</code>, and
-    <code>video</code>. These contexts are <dfn data-dfn-type="dfn" data-noexport="" id="optionally_blockable-request-contexts">optionally-blockable request
-    contexts<a class="self-link" href="#optionally_blockable-request-contexts"></a></dfn>.</p>
-     
-
-
      <p class="note" role="note">Note: We further limit this category in <a href="#should-block-fetch">§5.3 Should fetching request be blocked as mixed content?</a> by
     force-failing any CORS-enabled request. This means that mixed content images
     loaded via <code>&lt;img crossorigin ...></code> will be blocked. This is
     a good example of the general principle that a category of content falls
     into this category <em>only</em> when it is too widely used to be blocked
-    outright. The Working Group intends to find more blockable subsets of an
-    otherwise <a data-link-type="dfn" href="#optionally_blockable-request-contexts">optionally-blockable request context</a>.</p>
+    outright. The Working Group intends to carve out more blockable subsets as
+    time goes on.</p>
      
   
     </section>
@@ -571,29 +564,24 @@ encrypted and authenticated document.</p>
 
 
      <p>Any resource or <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request">request</a> that isn’t <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> is
-    <dfn data-dfn-type="dfn" data-noexport="" id="blockable">blockable<a class="self-link" href="#blockable"></a></dfn>. Typical examples of this kind of content include scripts,
-    <a data-link-type="dfn" href="http://www.w3.org/TR/html5/infrastructure.html#plugin">plugin</a> data, data requested via <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/XMLHttpRequest/#interface-xmlhttprequest">XMLHttpRequest</a></code>, and so on. Every
-    <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context">request context</a> that is not <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a> is a
-    <dfn data-dfn-type="dfn" data-noexport="" id="blockable-request-context">blockable request context<a class="self-link" href="#blockable-request-context"></a></dfn>. This explicitly includes any contexts
-    defined after publication of this document.</p>
+    <dfn data-dfn-type="dfn" data-noexport="" id="blockable">blockable<a class="self-link" href="#blockable"></a></dfn>. Typical examples of this kind of content include
+    scripts, <a data-link-type="dfn" href="http://www.w3.org/TR/html5/infrastructure.html#plugin">plugin</a> data, data requested via <code class="idl"><a data-link-type="idl" href="http://www.w3.org/TR/XMLHttpRequest/#interface-xmlhttprequest">XMLHttpRequest</a></code>, and so
+    on.</p>
      
 
 
-     <p class="note" role="note">Note: The request contexts <code>form</code>, <code>hyperlink</code>, and
-    <code>location</code> might refer to <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>
-    <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#navigate">navigations</a>, which are not considered mixed
-    content. See the treatment of <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">request context frame type</a> in
+     <p class="note" role="note">Note: <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#navigation-request">Navigation requests</a> might target <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing
+    contexts</a>; these are not considered mixed content. See
     <a href="#should-block-fetch">§5.3 Should fetching request be blocked as mixed content?</a> for details.</p>
      
 
 
-     <p class="note" role="note">Note: The <code>plugin</code> request context is used for requests made on
-    behalf of a plugin. We categorize these requests as blockable, but recognize
-    that user agents aren’t always in a position to mediate these requests.
-    NPAPI plugins, for instance, often have direct network access, and can
-    generally bypass the user agent entirely. We recommend that plugin vendors
-    implement mixed content checking themselves to mitigate the risks outlined
-    in this document.</p>
+     <p class="note" role="note">Note: Note that requests made on behalf of a plugin are blockable. We
+    recognize, however, that user agents aren’t always in a position to mediate
+    these requests. NPAPI plugins, for instance, often have direct network
+    access, and can generally bypass the user agent entirely. We recommend that
+    plugin vendors implement mixed content checking themselves to mitigate the
+    risks outlined in this document.</p>
      
   
     </section>
@@ -957,7 +945,7 @@ directive-value = ""
      <ol>
       
       <li>
-        <var>request</var>’s <code>context</code> is <code>fetch</code>
+        <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-initiator">initiator</a> is <code>fetch</code>
 
 
        <p class="note" role="note">Note: When a request is copied (as in the <code>fetch(e.response)</code>
@@ -1024,92 +1012,133 @@ directive-value = ""
      <ol>
       
       <li>
-        Let <var>context</var> be <var>request</var>’s <code>context</code>.
-      
-      
-      
-      <li>
-        Let <var>frame type</var> be <var>request</var>’s <code>context frame
-        type</code>.
-      
-      
-      
-      <li>
-        Let <var>origin</var> be the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of <var>request</var>’s
-        <strong>URL</strong>.
-      
-      
-      
-      <li>
-        If <a href="#categorize-settings-object">§5.1 Does settings object restrict mixed content?</a> returns <code>Does Not Restrict
-        Mixed Content</code> when applied to <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a>,
-        return <strong>allowed</strong>.
-      
-      
-      
-      <li>
-        If the user agent has been instructed to allow <a data-link-type="dfn" href="#mixed-content">mixed content</a>
-        (as outlined in <a href="#requirements-user-controls">§7.4 User Controls</a>), return
-        <strong>allowed</strong>.
-      
-      
-      
-      <li>
-        If <var>request</var>’s <code>context frame type</code> is
-        <code>top-level</code>, return <strong>allowed</strong>.
-      
-      
-      
-      <li>
-        If <var>origin</var> is <a data-link-type="dfn" href="#a-priori-insecure-origin"><i lang="la">a priori</i> insecure</a>:
+        Return <strong>allowed</strong> if one or more of the following
+        conditions are met:
 
         
        <ol>
           
         <li>
-            If <var>request</var>’s <code>mode</code> is <code>CORS</code> or
-            <code>CORS-with-forced-preflight</code>, return
-            <strong>blocked</strong>.
+            <a href="#categorize-settings-object">§5.1 Does settings object restrict mixed content?</a> returns <code>Does Not Restrict
+            Mixed Content</code> when applied to <var>request</var>’s
+            <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a>.
           
         
           
         <li>
-            If <var>context</var> is <code>fetch</code>:
+            <var>request</var>’s <code>url</code>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> is
+            <a data-link-type="dfn" href="#potentially-secure-origin">potentially secure</a>.
+          
+        
+          
+        <li>
+            The user agent has been instructed to allow <a data-link-type="dfn" href="#mixed-content">mixed content</a>, as
+            described in <a href="#requirements-user-controls">§7.4 User Controls</a>).
+          
+        
+          
+        <li>
+            <var>request</var>’s <a data-link-type="dfn" href="http://dom.spec.whatwg.org/#concept-PI-target">target</a> is "<code>document</code>", and
+            <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a>’s <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#responsible-browsing-context">responsible browsing
+            context</a> has no <a data-link-type="dfn">parent browsing context</a>.
+
+
+         <p class="issue" id="issue-cb07f5b7"><a class="self-link" href="#issue-cb07f5b7"></a> Is this right, Anne?</p>
+         
+          
+        
+        
+       </ol>
+       
+      
+      
+      
+      <li>
+        Return <strong>blocked</strong> if one or more of the following
+        conditions are met:
+
+        
+       <ol>
+          
+        <li>
+            The user agent is configured to block <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a>
+            mixed content, as described in <a href="#requirements-user-controls">§7.4 User Controls</a>.
+          
+        
+          
+        <li>
+            <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a>’s <a data-link-type="dfn" href="#strict-mixed-content-checking-flag">strict mixed content
+            checking flag</a> is <code>true</code>.
+          
+        
+          
+        <li>
+            <var>request</var>’s <code>mode</code> is <code>CORS</code> or
+            <code>CORS-with-forced-preflight</code>.
+          
+        
+          
+        <li>
+            <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-initiator">initiator</a> is "<code>fetch</code>", and
+            <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-destination">destination</a> is "<code>subresource</code>", and either of the
+            following conditions are met:
 
             
          <ol>
               
           <li>
-                If <var>request</var> is <strong>not</strong> a <a data-link-type="dfn" href="#passthrough-request">passthrough
-                request</a>, return <strong>blocked</strong>.
+                <var>request</var> is <em>not</em> a <a data-link-type="dfn" href="#passthrough-request">passthrough
+                request</a>.
               
           
               
           <li>
                 If <var>request</var>’s <code>mode</code> is not
-                <code>no-cors</code>, return <strong>blocked</strong>.
+                <code>no-cors</code>.
               
           
             
          </ol>
          
           
+        
+        
+       </ol>
+       
+      
+      
+      
+      <li>
+        Return <strong>blocked</strong> <em>unless</em> one or more of the
+        following conditions are met:
+
+        
+       <ol>
+          
         <li>
-            Otherwise, if <var>context</var> is a <a data-link-type="dfn" href="#blockable-request-context">blockable request
-            context</a>, return <strong>blocked</strong>.
+            <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-initiator">initiator</a> is "<code>fetch</code>".
+
+
+         <p class="note" role="note">Note: We deal with the rejection case for <code>fetch</code> in the
+            previous step. See the bottom of this algorithm for a more detailed
+            explanation of why we need this special casing.</p>
+         
           
         
           
         <li>
-            If the user agent is configured to block <a data-link-type="dfn" href="#optionally_blockable">optionally-blockable</a>
-            mixed content, return <strong>blocked</strong>.
+            <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-type">type</a> is "<code>image</code>", and
+            <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-initiator">initiator</a> is not "<code>imageset</code>".
           
         
           
         <li>
-            If <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-client">client</a>’s <a data-link-type="dfn" href="#strict-mixed-content-checking-flag">strict mixed content
-            checking flag</a> is <code>true</code>, return
-            <strong>blocked</strong>.
+            <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-type">type</a> is "<code>video</code>".
+          
+        
+          
+        <li>
+            <var>request</var>’s <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-request-type">type</a> is "<code>audio</code>".
           
         
         
@@ -1237,7 +1266,7 @@ directive-value = ""
          <ol>
               
           <li>
-                If <var>context</var> is a <a data-link-type="dfn" href="#blockable-request-context">blockable request
+                If <var>context</var> is a <a data-link-type="dfn">blockable request
                 context</a>, return <strong>blocked</strong>.
               
           
@@ -1704,7 +1733,6 @@ directive-value = ""
    <li><a href="#a-priori-insecure-origin">a priori insecure origin</a><span>, in §2</span>
    <li><a href="#a-priori-insecure-url">a priori insecure URL</a><span>, in §2</span>
    <li><a href="#blockable">blockable</a><span>, in §3.2</span>
-   <li><a href="#blockable-request-context">blockable request context</a><span>, in §3.2</span>
    <li><a href="#block_all_mixed_content">block-all-mixed-content</a><span>, in §4.2</span>
    <li><a href="#conformant-server">conformant server</a><span>, in §Unnumbered section</span>
    <li><a href="#conformant-user-agent">conformant user agent</a><span>, in §Unnumbered section</span>
@@ -1715,8 +1743,6 @@ directive-value = ""
    <li><a href="#mixed-content">mixed</a><span>, in §2</span>
    <li><a href="#mixed-content">mixed content</a><span>, in §2</span>
    <li><a href="#optionally_blockable">optionally-blockable</a><span>, in §3.1</span>
-   <li><a href="#optionally_blockable-request-contexts">optionally-blockable request
-    contexts</a><span>, in §3.1</span>
    <li><a href="#passthrough-request">passthrough request</a><span>, in §5.2</span>
    <li><a href="#potentially-secure-origin">potentially secure</a><span>, in §2</span>
    <li><a href="#potentially-secure-origin">potentially secure origin</a><span>, in §2</span>
@@ -1733,12 +1759,15 @@ directive-value = ""
    <li><a data-link-type="biblio" href="#biblio-fetch">[FETCH]</a> defines the following terms:
     <ul>
      <li><a href="https://fetch.spec.whatwg.org/#concept-request-client">client</a>
+     <li><a href="https://fetch.spec.whatwg.org/#concept-request-destination">destination</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-response-https-state">https state</a>
+     <li><a href="https://fetch.spec.whatwg.org/#concept-request-initiator">initiator</a>
+     <li><a href="https://fetch.spec.whatwg.org/#navigation-request">navigation request</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-filtered-response-opaque">opaque filtered response</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-request">request</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-request-context">request context</a>
-     <li><a href="https://fetch.spec.whatwg.org/#concept-request-context-frame-type">request context frame type</a>
      <li><a href="https://fetch.spec.whatwg.org/#concept-response">response</a>
+     <li><a href="https://fetch.spec.whatwg.org/#concept-request-type">type</a>
     </ul>
    <li><a data-link-type="biblio" href="#biblio-html5">[html5]</a> defines the following terms:
     <ul>
@@ -1752,11 +1781,11 @@ directive-value = ""
      <li><a href="http://www.w3.org/TR/html5/embedded-content-0.html#the-img-element">img</a>
      <li><a href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>
      <li><a href="http://www.w3.org/TR/html5/document-metadata.html#the-meta-element">meta</a>
-     <li><a href="http://www.w3.org/TR/html5/browsers.html#navigate">navigated</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#nested-browsing-context">nested browsing context</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#browsing-context-nested-through">nested through</a>
      <li><a href="http://www.w3.org/TR/html5/infrastructure.html#plugin">plugin</a>
      <li><a href="http://www.w3.org/TR/html5/webappapis.html#relevant-settings-object-for-a-script">relevant settings object for a script</a>
+     <li><a href="http://www.w3.org/TR/html5/webappapis.html#responsible-browsing-context">responsible browsing context</a>
      <li><a href="http://www.w3.org/TR/html5/webappapis.html#responsible-document">responsible document</a>
      <li><a href="http://www.w3.org/TR/html5/embedded-content-0.html#the-source-element">source</a>
      <li><a href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing context</a>
@@ -1769,6 +1798,10 @@ directive-value = ""
    <li><a data-link-type="biblio" href="#biblio-rfc6455">[RFC6455]</a> defines the following terms:
     <ul>
      <li><a href="https://tools.ietf.org/html/rfc6455#section-7.1.7">fail the websocket connection</a>
+    </ul>
+   <li><a data-link-type="biblio" href="#biblio-dom-ls">[dom-ls]</a> defines the following terms:
+    <ul>
+     <li><a href="http://dom.spec.whatwg.org/#concept-PI-target">target</a>
     </ul></ul>
   <h2 class="no-num heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
@@ -1783,6 +1816,8 @@ directive-value = ""
    <dd>Ian Fette; Alexey Melnikov. <a href="http://www.ietf.org/rfc/rfc6455.txt">The WebSocket Protocol</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6455.txt">http://www.ietf.org/rfc/rfc6455.txt</a>
    <dt id="biblio-rfc6797"><a class="self-link" href="#biblio-rfc6797"></a>[RFC6797]
    <dd>Jeff Hodges; Collin Jackson; Adam Barth. <a href="http://www.ietf.org/rfc/rfc6797.txt">HTTP Strict Transport Security (HSTS)</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6797.txt">http://www.ietf.org/rfc/rfc6797.txt</a>
+   <dt id="biblio-dom-ls"><a class="self-link" href="#biblio-dom-ls"></a>[DOM-LS]
+   <dd>Document Object Model URL: <a href="http://dom.spec.whatwg.org/">http://dom.spec.whatwg.org/</a>
    <dt id="biblio-html5"><a class="self-link" href="#biblio-html5"></a>[HTML5]
    <dd>Ian Hickson; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
@@ -1803,5 +1838,6 @@ directive-value = ""
    <dd>Tim Bray; et al. <a href="http://www.w3.org/TR/xml">Extensible Markup Language (XML) 1.0 (Fifth Edition)</a>. 26 November 2008. REC. URL: <a href="http://www.w3.org/TR/xml">http://www.w3.org/TR/xml</a></dl>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
+   <div class="issue"> Is this right, Anne?<a href="#issue-cb07f5b7"> ↵ </a></div>
    <div class="issue"> This is super hand-wavey.<a href="#issue-3280c348"> ↵ </a></div></div></body>
 </html>
