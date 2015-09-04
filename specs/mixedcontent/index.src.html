@@ -71,6 +71,9 @@ type: dfn
     text: response; url: concept-response
     text: network error; url: concept-network-error
     text: opaque filtered response; url: concept-filtered-response-opaque
+    text: initiator; url: concept-request-initiator
+    text: type; url: concept-request-type
+    text: destination; url: concept-request-destination
     url: concept-request-client
       text: request client
       text: client
@@ -705,6 +708,26 @@ type: element-attr
 
     <ol>
       <li>
+        Return <strong>allowed</strong> if any of the following conditions are
+        met:
+
+        <ol>
+          <li>
+            [[#categorize-settings-object]] returns <code>Does Not Restrict
+            Mixed Content</code> when applied to <var>request</var>'s
+            <a>client</a>.
+          </li>
+          <li>
+            <var>request</var>'s <code>url</code>'s <a>origin</a> is
+            <a>potentially secure</a>.
+          </li>
+          <li>
+            The user agent has been instructed to allow <a>mixed content</a>
+            (as outlined in [[#requirements-user-controls]]).
+          </li>
+        </ol>
+      </li>
+      <li>
         Let <var>context</var> be <var>request</var>'s <code>context</code>.
       </li>
       <li>
@@ -712,59 +735,41 @@ type: element-attr
         type</code>.
       </li>
       <li>
-        Let <var>origin</var> be the <a>origin</a> of <var>request</var>'s
-        <strong>URL</strong>.
+        If <var>request</var>'s <code>mode</code> is <code>CORS</code> or
+        <code>CORS-with-forced-preflight</code>, return
+        <strong>blocked</strong>.
       </li>
       <li>
-        If [[#categorize-settings-object]] returns <code>Does Not Restrict
-        Mixed Content</code> when applied to <var>request</var>'s <a>client</a>,
-        return <strong>allowed</strong>.
-      </li>
-      <li>
-        If the user agent has been instructed to allow <a>mixed content</a>
-        (as outlined in [[#requirements-user-controls]]), return
-        <strong>allowed</strong>.
-      </li>
-      <li>
-        If <var>request</var>'s <code>context frame type</code> is
-        <code>top-level</code>, return <strong>allowed</strong>.
-      </li>
-      <li>
-        If <var>origin</var> is <a><i lang="la">a priori</i> insecure</a>:
+        If <var>request</var>'s <a>initiator</a> is "<code>fetch</code>", and
+        <a>destination</a> is "<code>subresource</code>":
 
         <ol>
           <li>
-            If <var>request</var>'s <code>mode</code> is <code>CORS</code> or
-            <code>CORS-with-forced-preflight</code>, return
-            <strong>blocked</strong>.
+            If <var>request</var> is <strong>not</strong> a <a>passthrough
+            request</a>, return <strong>blocked</strong>.
           </li>
           <li>
-            If <var>context</var> is <code>fetch</code>:
-
-            <ol>
-              <li>
-                If <var>request</var> is <strong>not</strong> a <a>passthrough
-                request</a>, return <strong>blocked</strong>.
-              </li>
-              <li>
-                If <var>request</var>'s <code>mode</code> is not
-                <code>no-cors</code>, return <strong>blocked</strong>.
-              </li>
-            </ol>
-          <li>
-            Otherwise, if <var>context</var> is a <a>blockable request
-            context</a>, return <strong>blocked</strong>.
-          </li>
-          <li>
-            If the user agent is configured to block <a>optionally-blockable</a>
-            mixed content, return <strong>blocked</strong>.
-          </li>
-          <li>
-            If <var>request</var>'s <a>client</a>'s <a>strict mixed content
-            checking flag</a> is <code>true</code>, return
-            <strong>blocked</strong>.
+            If <var>request</var>'s <code>mode</code> is not
+            <code>no-cors</code>, return <strong>blocked</strong>.
           </li>
         </ol>
+      <li>
+        Otherwise, return <strong>blocked</strong> unless one or more of the
+        following conditions are met:
+
+        <ol>
+          <li>
+            <var>request</var>'s <a>
+        </ol>
+      </li>
+      <li>
+        If the user agent is configured to block <a>optionally-blockable</a>
+        mixed content, return <strong>blocked</strong>.
+      </li>
+      <li>
+        If <var>request</var>'s <a>client</a>'s <a>strict mixed content
+        checking flag</a> is <code>true</code>, return
+        <strong>blocked</strong>.
       </li>
       <li>
         Return <strong>allowed</strong>.
