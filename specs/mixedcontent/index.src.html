@@ -722,7 +722,8 @@ type: element-attr
             <var>request</var>'s <a>client</a>'s <a>responsible browsing
             context</a> has no <a>parent browsing context</a>.
 
-            ISSUE: Is this right, Anne?
+            ISSUE: This doesn't yet work correctly for content inside an
+            <{iframe}> or <{frame}>.
           </li>
         </ol>
       </li>
@@ -810,76 +811,71 @@ type: element-attr
 
     <ol>
       <li>
-        If [[#categorize-settings-object]] returns <code>Does Not Restrict
-        Mixed Content</code> when applied to <var>request</var>'s <a>client</a>,
-        return <strong>allowed</strong>.
-      </li>
-      <li>
-        If the user agent has been instructed to allow <a>mixed content</a>
-        (as outlined in [[#requirements-user-controls]]), return
-        <strong>allowed</strong>.
-      </li>
-      <li>
-        Let <var>context</var> be the <a>request context</a> of
-        <var>request</var>.
-      </li>
-      <li>
-        If <var>response</var>'s <a>HTTPS state</a> is not
-        <code>authenticated</code>:
+        Return <strong>allowed</strong> if one or more of the following
+        conditions are met:
 
         <ol>
           <li>
-            If <var>context</var> is <code>fetch</code>:
-
-            <ol>
-              <li>
-                If <var>request</var> is <strong>not</strong> a <a>passthrough
-                request</a>, return <strong>blocked</strong>.
-              </li>
-              <li>
-                If <var>response</var> is <strong>not</strong> an <a>opaque
-                filtered response</a>, return <strong>blocked</strong>.
-              </li>
-              <li>
-                If the user agent is configured to block
-                <a>optionally-blockable</a> mixed content, return
-                <strong>blocked</strong>.
-              </li>
-              <li>
-                If <var>request</var>'s <a>client</a>'s <a>strict mixed content
-                checking flag</a> is <code>true</code>, return
-                <strong>blocked</strong>.
-              </li>
-            </ol>
+            [[#categorize-settings-object]] returns <code>Does Not Restrict
+            Mixed Content</code> when applied to <var>request</var>'s
+            <a>client</a>.
           </li>
           <li>
-            Otherwise:
+            <var>response</var>'s <a>HTTPS state</a> is
+            <code>authenticated</code>.
+          </li>
+          <li>
+            The user agent has been instructed to allow <a>mixed content</a>, as
+            described in [[#requirements-user-controls]]).
+          </li>
+          <li>
+            <var>request</var>'s <a>target</a> is "<code>document</code>", and
+            <var>request</var>'s <a>client</a>'s <a>responsible browsing
+            context</a> has no <a>parent browsing context</a>.
 
-            <ol>
-              <li>
-                If <var>context</var> is a blockable request
-                context, return <strong>blocked</strong>.
-              </li>
-              <li>
-                If the user agent is configured to block
-                <a>optionally-blockable</a> mixed content, return
-                <strong>blocked</strong>.
-              </li>
-              <li>
-                If <var>request</var>'s <a>client</a>'s <a>strict mixed content
-                checking flag</a> is <code>true</code>, return
-                <strong>blocked</strong>.
-              </li>
-            </ol>
+            ISSUE: This doesn't yet work correctly for content inside an
+            <{iframe}> or <{frame}>.
           </li>
         </ol>
-
-        Note: This covers both cases in which unauthenticated resources are
-        returned (by a Service Worker, for example), as well as cases in
-        which the TLS handshake succeeds, but the user agent chooses to hold
-        it to a higher standard.
       </li>
-      <li>Return <strong>allowed</strong>.</li>
+      <li>
+        Return <strong>blocked</strong> if one or more of the following
+        conditions are met:
+
+        <ol>
+          <li>
+            The user agent is configured to block <a>optionally-blockable</a>
+            mixed content, as described in [[#requirements-user-controls]].
+          </li>
+          <li>
+            <var>request</var>'s <a>client</a>'s <a>strict mixed content
+            checking flag</a> is <code>true</code>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <strong>allowed</strong> if <var>response</var> is an <a>opaque
+        filtered response</a> and one or more of the following conditions are
+        met:
+
+        <ol>
+          <li>
+            <var>request</var>'s <a>initiator</a> is "<code>fetch</code>", and
+            <var>request</var> is a <a>passthrough request</a>.
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>image</code>", and
+            <a>initiator</a> is not "<code>imageset</code>".
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>video</code>".
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>audio</code>".
+          </li>
+        </ol>
+      </li>
+      <li>Return <strong>blocked</strong>.</li>
     </ol>
   </section>
 </section>
