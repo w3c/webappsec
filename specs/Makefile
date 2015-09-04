@@ -2,6 +2,7 @@ all: clean content-security-policy/index.html mixedcontent/index.html referrer-p
 
 clean:
 	rm -rf ./content-security-policy/index.html
+	rm -rf ./cowl/index.html
 	rm -rf ./credentialmanagement/index.html
 	rm -rf ./mixedcontent/index.html
 	rm -rf ./referrer-policy/index.html
@@ -9,6 +10,7 @@ clean:
 CLEAR: clear-site-data/index.html
 CLEAR-FPWD: clear-site-data/published/2015-07-FPWD.html
 CREDENTIAL: credentialmanagement/index.html
+COWL: cowl/index.html
 CREDENTIAL-FPWD: credentialmanagement/published/2015-04-FPWD.html
 CSP-PINNING: csp-pinning/index.html
 CSP-PINNING-FPWD: csp-pinning/published/2015-02-FPWD.html
@@ -45,6 +47,9 @@ CSP2/published/2015-08-PR.html: CSP2/index.src.html
 
 content-security-policy/index.html: content-security-policy/index.src.html biblio.json
 	bikeshed -f spec ./content-security-policy/index.src.html
+
+cowl/index.html: cowl/index.src.html biblio.json
+	bikeshed -f spec ./cowl/index.src.html
 
 credentialmanagement/index.html: credentialmanagement/index.src.html biblio.json
 	bikeshed -f spec ./credentialmanagement/index.src.html

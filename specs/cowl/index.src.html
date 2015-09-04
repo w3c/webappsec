@@ -1,0 +1,2935 @@
+<h1>Confinement with Origin Web Labels</h1>
+<pre class="metadata">
+Status: ED
+Group: WebAppSec
+ED: https://w3c.github.io/webappsec/specs/cowl/
+Shortname: COWL
+Level: 1
+Editor: Deian Stefan, Stanford University, deian@cs.stanford.edu
+Abstract:
+  This specification defines an API for specifying privacy and
+  integrity policies on data, in the form of origin labels, and a
+  mechanism for confining code according to such policies.  This
+  allows Web application authors and server operators to shared data
+  with untrusted&mdash;buggy but not malicious&mdash;code (e.g., in a mashup
+  scenario) yet impose restrictions on how the code can share the data
+  further.
+Indent: 2
+</pre>
+<pre class="anchors">
+spec: CORS; urlPrefix: http://www.w3.org/TR/cors/
+  type: dfn
+    text: CORS
+    text: Access-Control-Allow-Origin; url: access-control-allow-origin-response-header
+spec: WEBMESSAGING; urlPrefix: http://www.w3.org/TR/webmessaging/
+  type: method
+    text: postMessage(); url: dom-window-postmessage
+  type: dfn
+    text: posting messages; url: posting-messages
+    text: owner; url: concept-port-owner
+    text: Message Port; url: messageport
+    text: MessagePort postMessage(); url: dom-messageport-postmessage
+    text: cross-document messaging; url: web-messaging
+spec: WORKERS; urlPrefix: http://www.w3.org/TR/workers/
+  type: dfn
+    text: Worker
+    text: Web Worker
+spec: CSP2; urlPrefix: https://www.w3.org/TR/CSP2/
+  type: dfn
+    text: content-security-policy
+  type: dfn
+    text: host-source; url: source-list-syntax
+spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
+  type: element-attr
+    urlPrefix: embedded-content-0.html
+      text: sandbox; for: iframe; url: attr-iframe-sandbox
+      text: contentDocument; for: iframe; url: dom-iframe-contentdocument
+  type: dfn
+    urlPrefix: webappapis.html
+      text: environment settings object; url: settings-object
+      text: incumbent settings object; url: incumbent-settings-object
+  type: dfn
+    urlPrefix: embedded-content-0.html
+      text: iframe; url: the-iframe-element
+    urlPrefix: browsers.html
+      text: browsing context; url: windows
+      text: active sandboxing flag set; url: active-sandboxing-flag-set
+      text: sandboxing flag set; url: sandboxing-flag-set
+      text: forced sandboxing flag set; url: forced-sandboxing-flag-set
+      text: sandboxed plugins browsing context flag;url: sandboxed-plugins-browsing-context-flag
+      text: sandboxed document.domain browsing context flag;url: sandboxed-document.domain-browsing-context-flag
+      text: sandboxed origin browsing context flag;url: sandboxed-origin-browsing-context-flag
+      text: sandboxed navigation browsing context flag;url: sandboxed-navigation-browsing-context-flag
+      text: script from reading from or writing to the document.cookie IDL attribute; url: sandboxCookies
+      text: navigating; url: navigate
+    urlPrefix: infrastructure.html
+      text: structured clone; url: structured-clone
+      text: structurally cloned; url: structured-clone
+      text: structurally clonable; url: structured-clone
+      text: internal structured cloning algorithm; url: internal-structured-cloning-algorithm
+      text: strictly split a string
+      text: skip whitespace
+      text: collect a sequence of characters
+      text: space characters
+  type: interface
+    urlPrefix: browsers.html
+      text: Window; url: window
+    urlPrefix: dom.html
+      text: Document; url: the-document-object
+spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
+  type: dfn
+    text: origin; url: section-3.2
+    text: globally unique identifier; url: section-2.3
+spec: URL; urlPrefix: http://www.w3.org/TR/url/
+  type: interface
+    text: URL; url: concept-url
+  type: dfn
+    text: scheme; url: concept-url-scheme
+  type: attribute
+    text: host; for: URL; url: concept-url-host
+    text: path; for: URL; url: concept-url-path
+    text: port; for: URL; url: concept-url-port
+    text: scheme; for: URL; url: concept-url-scheme
+spec: RFC7159; urlPrefix: https://tools.ietf.org/html/rfc4627
+  type: dfn
+    text: JSON; url: section-2
+    text: JSON object; url: section-2.2
+    text: JSON array; url: section-2.3
+    text: JSON stringification; url: section-2
+spec: XHR; urlPrefix: https://xhr.spec.whatwg.org/
+  type: dfn
+    text: XMLHttpRequest
+    text: final MIME type; url: final-mime-type
+    text: author request headers; url: author-request-headers
+  type: attribute
+    text: responseType; url: dom-xmlhttprequest-responsetype
+    text: response; url: dom-xmlhttprequest-responsetype
+  type: interface
+    text: XMLHttpRequest; url: xmlhttprequest
+  type: enum
+    text: XMLHttpRequestResponseType; url: xmlhttprequestresponsetype
+  type: method
+    text: send(); url: the-send()-method
+    text: open(); url: the-open()-method
+spec: FETCH; urlPrefix: https://fetch.spec.whatwg.org/
+  type: dfn
+    text: fetching
+    text: main fetch; url: main-fetch
+    text: request; url: concept-request
+    text: response; url: concept-response
+    text: body; url: concept-response-body
+    text: client; url: concept-request-client
+    text: type; url: concept-request-type
+    text: destination; url: concept-request-destination
+    text: header; url: concept-header
+    text: name; url: concept-header-name
+    text: value; url: concept-header-value
+    text: header list; url: concept-header-list
+    text: network error; url: concept-network-error
+    text: extracting a MIME type; url: concept-header-extract-mime-type
+    text: navigation request; url: navigation-request
+    text: context frame type; url: concept-request-context-frame-type
+spec: ENCODING; urlPrefix: https://encoding.spec.whatwg.org/
+  type: dfn
+    text: utf-8 decode; url: utf-8-decode
+spec: WEBSTORAGE; urlPrefix: http://www.w3.org/TR/webstorage/
+  type: attribute
+    text: localStorage; url: the-localstorage-attribute
+spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
+  type: dfn
+    text: ALPHA; url: appendix-B.1
+    text: DIGIT; url: appendix-B.1
+    text: WSP; url: appendix-B.1
+    text: VCHAR; url: appendix-B.1
+spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
+  type: dfn
+    text: serialized; url: dfn-concept-fragment-serializing-algorithm
+
+</pre>
+
+<!-- BIBLIOGRAPHY -->
+<pre class="biblio">
+{
+  "DCLabels": {
+    "authors": ["Deian Stefan", "Alejandro Russo", "David Mazieres", "John C. Mitchell"],
+    "title": "Disjunction Category Labels",
+    "href": "http://www.scs.stanford.edu/~deian/pubs/stefan:2011:dclabels.pdf",
+    "publisher": "Springer Berlin Heidelberg"
+  },
+  "COWL-OSDI": {
+    "authors": ["Deian Stefan", "Edward Z. Yang", "Petr Marchencko", "Alejandro Russo", "David Herman", "Brad Karp", "David Mazieres", "John C. Mitchell"],
+    "title": "Protecting Users by Confining JavaScript with COWL",
+    "href":"https://www.usenix.org/system/files/conference/osdi14/osdi14-paper-stefan.pdf",
+    "publisher": "USENIX"
+  },
+  "URL": {
+    "authors": [ "Anne van Kesteren", "Sam Ruby" ],
+    "title": "URL",
+    "href": "http://www.w3.org/TR/url",
+    "status": "WD",
+    "publisher": "W3C"
+  },
+  "WEBIDL2": {
+    "authors": [ "Cameron McCormack", "Boris Zbarsky" ],
+    "title": "Web IDL (Second Edition)",
+    "href": "https://heycam.github.io/webidl/",
+    "status": "ED",
+    "publisher": "W3C"
+  }
+}
+</pre>
+
+<!-- Big Text: intro -->
+<section>
+  <h2 id="intro">Introduction</h2>
+
+  <em>This section is not normative.</em>
+
+  Modern Web applications are conglomerations of JavaScript written by
+  multiple authors. Authors routinely incorporate third-party scripts
+  into their applications and share user data with third-party
+  services (e.g., as part of a <em>mashup</em>).  Unfortunately, in
+  the existing model, the user's data confidentiality and integrity is
+  put at risk when one incorporates untrusted third-party code or
+  shares data with untrusted third-party services.
+
+  Mechanisms such as CORS and CSP can be used to mitigate these risks
+  by giving authors control over whom they share data with. But, once
+  data is shared, these mechanisms do not impose any restrictions on
+  how the code that was granted access can further disseminate the
+  data.
+
+  This document specifies an extension to the current model called
+  Confinement with Origin Web Labels (COWL). COWL provides authors
+  with APIs for specifying access control policies on data, including
+  content, in terms of <a>origin labels</a>.  These policies are
+  enforced in a mandatory fashion, transitively, even once code has
+  access to the data.  For example, with COWL, the author of
+  <code>https://example.com</code> can specify that a password is
+  confidential to <code>https://example.com</code> (and thus should
+  only be disclosed to <code>https://example.com</code>) before
+  sharing it with a third-party password strength checking service. In
+  turn, COWL ensures that the third-party service, which necessarily
+  computes on the sensitive password, is confined and respects the
+  policy on the password: COWL disallows it from disclosing the
+  password to any <a>origin</a> other than
+  <code>https://example.com</code>.
+
+  COWL enforces such policies by confining code at the
+  <a>context</a>-level, according to the sensitivity (i.e., the label)
+  of the data the code has observed. To reap the greatest benefits of
+  COWL, authors will need to compartmentalize applications into
+  multiple contexts (e.g., <a>iframes</a>).
+
+  In the existing model, any page served from an origin has the
+  ambient, implicit authority of that origin.  This documents
+  generalizes this notion of authority and gives authors explicit
+  control over it with <a>privileges</a>.  For example, by default, a
+  page whose origin is <code>https://example.com</code> has the
+  privilege for <code>https://example.com</code>. This gives the page
+  the authority to arbitrarily disseminate data sensitive to
+  <code>https://example.com</code>; to be backwards-compatible,
+  the page is not confined when reading data sensitive to
+  <code>https://example.com</code>.  However, COWL allows the author
+  to run the page with "weaker" <a>delegated privileges</a> (e.g., one
+  corresponding the current user at <code>https://example.com</code>)
+  or to drop the privilege altogether.
+
+  COWL is intended to be used as a defense-in-depth mechanism that can
+  restrict how untrusted&mdash;buggy but not malicious&mdash;code
+  sensitive data. Given the complexities of browser implementations
+  and presence of covert channels, malicious code may be able to
+  exfiltrate data. Authors should still use discretionary access
+  control mechanisms, such as CSP and CORS, to restrict access to the
+  data in the first place.
+
+  <section>
+  <h3 id="goals">Goals</h3>
+
+  The goal of COWL is to provide authors with a means for protecting
+  the confidentiality and integrity of data that is shared with
+  untrusted, whether third-party or their own, code.  Existing
+  mechanisms (e.g.,
+  CORS'sk<a><code>Access-Control-Allow-Origin</code></a> header and
+  the <a>postMessage()</a> <code>targetOrigin</code> argument) provide
+  a way for restricting which <a>origins</a> may access the shared data.
+  But, once content has access to data it can usually disseminate it
+  without restrictions.  While CSP can be used to confine code, i.e.,
+  restrict how confidential data is disseminated, setting a correct
+  CSP policy (as to confine code) is difficult and limited to content
+  the author has control over. Indeed, sharing confidential data in
+  the existing model almost always requires the sender to trust the
+  receiver not to leak the data, accidentally or otherwise.  COWL
+  provides a defense-in-depth option for protecting data
+  confidentiality and integrity.  In particular, with COWL:
+
+  1. Authors should be able to specify confidentiality and integrity
+     policies on data in terms of origin labels: the origins to whom the
+     data is confidential and the origins that endorse the data.  This
+     allows authors to share sensitive data with third-party content and
+     impose restrictions on the origins with which it can communicate
+     once it inspects the sensitive data. Dually, it allows authors to
+     share data via intermediate content while retaining its integrity.
+
+  2. Authors should be able to run code with <em>least privilege</em>
+     by restricting the origins the code can communicate with and thus
+     how it can disseminate sensitive data.
+
+  3. Authors should be able to <em>privilege separate</em>
+     applications by compartmentalizing them into separate contexts that
+     have <a>delegated privileges</a>.
+
+  </section>
+
+  <section>
+  <h3 id="examples">Use Cases/Examples</h3>
+  <h4 id="examples-checker">Confining untrusted third-party services</h4>
+
+  An author wishes to use a service, loaded in the form of an iframe,
+  without trusting it (or its dependencies) to not leak her
+  sensitive data. To protect the data, the author associates a
+  confidentiality <a>label</a> with the data, specifying the origins
+  allowed to read the data.  The author then shares the newly created
+  <a>labeled object</a> with the untrusted code.  In turn, COWL
+  confines the untrusted code once it inspects the sensitive data, as
+  to ensure that it can only communicate according to the
+  author-specified policy (the label).
+
+  <div class="example">
+    The author of <code>https://example.com</code>
+    wishes to use a third-party password strength checker provided by
+    <code>https://untrusted.com</code>.  To protect the
+    confidentiality of the password, the
+    <code>https://example.com</code> application can use COWL to
+    associate a confidentiality policy, in the form of a <a>label</a>,
+    with the password before sending it to the untrusted service:
+
+    <pre><code>
+    // Create new policy using <a interface>Label</a>s that specifies that the password is sensitive
+    // to https://example.com and should only be disclosed to this origin:
+    var policy = new <a interface>Label</a>(window.location.origin);
+
+    // Associate the label with the password:
+    var labeledPassword = new <a interface>LabeledObject</a>(password, {confidentiality: policy});
+
+    // Send the labeled password to the checker iframe:
+    checker.postMessage(labeledPassword, "https://untrusted.com");
+
+    // Register listener to receive a response from checker, etc.
+    </code></pre>
+
+    Once the checker inspects the <a>protected object</a>, i.e., the
+    password, COWL limits the iframe to communicating with origins
+    that preserve the password's confidentiality (in this case,
+    <code>https://example.com</code>).  This policy is
+    enforced mandatorily, even if the
+    <code>https://untrusted.com</code> iframe sends the password to
+    yet another iframe.
+
+    Note, until the checker actually inspects the labeled password, it
+    can freely communicate with any origins, e.g., with
+    <code>https://untrusted.com</code>.  This is important since the
+    checker may need to fetch resources (e.g., regular expressions) to
+    check the password strength.  This is also safe&mdash;the checker has
+    not inspected the sensitive password, and thus need not be
+    confined.
+  </div>
+
+  Other use cases in this category include password managers and
+  encrypted document editors, for example, where an
+  encryption/decryption layer and a storage layer are provided by
+  distrusting, but not malicious, services.  The academic paper on
+  COWL describes these use cases in detail [[COWL-OSDI]].
+
+  <h4 id="examples-mashup">Sharing data with third-party mashups</h4>
+
+  A server operator wishes to provide third-party mashups access to
+  user data. In addition to using CORS response headers to restrict the
+  <a>origins</a> that can access the data [[!CORS]], the operator
+  wishes to restrict how the data is further disseminated by these
+  origins. To do so, the operator sends a response header
+  field named <a href="#response-header"><code>Sec-COWL</code></a>
+  (described in [[#response-header]]) whose value contains the
+  sensitivity of the data in the form of a serialized confidentiality
+  <a>label</a>.  In turn, COWL enforces the label restrictions on the
+  third-party code.
+
+  <div class="example">
+    The server operator of <code>https://provider.com</code> uses a
+    CORS response header to grant <code>https://mashup.com</code>
+    access to a resource. The operator also sets a COWL header to
+    specify that the resource is confidential to
+    <code>https://provider.com</code> and should not be disseminated
+    arbitrarily:
+
+    <pre><code>
+     <a>Access-Control-Allow-Origin</a>: https://mashup.com
+     <a href="#response-header">Sec-COWL</a>: <a>data-confidentiality</a> [ ["https://provider.com"] ]
+    </code></pre>
+
+    COWL only allows a <code>https://mashup.com</code> context to read
+    the sensitive response if the label restrictions of the response
+    are respected, i.e., if the code can only communicate with
+    <code>https://provider.com</code>.
+
+    Note, COWL only allows the code to inspect the response if the
+    <a>context labels</a>, which dictate the context's ability to
+    communicate, are more
+    restricting than the labels of the response. A more permissive
+    approach, which does not require the context give up its ability
+    to communicate arbitrarily is to use <a>labeled JSON response</a>.
+    The <a href="#mashup-example-xhr">mashup XHR example</a> shows how
+    authors can accomplish this.
+  </div>
+
+  <h4 id="examples-isolation">Content isolation via privilege separation</h4>
+
+  A server operator wishes to isolate content (e.g., of different
+  users) while serving it from a single physical <a>origin</a>.  The
+  operator can leverage <a>privileges</a> to ensure that content of
+  one part of the site has different authority from another and,
+  importantly, does not have authority of the physical origin.
+  Concretely, when serving content, the operator can set the
+  content's <a>context privilege</a> to a weaker, <a>delegated
+  privilege</a>. This ensures that the content are privilege
+  separated.
+
+  <div class="example">
+    Suppose <code>https://university.edu</code> wished to isolate
+    different parts of their site according to users. The server
+    operator can weaken the privilege of a page when serving user
+    content by providing a response header field named
+    <a href="#response-header"><code>Sec-COWL</code></a>
+    (see [[#response-header]]) whose value contains
+    a serialized <a>delegated privilege</a>. For example, for any
+    content under <code>https://university.edu/~user1</code>, the
+    following header is set:
+
+    <pre><code>
+     <a href="#response-header">Sec-COWL</a>: <a>ctx-privilege</a> [ ['self', 'cowl://user1'] ]
+    </code></pre>
+
+    Having this privilege can be understood as having the authority of
+    <code>user1</code>'s part of the
+    <code>https://university.edu</code> origin.  COWL ensures that the
+    content of this user cannot interfere with the content of
+    <code>https://university.edu</code> or another user
+    e.g.,  <code>user2</code>.  For example, the content cannot modify
+    <code>https://university.edu</code> cookies or the DOM of another
+    <code>http://university.edu</code> page.
+
+    This <a>delegated privilege</a> also ensures that the
+    content cannot disseminate data sensitive to another user (e.g.,
+    <code>user2</code>) arbitrarily&mdash; without being confined,
+    it can only disseminate <code>user1</code>'s data on
+    <code>http://university.edu</code>.
+    Of course, this requires the server operator to label
+    sensitive data (e.g., when sending it to the user agent) appropriately
+    (e.g., <code>user2</code>'s data is labeled
+    <code><a>Label</a>("https://university.edu")._or("user2")</code>).
+
+    The <a  href="#university-example-js">sub-origin isolation in
+    JavaScript</a> shows how this example can be implemented using the
+    COWL JavaScript APIs.
+  </div>
+
+  <div class="note">
+    Note, sub-domains should be used when possible to ensure that
+    content is isolated using the Same-Origin Policy. But, even in
+    such cases, COWL can provide a useful layer of defense.
+  </div>
+
+  <h4 id="examples-leastpriv">Running content with least-privileges</h4>
+
+  An author wishes to use a library that is tightly coupled with the
+  page (e.g., jQuery), but not trust it to protect the user's
+  confidentiality and integrity. With COWL, the author can do this by
+  loading the untrusted library after <a>dropping privileges</a> (from
+  the context's <a>default privilege</a>).  In doing so, the content
+  (and thus the library) loses its implicit authority over the
+  content's origin.
+
+  <div class="example">
+    The author of <code>https://example.com</code> can drop privileges
+    in JavaScript:
+
+    <pre><code>
+    // Drop privileges, by setting the <a>context privilege</a> to an <a>empty privilege</a>:
+    COWL.privilege = new <a>Privilege()</a>;
+
+    // Load untrusted library
+    </code></pre>
+
+    Or, by setting the content's initial privilege to the <a>empty
+      privilege</a> using
+    <a href="#response-header"><code>Sec-COWL</code></a> response header:
+
+    <pre><code>
+     <a href="#response-header">Sec-COWL</a>: <a>ctx-privilege</a> [ [] ]
+    </code></pre>
+
+    <div class="note">
+      Note, while this ensures that the context code cannot, for instance,
+      access the origin's cookies, the author must still associate a
+      confidentiality label with resources (e.g., HTTP responses) to
+      ensure that data is properly protected.
+    </div>
+  </div>
+
+  In some cases it is useful for a particular context to have the
+  privilege to disseminate certain category of data.  (The
+  <code>or</code> part of <a>labels</a> can be used to easily
+  categorize differently-sensitive data.) To this end, the author
+  should run the context with a <a>delegated privilege</a> instead of
+  the <a>empty privilege</a>. The above [[#examples-isolation]] shows
+  one such example.
+  </section>
+
+  <section>
+  <h3 id="trust-model">Trust Model</h3>
+    COWL provides developers with a way of imposing restrictions on
+    how untrusted code can disseminate sensitive data.  However,
+    authors should avoid sharing sensitive data with malicious code,
+    since such code may be able to exploit covert channels, which are
+    present in most browsers, to leak the data.  COWL can only prevent
+    information leakage from code that (e.g., is buggy and) uses overt
+    communication channels.
+
+    Similarly, COWL provides no guarantees against attacks wherein
+    users are manipulated into leaking sensitive data via out-of-band
+    channels.  For example, an attacker may be able to convince a
+    user to navigate their user agent to an attacker-owned origin by
+    entering a URL that contains sensitive information into the user
+    agent's address bar.
+
+    <div class="note">
+      COWL should always be used as an additional layer of defense to
+      other security mechanisms such as CSP, SRI, CORS, and iframe
+      <code><a element-attr>sandbox</a></code>.
+    </div>
+  </section>
+</section>
+
+<!-- Big Text: definitions -->
+<section>
+  <h2 id="key-concepts">Key Concepts and Terminology</h2>
+
+  <h3 id="key-concepts-labels">Labels</h3>
+  1.  An <dfn>origin label</dfn>, or more succinctly a
+      <dfn>label</dfn>, encodes either a confidentiality or integrity
+      security policy as conjunctive normal form (AND's and OR's)
+      formulae over <a>origin</a>s.  Labels can be associated with
+      <a>contexts</a> or with <a>structurally clonable</a> objects.
+
+      When associated with a <a>context</a>, the label restricts the
+      origins that the context can communicate with, as detailed in
+      [[#framework-context-labels]].
+
+      <div class="example">
+        The confidentiality label
+        <code><a interface>Label</a>("https://a.com")._or("https://b.com")</code>,
+        when associated with a context,
+        restricts the context to sending data to
+        <code>https://a.com</code> or <code>https://b.com</code>, but
+        no other origins.
+        This context label reflects the fact the context may contain data
+        that is sensitive to either <code>https://a.com</code> or
+        <code>https://b.com</code>; it is thus only safe for it to
+        communicate <em>to</em> these origins.
+
+        Note, because the context can communicate data to either origin,
+        another context associated with the more restricting
+        label <code><a interface>Label</a>("https://a.com")</code> cannot
+        send it data. Doing so would allow for data confidential
+        to <code>https://a.com</code> to be leaked to <code>https://b.com</code>.
+      </div>
+
+      <div class="example">
+        The integrity label
+        <code><a interface>Label</a>("https://a.com").or("https://b.com")</code>,
+        when associated with a context, restricts the context to
+        receiving data from (a context or server) that is at least as
+        trustworthy as <code>https://a.com</code> or
+        <code>https://b.com</code>.  This context label ensures that
+        the code running in the context can only be influenced by
+        <code>https://a.com</code> and <code>https://b.com</code>.
+      </div>
+
+      When associated with an object, a confidentiality label
+      specifies the origins to whom the object is sensitive, while an
+      integrity label specifies the origins that endorse the object.
+      Objects that have labels associated with them are called
+      <dfn>labeled objects</dfn>.  [[#object-labels]] defines how
+      labels are associated with objects.
+
+      <div class="example">
+        Consider an <code>https://example.com</code> page that
+        receives a labeled object (e.g., via <a>postMessage()</a>)
+        with the following labels:
+
+        * Confidentiality:
+          <code><a interface>Label</a>("https://example.com")</code>.
+          This label indicates that the object is sensitive to
+          <code>https://example.com</code>.
+
+        * Integrity:
+          <code><a interface>Label</a>("https://a.com")</code>.  This
+          label indicates that the object has been endorsed by
+          <code>https://a.com</code>. If
+          <code>https://example.com</code> received the message from an
+          intermediary <code>https://b.com</code> context, this label
+          reflects the fact that the object (produced by
+          <code>https://a.com</code>) was not tampered.
+      </div>
+
+  2.  Mathematically, a label is a <em>conjunctive normal form</em>
+      formula over origins [[DCLabels]].
+
+      A label is in <dfn>normal form</dfn> if reducing it according to
+      the <a>label normal form reduction</a> algorithm produces the
+      same value.
+
+      Two labels are <dfn>equivalent</dfn> if their <a>normal form</a>
+      values are mathematically equal.
+
+      A label <var>A</var> <dfn>subsumes</dfn> (or is more
+      <dfn>restricting</dfn> than) another label
+      <var>B</var> if the result of running the <a>label subsumption</a>
+      algorithm on the <a>normal form</a>s of <var>A</var> and
+      <var>B</var> returns <code>true</code>. Labels are partially
+      ordered according to this subsumes relation.
+
+      The <dfn>current confidentiality label</dfn> is the
+      confidentiality label associated with the current context.
+      [[#framework-context-labels]] specifies how labels are associated with
+      contexts.
+
+      The <dfn>current integrity label</dfn> is the
+      integrity label associated with the current context.
+      [[#framework-context-labels]] specifies how labels are associated with
+      contexts.
+
+      When reading a <a>labeled object</a>, a context gets
+      <dfn>tainted</dfn>, i.e., its <a>context labels</a> are updated by
+      invoking <a>context tainting</a> algorithm, to reflect that it
+      has read sensitive (of potentially different trustworthiness)
+      data and should be confined accordingly.
+
+  <h3 id="key-concepts-privileges">Privileges</h3>
+  1.  A <dfn>privilege</dfn> is an unforgeable object that corresponds
+      to a <a>label</a>. Privileges are associated with contexts and
+      reflect the authority of the context.
+
+      Privileges can be used to bypass confinement restrictions
+      imposed by confidentiality labels.  In particular, a privilege
+      can be used to bypass the restrictions imposed by any label
+      its corresponding label&mdash;the
+      <a>internal privilege label</a>&mdash;subsumes.
+
+      <div class="example">
+        Consider a context whose
+        <a>current confidentiality label</a> is <code><a
+            interface>Label</a>("https://a.com").and("https://b.com")</code>.
+        This label confines the context to only communicating with
+        entities whose labels are at least as restricting as this
+        label. For example, it restricts the context from
+        communicating with a context labeled <code><a
+           interface>Label</a>("https://b.com")</code>, since doing
+        so could leak <code>https://a.com</code> data to
+        <code>https://b.com</code>. It similarly prevents the context
+        from communicating with <code>https://a.com</code>.
+
+        But, suppose that the context's <a>current privilege</a> corresponds
+        to <code><a interface>Label</a>("https://a.com")</code>, as
+        would be the case for an
+        <code>https://a.com</code> context. Then, the context would be able to
+        bypass some of the restrictions imposed by the context label.
+        Specifically, the context would be able to communicate with
+        <code>https://b.com</code>; the privilege confers it the
+        right to declassify <code>https://a.com</code> data to
+        <code>https://b.com</code>. Indeed, when taking this privilege into
+        consideration, the <a>effective confidentiality label</a> of
+        the context is <code><a interface>Label</a>("https://b.com")</code>.
+
+        Note, the privilege does not allow the context to bypass any
+        label restrictions. For example, it does not allow the context
+        to communicate with <code>https://a.com</code> since doing so
+        could leak <code>https://b.com</code> data.
+
+        <div class="note">
+          To be flexible, COWL uses the context privilege to remove
+          (the safe) restrictions imposed by the <a>context label</a>.
+          To avoid accidentally leaking sensitive context data,
+          authors should use <a interface>LabeledObject</a>s.
+        </div>
+
+      </div>
+
+      Privileges can also be used to bypass integrity restrictions
+      imposed by integrity labels. In particular, a privilege can be
+      used to endorse an otherwise untrustworthy labeled
+      <a>context</a> (or <a>labeled object</a>) as to allow it to
+      communicate with more trustworthy end-points (another context or
+      server).
+
+      <div class="example">
+        Consider an <code>https://a.com</code> context whose
+        <a>current integrity label</a> is
+        <code><a interface>Label</a>("https://a.com")._or("https://b.com")</code>.
+        This label confines the context to only communicating with
+        entities that are at most as trustworthy as this
+        label. For example, it restricts the context from
+        communicating with a context whose <a>current integrity
+        label</a> is
+        <code><a interface>Label</a>("https://a.com")</code>, since doing
+        so would potentially corrupt <code>https://a.com</code> data
+        (e.g., by allowing <code>https://b.com</code> to influence the
+        computation).
+
+        But, if the context's <a>current privilege</a> corresponds
+        to <code><a interface>Label</a>("https://a.com")</code>, the
+        context would be able to bypass some of these integrity restrictions.
+        Specifically, the context would be able to communicate with the
+        more-trustworthy context (labeled
+        <code><a interface>Label</a>("https://a.com")</code>) since the
+        privilege confers it the right to endorse (or vouch for) its
+        context on behalf of <code>https://a.com</code>. Indeed, when
+        taking privileges into account, the <a>effective integrity
+        label</a> of the context is <code><a
+        interface>Label</a>("https://a.com")</code>.
+
+        Note, the privilege cannot be used to bypass any integrity
+        restrictions.  For example, it does not allow the context to
+        communicate with a context whose integrity label is <code><a
+        interface>Label</a>(https://b.com)</code>.
+      </div>
+
+      Note, <a>browsing contexts</a> have a <a>current privilege</a>
+      that, by default, corresponds to the origin of the context, as
+      described in [[#framework-context-labels]]. But, authors should set the <a>current
+      privilege</a> to a <a>delegated privilege</a> to follow
+      the principle of least privilege.
+
+  2.  The <dfn>current privilege</dfn> is the privilege associated
+      with the current context. [[#framework-context-labels]] specifies how
+      privileges are associated with contexts.
+
+  3.  The <dfn>effective confidentiality label</dfn> is the label
+      returned by the <a>label downgrade</a> algorithm when invoked
+      with the <a>current confidentiality label</a> and <a>current
+      privilege</a>.
+
+  4.  The <dfn>effective integrity label</dfn> is the label
+      returned by the <a>label upgrade</a> algorithm when invoked
+      with the <a>current integrity label</a> and <a>current
+      privilege</a>.
+
+  5.  Code can take <dfn>ownership</dfn> of a <a>privilege</a>
+      <var>priv</var> by setting the <a>current privilege</a> to the
+      privilege produced via the <a>combination</a> of the <a>current
+        privilege</a> and <var>priv</var>. In doing so, it is said
+      that the context <dfn>owns</dfn> the privilege.
+</section>
+
+<!-- Big Text: framework -->
+<section>
+  <h2 id="framework">Framework</h2>
+
+    <em>This sub-section is not normative.</em>
+
+    In a nut-shell, the COWL framework provides:
+    <dl>
+      <dt>Policy specification via <a>origin labels</a></dt>
+      <dd>
+        COWL provides a <a interface>Label</a> interface for specifying
+        confidentiality and integrity policies in terms of
+        <a>origins</a>. <a>Labels</a> can be associated with data and
+        content using the JavaScript <a interface>LabeledObject</a> and
+        <a interface>COWL</a> interfaces or the <code>Sec-COWL</code>
+        HTTP headers.
+      </dd>
+      <dt>Explicit authority via <a>privileges</a></dt>
+      <dd>
+        The COWL framework provides a JavaScript
+        <a interface>Privilege</a> interface for operating on and minting
+        new <a>privileges</a>.  The <a interface>COWL</a> JavaScript
+        interface and <code>Sec-COWL</code> HTTP response header can be used
+        used to explicitly control the authority of a context by setting
+        the <a>context privilege</a>.
+      </dd>
+      <dt>Confinement enforcement mechanism</dt>
+      <dd>
+        COWL extends <a>browsing contexts</a> and <a>Workers</a> with
+        labels and privileges, which are used when enforcing
+        confinement, i.e., when restricting a context's network and
+        cross-context messaging communication.  This document defines
+        the necessary changes and extensions to existing browser
+        constructs and algorithms to enforce confinement.
+      </dd>
+    </dl>
+
+  <section>
+  <h3 id="framework-labels">Labels</h3>
+
+    Each <a>label</a> is an immutable object represented by a
+    <a interface>Label</a> object, the interface of which is defined in
+    this section.
+
+    A <a interface>Label</a> MUST have an internal <dfn>label set</dfn>, which is
+    a non-empty set of <a>disjunction set</a>s.
+
+    A <dfn>disjunction set</dfn> is a set of <a>origin</a>
+    <a>URL</a>s.
+
+    A label is said to be an <dfn>empty label</dfn> if its <a>label
+      set</a> contains a single, empty <a>disjunction set</a>.
+
+    <pre class="idl">
+      [Constructor, Constructor(DOMString origin), Exposed=Window, Worker]
+      interface Label {
+        boolean equals(Label other);
+        boolean subsumes(Label other, optional Privilege priv);
+
+        Label and((Label or DOMString) other);
+        Label _or((Label or DOMString) other);
+
+        object toJSON();
+        [Throws] static Label fromJSON(object obj, optional DOMString self);
+      };
+    </pre>
+
+    ISSUE: Current WebIDL implementation requires an underscore for
+    certain identifiers. Can we rename <code>_or</code> to
+    <code>or</code>?
+
+    <h4 id="label-constructors">Constructors</h4>
+    <dl dfn-for="Label">
+      <dt><dfn constructor>Label()</dfn></dt>
+      <dd>
+        When invoking the <a>Label()</a> constructor, the user agent
+        MUST return a new <a>empty label</a>.
+      </dd>
+      <dt><dfn constructor>Label(DOMString origin)</dfn></dt>
+      <dd>
+        When invoking the <a>Label(origin)</a> constructor, the user agent
+        MUST use an algorithm equivalent to the following:
+
+        1. If the <a argument for="Label/Label(origin)">origin</a>
+           argument is not a <a>URL</a>, the constructor MUST throw a
+           <code>TypeError</code> exception [[!ECMA-262]] and
+           terminate this algorithm.
+
+        2. Else, it MUST return a new <a>Label</a> that contains a
+           <a>label set</a> of a single <a>disjunction set</a>, which
+           itself MUST contain the <a>URL</a> corresponding to the
+           <a>origin</a> of the parameter.
+      </dd>
+    </dl>
+
+    <h4 id="labe-methods">Methods</h4>
+    <dl dfn-for="Label">
+      <dt><dfn method title="equals(other)">equals(Label other)</dfn></dt>
+      <dd>
+        The user agent MUST return <code>true</code> if the <a interface>Label</a> on
+        which the method has been called is <a>equivalent</a> to the
+        <a argument for="Label/equals(other)">other</a>
+        parameter; otherwise it MUST return <code>false</code>.
+      </dd>
+      <dt><dfn method title="subsumes(other, priv)">subsumes(Label other, optional Privilege priv)</dfn></dt>
+      <dd>
+        The user agent MUST use an algorithm equivalent to the
+        following:
+
+        1. Let <var>lab</var> be the <a>Label</a> on which the method
+           has been called.
+
+        2. If the <a argument for="Label/subsumes(other, priv)">priv</a> argument is
+           provided, let <var>lab</var> be
+           <code><var>lab</var>.and(priv.<a>asLabel()</a>)</code>.
+
+        3. Return <code>true</code> if <var>lab</var> <a>subsumes</a> the
+           <a argument for="Label/subsumes(other, priv)">other</a>
+           parameter and <code>false</code> otherwise.
+      </dd>
+      <dt><dfn method title="and(other)">and((Label or DOMString) other)</dfn></dt>
+      <dd>
+        The user agent MUST use an algorithm equivalent to the following:
+
+        1. Let <var>O</var> be the
+           <a argument for="Label/and(other)">other</a> argument.
+
+        1. If the type of <a argument for="Label/and(other)">other</a> is
+           <code>DOMString</code>, run the following sub-steps:
+
+           1. Set <var>O</var> to the result of invoking the
+              <a>Label(other)</a> constructor with <a argument
+              for="Label/and(other)">other</a> as an argument, if the
+              constructor did not raise an exception.
+
+           2. Else, re-throw the exception and terminate this algorithm.
+
+        2. Return a new <a interface>Label</a>, in <a>normal form</a>, which is
+           <a>equivalent</a> to adding <var>O</var>'s <a>label set</a> to
+           the <a>label set</a> of the <a interface>Label</a> on which
+           the method was invoked.
+      </dd>
+      <dt><dfn method title="_or(other)">_or((Label or DOMString) other)</dfn></dt>
+      <dd>
+        The user agent MUST use an algorithm equivalent to the following:
+
+        1. Let <var>O</var> be the
+           <a argument for="Label/and(other)">other</a> argument.
+
+        1. If the type of <a argument for="Label/_or(other)">other</a> is
+           <code>DOMString</code>, run the following sub-steps:
+
+           1. Set <var>O</var> to the result of invoking the
+              <a>Label(other)</a> constructor with <a argument
+              for="Label/_or(other)">other</a> as an argument, if the
+              constructor did not raise an exception.
+
+           2. Else, re-throw the exception and terminate this algorithm.
+
+        2. Return a new <a interface>Label</a>, in <a>normal form</a>,
+           which is <a>equivalent</a> to adding each element of each
+           <a>disjunction set</a> of <var>O</var>'s <a>label set</a> to
+           each <a>disjunction set</a> of the <a>label set</a> of the
+           <a interface>Label</a> on which the method was called.
+      </dd>
+      <dt><dfn method title="toJSON()">toJSON()</dfn></dt>
+      <dd>
+        The user agent MUST use an algorithm equivalent to the following:
+
+        1. Let <var>JSON lset</var> be a new <a>JSON array</a>.
+
+        2. For each <a>disjunction set</a> <var>dset</var> in the
+           <a>label set</a> of the <a>label</a> this method was invoked on:
+
+           1. Let <var>JSON dset</var> be a JSON array of strings,
+              each corresponding an origin in <var>dset</var>.
+
+           2. Append <var>JSON dset</var> to the <var>JSON lset</var> array.
+
+        3. Return <var>JSON lset</var>.
+      </dd>
+      <dt><dfn method title="fromJSON(object obj, optional DOMString self)">fromJSON(obj, self)</dfn></dt>
+      <dd>
+        The user agent MUST use an algorithm equivalent to the following:
+
+        1. If <a argument for="Label/fromJSON(obj, self)">obj</a> is not
+           a <a>JSON array</a> of entries, each of which is a <a>JSON
+           array</a> of strings, throw a <code>TypeError</code>
+           exception [[!ECMA-262]] and terminate this algorithm.
+
+        2. Let <var>self</var> be null.
+
+        3. If the <a argument for="Label/fromJSON(obj, self)">self</a>
+           argument is provided:
+
+           1. If the argument is not a <a>URL</a>, the function
+              MUST throw a <code>TypeError</code> exception [[!ECMA-262]] and
+              terminate this algorithm.
+
+           2. Else, set <var>self</var> to the <a argument for="Label/fromJSON(obj, self)">self</a> argument.
+
+        4. Let <var>lab</var> be a new <a>empty label</a>.
+
+        5. For each array element <var>dset</var> of <a argument for="Label/fromJSON(obj, self)">obj</a>:
+
+           1. Let <var>dset label</var> be a new empty label.
+
+           2. For each string <var>str</var> of <var>dset</var>:
+
+              1. If <var>str</var> is a <code>"unique"</code>,
+                 let <var>origin</var> be a <a>globally unique identifier</a>.
+
+              2. Else, if <var>str</var> is <code>"self"</code> and <var>self</var> is not null,
+                 let <var>origin</var> be <var>self</var>.
+
+              3. Else, if <var>str</var> is a <a>URL</a>,
+                 let <var>origin</var> be <var>str</var>.
+
+              4. Else, throw a <code>TypeError</code> exception [[!ECMA-262]] and
+                 terminate this algorithm.
+
+              5. Let <var>dset label</var> be <code><var>dset label</var>.<a>_or(<var>origin</var>)</a></code>
+
+           3. Let <var>lab</var> be <code><var>lab</var>.<a>and(<var>dset label</var>)</a></code>
+
+      </dd>
+    </dl>
+
+    <h4 id="label-examples">Examples</h4>
+
+    <div class="example">
+      Example labels. Intuition for each label's semantics is given in
+      the context of it being used as a confidentiality label (C) and
+      integrity label (I).
+      <pre><code>
+      // C: Public data.
+      // I: Non-endorsed/untrustworthy data.
+      var empty = new <a interface>Label</a>();
+
+      // C: Data confidential to a.com.
+      // I: Data endorsed/trusted by a.com.
+      var a = new <a interface>Label</a>("https://a.com");
+
+      // C: Data confidential to b.com.
+      // I: Data endorsed/trusted by b.com.
+      var a = new <a interface>Label</a>("https://b.com");
+
+      // C: Data confidential to both a.com and b.com
+      // I: Data endorsed/trusted by a.com and b.com.
+      var aANDb = new <a interface>Label</a>("https://a.com").and("https://b.com");
+
+      // C: Data confidential to either a.com or b.com.
+      // I: Data endorsed/trusted by either a.com or b.com.
+      var aORb = new <a interface>Label</a>("https://a.com")._or("https://b.com");
+      </code></pre>
+      Examples of label comparisons with intuition for the semantics.
+      <pre><code>
+      // C: Data confidential to a.com (b.com) data is more sensitive than public data.
+      // I: Data endorsed by a.com (b.com) is more trustworthy than non-endorsed/untrustworthy data.
+      a.subsumes(empty) === true;
+      b.subsumes(empty) === true;
+
+      // C: Data that is confidential to a.com and b.com is more
+      //    confidential than data that is only sensitive to a.com (b.com).
+      // I: Data that is endorsed/trusted by both a.com and b.com is
+      //    more trustworthy than data endorsed only by a.com (b.com).
+      aANDb.subsumes(a) === true;
+      aANDb.subsumes(b) === true;
+
+      // C: Data that that is confidential to a.com (b.com) is not comparable to
+      //    data that is confidential to b.com (a.com).
+      // I: Data that that is endorsed by a.com (b.com) is not comparable to
+      //    data that is endorsed by b.com (a.com).
+      a.subsumes(b) === false;
+      b.subsumes(a) === false;
+
+      // C: Data that is confidential to a.com (b.com) is more confidential than data that is
+      //    confidential to either a.com or b.com. Alternative intuition: data that can be read by
+      //    a.com or b.com can be read by an entity that can read a.com (b.com) data alone.
+      // I: Data that is endorsed by a.com (b.com) is more trustworthy than data that is endorsed
+      //    by either a.com or b.com. Alternative intuition: an entity that trusts data endorsed
+      //    by either a.com or b.com necessarily trusts data endorsed by a.com (b.com) alone.
+      a.subsumes(aOrb) === true;
+      b.subsumes(aOrb) === true;
+      </code></pre>
+    </div>
+
+    <div class="example">
+      Using the labels defined in the above example, this example
+      shows how labels are serialized/deserialized. We only define an
+      additional label:
+      <pre><code>
+      var aORbANDc = aORb.and(new <a interface>Label</a>("https://c.com");
+      </code></pre>
+
+      Converting to JSON:
+      <pre><code>
+      JSON.stringify(empty)    === '[[]]';
+      JSON.stringify(a)        === '[["https://a.com"]]';
+      JSON.stringify(aANDb)    === '[["https://a.com"], ["https://b.com"]]';
+      JSON.stringify(aORb)     === '[["https://a.com", "https://b.com"]]';
+      JSON.stringify(aORbANDc) === '[["https://a.com", "https://b.com"], ["https://c.com"]]';
+      </code></pre>
+      Converting from JSON:
+      <pre><code>
+      <a interface>Label</a>.fromJSON([[]]).equals(empty) === true;
+      <a interface>Label</a>.fromJSON([["https://a.com"]]).equals(a) === true;
+      <a interface>Label</a>.fromJSON([["https://a.com"], ["https://b.com"]]).equals(aANDb) === true;
+      <a interface>Label</a>.fromJSON([["https://a.com", "https://b.com"]]).equals(aORb) === true;
+      <a interface>Label</a>.fromJSON([["https://a.com", "https://b.com"], ["https://c.com"]]).equals(aORbANDc) === true;
+      <a interface>Label</a>.fromJSON([["self"]], "https://a.com").equals(a) === true;
+      <a interface>Label</a>.fromJSON([["unique"]]).equals(<a interface>Label</a>.fromJSON([["unique"]])) === false;
+      </code></pre>
+    </div>
+  </section>
+
+  <section>
+  <h3 id="privileges">Privileges</h3>
+
+    Each <a>privilege</a> is an immutable object represented by a <a
+    interface>Privilege</a> object, the interface of which is
+    defined in this section.
+
+    A <a interface>Privilege</a> MUST have an <dfn>internal privilege
+    label</dfn>.
+
+    The <dfn>combination</dfn> of privileges <var>A</var> and
+    <var>B</var> is a privilege produced by invoking the
+    <a>combine()</a> method on <var>A</var> (respectively,
+    <var>B</var>) with <var>B</var> (respectively, <var>A</var>) as an
+    argument.
+
+    A privilege is said to be an <dfn>empty privilege</dfn> if its
+    <a>internal privilege label</a> is the <a>empty label</a>. A
+    context is said to be <dfn>unprivileged</dfn> if its context
+    privilege is the <a>empty privilege</a>.  By setting the
+    <a>context privilege</a> to the <a>empty privilege</a>, a context
+    is said to be <dfn>dropping privileges</dfn>.
+
+    A privilege <var>P1</var> is said to be a <dfn>delegated
+    privilege</dfn> of <var>P2</var> if <var>P2</var>'s <a>internal
+    privilege label</a> <a>subsumes</a> <var>P1</var>'s <a>internal
+    privilege label</a>.
+
+    <pre class="idl">
+      [Constructor, Exposed=Window, Worker]
+      interface Privilege {
+        static Privilege FreshPrivilege(); // Named constructor
+        Label asLabel();
+
+        Privilege combine(Privilege other);
+        [Throws] Privilege delegate(Label label);
+      };
+    </pre>
+
+    ISSUE: Bikeshed does not allow WebIDL's NamedConstructor. For now,
+    inlining the constructor as a static method.
+
+    <h4 id="privilege-constructors">Constructors</h4>
+    <dl dfn-for="Privilege">
+      <dt><dfn constructor>Privilege()</dfn></dt>
+      <dd>
+        When invoking the <a>Privilege()</a> constructor, the user
+        agent MUST return a new <a interface>Privilege</a> that has an
+      <a>internal privilege label</a> set to
+      <code><a>Label()</a></code>.
+      </dd>
+      <dt><dfn constructor>FreshPrivilege()</dfn></dt>
+      <dd>
+
+        When invoking the <a>FreshPrivilege()</a> constructor, the user
+        agent MUST use an algorithm equivalent to the following:
+
+        1. Let <var>unique Label</var> be the label produced by invoking the
+           <a>Label(other)</a> constructor with a <a>globally unique
+           identifier</a>.
+
+        2. Return a new <a interface>Privilege</a> that has an
+           <a>internal privilege label</a> set to <var>unique Label</var>.
+
+      </dd>
+    </dl>
+
+    <h4 id="privilege-methods">Methods</h4>
+    <dl dfn-for="Privilege">
+      <dt><dfn method title="asLabel()">asLabel()</dfn></dt>
+      <dd>
+        The user agent MUST return the <a>internal privilege label</a> of the
+        <a interface>Privilege</a> on which the method has been called.
+      </dd>
+      <dt><dfn method title="combine(other)">combine(Privilege other)</dfn></dt>
+      <dd>
+
+        The user agent MUST return a new <a interface>Privilege</a> whose <a>internal
+        privilege label</a> is <a>equivalent</a> to a <a>label</a>
+        created according to an algorithm equivalent to the following:
+
+        1. Let <var>internalLabel</var> be the
+           <a>internal privilege label</a> of the
+           <a interface>Privilege</a> on which the method has been called.
+
+        2. Let <var>otherLabel</var> be the <a>internal privilege label</a> of
+           the <a argument for="Privilege/combine(other)">other</a> argument.
+
+        3. Return <code><var>internalLabel</var>.<a>and(<var>otherLabel</var>)</a></code>.
+
+      </dd>
+      <dt><dfn method title="delegate(label)">delegate(Label label)</dfn></dt>
+      <dd>
+
+        The user agent MUST return a new <a interface>Privilege</a> whose <a>internal
+        privilege label</a> is <a>equivalent</a> to a <a>label</a>
+        created according to an algorithm equivalent to the following:
+
+        1. Let <var>internalLabel</var> be the
+           <a>internal privilege label</a> of the
+           <a interface>Privilege</a> on which the method has been called.
+
+        2. If the <var>internalLabel</var> does not <a>subsume</a> the
+           <a argument for="Privilege/delegate(label)">label</a>
+           argument, throw a <code>SecurityError</code>
+           exception and terminate this algorithm.
+
+        3. Else, return a new <a interface>Privilege</a> that has an
+           <a>internal privilege label</a> set to
+           <a argument for="Privilege/delegate(label)">label</a>.
+
+      </dd>
+    </dl>
+
+    <div class="note">
+      Note, the <a interface>Privilege</a> constructors and the
+      <a>combine()</a> and <a>delegate()</a> methods only provide ways
+      for creating privileges.  Context code must still take
+      <a>ownership</a> of or set the <a>current privilege</a> to the
+      privilege for it to be used (to bypass label restrictions).
+    </div>
+
+    <h4 id="privilege-examples">Examples</h4>
+
+    <div class="example">
+      To be backwards-compatible with the Same-Origin Policy, COWL
+      grants each <a>browsing context</a> a <a>default privilege</a>
+      that corresponds to their origin. For example, a page on
+      <code>https://example.com</code> has a privilege whose <a>internal
+      privilege label</a> is
+      <code><a interface>Label</a>("https://example.com")</code>.
+
+      As a result, reading data that is sensitive to
+      <code><a interface>Label</a>("https://example.com")</code> does
+      not confine the context. For example, reading a
+      <a>labeled object</a> whose confidentiality label is
+      <code><a interface>Label</a>("https://example.com")</code> does
+      not restrict the context from communicating&mdash;and thus
+      accidentally leak that object's contents&mdash;to another origin.
+      To prevent accidental leaks, the author should drop privileges by
+      setting the <a>current privilege</a> to an <a>empty
+      privilege</a>:
+      <pre><code>
+        // Save privilege in case we need it later:
+        var __savedPriv = COWL.privilege;
+
+        // Drop privilege (set the <a>context privilege</a> to the <a>empty privilege</a>):
+        COWL.privilege = new <a>Privilege</a>();
+      </code></pre>
+
+      After this point, if the context reads data with a
+      <code><a interface>Label</a>("https://example.com")</code>
+      confidentiality label, COWL will restrict it to communicating
+      with <code>https://example.com</code>.
+    </div>
+
+    <div class="example">
+      Consider an extension to the password strength checker example of
+      [[#examples-checker]] that uses <a>FreshPrivilege()</a>s to
+      ensure that the untrusted checker cannot communicate with any
+      entity other than the parent context.
+      <pre><code>
+        // Create new fresh privilege:
+        var priv = new <a>FreshPrivilege()</a>;
+
+        // Take <a>ownership</a> of the fresh privilege:
+        COWL.privilege = COWL.privilege.combine(priv);
+
+        // Associate the unique label with the password:
+        var labeledPassword = new <a interface>LabeledObject</a>(password, {confidentiality: priv.asLabel()});
+
+        // Send the labeled password to the checker iframe:
+        checker.postMessage(labeledPassword, "https://untrusted.com");
+      </code></pre>
+      Once the <code>https://untrusted.com</code> context reads the
+      password it will be <a>tainted</a> by the unique, <a>internal
+      privilege label</a> of <code>priv</code>; the unique origin
+      ensures that it cannot send the password to, for example, public
+      parts of <code>https://example.com</code>. Indeed, only the
+      owner of <code>priv</code> can disseminate the labeled password
+      (result) arbitrarily.
+    </div>
+
+    <div id="university-example-js" class="example">
+      Consider an implementation of the content isolation example of
+      [[#examples-isolation]] using the COWL JavaScript API.
+      In this example, the author <code>https://university.edu</code> isolates
+      different parts of their site according to
+      users. For <code>user1</code> it can do this as follows:
+
+      <pre><code>
+        // Create a label corresponding to the university origin:
+        var uni = new <a interface>Label</a>(window.location.origin);
+        // Create a new label that corresponds to user1's data on university.edu:
+        var user1 = uni._or("cowl://user1"); // Here the cowl:// is an arbitrary <a>scheme</a>
+
+        // Originally, COWL.privilege.asLabel().equals(uni).
+        // Drop the current <a>context privilege</a> to a delegated privilege:
+        COWL.privilege = COWL.privilege.delegate(user1);
+      </code></pre>
+
+      At this point, the context can only arbitrarily disseminate data
+      that is labeled
+      <code><a interface>Label</a>("https://university.edu")._or("cowl://user1")</code>;
+      it cannot disseminate data that is
+      sensitive to the university (e.g., which is labeled
+      <code><a interface>Label</a>("https://university.edu")</code>)
+      or to another user (e.g., <code>user2</code>'s data is
+      labeled
+      <code><a interface>Label</a>("https://university.edu")._or("cowl://user2")</code>).
+    </div>
+  </section>
+
+  <section>
+  <h3 id="framework-context-labels">Labeled Contexts</h3>
+
+    COWL extends <a>browsing contexts</a> and <a>Workers</a> with a
+    <dfn>COWL state</dfn>, which is used to restrict the context's
+    communication channels. In this document, the term
+    <dfn>context</dfn> is used to refer to both <a>browsing
+    contexts</a> and <a>Workers</a>. The COWL state consists of:
+
+    * The <dfn>confinement mode</dfn> status, which indicates whether
+      or not COWL confinement is enabled and thus <a>labels</a> should
+      be enforced in the current context.
+
+    * The <dfn>context <a>labels</a></dfn>, which consist consist of:
+
+      * <dfn>context confidentiality label</dfn> reflects the
+        sensitivity of the data that the context has read.
+
+      * <dfn>context integrity label</dfn> reflects the integrity of
+        the data that the context has read.
+
+    * The <dfn>context <a>privilege</a></dfn>, which encodes the context's
+      ability to bypass the restrictions of certain labels.
+
+    Each context's <a>COWL state</a> MUST be initially set to the
+    <dfn>default COWL state</dfn>, where:
+
+    * The <a>confinement mode</a> is disabled.
+
+    * The <a>context confidentiality label</a> is set to the
+      <dfn>default confidentiality label</dfn>: <a>empty label</a>.
+
+    * The <a>context integrity label</a> is set to the
+      <dfn>default integrity label</dfn>: <a>empty label</a>.
+
+    * The <a>context privilege</a> is set to the
+      <dfn>default privilege</dfn>: a
+      <a>privilege</a> whose <a>internal privilege label</a> is
+      equivalent to <a>Label(<var>origin</var>)</a></code>, where
+      <var>origin</var> is the string representation of the context or
+      Worker's <a>origin</a>.
+
+    <div class="note">
+      The <a>default COWL state</a> is backwards-compatible with the
+      existing Web model. Specifically:
+
+      * Unless <a>confinement mode</a> is enabled, a context is not
+        subject to confinement.
+
+      * Unless the <a>current confidentiality label</a>
+        and the <a>current integrity label</a> are
+        non-<a>empty label</a>s, the context's communication
+        is unrestricted; code is only
+        subject to the restrictions imposed by other mechanism such as
+        the Same-Origin Policy and CSP.
+
+      * Unless the <a>current privilege</a> is dropped or set to a
+        <a>delegated privilege</a>, code can disseminate data sensitive
+        to the browsing context's <a>origin</a>, even when <a>confinement
+        mode</a> is enabled.  Such data is implicitly <em>declassified</em>
+        using the <a>context privilege</a>. Authors should send
+        <a interface>LabeledObject</a>s to explicitly communicate the
+        sensitivity (and integrity) of the data they are sharing.
+    </div>
+
+    Each context's <a>COWL state</a> is made available via the <a
+    interface>COWL</a> interface defined below.
+
+    <pre class="idl">
+      [Exposed=Window, Worker]
+      interface COWL {
+        static void enable();
+        static boolean isEnabled();
+
+        [SetterThrows] static attribute Label confidentiality;
+        [SetterThrows] static attribute Label integrity;
+
+        [SetterThrows] static attribute Privilege privilege;
+      };
+    </pre>
+
+    <h4 id="cowl-attributes">Attributes</h4>
+    <dl dfn-for="COWL">
+      <dt><dfn attribute title="COWL/confidentiality">confidentiality</dfn></dt>
+      <dd>
+
+        * On getting, the user agent MUST return the <a>current
+          confidentiality label</a>.
+
+        * On setting, the user agent MUST use an algorithm equivalent
+          to the following:
+
+          0. Enable <a>confinement mode</a>.
+
+          1. Let <var>conf</var> be the set confidentiality label.
+
+          2. Let <var>canWrite</var> be the result of invoking
+             the <a>write check</a> algorithm with <var>conf</var>
+             and the <a>current integrity label</a>.
+
+          3. If <var>canWrite</var> is <code>false</code>, throw a
+             <code>SecurityError</code> exception and terminate this
+             algorithm.
+
+          4. Else, set the <a>current confidentiality label</a> to <var>conf</var>.
+
+      </dd>
+      <dt><dfn attribute title="COWL/integrity">integrity</dfn></dt>
+      <dd>
+
+        * On getting, the user agent MUST return the <a>current
+          integrity label</a>.
+
+        * On setting, the user agent MUST use an algorithm equivalent
+          to the following:
+
+          0. Enable <a>confinement mode</a>.
+
+          1. Let <var>int</var> be the set integrity label.
+
+          2. Let <var>canWrite</var> be the result of invoking the
+             <a>write check</a> algorithm with the <a>current
+             confidentiality label</a> and <var>int</var>.
+
+          3. If <var>canWrite</var> is <code>false</code>,
+             throw a <code>SecurityError</code>
+             exception and terminate this algorithm.
+
+          4. Else, set the <a>current integrity label</a> to <var>int</var>.
+
+      </dd>
+      <dt><dfn attribute title="COWL/privilege">privilege</dfn></dt>
+      <dd>
+
+        * On getting, the user agent MUST return the <a>current
+          privilege</a>.
+
+        * On setting, the user agent MUST enable <a>confinement mode</a>
+          and set the <a>current privilege</a> to the set privilege.
+
+      </dd>
+    </dl>
+
+    <h4 id="cowl-methods">Methods</h4>
+    <dl dfn-for="COWL">
+      <dt><dfn method title="COWL/enable(0">enable()</dfn></dt>
+      <dd>
+      On invocation, the user agent MUST enable <a>confinement
+      mode</a> by setting the current context's <a>COWL state</a>
+      confinement mode status.
+      </dd>
+      <dt><dfn method title="COWL/isEnabled()">isEnabled()</dfn></dt>
+      <dd>
+        On invocation, the user agent MUST return <code>true</code> if
+        the <a>confinement mode</a> is enabled for the current
+        context; else, it MUST return <code>false</code>
+      </dd>
+    </dl>
+
+    <h4 id="COWL-examples">Examples</h4>
+    Below are several examples showing how to use the <a
+    interface>COWL</a> API.  The [[#privilege-examples]] illustrate
+    the use of <a>context privileges</a>.
+
+
+    <div class="example">
+      Enabling COWL <a>confinement mode</a> for the current context is
+      straightforward:
+      <pre><code>
+        <a interface>COWL</a>.isEnabled() === false;
+        <a interface>COWL</a>.enable();
+        <a interface>COWL</a>.isEnabled() === true;
+      </code></pre>
+      At this point, no confinement restrictions are
+      applied&mdash;COWL is backwards compatible with the existing
+      model. But, the context labels can be set to restrict
+      communication.
+    </div>
+
+    <div class="example">
+      An author can set the <a>context integrity label</a> to ensure
+      that the context can only receive messages from
+      (another context or server of) the same origin:
+      <pre><code>
+      <a interface>COWL</a>.integrity = new <a interface>Label</a>(window.location.origin);
+      </code></pre>
+    </div>
+
+    <div class="example">
+      The author of <code>https://mashup.com</code> can set the <a>context
+      confidentiality label</a> to receive data sensitive from
+      <code>https://provider.com</code>:
+      <pre><code>
+      <a interface>COWL</a>.confidentiality = new <a interface>Label</a>('https://provider.com');
+      </code></pre>
+      At this point, the context can only communicate with
+      <code>https://provider.com</code>. The data provider can
+      ensures that the context is appropriately labeled as such before
+      it can inspect an HTTP response by setting response labels using
+      the <a href="#response-header"><code>Sec-COWL</code></a> response
+      header.
+    </div>
+  </section>
+
+  <section>
+  <h3 id="object-labels">Labeled Objects</h3>
+
+    A <a interface>LabeledObject</a> interface represents an immutable
+    object that is protected by a confidentiality and integrity
+    label, i.e., the object has associated labels.
+
+    This API is designed to be used in conjunction with other APIs and
+    elements on the web platform. In particular, <a>postMessage()</a>,
+    <a>Web Workers</a>, and <a>XMLHttpRequest</a> (e.g., with an
+    overloaded <a><code>send()</code></a> method for <a interface>LabeledObject</a>
+    arguments).
+
+    A <a interface>LabeledObject</a> MUST have an internal <dfn>protected
+    object</dfn>, a confidentiality <a>label</a>, and an
+    integrity <a>label</a>. The interface is defined below.
+
+    <pre class="idl">
+    dictionary CILabel {
+      Label? confidentiality;
+      Label? integrity;
+    };
+
+    [Constructor(object obj, CILabel labels), Exposed=Window, Worker]
+    interface LabeledObject {
+      readonly attribute Label confidentiality;
+      readonly attribute Label integrity;
+
+      [GetterThrows] readonly attribute object protectedObject;
+
+      [Throws] LabeledObject clone(CILabel labels);
+    };
+    </pre>
+
+    <h4 id="labeledobject-constructor">Constructors</h4>
+    <dl dfn-for="LabeledObject">
+      <dt><dfn constructor>LabeledObject(obj, labels)</dfn></dt>
+      <dd>
+
+      When invoking the <a>LabeledObject()</a> constructor, the user
+      agent MUST use an algorithm equivalent to the following:
+
+      1. Let <var>obj clone</var> be the result of obtaining a
+        <a>structured clone</a> of the <a argument
+        for="LabeledObject/LabeledObject(obj, labels)">obj</a> argument.
+
+      2. Let <var>conf</var> be the <a dict-member
+         for="CILabel">confidentiality</a> member of the <a argument
+         for="LabeledObject/LabeledObject(obj, labels)">labels</a>
+         argument, if it is set.  Otherwise, let <var>conf</var> be
+         the <a>current confidentiality label</a>.
+
+      3. Let <var>int</var> be the <a dict-member
+         for="CILabel">integrity</a> member of the <a argument
+         for="LabeledObject/LabeledObject(obj, labels)">labels</a>
+         parameter, if it is set.  Otherwise, let <var>int</var> be the
+         <a>current integrity label</a>.
+
+      4. Let <var>canWrite</var> be the result of invoking the <a>write
+         check</a> algorithm with the <var>conf</var> and <var>int</var> labels.
+
+      5. If <var>canWrite</var> is <code>false</code>, the constructor
+         MUST throw a <code>SecurityError</code> exception
+         and terminate this algorithm.
+
+      6. Else, the user agent MUST return a new
+         <a interface>LabeledObject</a>, with the <a>protected object</a>
+         set to <var>obj clone</var>, the confidentiality label set to
+         <var>conf</var>, and the integrity
+         label set to <var>int</var>.
+
+      </dd>
+    </dl>
+
+    <div class="note">
+      Because COWL enforces labels at context boundaries, there is
+      usually no reason to label an object and then use the <a>labeled
+      object</a> within the same context.  <a interface>LabeledObject</a>s
+      are mainly useful for sending sensitive data to an untrusted
+      context, e.g., via <a>cross-document messaging</a>, as a way to ensure
+      that the data's confidentiality and integrity (as specified by
+      the labels) are respected by the untrusted context. Hence, the
+      <a>LabeledObject()</a> constructor only accepts objects that can
+      be <a>structurally cloned</a>.
+    </div>
+
+    <h4 id="labeledobject-attributes">Attributes</h4>
+    <dl dfn-for="LabeledObject">
+      <dt><dfn attribute title="LabeledObject/confidentiality">confidentiality</dfn></dt>
+      <dd>
+        On getting, the user agent MUST return the <a
+        interface>LabeledObject</a>'s confidentiality label.
+      </dd>
+      <dt><dfn attribute title="LabeledObject/integrity">integrity</dfn></dt>
+      <dd>
+        On getting, the user agent MUST return the <a
+        interface>LabeledObject</a>'s integrity label.
+      </dd>
+      <dt><dfn attribute title="LabeledObject/protectedObject">protectedObject</dfn></dt>
+      <dd>
+
+        On getting, the user agent MUST use an algorithm equivalent to
+        the following:
+
+        1. Invoke the <a>context tainting</a> algorithm with the <a
+           interface>LabeledObject</a>'s confidentiality and integrity labels.
+
+        3. Return <a interface>LabeledObject</a>'s <a>protected object</a>.
+
+      </dd>
+    </dl>
+
+    <div class="note">
+      Note: the labels of a <a interface>LabeledObject</a> are
+      essentially public since code can always inspect the labels.
+      However, to inspect the internal, <a>protected object</a>, the
+      current context must be <a>tainted</a> according to the object's
+      labels. This ensures two things:
+
+      * The context can't violate the confidentiality of the data (as
+        specified by the confidentiality label) by communicating
+        arbitrarily once it reads data labeled as such.
+
+      * The context can't violate the integrity of entities more
+        trustworthy than the data. (The trustworthiness of the data is
+        specified by the integrity label.) In particular, once the
+        context reads the data and gets <a>tainted</a>, the rest of the
+        computation is restricted to writing to entities that are at
+        most as trustworthy as the data, since the read data may have
+        influenced the computation.
+    </div>
+
+    <h4 id="labeledobject-methods">Methods</h4>
+    <dl dfn-for="LabeledObject">
+      <dt><dfn method title="clone(labels)">clone(CILabel labels)</dfn></dt>
+      <dd>
+
+      On invocation, the user agent MUST use an algorithm equivalent
+      to the following:
+
+      0. Let <var>obj</var> be the <a>protected object</a> of the
+         object on which the method was invoked.
+
+      1. Let <var>conf</var> be the confidentiality label of the
+         object on which the method was invoked.
+
+      2. Let <var>int</var> be the integrity label of the
+         object on which the method was invoked.
+
+      3. Let <var>newConf</var> be the <a dict-member
+         for="CILabel">confidentiality</a> member of the <a argument
+         for="LabeledObject/clone(labels)">labels</a> argument, if it is
+         set.  Otherwise, let <var>newConf</var> be <var>conf</conf>.
+
+      4. Let <var>newInt</var> be the <a dict-member
+          for="CILabel">integrity</a> member of the <a argument
+          for="LabeledObject/clone(labels)">labels</a>
+          parameter, if it is set.  Otherwise, let <var>newInt</var> be
+          <var>int</conf>.
+
+      5. Let <var>privs</var> be the <a>internal privilege
+         label</a> of the current <a>context privileges</a>.
+
+      6. If <code><var>newConf</var>.subsumes(<var>conf</var>, <var>privs</var>)</code>
+         returns <code>false</code> or
+         if <code><var>int</var>.<a>subsumes(<var>newInt</var>, <var>privs</var>)</a></code>
+         returns <code>false</code>, the method
+         MUST throw a <code>SecurityError</code> exception and
+         terminate this algorithm.
+
+         Note, these checks ensure that the new labels of the object are
+         at least as restricting as the original labels, taking into
+         consideration the privileges of the context.
+
+      7. Else, return a new <a interface>LabeledObject</a>, with the
+         <a>protected object</a> set to <var>obj</var>, the
+         confidentiality label set to <var>newConf</var>, and the
+         integrity label set to <var>newInt</var>.
+
+      </dd>
+    </dl>
+
+    <h4 id="labeledobject-examples">Examples</h4>
+    Below are several examples showing the usage of <a
+    interface>LabeledObject</a>s.  [[#examples-checker]] gives an
+    example of how <a interface>LabeledObject</a>s can be used to
+    confine third-party libraries (e.g., a password strength
+    checker). [[#labeledobject-xhr-send-example]] and
+    [[#labeledobject-xhr-receive-example]] show how <a
+    interface>LabeledObject</a>s are used with the
+    <a>XMLHttpRequest</a> constructor.
+
+    <div class="example">
+      Author of <code>https://police.gov</code> wishes to plot the
+      location of police cars on a map provided by
+      <code>https://maps.biz</code> without revealing the individual
+      car locations. After revealing the general area to
+      <code>https://maps.biz</code>, the author of
+      <code>https://police.gov</code> labels the police car
+      coordinates and sends them to the mapping service:
+
+      <pre><code>
+
+        // Fetch map for provided location and draw it
+        mapsIframe.postMessage({ cmd: 'draw', location: ... }, mapsOrigin);
+
+        var locations = ... // Array of police-car coordinates
+
+        // Label the locations:
+        var labeledLocations = new <a interface>LabeledObject</a>(locations,
+                                     { confidentiality: new <a interface>Label</a>(window.location.origin) });
+
+        // Send the labeled locations and plot them
+        mapsIframe.postMessage({ cmd: 'plot', locations: labeledLocations }, mapsOrigin);
+      </code></pre>
+      When receiving a <code>draw</code> message, the author of
+      <code>https://maps.biz</code> navigates the iframe map (a nested
+      context) to draw the map; otherwise, it simply forwards messages
+      from the parent (e.g., <code>plot</code>, <code>zoom</code>, and
+      <code>move</code>). (This design ensures that only the innermost
+      iframe gets tainted.)
+
+      The innermost map iframe registers a handler, that, for example,
+      draws cars on top of map tiles:
+      <pre><code>
+      window.addEventListener("message", function (event) {
+        switch (event.data.cmd) {
+          case 'plot':
+            var coordinates = event.data.locations.<a attribute>protectedObject</a>;
+            coordinates.forEach(function (coordinate) {
+              // add car to map at coordinate
+            });
+          case 'zoom': ...
+          case 'move': ...
+          ...
+        };
+      }, false);
+      </pre></code>
+
+      Note that before getting the first <a attribute>protectedObject</a>, the iframe
+      can communicate arbitrarily, e.g., to fetch map tiles. But once
+      it inspects the confidential locations COWL confines the
+      code&mdash;it restricts it to only communicating with
+      <code>https://police.gov</code>. Importantly, it can keep
+      receiving messages from its parent context via
+      <a>postMessage()</a> to, for instance, move a car.
+    </div>
+
+    <div class="example">
+      The author of <code>https://example.com</code> wishes to ensure
+      that a particular JSON object conforms to a set of validation
+      filters before submitting it to a remote server.  (Consider, for
+      example, a form validator that checks if an email address is
+      valid.) To this end, it labels the JSON and sends the <a>labeled
+      object</a> to (e.g., a Worker or iframe) that performs the
+      validation.
+
+      The validation author inspects the object, but only endorses it
+      if it conforms to the spec:
+      <pre><code>
+      function handler(lObj) {
+        if (validateA(lObj.<a attribute>protectedObject</a>)) {
+          var origin = ... ; // current origin (e.g., window.location.origin)
+          var endorsement = new <a interface>Label</a>(origin)._or('cowl://validate-A');
+          // Return a clone of the labeled object that is additionally
+          // endorsed by the current (sub-)origin.
+          return lObj.clone({ integrity: lObj.integrity.and(endorsement) });
+        } else {
+          return null;
+        }
+      }
+      </code></pre>
+      The author of <code>https://example.com</code> can then pass the
+      endorsed object to other validators or end-point (e.g., a
+      server), who can, in turn, further endorse the object or verify
+      the origins that have endorsed it.
+    </div>
+
+  </section>
+
+  <section>
+    <h3 id="header">The <code>Sec-COWL</code> HTTP Headers</h3>
+
+    The <code>Sec-COWL</code> HTTP request and response headers are
+    used by user agents and servers to convey <a>label metadata</a> to
+    servers and user agents, respectively.
+
+    <dfn>Label metadata</dfn> is either <a>labeled context metadata</a>
+    or <a>labeled data metadata</a>.
+
+    <dfn>Labeled context metadata</dfn> encodes <a>COWL state</a>
+    information, including:
+
+    * the serialized <a>context confidentiality label</a> given by the <a>ctx-confidentiality</a> directive,
+    * the serialized <a>context integrity label</a> given by the <a>ctx-integrity</a> directive, and
+    * the serialized <a>context privilege</a>'s <a>internal privilege label</a> given by the <a>ctx-privilege</a> directive.
+
+    Its ABNF is:
+
+    <pre>
+      <dfn>ctx-metadata</dfn>        = <a>ctx-directive</a> *( ";" [ <a>ctx-directive</a> ] )
+      <dfn>ctx-directive</dfn>       = *<a>WSP</a> <a>ctx-directive-name</a> 1*<a>WSP</a> <a>label-set</a>
+      <dfn>ctx-directive-name</dfn>  = "<dfn>ctx-confidentiality</dfn>" / "<dfn>ctx-integrity</dfn>" / "<dfn>ctx-privilege</dfn>"
+    </pre>
+
+    <dfn>Labeled data metadata</dfn> is used to convey the
+    confidentiality and integrity labels of an HTTP request or response, using
+    the <a>data-confidentiality</a> and
+    <a>data-integrity</a> directives.  Its ABNF is:
+
+    <pre>
+      <dfn>data-metadata</dfn>       = <a>data-directive</a> *( ";" [ <a>data-directive</a> ] )
+      <dfn>data-directive</dfn>      = *<a>WSP</a> <a>data-directive-name</a> 1*<a>WSP</a> <a>label-set</a>
+      <dfn>data-directive-name</dfn> = "<dfn>data-confidentiality</dfn>" / "<dfn>data-integrity</dfn>"
+    </pre>
+
+    The ABNF for <dfn>serialized labels</dfn> is:
+
+    <pre>
+      <dfn>label-set</dfn>           = "[" <a>disjunction-set</a> *( "," [ <a>disjunction-set</a> ] ) "]"
+      <dfn>disjunction-set</dfn>     = "[" [ <a>source-expression</a> *( "," [ <a>source-expression</a> ] ) ] "]"
+      <dfn>source-expression</dfn>   = "'self'" / <a>host-source</a>
+    </pre>
+
+    The parsing algorithms for <a>label metadata</a> are given in
+    [[#parse-labeled-metadata-data]] and [[#parse-labeled-metadata-ctx]].
+
+    <section>
+      <h4 id="request-header">The <code>Sec-COWL</code> HTTP Request Header Field</h4>
+
+      The ABNF for the <code>Sec-COWL</code> HTTP request header is:
+
+      <pre>
+        "Sec-COWL:" <a>ctx-metadata</a> / <a>data-metadata</a>
+      </pre>
+
+      The user agent MUST send a header field named <code>Sec-COWL</code>
+      along with requests if <a>confinement mode</a> is enabled.
+      The value of this header MUST contain the <a>labeled context
+      metadata</a> of the context that performed the request. This
+      <a>labeled context metadata</a> MUST include the current
+      <a>context confidentiality label</a>, <a>context integrity
+      label</a>, and <a>context privileges</a>. The user agent MAY
+      send another header with this field name whose value is
+      <a>labeled data metadata</a> (e.g., when sending <a>labeled
+      objects</a> with <a>XMLHttpRequest</a>).
+
+
+      <div class="example">
+        Request header from an <code>http://a.com</code> page that has
+        read data sensitive to <code>http://b.com</code>.
+        <pre><code>
+        Sec-COWL: <a>ctx-confidentiality</a> [ ['https://b.com'] ];
+                  <a>ctx-integrity</a> [ [] ];
+                  <a>ctx-privilege</a> [ ['https://a.com'] ];
+        </code></pre>
+      </div>
+      <div class="example">
+        A request sent from a public, untrustworthy
+        <code>http://university.edu</code> context that <a>owns</a> a
+        <a>delegated privilege</a> and a <a>FreshPrivilege()</a>.
+
+        <pre><code>
+        Sec-COWL: <a>ctx-confidentiality</a> [ [] ];
+                  <a>ctx-integrity</a> [ [] ];
+                  <a>ctx-privilege</a> [ ['http://university.edu', 'cowl://user1'], ['cowl://a0281e1f-8412-4068-a7ed-e3f234d7fd5a'] ];
+        </code></pre>
+      </div>
+    </section>
+
+    <section>
+      <h4 id="response-header">The <code>Sec-COWL</code> HTTP Response Header Field</h4>
+
+      The ABNF for the <code>Sec-COWL</code> HTTP response header is:
+      <pre>
+        "Sec-COWL:" <a>ctx-metadata</a> / <a>data-metadata</a>
+      </pre>
+
+      The header value may contain <a>labeled context metadata</a>
+      which can be used to set the initial <a>COWL state</a> of a
+      context; or it may contain <a>labeled data metadata</a> which
+      specifies the sensitivity of the response (which COWL then uses
+      to determine whether or not to block the response).
+
+      <div class="example">
+        An author may wish to specify that the
+        <code>https://university.edu/~user1</code> page should run with
+        a delegated privilege&mdash;namely,
+        <code><a interface>Label</a>("https://university.edu/")._or("cowl://user1")</code>&mdash;from
+         the start:
+        <pre><code>
+        Sec-COWL: <a>ctx-privilege</a> [ ['self', 'cowl://user1'] ];
+        </code></pre>
+      </div>
+      <div class="example">
+        The author of <code>http://a.com</code> may wish to respond to a
+        request with data that is sensitive to both <code>https://a.com</code> and
+        <code>https://b.com</code>, while simultaneously indicating that
+        it endorses the response data:
+        <pre><code>
+        Sec-COWL: <a>data-confidentiality</a> [ ['https://a.com'], ['https://b.com'] ];
+                  <a>data-integrity</a> [ ['https://a.com'] ];
+        </code></pre>
+        COWL blocks the response unless the current context's labels
+        are at least as restricting.
+      </div>
+
+      To process this header, the user agent MUST use the
+      <a href="#process-response">Process <var>response</var> to <var>request</var> as COWL</a>
+      algorithm when performing a <a>fetch</a>, as described in [[#modifications-fetch]].
+    </section>
+  </section>
+
+  <section>
+    <h3 id="extension-xhr">Extensions to XMLHttpRequest</h3>
+
+    The XMLHttpRequest specification SHOULD contain the
+    modifications described below to enable the rest of this
+    specification's work [[XHR]].
+
+    <h4 id="sending-labeled-objects">Sending <a>labeled objects</a></h4>
+    To allow authors to send <a>labeled objects</a> to a remote
+    server, this specification extends the
+    <a interface>XMLHttpRequest</a> interface with an overloaded
+    <code><a>send()</a></code> method:
+
+      <pre class="idl">
+        partial interface XMLHttpRequest {
+          void send(LabeledObject lobj);
+        };
+      </pre>
+      The <dfn method title="XMLHttpRequest/send(lobj)"
+      for="XMLHttpRequest">send(lobj)</dfn>  method MUST use an
+      algorithm that is equivalent to the following:
+
+      1. Let <var>obj</var> be the <a>protected object</a> of the
+         <a argument for="XMLHttpRequest/send(lobj)">lobj</a> argument.
+
+      2. Let <var>conf</var> be the confidentiality label of the <a
+         argument for="XMLHttpRequest/send(lobj)">lobj</a> argument.
+
+      3. Let <var>int</var> be the integrity label of the <a
+         argument for="XMLHttpRequest/send(lobj)">lobj</a> argument.
+
+      4. Let <var>privs</var> be the current <a>context privileges</a>.
+
+      5. Let <var>remoteConf</var> be the <a>label</a>
+         returned by the <a>Label(origin)</a> constructor
+         called with the
+         <a href="https://fetch.spec.whatwg.org/#concept-request-url">url</a>
+         associated with the <a>request</a>.
+
+      6. If <code><var>responseConf</var>.subsumes(<var>conf</var>,
+         <var>privs</var>)</code> returns <code>false</code>, throw
+         a <code>SecurityError</code> and terminate this algorithm.
+
+         <div class="note">
+           The user agent SHOULD warn the user that the script
+           attempted to leak data to a remote server.
+         </div>
+
+      7. Let <var>json</var> be a new <a>JSON</a> object with the
+         following entries:
+
+         * <code>"confidentiality"</code> set to <var>conf</var>.<a>toJSON()</a>.
+         * <code>"integrity"</code> set to <var>int</var>.<a>toJSON()</a></code>.
+         * <code>"object"</code> set to <var>obj</var>.
+
+      8. Set the <code>Content-Type</code> <a>header</a> to <code>`application/labeled-json`</code>.
+
+      9. Append a header named <code>Sec-COWL</code> to the
+         <a>author request headers</a> associated with the object this
+         methods was called on.  The value of the
+         <code>Sec-COWL</code> header MUST be <a>labeled data
+         metadata</a> containing the confidentiality and integrity
+         labels of the <a argument for="XMLHttpRequest/send(lobj)">lobj</a> argument.
+
+      10. Invoke the <code><a>send()</a></code>
+          method on the object this method was called on with
+          <var>json</var> as an argument.
+
+          Note, that <code><a>send()</a></code>
+          throws an exception in step 4 if <var>obj</var> cannot be <a>serialized</a>.
+          User agents MUST ensure that all <a>protected object</a>s can be
+          serialized at the time of creating <a interface>LabeledObject</a>s.
+
+    <h5 id="labeledobject-xhr-send-example">Examples</h5>
+    <div class="example">
+      Author of <code>https://example.com</code> sends JSON object
+      endorsed by <code>https://validator.com</code>:
+      <pre><code>
+      // Suppose that labeledObject is a public, high-integrity value:
+      JSON.stringify(labeledObject.confidentiality) === '[[]]';
+      JSON.stringify(labeledObject.integrity) === '[["https://validator.com"]]';
+
+      // Create an XHR request:
+      var req = new XMLHttpRequest()
+      req.open("POST", "https://example.com/...");
+
+      // Send the labeled object:
+      req.send(labeledObject);
+      </code></pre>
+      Assuming the context has a <a>default COWL state</a>,
+      <code><a>send()</a></code> would send an HTTP request of the form:
+
+      <pre><code>
+      Sec-COWL: <a>ctx-confidentiality</a> [[]];
+                <a>ctx-integrity</a> [[]];
+                <a>ctx-privilege</a> [["https://example.com"]];
+      Sec-COWL: <a>data-confidentiality</a> [[]];
+                <a>data-integrity</a> [["https://validator.com"]];
+      Content-Type: application/labeled-json;
+
+      {
+        "confidentiality": [[]],
+        "integrity": [["https://validator.com"]],
+        "object": ...
+      }
+      </code></pre>
+      The server can then verify the integrity label of the request
+      and ensure that, if the user agent is conformant, the data was
+      endorsed by <code>https://validator.com</code>.
+    </div>
+
+    <h4 id="receive-labeled-object">Receiving <a>labeled objects</a></h4>
+    To allow authors to receive <a>labeled objects</a> from remote
+    servers, the XMLHttpRequest specification SHOULD contain the
+    following modifications [[XHR]]:
+
+      1. The <code><a enum>XMLHttpRequestResponseType</a></code></h5>
+         enumeration is extended with a new response type:
+
+         <pre class="idl">
+           enum <a href="https://xhr.spec.whatwg.org/#xmlhttprequestresponsetype">XMLHttpRequestResponseType</a> {
+             // ... existing response types ...
+             "labeled-json"
+           };
+         </pre>
+
+      2. The <a href="https://xhr.spec.whatwg.org/#response-body">Response
+        body</a> section of the specification is modified to add:
+
+         1.  An <a interface>XMLHttpRequest</a> has associated
+             <dfn>response <a interface>LabeledObject</a> object</dfn>.
+
+         2. A <dfn>labeled JSON response</dfn> is the return value
+            of these steps:
+
+            1. If the <a>response LabeledObject object</a> is non-null, return it.
+
+            2. If <a attribute>responseType</a> is not
+               <code>"labeled-json"</code> or the <a>final MIME
+               type</a> is not <code>application/labeled-json</code>, return null.
+
+            3. Let <var>bytes</var> be the <a>response</a>'s <a>body</a>.
+
+            3. If <var>bytes</var> is null, return null.
+
+            4. Let <var>JSON text</var> be the result of running
+               <a>utf-8 decode</a> on byte stream <var>bytes</var>.
+
+            5. Let <var>JSON object</var> be the result of invoking the initial
+               value of the <code>parse</code> property of the
+               <code>JSON</code> object, with
+               <var>JSON text</var> as its only argument. If that threw an
+               exception, return null. [[!ECMA-262]]
+
+            6. If the <var>JSON object</var> is missing any of
+               the three entries: <code>"object"</code>,
+               <code>"confidentiality"</code>, or
+               <code>"integrity"</code> return null.
+
+            7. Let <var>protected object</var> be the value of the <code>"object"</code> entry.
+
+            8. Let <var>self</var> be the
+                <a href="https://fetch.spec.whatwg.org/#concept-response-url">url</a>
+                associated with the <a>response</a>.
+
+            9. Let <var>conf</var> be the <a>label</a>
+               returned by calling the <a>fromJSON()</a> function with
+               the <code>"confidentiality"</code> entry of the
+               <var>JSON object</var> and <var>self</var>.  If the
+               function threw an exception, return null.
+
+            10. Let <var>int</var> be the <a>label</a>
+                returned by calling the <a>fromJSON()</a> function
+                with the <code>"integrity"</code> entry of the
+                <var>JSON object</var> and <var>self</var>.  If the
+                function threw an exception, return null.
+
+            11. Let <var>responseInt</var> be the <a>label</a>
+                returned by the <a>Label(origin)</a> constructor
+                called with <var>self</var>.
+
+            12. If <var>responseInt</var> does not subsume
+                <var>int</var>, return null.
+
+                ISSUE: Should the user agent warn the user if the
+                server provided an integrity label that it is not
+                allowed to provide?
+
+            13. Set the <a>labeled JSON response</a> to a newly
+                created <a interface>LabeledObject</a> whose
+                <a>protected object</a> is <var>protected object</var>,
+                confidentiality label is <var>conf</var>, and
+                integrity label is <var>int</var>.
+
+            14. Return the <a>labeled JSON response</a>.
+
+      3. Modify the <a attribute>response</a> attribute by
+         adding the following clause to step 2 of the
+         <strong>↪ Otherwise</strong> clause:
+
+         <strong>↪ If <a attribute>responseType</a> is</strong> <code>"labeled-json"</code>
+         <p style="text-indent: 2.5em">Return the <a>labeled JSON response</a>.</p>
+
+      4. Modify step 12 of the <a>open()</a> method by adding the
+         following sub-step:
+
+         * Set <a>response LabeledObject object</a> to null.
+
+    <h5 id="labeledobject-xhr-receive-example">Examples</h5>
+    <div class="example" id="mashup-example-xhr">
+      [[#examples-mashup]] gives an example of a mashup scenario
+      wherein the data provider uses the <a
+      href="#response-header">Sec-COWL</a> HTTP response header to
+      ensure that the mashup integrator can only read the HTTP
+      response if it is sufficiently confined. A more permissive
+      approach is to send a <a>labeled JSON response</a>.
+
+      Specifically, the server operator of
+      <code>https://provider.com</code> uses a CORS response header to
+      send <code>https://mashup.com</code> a labeled JSON object. To
+      ensure that the data is protected it sets the
+      <code>Content-Type</code> response header value to
+      <code>`application/labeled-json`</code> and sets the labels
+      appropriately:
+
+      <pre><code>
+       <a>Access-Control-Allow-Origin</a>: https://mashup.com
+       Content-Type: application/labeled-json;
+
+       {
+         "confidentiality": [[]],
+         "integrity": [["https://validator.com"]],
+         "object": ...
+       }
+      </code></pre>
+
+      The confidentiality label specifies that the object is
+      confidential to <code>https://provider.com</code> and should
+      not be disseminated arbitrarily.
+
+      The author of <code>https://mashup.com</code> can read such
+      labeled responses by simply setting the <a
+      attribute>responseType</a> accordingly:
+      <pre><code>
+
+      // Create an XHR request to get the data:
+      var req = new XMLHttpRequest()
+      req.open("GET", "https://provider.com/apis/...");
+      req.responseType = "labeled-json";
+      req.onload = function (e) {
+        var labeledObject = req.response; // is a <a interface>LabeledObject</a>
+
+        // At this point, the context is still untainted, but:
+        JSON.stringify(labeledObject.confidentiality) === '[[]]';
+        JSON.stringify(labeledObject.integrity) === '[["https://provider.com"]]';
+      };
+      req.send();
+      </code></pre>
+
+      Here, COWL sets the <a attribute>response</a> to a new <a
+      interface>LabeledObject</a>, but does not <a>taint</a> the
+      context with the response label. Indeed the
+      <code>https://mashup.com</code> integrator can perform many
+      other requests to different origins. Only when the
+      <a>protected objects</a> of these <a>labeled objects</a> are
+      used will COWL taint the context and impose the label
+      restrictions.
+    </div>
+    <div class="example">
+      An image provider can serve "read-once" images by labeling them
+      with a unique origin when reply to an HTTP request:
+      <pre><code>
+       <a>Access-Control-Allow-Origin</a>: *
+       Content-Type: application/labeled-json;
+
+       {
+         "confidentiality": [["'unique'"]],
+         "integrity": [[]],
+         "object": ... base64-encoded image ...
+       }
+      </code></pre>
+      Once the receiver inspects the <a attribute>protectedObject</a>
+      of the response, COWL <a>taint</a>s the context and ensures that
+      it cannot communicate with anybody.
+    </div>
+
+    </section>
+
+    <section>
+      <h3 id="enforcement">Confinement Enforcement</h3>
+
+        <em>This sub-section is non-normative</em>
+
+        To enforce confinement, COWL ensures that code in a
+        <a>context</a> cannot send data (e.g., via <a>cross-document
+        messaging</a> or by performing a <a>fetch</a>) to contexts or
+        servers that do not preserve the confidentiality of the data.
+        Similarly, COWL ensures that a context cannot receive data from a
+        context or server that is less trustworthy.
+
+
+
+        <h4 id="modifications-fetch">Modifications to Fetch</h4>
+
+          The Fetch specification SHOULD contain the following
+          modifications in order to enable the rest of this
+          specification's work [[FETCH]]:
+
+          1. Perform the following step between step 4 and 5 in the
+             "<a>main fetch</a>" algorithm:
+
+             1. If <a href="#should-block-fetch">should fetching <var>request</var> be blocked as
+                COWL</a> returns <strong>blocked</strong>, set
+                <var>response</var> to a <a>network error</a>.
+
+          2. Perform the following step between step 12 and 13 in the
+             "<a>main fetch</a>" algorithm:
+
+             1. If <a href="#process-response">process
+                <var>response</var> to <var>request</var> as COWL</a>
+                returns <strong>blocked</strong>, set <var>response</var>
+                to a <a>network error</a>.
+
+          <h4 id="modifications-to-web-messaging">Modifications to Web Messaging</h4>
+
+          The Web Messaging specification SHOULD contain the following
+          modifications in order to enable the rest of this
+          specification's work [[WEBMESSAGING]]:
+
+          1. Perform the following step between step 9 and 10 in the
+             <a>posting messages</a> algorithm:
+
+             1. Let <var>conf</var> be the current context's <a>effective
+                confidentiality label</a>.
+
+             2. Let <var>int</var> be the current context's <a>effective
+                integrity label</a>.
+
+             3. Let <var>dstState</var> be the <a>COWL state</a>
+                associated with the
+                <code><a interface>Document</a></code> of the
+                <code><a interface>Window</a></code> object on which the
+                method was invoked.
+
+             4. If <a>confinement mode</a> for <var>dstState</var> is
+                enabled, let <var>dstConf</var> be the <var>dstState</var>
+                <a>effective confidentiality label</a>.
+
+             5. Else, let <var>dstConf</var> be the <a intergrity>Label</a> returned by the <a>label
+                upgrade</a> algorithm when invoked with the
+                <var>dstState</var> <a>context confidentiality label</a>
+                and <a>context privilege</a>.
+
+                Note, if the receiver has not enabled <a>confinement
+                mode</a>, COWL flexibly assumes that it can receive
+                data sensitive to its origin (in using the <a>label
+                upgrade</a>).
+
+             6. Let <var>dstInt</var> be the <var>dstState</var> <a>effective
+                integrity label</a>.
+
+
+             7. If <var>dstConf</var> does not <a>subsume</a>
+                <var>conf</var> or if <var>int</var> does not
+                <a>subsume</a> <var>dstInt</var>, then abort the
+                remaining steps silently.
+
+          2. Perform the following step between step 9 and 10 in the
+             <a>MessagePort <code>postMessage()</code></a> method:
+
+             1. Let <var>conf</var> be the current context's <a>effective
+                confidentiality label</a>.
+
+             2. Let <var>int</var> be the current context's <a>effective
+                integrity label</a>.
+
+             3. Let <var>dstState</var> be the <a>COWL state</a>
+                associated with the <a>owner</a> of the <var>target
+                port</var> the <a>Message Port</a>
+                <code>postMessage()</code> was called on.
+
+             4. If <a>confinement mode</a> for <var>dstState</var> is
+                enabled, let <var>dstConf</var> be the <var>dstState</var>
+                <a>effective confidentiality label</a>.
+
+             5. Else, let <var>dstConf</var> be the <a intergrity>Label</a> returned by the <a>label
+                upgrade</a> algorithm when invoked with the
+                <var>dstState</var> <a>context confidentiality label</a>
+                and <a>context privilege</a>.
+
+                Note, if the receiver has not enabled <a>confinement
+                mode</a>, COWL flexibly assumes that it can receive
+                data sensitive to its origin (in using the <a>label
+                upgrade</a>).
+
+             6. Let <var>dstInt</var> be the <var>state</var> <a>effective
+                integrity label</a>.
+
+             7. If <var>dstConf</var> does not <a>subsume</a>
+                <var>conf</var> or if <var>int</var> does not
+                <a>subsume</a> <var>dstInt</var>, then abort the
+                remaining steps.
+
+          <h4 id="modifications-to-html5">Modifications to HTML5</h4>
+
+          When <a>confinement mode</a> is enabled the user agent MUST
+          ensure that content cannot access other content from the
+          same origin (e.g., using an iframe's
+          <code><a element-attr>contentDocument</a></code>) that would violate
+          label restrictions. Specifically, if a <a>browsing
+            context</a>'s <a>confinement mode</a> is enabled
+          the user agent MUST set the following flags
+          of the context's <a>active sandboxing flag set</a>:
+
+
+          * The <a>sandboxed plugins browsing context flag</a>.
+
+          * The <a>sandboxed <code>document.domain</code> browsing context flag</a>.
+
+          If the context's <a>effective confidentiality label</a> or
+          integrity label are not the <a>empty label</a>, the
+          user agent MUST additionally set the following flags:
+
+          * The <a>sandboxed origin browsing context flag</a>.  This
+            flag ensures that the browsing context cannot access content
+            of (what was previously) the same origin. It also prevents
+            <a>script from reading from or writing to the
+              <code>document.cookie</code> IDL attribute</a>, and
+            blocks access to <code>localStorage</code>. [[WEBSTORAGE]]
+
+            <div class="note">
+              The user agent MUST ensure that if content has access
+              to another content from the same origin, but either ends
+              up enabling <a>confinement mode</a> and has a
+              non-<a>empty label</a>, access must be revoked and
+              the two must be considered as if they are of different
+              origins.  Th current version of this document specifies
+              this requirement in terms of the <a>sandboxed origin
+              browsing context flag</a>.
+
+              ISSUE: Implementation-wise, this may pose a challenge
+              for certain browsers. An alternative design may disallow
+              enabling confinement mode if the browsing context has
+              any references to or from another same-origin content.
+              Feedback on this would be very welcome.
+            </div>
+
+          * The <a>sandboxed navigation browsing context flag</a>.
+
+      ISSUE: Should COWL restrict communication via less overt
+      channels (e.g., height/width of an iframe, URL fragment, or
+      even)index in <code>window.top.frames</code>)? Maybe as optional
+      modifications to HTML? Feedback on this would be very welcome.
+    </section>
+
+</section>
+
+<!-- Big Text: algorithms -->
+<section>
+  <h2 id="algorithms">Algorithms</h2>
+  <section>
+    <h3 id="reduce-to-normal-form">Label Normal Form Reduction</h3>
+    The <dfn>label normal form reduction</dfn> algorithm takes a
+    <var>label</var> argument and produces a <a>Label</a> value
+    according to the following steps:
+
+    1. Let <var>lset</var> be the <a>label set</a> of an <a>empty label</a>.
+
+    2. For each <a>disjunction set</a> <var>dset</var> in the
+       <a>label set</a> of <var>label</var>:
+
+       1. If there is no <a>disjunction set</a> in <var>lset</var>
+          that is a subset of <var>dset</var>, then:
+
+          1. Remove every <a>disjunction set</a> in <var>lset</var> that
+             <var>dset</var> is a subset of.
+
+          2. Add <var>dset</var> to <var>lset</var>.
+
+    3. Return a newly created <a>Label</a> whose <a>label set</a> is <var>lset</var>.
+
+    Note, this algorithms assumes that <a>disjunction sets</a> and
+    <a>label sets</a> do not have duplicate elements, much like
+    mathematical sets.
+
+    <div class="example">
+      The <a>Label</a> API uses this algorithm to ensure that labels
+      don't have redundant information. Consider for example, the
+      following labels:
+      <pre><code>
+        var a    = <a>Label("https://a.com")</a>;  // https://a.com
+        var aORb = <a>Label("https://a.com")</a>.<a>_or("https://b.com")</a>; // https://a.com OR https://b.com
+        var a2   = a.<a>and(aORb)</a>; // https://a.com AND (https://a.com OR https://b.com) &equiv; https://a.com
+      </code></pre>
+
+      The label <code>a2</code> is equivalent to <code>a</code> (since
+      <code>a.<a>subsumes(aORb)</a></code>):
+
+      <pre><code>
+        JSON.stringify(a2) === '[["https://a.com"]]';
+        a2.<a>equals(a)</a>;
+      </code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h3 id="subsumes-check">Label Subsumption</h3>
+    The <dfn>label subsumption</dfn> algorithm takes a two labels
+    <var>A</var> and <var>B</var> and produces a boolean according to
+    these steps:
+
+    1.  If, for each <a>disjunction set</a>
+        <var>b</var> in the <a>label set</a> of <var>B</var> there is
+        <a>disjunction set</a> <var>a</var> in the <a>label set</a> of
+        <var>A</var> such that <var>a</var> is a <em>subset</em> of
+        <var>b</var>, return <code>true</code>.
+
+    <!-- TODO: link subset -->
+
+    2. Else, return <code>false</code>.
+
+    Note, when interpreting labels as mathematical formulae, <a>label
+    subsumption</a> is logical implication: <var>A</var>
+    subsumes <var>B</var> is equivalent as <var>A</var>
+    <em>implies</em> <var>B</var>, i.e, <var>A</var>&Rightarrow;<var>B</var>.
+  </section>
+
+  <section>
+    <h3 id="alg-label-downgrade">Label Downgrade</h3>
+    The <dfn>label downgrade</dfn> algorithm takes a confidentiality
+    label <var>label</var> and a privilege <var>priv</var>, and
+    returns the least restricting label according to the following
+    steps:
+
+    1. Let <var>privLabel</var> be the <a>internal privilege label</a>
+       of <var>priv</var>.
+
+    2. Let <var>lset</var> be the <a>label set</a> of an <a>empty label</a>.
+
+    2. For each <a>disjunction set</a> <var>dset</var> in the
+       <a>label set</a> of <var>label</var>:
+
+       1. Let <var>cur</var> be a newly create <a interface>Label</a>
+          whose <a>label set</a> is <var>dset</var>.
+
+       2. If <var>privLabel</var> does not <a>subsume</a>
+          <var>cur</var>, add <var>dset</var> to <var>lset</var>.
+
+    3. Return a newly created <a>Label</a> whose <a>label set</a> is <var>lset</var>.
+
+    Note, <a>label downgrade</a> removes every disjunction set
+    permitted by <var>priv</var>. This is used to safely declassify
+    data labeled <var>label</var>.
+  </section>
+
+  <section>
+    <h3 id="alg-label-upgrade">Label Upgrade</h3>
+    The <dfn>label upgrade</dfn> algorithm takes an integrity
+    label <var>label</var> and a privilege <var>priv</var>, and
+    returns the most permissive label according to the following
+    steps:
+
+    1. Let <var>privLabel</var> be the <a>internal privilege label</a>
+       of <var>priv</var>.
+
+    2. Return <code><var>label</var>.<a>and(<var>privLabel</var>)</a></code>.
+
+    Note, <a>label upgrade</a> is the dual of <a>label downgrade</a>.
+    This can be used to safely endorse data labeled  <var>label</var>
+    (and thus potentially already endorsed).
+  </section>
+
+  <section>
+    <h3 id="taint-context">Context Tainting</h3>
+    The <dfn>context tainting</dfn> algorithm takes a two labels,
+    <var>confidentiality</var> and <var>integrity</var>, and updates
+    the <a>context labels</a> to allow for reading data labeled with
+    these labels. The user agent MUST use an algorithm whose behavior
+    is as follows:
+
+    1. Let <var>currentConf</var> be the current <a>context
+       confidentiality label</a>.
+
+    2. Let <var>currentInt</var> be the current <a>context
+       integrity label</a>.
+
+    3. Set the <a>context confidentiality label</a> to the
+       <a>Label</a> returned by the by the <a>label downgrade</a>
+       algorithm when invoked with
+       <var>currentConf</var>.<a>and(<var>confidentiality</var>)</a>
+       and <a>current privilege</a>.
+
+    4. Set the <a>context integrity label</a> to the
+       <a>Label</a> returned by the by the <a>label downgrade</a>
+       algorithm when invoked with
+       <var>currentInt</var>.<a>_or(<var>integrity</var>)</a>
+       and <a>current privilege</a>.
+  </section>
+
+  <section>
+    <h3 id="alg-write-check">Write Check</h3>
+    The <dfn>write check</dfn> algorithm takes two labels,
+    <var>objConf</var> and <var>objInt</var>, and returns
+    <code>true</code> if the current context is allowed to write to
+    (or create) an entity labeled as such; otherwise, it returns
+    <code>false</code>. The user agent MUST use an algorithm whose
+    behavior is as follows:
+
+    1. Let <var>currentConf</var> be the current  context's <a>effective
+       confidentiality label</a>.
+
+    2. Let <var>currentInt</var> be the current context's <a>effective
+       integrity label</a>.
+
+    3. If <var>objConf</var> does not <a>subsume</a>
+       <var>currentConf</var> or if <var>currentInt</var> does not
+       <a>subsumes</a> <var>objInt</var>, return <code>false</code>.
+
+    7. Else, return <code>true</code>.
+  </section>
+
+  <section>
+    <h3 id="structured-cloning">Structured Cloning</h3>
+    When a user agent is required to obtain a <a>structured clone</a>
+    of an object whose type is defined in this document, it MUST use
+    an algorithm whose behavior is as follows:
+
+    1. Let <var>input</var> be the value being cloned.
+
+    2. If <var>input</var> is a <a interface>Label</a> object, let
+       <var>output</var> be a newly constructed <a interface>Label</a>
+       object with the same <a>label set</a> as that of
+       <var>input</var>.
+
+    3. If <var>input</var> is a <a interface>Privilege</a> object
+       that was constructed with the <a>FreshPrivilege()</a>
+       constructor, let <var>output</var> be a newly constructed <a
+       interface>Privilege</a> object with the same <a>internal
+       privilege label</a> as that of <var>input</var>.
+
+       <div class="note">
+       To prevent attacks that launder page privileges, the current
+       version of COWL only allows transferring fresh privileges.
+
+       ISSUE: We can be more permissive and allow transferring all but
+       <a>default privileges</a>. Feedback on this would be welcome.
+       </div>
+
+    4. If <var>input</var> is a <a interface>LabeledObject</a> object, let
+       <var>output</var> be a newly constructed <a
+       interface>LabeledObject</a> object with the same internal
+       <a>protected object</a>, confidentiality label, and integrity
+       label as that of <var>input</var>.
+
+    5. Return <var>output</var>.
+
+    Note, cross-context messaging constructs such as
+    <a>postMessage()</a> use the <a>structured clone</a> algorithm
+    (e.g., see the <a>internal structured cloning algorithm</a>).
+    This algorithm is used to allow  authors to transfer COWL
+    object, such as <a interface>LabeledObject</a>s, to other contexts.
+  </section>
+
+  <section>
+    <h3 id="should-block-fetch">
+      Should fetching <var>request</var> be blocked as COWL?
+    </h3>
+    <div class="note">
+      Note: this algorithm is used to determine whether a request should
+      be entirely blocked, because it may potentially leak sensitive
+      data to an unauthorized server.
+    </div>
+
+    Given a <a>Request</a> <var>request</var>, a user agent determines
+    whether the <a>Request</a> <var>request</var> should proceed or
+    not via the following algorithm:
+
+    1. Let <var>context</var> be the <a>client</a>
+       associated with the <var>request</var>.
+
+    2. If <var>context</var> is null, let <var>context</var> be the
+       <a>incumbent settings object</a>.
+
+       Note, the <a>client</a> associated with the
+       <var>request</var> is null when <a>navigating</a>, so we use
+       the <a>incumbent settings object</a> to get the <a>COWL
+       state</a> of the <a>context</a> that initiated the request.
+
+    2. Let <var>state</var> be the <a>COWL state</a> retrieved via the
+       <a>environment settings object</a> <var>context</var>.
+
+    3. If the <var>state</var> <a>confinement mode</a> is not
+       enabled, return <strong>allowed</strong> and terminated this
+       algorithm.
+
+    4. Let <var>conf</var> be the <var>state</var> <a>effective confidentiality label</a>.
+
+    6. Let <var>dstConf</var> be the <a integrity>Label</a> created by invoking
+       the <a>Label(origin)</a> constructor with the
+       <a href="https://fetch.spec.whatwg.org/#concept-request-url">url</a>
+       associated with the <var>request</var>.
+
+    7. If <var>dstConf</var> <a>subsumes</a> <var>conf</var>, return
+       <strong>allowed</strong>.
+
+    8. Else:
+
+        1. If the <var>request</var> is a <a>navigation request</a>
+           and the <var>request</var>'s <a>context frame type</a> is
+           <code>top-level</code> the user agent MAY return
+           <strong>allowed</strong>, but MUST indicate to the user
+           that data labeled <var>conf</var> may have been leaked due
+           to the navigation.  It is RECOMMENDED that user agents give
+           users the options to block the navigation, e.g., via a
+           pop-up dialog.
+
+           ISSUE: We can simply disallow leaks via top-level
+           navigation at the cost of potentially forcing users to
+           navigate away by closing tabs or inputting another URL via
+           the address bar.  Feedback on this would be welcome.
+
+        2. Else, return <strong>blocked</strong>.
+
+    Note, the integrity label of the current context is not
+    used in this algorithm since, conceptually, the integrity label of
+    a server is the <a>empty label</a> and, thus, always subsumed.
+  </section>
+
+  <section>
+    <h3 id="process-response">
+      Process <var>response</var> to <var>request</var> as COWL
+    </h3>
+    <div class="note">
+      <a href="#should-block-fetch">If a request proceeds</a>, we
+      still might want to block the response based on the <a>labeled
+      data metadata</a> of the response. For example, if the
+      <a>current confidentiality label</a> does not <a>subsume</a> the
+      confidentiality label of the response, the user agent MUST block
+      the response since it could otherwise violate the confidentiality
+      of the response data. (The dual holds for integrity.) This
+      algorithm is used to make the determination of whether or not a
+      response is blocked.
+
+      This algorithm is also used to set the <a>COWL state</a> for
+      new documents and Workers according to server-supplied the
+      <a>labeled context metadata</a>.
+    </div>
+
+    Given a <a>Request</a> <var>request</var> and <a>Response</a>
+    <var>response</var>, a user agent determines
+    whether the response should be returned via the following algorithm:
+
+    1. If the <var>response</var>'s <a>header list</a> has no
+       <a>header</a> whose <a>name</a> is
+       <code>Sec-COWL</code>, return <strong>allowed</strong> and
+       terminate this algorithm.
+
+    2. Let <var>destination</var> be the <var>request</var>'s <a>destination</a>.
+
+    3. Let <var>type</var> be the <var>request</var>'s <a>type</a>.
+
+    4. Let <var>MIMEType</var> be the result of <a>extracting a MIME
+       type</a> from <var>response</var>'s <a>header list</a>.
+
+    5. Let <var>context</var> be the <a>client</a>
+       associated with the <var>request</var>.
+
+    6. If <var>context</var> is null, let <var>context</var> be the
+       <a>incumbent settings object</a>.
+
+       Note, the <a>client</a> associated with the
+       <var>request</var> is null when <a>navigating</a>, so we use
+       the <a>incumbent settings object</a> to get or set the <a>COWL
+       state</a> of the <a>context</a> that initiated the request.
+
+    7. Let <var>state</var> be the <a>COWL state</a> retrieved via the
+       <a>environment settings object</a> <var>context</var>.
+
+    8. Let <var>metadata</var> be
+       the <em>first</em> <a>header</a> whose <a>name</a>
+       is <code>Sec-COWL</code> in the <a>response</a>'s <a>header list</a>.
+
+    9. If <var>destination</var> is <code>"document"</code>,
+       <code>"worker"</code> or <code>"serviceworker"</code>:
+
+         0. Let <var>self</var> be the serialization of the
+            <a>origin</a> retrieved via the
+            <a>environment settings object</a> <var>context</var>.
+
+         1. Let <var>conf</var>, <var>int</var>, <var>priv</var> be the
+            result of calling the <a>parse labeled context
+            metadata</a> algorithm with <var>metadata</var> and <var>self</var>.
+
+         2. If either <var>conf</var>, <var>int</var>, or
+            <var>priv</var> are null, return <strong>blocked</strong>.
+
+         3. Else:
+
+            1. Set the <var>state</var> <a>context confidentiality label</a>
+               to <var>conf</var>.
+
+            2. Set the <var>state</var> <a>context integrity label</a>
+               to <var>int</var>, if the <var>state</var>
+               <a>effective integrity label</a> subsumes <var>int</var>.
+
+               Note, by performing the <a>label subsumption</a> check before
+               setting the <a>context privilege</a> (next step), the
+               <a>context integrity label</a> can be upgraded from
+               the <a>empty label</a>, while allowing the <a>context
+               privilege</a> to also be dropped.
+
+               ISSUE: Should the user agent warn the user if the
+               server provided an integrity label that it is not
+               allowed to provide?
+
+            3. Set the <var>state</var> <a>context privilege</a>
+               to <var>priv</var>, if <var>priv</var>
+               is a <a>delegated privilege</a> of the <var>state</var>
+               <a>context privilege</a>.
+
+               ISSUE: Should the user agent warn the user if the
+               server provided a privilege that it is not allowed to
+               provide?
+
+            4. Enable <a>confinement mode</a> for <var>state</var>.
+
+            5. Return <strong>allowed</strong>.
+
+    10. Else:
+
+         0. Let <var>self</var> be the
+            <a href="https://fetch.spec.whatwg.org/#concept-response-url">url</a>
+            associated with the <a>response</a>.
+
+         1. Let <var>conf</var> and <var>int</var> be the
+            results of calling the <a>parse labeled data metadata</a>
+            with <var>metadata</var> and <var>self</var>.
+
+         2. If either <var>conf</var> or <var>int</var> is null,
+            return <strong>blocked</strong> and terminate this algorithm.
+
+         3. If the <var>state</var> <a>effective confidentiality
+            label</a> subsumes <var>conf</var> and <var>int</var>
+            subsumes the <var>state</var> <a>effective integrity
+            label</a>, return <strong>allowed</strong>.
+
+         4. Else, return <strong>blocked</strong>.
+
+            Note, COWL conservatively blocks a response that is
+            potentially more confidential or less trustworthy than the
+            context making the request. In future versions of COWL,
+            certain responses (e.g., images) which are only not as
+            trustworthy as the <a>context integrity label</a>
+            may be allowed by the user agent.
+  </section>
+
+  <section>
+    <h3 id="parse-labeled-metadata-data">
+      Parse labeled data metadata
+    </h3>
+
+    To <dfn>parse <a>labeled data metadata</a></dfn> <var>metadata</var> for
+    origin <var>self</var>, the user agent MUST use an algorithm
+    equivalent to the following:
+
+    1. Let <var>conf</var> be null.
+
+    2. Let <var>int</var> be null.
+
+    3. For each non-empty token returned by
+       <a lt="strictly split a string" spec="HTML5">strictly splitting</a>
+       the string <var>metadata</var> on the character U+003B SEMICOLON (<code>;</code>):
+
+       1. <a spec="HTML5">Skip whitespace</a>.
+
+       2. <a spec="HTML5">Collect a sequence of characters</a> that are
+          not <a spec="HTML5">space characters</a>. The collected characters
+          are the <var>directive name</var>.
+
+       3. If there are characters remaining in <var>token</var>,
+          skip ahead exactly one character (which must be a
+          <a spec="HTML5">space character</a>).
+
+       4. The remaining characters in <var>token</var> (if any) are
+          the <var>directive value</var>.
+
+       5.  Let <var>label value</var> be the <a>label</a> returned by
+           calling the <a>fromJSON()</a> function with the
+           <var>directive value</var> and <var>self</var>.  If the
+           function threw an exception, ignore this instance of the
+           directive and continue to the next token.
+
+       6. If <var>directive name</var> is <a><code>data-confidentiality</code></a>
+          and <var>conf</var> is null, let <var>conf</var> be <var>label
+          value</var>.
+
+       7. Else, if <var>directive name</var> is
+          <a><code>data-integrity</code></a> and <var>int</var> is null,
+          let <var>int</var> be <var>label value</var>.
+
+       8. Else, ignore this instance of the directive and continue to
+          the next token.
+
+    4. Return <var>conf</var> and <var>int</var>.
+
+    <div class="note">
+      To make it easier for developers to debug applications, user
+      agents SHOULD report the directives that were ignored.
+    </div>
+  </section>
+
+  <section>
+    <h3 id="parse-labeled-metadata-ctx">
+      Parse labeled context metadata
+    </h3>
+
+    To <dfn>parse <a>labeled context metadata</a></dfn> <var>metadata</var> for
+    origin <var>self</var>, the user agent MUST use an algorithm
+    equivalent to the following:
+
+    1. Let <var>conf</var> be null.
+
+    2. Let <var>int</var> be null.
+
+    3. Let <var>priv</var> be null.
+
+    4. For each non-empty token returned by
+       <a lt="strictly split a string" spec="HTML5">strictly splitting</a>
+       the string <var>metadata</var> on the character U+003B SEMICOLON (<code>;</code>):
+
+       1. <a spec="HTML5">Skip whitespace</a>.
+
+       2. <a spec="HTML5">Collect a sequence of characters</a> that are
+          not <a spec="HTML5">space characters</a>. The collected characters
+          are the <var>directive name</var>.
+
+       3. If there are characters remaining in <var>token</var>,
+          skip ahead exactly one character (which must be a
+          <a spec="HTML5">space character</a>).
+
+       4. The remaining characters in <var>token</var> (if any) are
+          the <var>directive value</var>.
+
+       5.  Let <var>label value</var> be the <a>label</a>
+           returned by calling the <a>fromJSON()</a> function with the
+           <var>directive value</var> and <var>self</var>.  If the
+           function threw an exception, ignore this instance of the
+           directive and continue to the next token.
+
+       6. If <var>directive name</var> is
+          <a><code>ctx-confidentiality</code></a> and <var>conf</var> is
+          null, let <var>conf</var> be <var>label value</var>.
+
+       7. Else, if <var>directive name</var> is
+          <a><code>ctx-integrity</code></a> and <var>int</var> is null,
+          let <var>int</var> be <var>label value</var>.
+
+       8. Else, if <var>directive name</var> is
+          <a><code>ctx-privilege</code></a> and <var>priv</var> is null,
+          let <var>priv</var> be a newly created <a>privilege</a> whose
+          <a>internal privilege label</a> is set to <var>label
+          value</var>.
+
+       9. Else, ignore this instance of the directive and continue to
+          the next token.
+
+    5. Return <var>conf</var>, <var>int</var>, and <var>priv</var>.
+
+    <div class="note">
+      To make it easier for developers to debug applications, user
+      agents SHOULD report the directives that were ignored.
+    </div>
+  </section>
+</section>
+
+<!-- Big Text: iana -->
+<section>
+  <h2 id="iana-considerations">IANA Considerations</h2>
+
+  <h3 id="iana-https">
+    The <code>Sec-COWL</code> HTTP Header Field
+  </h3>
+  The permanent message header field registry should be updated with the
+  following registration [[!RFC3864]]:
+
+  <dl>
+    <dt>Header field name</dt>
+    <dd>Sec-COWL</dd>
+
+    <dt>Applicable protocol</dt>
+    <dd>http</dd>
+
+    <dt>Status</dt>
+    <dd>standard</dd>
+
+    <dt>Author/Change controller</dt>
+    <dd>W3C</dd>
+
+    <dt>Specification document</dt>
+    <dd>This specification (See [[#header]])</dd>
+  </dl>
+
+  <h3 id="iana-mime">
+    The <code>application/labeled-json</code> MIME media type
+  </h3>
+
+  <dl>
+    <dt>Type name</dt>
+    <dd>application</dd>
+
+    <dt>Subtype name</dt>
+    <dd>labeled-json</dd>
+
+    <dt>Required parameters</dt>
+    <dd>Same as for <code>application/json</code>. [[JSON]]</dd>
+
+    <dt>Optional parameters</dt>
+    <dd>Same as for <code>application/json</code>. [[JSON]]</dd>
+
+    <dt>Encoding considerations</dt>
+    <dd>Same as for <code>application/json</code>. [[JSON]]</dd>
+
+    <dt>Security considerations</dt>
+    <dd>Same as for <code>application/json</code>. [[JSON]]</dd>
+
+    <dt>Interoperability considerations</dt>
+    <dd>Same as for <code>application/json</code>. [[JSON]]</dd>
+
+    <dt>Published specification</dt>
+    <dd>
+    Labeling a resource with the <code>application/labeled-json</code>
+    type asserts that the resource is a JSON text that consists of an
+    object with a single entry called <code>"confidentiality"</code>
+    consisting of an array of entries, each of which consists of an
+    array of strings, a single entry called <code>"integrity"</code>
+    consisting of an array of entries, each of which consists of an
+    array of strings, and a single entry called <code>"object"</code>
+    consisting of a JSON object.  The relevant specifications are the
+    JSON specification and this specification. [[JSON]]
+    </dd>
+
+    <dt>Author/Change controller</dt>
+    <dd>W3C</dd>
+  </dl>
+</section>
+
+<!-- Big Text: thanks -->
+<section>
+  <h2 id="acknowledgements">Acknowledgements</h2>
+
+  Thanks to Dan Boneh, Brendan Eich, Brad Hill, Dave Herman, Bobby
+  Holley, Brad Karp, Jonathan Kingston Petr Marchenko, David Mazières,
+  Devon Rifkin, Alejandro Russo, and Brian Smith for influencing
+  (directly or otherwise) the design of COWL and/or their comments on
+  this document.
+</section>
