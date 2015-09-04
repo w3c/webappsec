@@ -117,6 +117,7 @@ spec: WebIDL; urlPrefix: https://heycam.github.io/webidl/
     text: type name; url: dfn-type-name
     text: dictionary member; url: dfn-dictionary-member
     text: value pairs to iterate over; url: dfn-value-pairs-to-iterate-over
+    text: interface; url: dfn-interface
   type: interface
     text: USVString; url: idl-USVString
     text: object; url: idl-object
@@ -1236,7 +1237,9 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       Switch on <var>type</var>, and execute the associated steps:
 
       <dl>
+        <dt>{{FederatedCredential}}</dt>
         <dt>{{OriginBoundCredential}}</dt>
+        <dt>{{PasswordCredential}}</dt>
         <dd>
           <ol>
             <li>
@@ -1309,7 +1312,7 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     Gather <code>OriginBoundCredential</code>s
   </h4>
 
-  Given an <a>origin</a> (<var>origin</var>), and a sequence of {{DOMString}}
+  Given an <a>origin</a> (<var>origin</var>), and a set of <a>interfaces</a>
   (<var>types</var>), and an {{CredentialRequestOptions}} dictionary
   (<var>options</var>), this algorithm returns a sequence of
   {{OriginBoundCredential}} from the user agent's <a>credential store</a>
@@ -1329,8 +1332,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       based on vendor-specific heuristics (as described in [[#synthesis]]).
     </li>
     <li>
-      Remove any items from <var>credentials</var> whose {{Credential/type}}
-      property is not a case-sensitive match for a const in <var>types</var>.
+      Remove any items from <var>credentials</var> whose <a>interface</a> is
+      not present in <var>types</var>.
     </li>
     <li>
       Remove any items from <var>credentials</var> whose <a>options matching
@@ -1347,10 +1350,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   </h4>
 
   This algorithm accepts an <a>origin</a> (<var>origin</var>), a set of
-  type names (<var>types</var>) and an {{CredentialRequestOptions}} dictionary
-  (<var>options</var>), and returns either a single {{OriginBoundCredential}}
-  object <strong>if and only if</strong> one can be provided without user
-  mediation, or <code>null</code> if not.
+  <a>interfaces</a> (<var>types</var>) and an {{CredentialRequestOptions}}
+  dictionary (<var>options</var>), and returns either a single
+  {{OriginBoundCredential}} object <strong>if and only if</strong> one can be
+  provided without user mediation, or <code>null</code> if not.
 
   <ol>
     <li>
@@ -1392,21 +1395,16 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   </h4>
 
   This algorithm accepts an <a>origin</a> (<var>origin</var>), a set of
-  type names (<var>types</var>) and an {{CredentialRequestOptions}} dictionary
-  (<var>options</var>), and returns either a single {{OriginBoundCredential}}
-  object, or <code>null</code> if none can be provided.
+  <a>interfaces</a> (<var>types</var>) and an {{CredentialRequestOptions}}
+  dictionary (<var>options</var>), and returns either a single
+  {{OriginBoundCredential}} object, or <code>null</code> if none can be
+  provided.
 
   <ol>
     <li>
       Let <var>credentials</var> be the result of executing
       [[#gather-originboundcredentials]] on <var>origin</var>,
       <var>types</var>, and <var>options</var>.
-    </li>
-      This requirement only applies if we would show UI to the user.
-      If she's elected to allow credentials to be provided without user
-      mediation, and we can do so, then we don't require a user gesture
-      for {{CredentialContainer/get()}}. Otherwise, we do, due to the
-      considerations in [[#privacy-considerations]].
     </li>
     <li>
       Ask the user which {{Credential}} to share.
