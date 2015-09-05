@@ -45,6 +45,7 @@ type: dfn
       text: creating a new Document object; url: create-a-document-object
       text: navigated; url: navigate
       text: nested browsing context
+      text: parent browsing context
       text: nested through; url: browsing-context-nested-through
       text: plugin document
       text: sandboxed origin browsing context flag
@@ -58,6 +59,7 @@ type: dfn
       text: incumbent settings object
       text: relevant settings object for a script
       text: responsible document
+      text: responsible browsing context
       text: global object
   urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/; spec: CSP2
     text: enforce
@@ -71,15 +73,13 @@ type: dfn
     text: response; url: concept-response
     text: network error; url: concept-network-error
     text: opaque filtered response; url: concept-filtered-response-opaque
+    text: initiator; url: concept-request-initiator
+    text: type; url: concept-request-type
+    text: destination; url: concept-request-destination
+    text: navigation request
     url: concept-request-client
       text: request client
       text: client
-    url: concept-request-context
-      text: request context
-      text: context
-    url: concept-request-context-frame-type
-      text: request context frame type
-      text: frame type
     url: concept-response-https-state
       text: response https state;
       text: https state
@@ -360,43 +360,33 @@ type: element-attr
       </li>
     </ul>
 
-    These resource types map to the following Fetch <a>request contexts</a>:
-    <code>audio</code>, <code>image</code>, <code>prefetch</code>, and
-    <code>video</code>. These contexts are <dfn>optionally-blockable request
-    contexts</dfn>.
-
     Note: We further limit this category in [[#should-block-fetch]] by
     force-failing any CORS-enabled request. This means that mixed content images
     loaded via <code>&lt;img crossorigin ...&gt;</code> will be blocked. This is
     a good example of the general principle that a category of content falls
     into this category <em>only</em> when it is too widely used to be blocked
-    outright. The Working Group intends to find more blockable subsets of an
-    otherwise <a>optionally-blockable request context</a>.
+    outright. The Working Group intends to carve out more blockable subsets as
+    time goes on.
   </section>
 
   <section>
     <h3 id="category-blockable">Blockable Content</h3>
 
     Any resource or <a>request</a> that isn't <a>optionally-blockable</a> is
-    <dfn>blockable</dfn>. Typical examples of this kind of content include scripts,
-    <a>plugin</a> data, data requested via {{XMLHttpRequest}}, and so on. Every
-    <a>request context</a> that is not <a>optionally-blockable</a> is a
-    <dfn>blockable request context</dfn>. This explicitly includes any contexts
-    defined after publication of this document.
+    <dfn>blockable</dfn>. Typical examples of this kind of content include
+    scripts, <a>plugin</a> data, data requested via {{XMLHttpRequest}}, and so
+    on.
 
-    Note: The request contexts <code>form</code>, <code>hyperlink</code>, and
-    <code>location</code> might refer to <a>top-level browsing context</a>
-    <a lt="navigated">navigations</a>, which are not considered mixed
-    content. See the treatment of <a>request context frame type</a> in
+    Note: <a>Navigation requests</a> might target <a>top-level browsing
+    contexts</a>; these are not considered mixed content. See
     [[#should-block-fetch]] for details.
 
-    Note: The <code>plugin</code> request context is used for requests made on
-    behalf of a plugin. We categorize these requests as blockable, but recognize
-    that user agents aren't always in a position to mediate these requests.
-    NPAPI plugins, for instance, often have direct network access, and can
-    generally bypass the user agent entirely. We recommend that plugin vendors
-    implement mixed content checking themselves to mitigate the risks outlined
-    in this document.
+    Note: Note that requests made on behalf of a plugin are blockable. We
+    recognize, however, that user agents aren't always in a position to mediate
+    these requests. NPAPI plugins, for instance, often have direct network
+    access, and can generally bypass the user agent entirely. We recommend that
+    plugin vendors implement mixed content checking themselves to mitigate the
+    risks outlined in this document.
   </section>
 </section>
 
@@ -661,7 +651,7 @@ type: element-attr
 
     <ol>
       <li>
-        <var>request</var>'s <code>context</code> is <code>fetch</code>
+        <var>request</var>'s <a>initiator</a> is <code>fetch</code>
 
         Note: When a request is copied (as in the <code>fetch(e.response)</code>
         example above), the original <code>context</code> is lost. Here, we
@@ -705,69 +695,76 @@ type: element-attr
 
     <ol>
       <li>
-        Let <var>context</var> be <var>request</var>'s <code>context</code>.
-      </li>
-      <li>
-        Let <var>frame type</var> be <var>request</var>'s <code>context frame
-        type</code>.
-      </li>
-      <li>
-        Let <var>origin</var> be the <a>origin</a> of <var>request</var>'s
-        <strong>URL</strong>.
-      </li>
-      <li>
-        If [[#categorize-settings-object]] returns <code>Does Not Restrict
-        Mixed Content</code> when applied to <var>request</var>'s <a>client</a>,
-        return <strong>allowed</strong>.
-      </li>
-      <li>
-        If the user agent has been instructed to allow <a>mixed content</a>
-        (as outlined in [[#requirements-user-controls]]), return
-        <strong>allowed</strong>.
-      </li>
-      <li>
-        If <var>request</var>'s <code>context frame type</code> is
-        <code>top-level</code>, return <strong>allowed</strong>.
-      </li>
-      <li>
-        If <var>origin</var> is <a><i lang="la">a priori</i> insecure</a>:
+        Return <strong>allowed</strong> if one or more of the following
+        conditions are met:
 
         <ol>
           <li>
-            If <var>request</var>'s <code>mode</code> is <code>CORS</code> or
-            <code>CORS-with-forced-preflight</code>, return
-            <strong>blocked</strong>.
+            [[#categorize-settings-object]] returns <code>Does Not Restrict
+            Mixed Content</code> when applied to <var>request</var>'s
+            <a>client</a>.
           </li>
           <li>
-            If <var>context</var> is <code>fetch</code>:
+            <var>request</var>'s <code>url</code>'s <a>origin</a> is
+            <a>potentially secure</a>.
+          </li>
+          <li>
+            The user agent has been instructed to allow <a>mixed content</a>, as
+            described in [[#requirements-user-controls]]).
+          </li>
+          <li>
+            <var>request</var>'s <a>target</a> is "<code>document</code>", and
+            <var>request</var>'s <a>client</a>'s <a>responsible browsing
+            context</a> has no <a>parent browsing context</a>.
 
-            <ol>
-              <li>
-                If <var>request</var> is <strong>not</strong> a <a>passthrough
-                request</a>, return <strong>blocked</strong>.
-              </li>
-              <li>
-                If <var>request</var>'s <code>mode</code> is not
-                <code>no-cors</code>, return <strong>blocked</strong>.
-              </li>
-            </ol>
-          <li>
-            Otherwise, if <var>context</var> is a <a>blockable request
-            context</a>, return <strong>blocked</strong>.
-          </li>
-          <li>
-            If the user agent is configured to block <a>optionally-blockable</a>
-            mixed content, return <strong>blocked</strong>.
-          </li>
-          <li>
-            If <var>request</var>'s <a>client</a>'s <a>strict mixed content
-            checking flag</a> is <code>true</code>, return
-            <strong>blocked</strong>.
+            ISSUE: This doesn't yet work correctly for content inside an
+            <{iframe}> or <{frame}>.
           </li>
         </ol>
       </li>
       <li>
-        Return <strong>allowed</strong>.
+        Return <strong>blocked</strong> if one or more of the following
+        conditions are met:
+
+        <ol>
+          <li>
+            The user agent is configured to block <a>optionally-blockable</a>
+            mixed content, as described in [[#requirements-user-controls]].
+          </li>
+          <li>
+            <var>request</var>'s <a>client</a>'s <a>strict mixed content
+            checking flag</a> is <code>true</code>.
+          </li>
+          <li>
+            <var>request</var>'s <code>mode</code> is <code>CORS</code> or
+            <code>CORS-with-forced-preflight</code>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <strong>allowed</strong> if one or more of the following
+        conditions are met:
+
+        <ol>
+          <li>
+            <var>request</var>'s <a>initiator</a> is "<code>fetch</code>" and
+            <a>destination</a> is "<code>subresource</code>", and
+            <var>request</var> is a <a>passthrough request</a>.
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>image</code>", and
+            <a>initiator</a> is not "<code>imageset</code>".
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>video</code>".
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>audio</code>".
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <strong>blocked</strong>.
       </li>
     </ol>
 
@@ -800,76 +797,71 @@ type: element-attr
 
     <ol>
       <li>
-        If [[#categorize-settings-object]] returns <code>Does Not Restrict
-        Mixed Content</code> when applied to <var>request</var>'s <a>client</a>,
-        return <strong>allowed</strong>.
-      </li>
-      <li>
-        If the user agent has been instructed to allow <a>mixed content</a>
-        (as outlined in [[#requirements-user-controls]]), return
-        <strong>allowed</strong>.
-      </li>
-      <li>
-        Let <var>context</var> be the <a>request context</a> of
-        <var>request</var>.
-      </li>
-      <li>
-        If <var>response</var>'s <a>HTTPS state</a> is not
-        <code>authenticated</code>:
+        Return <strong>allowed</strong> if one or more of the following
+        conditions are met:
 
         <ol>
           <li>
-            If <var>context</var> is <code>fetch</code>:
-
-            <ol>
-              <li>
-                If <var>request</var> is <strong>not</strong> a <a>passthrough
-                request</a>, return <strong>blocked</strong>.
-              </li>
-              <li>
-                If <var>response</var> is <strong>not</strong> an <a>opaque
-                filtered response</a>, return <strong>blocked</strong>.
-              </li>
-              <li>
-                If the user agent is configured to block
-                <a>optionally-blockable</a> mixed content, return
-                <strong>blocked</strong>.
-              </li>
-              <li>
-                If <var>request</var>'s <a>client</a>'s <a>strict mixed content
-                checking flag</a> is <code>true</code>, return
-                <strong>blocked</strong>.
-              </li>
-            </ol>
+            [[#categorize-settings-object]] returns <code>Does Not Restrict
+            Mixed Content</code> when applied to <var>request</var>'s
+            <a>client</a>.
           </li>
           <li>
-            Otherwise:
+            <var>response</var>'s <a>HTTPS state</a> is
+            <code>authenticated</code>.
+          </li>
+          <li>
+            The user agent has been instructed to allow <a>mixed content</a>, as
+            described in [[#requirements-user-controls]]).
+          </li>
+          <li>
+            <var>request</var>'s <a>target</a> is "<code>document</code>", and
+            <var>request</var>'s <a>client</a>'s <a>responsible browsing
+            context</a> has no <a>parent browsing context</a>.
 
-            <ol>
-              <li>
-                If <var>context</var> is a <a>blockable request
-                context</a>, return <strong>blocked</strong>.
-              </li>
-              <li>
-                If the user agent is configured to block
-                <a>optionally-blockable</a> mixed content, return
-                <strong>blocked</strong>.
-              </li>
-              <li>
-                If <var>request</var>'s <a>client</a>'s <a>strict mixed content
-                checking flag</a> is <code>true</code>, return
-                <strong>blocked</strong>.
-              </li>
-            </ol>
+            ISSUE: This doesn't yet work correctly for content inside an
+            <{iframe}> or <{frame}>.
           </li>
         </ol>
-
-        Note: This covers both cases in which unauthenticated resources are
-        returned (by a Service Worker, for example), as well as cases in
-        which the TLS handshake succeeds, but the user agent chooses to hold
-        it to a higher standard.
       </li>
-      <li>Return <strong>allowed</strong>.</li>
+      <li>
+        Return <strong>blocked</strong> if one or more of the following
+        conditions are met:
+
+        <ol>
+          <li>
+            The user agent is configured to block <a>optionally-blockable</a>
+            mixed content, as described in [[#requirements-user-controls]].
+          </li>
+          <li>
+            <var>request</var>'s <a>client</a>'s <a>strict mixed content
+            checking flag</a> is <code>true</code>.
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <strong>allowed</strong> if <var>response</var> is an <a>opaque
+        filtered response</a> and one or more of the following conditions are
+        met:
+
+        <ol>
+          <li>
+            <var>request</var>'s <a>initiator</a> is "<code>fetch</code>", and
+            <var>request</var> is a <a>passthrough request</a>.
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>image</code>", and
+            <a>initiator</a> is not "<code>imageset</code>".
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>video</code>".
+          </li>
+          <li>
+            <var>request</var>'s <a>type</a> is "<code>audio</code>".
+          </li>
+        </ol>
+      </li>
+      <li>Return <strong>blocked</strong>.</li>
     </ol>
   </section>
 </section>
@@ -1058,14 +1050,14 @@ type: element-attr
     To that end:
 
     1.  [[#should-block-fetch]] has some carve-outs for the <code>fetch</code>
-        request context, with the intent of allowing a Service Worker to copy
-        a request as part of its response to a Fetch event (e.g.
+        request <a>initiator</a>, with the intent of allowing a Service Worker
+        to copy a request as part of its response to a Fetch event (e.g.
         <code>fetch(event.response)</code> should be executable inside the
         event handler.
 
-        The <code>fetch</code> request context will continue to be treated as
-        <a>blockable</a> when executed outside the context of a Fetch event,
-        which of course includes document contexts.
+        <code>fetch</code> will continue to be treated as <a>blockable</a> when
+        executed outside the context of a Fetch event, which of course includes
+        document contexts.
 
     2.  [[#should-block-response]] verifies that the incoming response has the
         same security characteristics that were allowed for the request. That
