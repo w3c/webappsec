@@ -17,7 +17,7 @@ CSP2-PR: CSP2/published/2015-08-PR.html
 CSP3: content-security-policy/index.html
 EPR: epr/index.html
 MIX: mixedcontent/index.html
-MIX-CR: mixedcontent/published/2015-08-CR.html
+MIX-CR: mixedcontent/published/2015-09-CR.html
 MIX-PR: mixedcontent/published/2015-07-PR.html
 POWER: powerfulfeatures/index.html
 POWER-WD: powerfulfeatures/published/WD.html
@@ -61,8 +61,8 @@ mixedcontent/index.html: mixedcontent/index.src.html biblio.json
 mixedcontent/published/2015-07-PR.html: mixedcontent/index.src.html
 	bikeshed -f spec --md-status=PR --md-date=2015-07-01 --md-deadline=2015-08-01 ./mixedcontent/index.src.html ./mixedcontent/published/2015-07-PR.html
 
-mixedcontent/published/2015-08-CR.html: mixedcontent/index.src.html
-	bikeshed -f spec --md-status=CR --md-date=2015-08-04 --md-deadline=2015-09-04 ./mixedcontent/index.src.html ./mixedcontent/published/2015-08-CR.html
+mixedcontent/published/2015-09-CR.html: mixedcontent/index.src.html
+	bikeshed -f spec --md-status=CR --md-date=2015-09-22 --md-deadline=2015-10-22 ./mixedcontent/index.src.html ./mixedcontent/published/2015-09-CR.html
 
 referrer-policy/index.html: referrer-policy/index.src.html biblio.json
 	bikeshed -f spec ./referrer-policy/index.src.html
