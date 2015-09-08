@@ -5,21 +5,34 @@
  * the auto-sign-in option set), then credentials will be provided.
  */
 if (navigator.credentials) {
+  console.log("Trying automatic sign-in.");
   navigator.credentials.get({
     password: true,
     suppressUI: true
   }).then(processResponse);
-} else {
-  processResponse(null);
 }
 
 function toggleState() {
+  console.log("Toggling UI state.");
   document.body.classList.toggle('signedin');
   document.body.classList.toggle('signedout');
 }
 
 function processResponse(c) {
   if (c) {
+    console.log("Got credentials for %s!", c.id);
+
+    // In a real site, we'd do something like the following to asynchronously
+    // sign the user in:
+    //
+    //   var fd = c.toFormData();
+    //   fetch("https://example.com/signinEndpoint/", { body: fd, method: "POST" })
+    //       .then(function (response) {
+    //         if ([check that the response is a valid signin event])
+    //           updateUI();
+    //       });
+    //
+    // Here, we'll just update the UI:
     toggleState();
     document.querySelector('var').textContent = c.id;
   }
@@ -31,14 +44,14 @@ function processResponse(c) {
  * if no credential is provided).
  */
 document.querySelector('#signin').addEventListener('click', function () {
+  console.log("Clicked 'sign in!'");
   if (navigator.credentials) {
     navigator.credentials.get({
       password: true
     }).then(function (c) {
       processResponse(c);
-      if (!c) {
+      if (!c)
         document.querySelector('dialog').showModal();
-      }
     });
   } else {
     document.querySelector('dialog').showModal();
@@ -49,6 +62,7 @@ document.querySelector('#signin').addEventListener('click', function () {
  * Wire up the 'Sign Out' link to call `requireUserMediation()`
  */
 document.querySelector('#signout').addEventListener('click', function () {
+  console.log("Clicked 'sign out!'");
   if (navigator.credentials)
     navigator.credentials.requireUserMediation();
   document.body.classList.toggle('signedin');
@@ -61,6 +75,7 @@ document.querySelector('#signout').addEventListener('click', function () {
  * submission if the API is available.
  */
 document.querySelector('form').addEventListener('submit', function (e) {
+  console.log("Submitted a sign-in form.");
   e.preventDefault();
 
   if (navigator.credentials) {
