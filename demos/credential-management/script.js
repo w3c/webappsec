@@ -50,8 +50,10 @@ document.querySelector('#signin').addEventListener('click', function () {
       password: true
     }).then(function (c) {
       processResponse(c);
-      if (!c)
+      if (!c) {
+        document.querySelector('form').innerHTML = '<label for="username">Username:</label><input id="username" type="text" name="username" autocomplete="username"></input><label for="password">Password:</label><input id="password" type="password" name="password" autocomplete="new-password"></input><input type="submit">';
         document.querySelector('dialog').showModal();
+      }
     });
   } else {
     document.querySelector('dialog').showModal();
@@ -67,14 +69,13 @@ document.querySelector('#signout').addEventListener('click', function () {
     navigator.credentials.requireUserMediation();
   document.body.classList.toggle('signedin');
   document.body.classList.toggle('signedout');
-
 });
 
 /*
  * Finally, we'll wire up the submit button on the form to call `store()` upon
  * submission if the API is available.
  */
-document.querySelector('input[type=submit]').addEventListener('click', function (e) {
+document.querySelector('form').addEventListener('submit', function (e) {
   console.log("Submitted a sign-in form.");
   e.preventDefault();
 
