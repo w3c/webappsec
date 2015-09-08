@@ -88,6 +88,16 @@ document.querySelector('input[type=submit]').addEventListener('click', function 
     navigator.credentials.store(c).then(function (a) { console.log(a); }).catch(function (e) { console.log(e); });
   }
 
+  // Sign the user in asynchronously using the data in the form. This will either look like
+  // the code in `processResponse()` above (if the credentials API is available), or
+  // something like the following if it's not:
+  //
+  // fetch("https://example.com/signinEndpoint/",
+  //       { body: new FormData(document.querySelector('form')), method: "POST" });
+  //  
+  // Note that we call `e.preventDefault()` at the top of this event handler to prevent
+  // the actual form submission while we do the asynchronous request.
+
   toggleState();
   document.querySelector('var').textContent = document.querySelector('#username').value;
   document.querySelector('dialog').close();
