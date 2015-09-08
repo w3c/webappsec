@@ -71,10 +71,10 @@ document.querySelector('#signout').addEventListener('click', function () {
 });
 
 /*
- * Finally, we'll wire up the form button on the form to call `store()` upon
+ * Finally, we'll wire up the submit button on the form to call `store()` upon
  * submission if the API is available.
  */
-document.querySelector('form').addEventListener('submit', function (e) {
+document.querySelector('input[type=submit]').addEventListener('click', function (e) {
   console.log("Submitted a sign-in form.");
   e.preventDefault();
 
@@ -84,7 +84,8 @@ document.querySelector('form').addEventListener('submit', function (e) {
       password: document.querySelector('#password').value,
       iconURL: getFace(document.querySelector('#username').value)
     });
-    navigator.credentials.store(c);
+
+    navigator.credentials.store(c).then(function (a) { console.log(a); }).catch(function (e) { console.log(e); });
   }
 
   toggleState();
@@ -101,9 +102,9 @@ document.querySelector('form').addEventListener('submit', function (e) {
 function getFace(string) {
   var hashString = function() {
     var hash = 0, i, chr, len;
-    if (this.length == 0) return hash;
-    for (i = 0, len = this.length; i < len; i++) {
-      chr = this.charCodeAt(i);
+    if (string.length == 0) return hash;
+    for (i = 0, len = string.length; i < len; i++) {
+      chr = string.charCodeAt(i);
       hash = ((hash << 5) - hash) + chr;
       hash |= 0; // Convert to 32bit integer
     }
