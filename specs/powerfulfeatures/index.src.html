@@ -45,9 +45,7 @@ urlPrefix: http://www.w3.org/TR/html5/; spec: HTML5
       text: sandboxing flag set
       text: top-level browsing context
     urlPrefix: webappapis.html
-      text: API base URL
       text: incumbent settings object
-      text: responsible document
       text: settings object
       text: relevant settings object; url: relevant-settings-object-for-a-global-object
       text: global object
@@ -76,9 +74,12 @@ urlPrefix: https://tools.ietf.org/html/rfc6454; spec: RFC6454
   type: dfn
     text: globally unique identifier; url: section-2.3
     text: origin; url: section-3.2
-urlPrefix: https://html.spec.whatwg.org/multipage/workers.html
+urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   type: dfn
-    text: the worker's documents
+    urlPrefix: workers.html
+      text: the worker's documents
+    urlPrefix: webappapis.html
+      text: creation URL
 </pre>
 <!--
 ████ ██    ██ ████████ ████████   ███████
@@ -379,15 +380,13 @@ urlPrefix: https://html.spec.whatwg.org/multipage/workers.html
           <li>
             If <var>origin</var> is a <a>globally unique identifier</a>, set
             <var>origin</var> to the <a lt="origin of a url">origin</a>
-            of <var>settings</var>'s <a>API base URL</a>.
+            of <var>settings</var>'s <a>creation URL</a>.
 
             Note: This is future-proofing against a world where sandboxing
             {{Worker}} is a thing.
 
-            ISSUE: "<a>API base URL</a>" isn't correct. We should use whatever
-            gets produced as a result of
-            <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=27146">bug
-            27146</a>.
+            ISSUE: WHATWG's HTML for <a>creation URL</a>, as W3C's doesn't
+            define the primitive we need.
           </li>
           <li>
             If the result of executing the [[#is-origin-trustworthy]] algorithm
@@ -395,6 +394,9 @@ urlPrefix: https://html.spec.whatwg.org/multipage/workers.html
             Trustworthy</code>, return <code>Not Secure</code>.
           </li>
         </ol>
+
+        Note: This covers "potentially trustworthy", non-HTTPS origins like
+        <code>http://127.0.0.1</code>.
 
         ISSUE: <a>HTTPS state</a> is poorly defined. For example, we should ensure
         that sandboxed documents retain the <a>HTTPS state</a>
@@ -447,12 +449,13 @@ urlPrefix: https://html.spec.whatwg.org/multipage/workers.html
           </li>
         </ol>
 
-        Note: If <var>settings</var> maps to a {{Document}} (either directly,
-        or as the <a>responsible document</a> of a {{Worker}}), we'll walk all
-        the way up the document's ancestor chain to verify that the whole chain
+        Note: If <var>settings</var> maps to one or more {{Document}}s (either
+        directly, or as one of a {{Worker}}'s {{Document}}s), we'll walk all
+        the way up each document's ancestor chain to verify that the whole chain
         is secure.
-        
-        ISSUE: WHATWG's HTML, because W3C's Worker definition is obsolete.
+
+        ISSUE: WHATWG's HTML for <a>the Worker's <code>Document</code>s</a>,
+        because W3C's Worker definition is obsolete.
       </li>
       <li>
         Return <code>Secure</code>
