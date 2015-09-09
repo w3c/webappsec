@@ -56,6 +56,7 @@ document.querySelector('#signin').addEventListener('click', function () {
       }
     });
   } else {
+    document.querySelector('form').innerHTML = '<label for="username">Username:</label><input id="username" type="text" name="username" autocomplete="username"></input><label for="password">Password:</label><input id="password" type="password" name="password" autocomplete="new-password"></input><input type="submit">';
     document.querySelector('dialog').showModal();
   }
 });
