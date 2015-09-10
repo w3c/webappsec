@@ -71,7 +71,7 @@
    <h1 class="p-name no-ref" id="title">Confinement with Origin Web Labels</h1>
   
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft,
-    <time class="dt-updated" datetime="2015-09-05">5 September 2015</time></span></h2>
+    <time class="dt-updated" datetime="2015-09-09">9 September 2015</time></span></h2>
   
    <div data-fill-with="spec-metadata">
     <dl>
@@ -319,18 +319,18 @@ further.</p>
 
     <p>This document specifies an extension to the current model called
   Confinement with Origin Web Labels (COWL). COWL provides authors
-  with APIs for specifying access control policies on data, including
-  content, in terms of <a data-link-type="dfn" href="#origin-label">origin labels</a>.  These policies are
-  enforced in a mandatory fashion, transitively, even once code has
-  access to the data.  For example, with COWL, the author of
-  <code>https://example.com</code> can specify that a password is
-  confidential to <code>https://example.com</code> (and thus should
-  only be disclosed to <code>https://example.com</code>) before
-  sharing it with a third-party password strength checking service. In
-  turn, COWL ensures that the third-party service, which necessarily
-  computes on the sensitive password, is confined and respects the
-  policy on the password: COWL disallows it from disclosing the
-  password to any <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> other than
+  with APIs for specifying (mandatory) access control policies on
+  data, including content, in terms of <a data-link-type="dfn" href="#origin-label">origin labels</a>.  These
+  policies are enforced in a mandatory fashion, transitively, even
+  once code has access to the data.  For example, with COWL, the
+  author of <code>https://example.com</code> can specify that a
+  password is confidential to <code>https://example.com</code> (and
+  thus should only be disclosed to <code>https://example.com</code>)
+  before sharing it with a third-party password strength checking
+  service. In turn, COWL ensures that the third-party service, which
+  necessarily computes on the sensitive password, is confined and
+  respects the policy on the password: COWL disallows it from
+  disclosing the password to any <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> other than
   <code>https://example.com</code>.</p>
 
 
@@ -358,11 +358,11 @@ further.</p>
 
     <p>COWL is intended to be used as a defense-in-depth mechanism that can
   restrict how untrusted—buggy but not malicious—code
-  sensitive data. Given the complexities of browser implementations
-  and presence of covert channels, malicious code may be able to
-  exfiltrate data. Authors should still use discretionary access
-  control mechanisms, such as CSP and CORS, to restrict access to the
-  data in the first place.</p>
+  handles sensitive data. Given the complexities of browser
+  implementations and presence of covert channels, malicious code may
+  be able to exfiltrate data. Authors should still use discretionary
+  access control mechanisms, such as CSP and CORS, to restrict access
+  to the data in the first place.</p>
 
   
     <section>
@@ -766,15 +766,16 @@ COWL.privilege = new <a data-link-type="functionish" href="#dom-privilege-privil
       
 
   
-      <div class="example" id="example-6618ece2"><a class="self-link" href="#example-6618ece2"></a>
+      <div class="example" id="example-b7c7efed"><a class="self-link" href="#example-b7c7efed"></a>
     The integrity label
     <code><a class="idl-code" data-link-type="interface" href="#label0">Label</a>("https://a.com").or("https://b.com")</code>,
     when associated with a context, restricts the context to
     receiving data from (a context or server) that is at least as
     trustworthy as <code>https://a.com</code> or
     <code>https://b.com</code>.  This context label ensures that
-    the code running in the context can only be influenced by
-    <code>https://a.com</code> and <code>https://b.com</code>.
+    the code running in the context can only be influenced by data
+    which either <code>https://a.com</code> or
+    <code>https://b.com</code> endorse.
   </div>
       
 
@@ -873,7 +874,7 @@ reflects the fact that the object (produced by
      <li data-md="">
       <p>A <dfn data-dfn-type="dfn" data-noexport="" id="privilege">privilege<a class="self-link" href="#privilege"></a></dfn> is an unforgeable object that corresponds
   to a <a data-link-type="dfn" href="#label">label</a>. Privileges are associated with contexts and
-  reflect the authority of the context.</p>
+  reflect their authority.</p>
       
 
 
@@ -885,8 +886,8 @@ reflects the fact that the object (produced by
       
 
   
-      <div class="example" id="example-e8c74689"><a class="self-link" href="#example-e8c74689"></a>
-    Consider a context whose
+      <div class="example" id="example-c90a85dd"><a class="self-link" href="#example-c90a85dd"></a>
+    Consider a context from <code>https://a.com</code> whose
     <a data-link-type="dfn" href="#current-confidentiality-label">current confidentiality label</a> is <code><a class="idl-code" data-link-type="interface" href="#label0">Label</a>("https://a.com").and("https://b.com")</code>.
     This label confines the context to only communicating with
     entities whose labels are at least as restricting as this
@@ -897,17 +898,17 @@ reflects the fact that the object (produced by
     from communicating with <code>https://a.com</code>.
 
 
-       <p>But, suppose that the context’s <a data-link-type="dfn" href="#current-privilege">current privilege</a> corresponds
-    to <code><a class="idl-code" data-link-type="interface" href="#label0">Label</a>("https://a.com")</code>, as
-    would be the case for an
-    <code>https://a.com</code> context. Then, the context would be able to
-    bypass some of the restrictions imposed by the context label.
-    Specifically, the context would be able to communicate with
-    <code>https://b.com</code>; the privilege confers it the
-    right to declassify <code>https://a.com</code> data to
-    <code>https://b.com</code>. Indeed, when taking this privilege into
-    consideration, the <a data-link-type="dfn" href="#effective-confidentiality-label">effective confidentiality label</a> of
-    the context is <code><a class="idl-code" data-link-type="interface" href="#label0">Label</a>("https://b.com")</code>.</p>
+       <p>But, suppose that the context’s <a data-link-type="dfn" href="#current-privilege">current privilege</a>
+    corresponds to <code><a class="idl-code" data-link-type="interface" href="#label0">Label</a>("https://a.com")</code>
+    (afterall, the context originated from <code>https://a.com</code>).
+    Then, the context would be able to bypass some of the
+    restrictions imposed by the context label.  Specifically, the
+    context would be able to communicate with
+    <code>https://b.com</code>; the privilege confers it the right
+    to declassify <code>https://a.com</code> data to
+    <code>https://b.com</code>. Indeed, when taking this privilege
+    into consideration, the <a data-link-type="dfn" href="#effective-confidentiality-label">effective confidentiality label</a>
+    of the context is <code><a class="idl-code" data-link-type="interface" href="#label0">Label</a>("https://b.com")</code>.</p>
        
 
 
@@ -920,7 +921,7 @@ reflects the fact that the object (produced by
     
        <div class="note" role="note">
       To be flexible, COWL uses the context privilege to remove
-      (the safe) restrictions imposed by the <a data-link-type="dfn" href="#context-labels">context label</a>.
+      certain restrictions imposed by the <a data-link-type="dfn" href="#context-labels">context label</a>.
       To avoid accidentally leaking sensitive context data,
       authors should use <a class="idl-code" data-link-type="interface" href="#labeledobject">LabeledObject</a>s.
     </div>
@@ -1051,7 +1052,7 @@ reflects the fact that the object (produced by
         The COWL framework provides a JavaScript
         <a class="idl-code" data-link-type="interface" href="#privilege0">Privilege</a> interface for operating on and minting
         new <a data-link-type="dfn" href="#privilege">privileges</a>.  The <a class="idl-code" data-link-type="interface" href="#cowl">COWL</a> JavaScript
-        interface and <code>Sec-COWL</code> HTTP response header can be used
+        interface and <code>Sec-COWL</code> HTTP response header can be
         used to explicitly control the authority of a context by setting
         the <a data-link-type="dfn" href="#context-privilege">context privilege</a>.
       
@@ -1317,7 +1318,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="lab
 
         <li data-md="">
          <p>For each <a data-link-type="dfn" href="#disjunction-set">disjunction set</a> <var>dset</var> in the
- <a data-link-type="dfn" href="#label-set">label set</a> of the <a data-link-type="dfn" href="#label">label</a> this method was invoked on:</p>
+ <a data-link-type="dfn" href="#label-set">label set</a> of the <a data-link-type="dfn" href="#label">label</a>, this method was invoked on:</p>
          
 
 
@@ -1407,6 +1408,14 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="lab
             <li data-md="">
              <p>If <var>str</var> is a <code>"unique"</code>,
  let <var>origin</var> be a <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-2.3">globally unique identifier</a>.</p>
+             
+
+ 
+             <div class="note" role="note">
+   Much like <a data-link-type="functionish" href="#dom-privilege-freshprivilege">FreshPrivilege()</a>,
+   <code>"unique"</code> is used to create a label
+   component that is globally unique.
+ </div>
              
 
 
@@ -2710,9 +2719,10 @@ mapsIframe.postMessage({ cmd: 'plot', locations: labeledLocations }, mapsOrigin)
      
 
     
-     <pre><dfn data-dfn-type="dfn" data-noexport="" id="label_set">label-set<a class="self-link" href="#label_set"></a></dfn>           = "[" <a data-link-type="dfn" href="#disjunction_set">disjunction-set</a> *( "," [ <a data-link-type="dfn" href="#disjunction_set">disjunction-set</a> ] ) "]"
+     <pre><dfn data-dfn-type="dfn" data-noexport="" id="label_set">label-set<a class="self-link" href="#label_set"></a></dfn>           = "[" <a data-link-type="dfn" href="#disjunction_set">disjunction-set</a> *( "," [ <a data-link-type="dfn" href="#disjunction_set">disjunction-set</a> ] ) "]" / <a data-link-type="dfn" href="#empty_label">empty-label</a>
 <dfn data-dfn-type="dfn" data-noexport="" id="disjunction_set">disjunction-set<a class="self-link" href="#disjunction_set"></a></dfn>     = "[" [ <a data-link-type="dfn" href="#source_expression">source-expression</a> *( "," [ <a data-link-type="dfn" href="#source_expression">source-expression</a> ] ) ] "]"
 <dfn data-dfn-type="dfn" data-noexport="" id="source_expression">source-expression<a class="self-link" href="#source_expression"></a></dfn>   = "'self'" / <a data-link-type="dfn" href="https://www.w3.org/TR/CSP2/#source-list-syntax">host-source</a>
+<dfn data-dfn-type="dfn" data-noexport="" id="empty_label">empty-label<a class="self-link" href="#empty_label"></a></dfn>         = "[" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> "[" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> "]" *<a data-link-type="dfn" href="https://tools.ietf.org/html/rfc5234#appendix-B.1">WSP</a> "]"
 </pre>
      
 
@@ -2755,8 +2765,8 @@ mapsIframe.postMessage({ cmd: 'plot', locations: labeledLocations }, mapsOrigin)
 
 
       
-      <div class="example" id="example-89644cdc"><a class="self-link" href="#example-89644cdc"></a>
-        Request header from an <code>http://a.com</code> page that has
+      <div class="example" id="example-da414d56"><a class="self-link" href="#example-da414d56"></a>
+        Request header from a <code>http://a.com</code> page that has
         read data sensitive to <code>http://b.com</code>.
         
        <pre><code>Sec-COWL: <a data-link-type="dfn" href="#ctx_confidentiality">ctx-confidentiality</a> [ ['https://b.com'] ];
@@ -2976,6 +2986,18 @@ mapsIframe.postMessage({ cmd: 'plot', locations: labeledLocations }, mapsOrigin)
   throws an exception in step 4 if <var>obj</var> cannot be <a data-link-type="dfn" href="https://w3c.github.io/DOM-Parsing/#dfn-concept-fragment-serializing-algorithm">serialized</a>.
   User agents MUST ensure that all <a data-link-type="dfn" href="#protected-object">protected object</a>s can be
   serialized at the time of creating <a class="idl-code" data-link-type="interface" href="#labeledobject">LabeledObject</a>s.</p>
+       
+
+  
+       <div class="note" role="note">
+    This algorithm does not check if the integrity label of
+    the object subsumes the server’s integrity label. It is
+    the server’s responsibility to ensure that untrustworthy
+    data does not affect its computation in an unsafe way.
+    Indeed, the only reason for checking the confidentiality
+    labels is because the user agent has no way to ensure that
+    the server will respect the confidentiality of the data.
+  </div>
        
 </ol>
      
@@ -3233,7 +3255,7 @@ Content-Type: application/labeled-json;
 
 {
   "confidentiality": [[]],
-  "integrity": [["https://validator.com"]],
+  "integrity": [["https://provider.com"]],
   "object": ...
 }
 </code></pre>
@@ -4060,9 +4082,13 @@ a2.<a data-link-type="functionish" href="#dom-label-equalsother">equals(a)</a>;
 </ol></ol>
      
 
-     <p class="note" role="note">Note, the integrity label of the current context is not
-    used in this algorithm since, conceptually, the integrity label of
-    a server is the <a data-link-type="dfn" href="#empty-label">empty label</a> and, thus, always subsumed.</p>
+     <p class="note" role="note">Note, the integrity label of the current context is not used in
+    this algorithm since, conceptually, the integrity label of a
+    server is the <a data-link-type="dfn" href="#empty-label">empty label</a> and, thus, always subsumed.
+    Server operators should check the
+    <a href="#request-header"><code>Sec-COWL</code></a> request header
+    to ensure untrustworthy data does not affect the computation in an
+    unsafe way.</p>
      
   
     </section>
@@ -4788,6 +4814,7 @@ a2.<a data-link-type="functionish" href="#dom-label-equalsother">equals(a)</a>;
    <li>effective confidentiality label, <a href="#effective-confidentiality-label">2.2</a>
    <li>effective integrity label, <a href="#effective-integrity-label">2.2</a>
    <li>empty label, <a href="#empty-label">3.1</a>
+   <li>empty-label, <a href="#empty_label">3.5</a>
    <li>empty privilege, <a href="#empty-privilege">3.2</a>
    <li>enable(), <a href="#dom-cowl-enable">3.3.2</a>
    <li>equals(other), <a href="#dom-label-equalsother">3.1.2</a>

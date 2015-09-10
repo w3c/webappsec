@@ -201,18 +201,18 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
 
   This document specifies an extension to the current model called
   Confinement with Origin Web Labels (COWL). COWL provides authors
-  with APIs for specifying access control policies on data, including
-  content, in terms of <a>origin labels</a>.  These policies are
-  enforced in a mandatory fashion, transitively, even once code has
-  access to the data.  For example, with COWL, the author of
-  <code>https://example.com</code> can specify that a password is
-  confidential to <code>https://example.com</code> (and thus should
-  only be disclosed to <code>https://example.com</code>) before
-  sharing it with a third-party password strength checking service. In
-  turn, COWL ensures that the third-party service, which necessarily
-  computes on the sensitive password, is confined and respects the
-  policy on the password: COWL disallows it from disclosing the
-  password to any <a>origin</a> other than
+  with APIs for specifying (mandatory) access control policies on
+  data, including content, in terms of <a>origin labels</a>.  These
+  policies are enforced in a mandatory fashion, transitively, even
+  once code has access to the data.  For example, with COWL, the
+  author of <code>https://example.com</code> can specify that a
+  password is confidential to <code>https://example.com</code> (and
+  thus should only be disclosed to <code>https://example.com</code>)
+  before sharing it with a third-party password strength checking
+  service. In turn, COWL ensures that the third-party service, which
+  necessarily computes on the sensitive password, is confined and
+  respects the policy on the password: COWL disallows it from
+  disclosing the password to any <a>origin</a> other than
   <code>https://example.com</code>.
 
   COWL enforces such policies by confining code at the
@@ -237,11 +237,11 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
 
   COWL is intended to be used as a defense-in-depth mechanism that can
   restrict how untrusted&mdash;buggy but not malicious&mdash;code
-  sensitive data. Given the complexities of browser implementations
-  and presence of covert channels, malicious code may be able to
-  exfiltrate data. Authors should still use discretionary access
-  control mechanisms, such as CSP and CORS, to restrict access to the
-  data in the first place.
+  handles sensitive data. Given the complexities of browser
+  implementations and presence of covert channels, malicious code may
+  be able to exfiltrate data. Authors should still use discretionary
+  access control mechanisms, such as CSP and CORS, to restrict access
+  to the data in the first place.
 
   <section>
   <h3 id="goals">Goals</h3>
@@ -551,8 +551,9 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
         receiving data from (a context or server) that is at least as
         trustworthy as <code>https://a.com</code> or
         <code>https://b.com</code>.  This context label ensures that
-        the code running in the context can only be influenced by
-        <code>https://a.com</code> and <code>https://b.com</code>.
+        the code running in the context can only be influenced by data
+        which either <code>https://a.com</code> or
+        <code>https://b.com</code> endorse.
       </div>
 
       When associated with an object, a confidentiality label
@@ -618,7 +619,7 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
   <h3 id="key-concepts-privileges">Privileges</h3>
   1.  A <dfn>privilege</dfn> is an unforgeable object that corresponds
       to a <a>label</a>. Privileges are associated with contexts and
-      reflect the authority of the context.
+      reflect their authority.
 
       Privileges can be used to bypass confinement restrictions
       imposed by confidentiality labels.  In particular, a privilege
@@ -627,29 +628,29 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
       <a>internal privilege label</a>&mdash;subsumes.
 
       <div class="example">
-        Consider a context whose
+        Consider a context from <code>https://a.com</code> whose
         <a>current confidentiality label</a> is <code><a
-            interface>Label</a>("https://a.com").and("https://b.com")</code>.
+        interface>Label</a>("https://a.com").and("https://b.com")</code>.
         This label confines the context to only communicating with
         entities whose labels are at least as restricting as this
         label. For example, it restricts the context from
         communicating with a context labeled <code><a
-           interface>Label</a>("https://b.com")</code>, since doing
+        interface>Label</a>("https://b.com")</code>, since doing
         so could leak <code>https://a.com</code> data to
         <code>https://b.com</code>. It similarly prevents the context
         from communicating with <code>https://a.com</code>.
 
-        But, suppose that the context's <a>current privilege</a> corresponds
-        to <code><a interface>Label</a>("https://a.com")</code>, as
-        would be the case for an
-        <code>https://a.com</code> context. Then, the context would be able to
-        bypass some of the restrictions imposed by the context label.
-        Specifically, the context would be able to communicate with
-        <code>https://b.com</code>; the privilege confers it the
-        right to declassify <code>https://a.com</code> data to
-        <code>https://b.com</code>. Indeed, when taking this privilege into
-        consideration, the <a>effective confidentiality label</a> of
-        the context is <code><a interface>Label</a>("https://b.com")</code>.
+        But, suppose that the context's <a>current privilege</a>
+        corresponds to <code><a interface>Label</a>("https://a.com")</code>
+        (afterall, the context originated from <code>https://a.com</code>).
+        Then, the context would be able to bypass some of the
+        restrictions imposed by the context label.  Specifically, the
+        context would be able to communicate with
+        <code>https://b.com</code>; the privilege confers it the right
+        to declassify <code>https://a.com</code> data to
+        <code>https://b.com</code>. Indeed, when taking this privilege
+        into consideration, the <a>effective confidentiality label</a>
+        of the context is <code><a interface>Label</a>("https://b.com")</code>.
 
         Note, the privilege does not allow the context to bypass any
         label restrictions. For example, it does not allow the context
@@ -658,7 +659,7 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
 
         <div class="note">
           To be flexible, COWL uses the context privilege to remove
-          (the safe) restrictions imposed by the <a>context label</a>.
+          certain restrictions imposed by the <a>context label</a>.
           To avoid accidentally leaking sensitive context data,
           authors should use <a interface>LabeledObject</a>s.
         </div>
@@ -753,7 +754,7 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
         The COWL framework provides a JavaScript
         <a interface>Privilege</a> interface for operating on and minting
         new <a>privileges</a>.  The <a interface>COWL</a> JavaScript
-        interface and <code>Sec-COWL</code> HTTP response header can be used
+        interface and <code>Sec-COWL</code> HTTP response header can be
         used to explicitly control the authority of a context by setting
         the <a>context privilege</a>.
       </dd>
@@ -903,7 +904,7 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
         1. Let <var>JSON lset</var> be a new <a>JSON array</a>.
 
         2. For each <a>disjunction set</a> <var>dset</var> in the
-           <a>label set</a> of the <a>label</a> this method was invoked on:
+           <a>label set</a> of the <a>label</a>, this method was invoked on:
 
            1. Let <var>JSON dset</var> be a JSON array of strings,
               each corresponding an origin in <var>dset</var>.
@@ -942,6 +943,12 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
 
               1. If <var>str</var> is a <code>"unique"</code>,
                  let <var>origin</var> be a <a>globally unique identifier</a>.
+
+                 <div class="note">
+                   Much like <a>FreshPrivilege()</a>,
+                   <code>"unique"</code> is used to create a label
+                   component that is globally unique.
+                 </div>
 
               2. Else, if <var>str</var> is <code>"self"</code> and <var>self</var> is not null,
                  let <var>origin</var> be <var>self</var>.
@@ -1783,9 +1790,10 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
     The ABNF for <dfn>serialized labels</dfn> is:
 
     <pre>
-      <dfn>label-set</dfn>           = "[" <a>disjunction-set</a> *( "," [ <a>disjunction-set</a> ] ) "]"
+      <dfn>label-set</dfn>           = "[" <a>disjunction-set</a> *( "," [ <a>disjunction-set</a> ] ) "]" / <a>empty-label</a>
       <dfn>disjunction-set</dfn>     = "[" [ <a>source-expression</a> *( "," [ <a>source-expression</a> ] ) ] "]"
       <dfn>source-expression</dfn>   = "'self'" / <a>host-source</a>
+      <dfn>empty-label</dfn>         = "[" *<a>WSP</a> "[" *<a>WSP</a> "]" *<a>WSP</a> "]"
     </pre>
 
     The parsing algorithms for <a>label metadata</a> are given in
@@ -1813,7 +1821,7 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
 
 
       <div class="example">
-        Request header from an <code>http://a.com</code> page that has
+        Request header from a <code>http://a.com</code> page that has
         read data sensitive to <code>http://b.com</code>.
         <pre><code>
         Sec-COWL: <a>ctx-confidentiality</a> [ ['https://b.com'] ];
@@ -1949,6 +1957,16 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
           throws an exception in step 4 if <var>obj</var> cannot be <a>serialized</a>.
           User agents MUST ensure that all <a>protected object</a>s can be
           serialized at the time of creating <a interface>LabeledObject</a>s.
+
+          <div class="note">
+            This algorithm does not check if the integrity label of
+            the object subsumes the server's integrity label. It is
+            the server's responsibility to ensure that untrustworthy
+            data does not affect its computation in an unsafe way.
+            Indeed, the only reason for checking the confidentiality
+            labels is because the user agent has no way to ensure that
+            the server will respect the confidentiality of the data.
+          </div>
 
     <h5 id="labeledobject-xhr-send-example">Examples</h5>
     <div class="example">
@@ -2108,7 +2126,7 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
 
        {
          "confidentiality": [[]],
-         "integrity": [["https://validator.com"]],
+         "integrity": [["https://provider.com"]],
          "object": ...
        }
       </code></pre>
@@ -2600,9 +2618,13 @@ spec: DOM-Parsing; urlPrefix: https://w3c.github.io/DOM-Parsing/
 
         2. Else, return <strong>blocked</strong>.
 
-    Note, the integrity label of the current context is not
-    used in this algorithm since, conceptually, the integrity label of
-    a server is the <a>empty label</a> and, thus, always subsumed.
+    Note, the integrity label of the current context is not used in
+    this algorithm since, conceptually, the integrity label of a
+    server is the <a>empty label</a> and, thus, always subsumed.
+    Server operators SHOULD check the
+    <a href="#request-header"><code>Sec-COWL</code></a> request header
+    to ensure untrustworthy data does not affect the computation in an
+    unsafe way.
   </section>
 
   <section>
