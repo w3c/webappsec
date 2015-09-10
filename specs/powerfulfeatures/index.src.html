@@ -21,6 +21,7 @@ Indent: 2
 urlPrefix: http://www.w3.org/TR/dom/; spec: DOM
   type: interface
     text: Document; url: interface-document
+    text: Window; url: interface-window
 urlPrefix: https://fetch.spec.whatwg.org/; spec: FETCH
   type: dfn
     text: HTTPS state; url: concept-response-https-state
@@ -40,6 +41,7 @@ urlPrefix: http://www.w3.org/TR/html5/; spec: HTML5
       text: browsing context
       text: browsing context container
       text: creating a new Document object
+      text: creator Document
       text: nested through; url: browsing-context-nested-through
       text: sandboxed origin browsing context flag
       text: sandboxing flag set
@@ -412,10 +414,8 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
         <ol>
           <li>
-            Let <var>documents to check</var> be a list of {{Document}}s
-            containing <var>document</var> and the <a>active document</a>
-            in each of the <a>ancestor browsing contexts</a> of
-            <var>document</var>'s <a>browsing context</a>.
+            Let <var>documents to check</var> be the result of executing
+            [[#gather-ancestors]] on <var>document</var>.
           </li>
           <li>
             For each <var>ancestor</var> in <var>documents to check</var>:
@@ -527,6 +527,59 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
         Return <code>Not Trusted</code>.
       </li>
     </ol>
+  </section>
+
+  <section>
+    <h3 id="gather-ancestors">
+      Gather <var>document</var>'s relevant ancestors
+    </h3>
+
+    Given a {{Document}} (<var>document</var>), this algorithm returns a list of
+    {{Documents}} which ought to be considered when determining whether or not
+    <var>document</var> is a <a>secure context</a>.
+
+    <ol>
+      <li>
+        Let <var>documents to check</var> be a list containing
+        <var>document</var>.
+      </li>
+      <li>
+        While <var>document</var> has a <a>creator
+        <code>Document</code></a> <var>creator</var>:
+     
+        <ol>
+          <li>
+            If <var>creator</var>'s <a>browsing context</a> is an <a>ancestor
+            browsing context</a> of <var>document</var>:
+
+            <ol>
+              <li>
+                Insert <var>creator</var> into <var>documents to check</var>.
+              </li>
+              <li>
+                Let <var>document</var> be <var>creator</var>.
+              </li>
+            </ol>
+          <li>
+            Otherwise:
+
+            <ol>
+              <li>
+                Exit this loop.
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li>
+        Return <var>documents to check</var>.
+      </li>
+    </ol>
+
+    Note: When gathering a {{Document}}'s ancestors, we walk the browsing context
+    creation document chain, but stop when that chain spans across more than one
+    {{Window}}. That is, a newly opened window is evaluated on its own merits,
+    without regard for the status of the opener.
   </section>
 </section>
 
