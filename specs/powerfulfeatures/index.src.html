@@ -42,7 +42,7 @@ urlPrefix: http://www.w3.org/TR/html5/; spec: HTML5
       text: browsing context container
       text: creating a new Document object
       text: creator Document
-      text: nested through; url: browsing-context-nested-through
+      text: nested browsing context
       text: sandboxed origin browsing context flag
       text: sandboxing flag set
       text: top-level browsing context
@@ -109,6 +109,135 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   confidential channels that guarantee data integrity. Delivering code securely
   cannot ensure that an application will always meet a user's security and
   privacy requirments, but it is a necessary precondition.
+
+  <h3 id="examples">Examples</h3>
+
+  <style>
+    .secure {
+      fill: #8F8;
+    }
+    .insecure {
+      fill: #F88;
+    }
+    rect, circle {
+      stroke-width: 2;
+      stroke: black;
+      fill-opacity: 0.75;
+    }
+    text {
+      font-family: monospace;
+    }
+  </style>
+
+  Top-level documents are secure on their own merits:
+
+  <div class="example">
+    <p><code>https://example.com/</code> opened in a <a>top-level browsing
+    context</a> is a <a>secure context</a>, as it was delivered over
+    an authenticated and encrypted channel.</p>
+
+    <svg width="400" height="200">
+      <g transform="translate(10,10)">
+        <rect height="175" width="297" y="0" x="0" class="secure" />
+        <text transform="translate(10, 20)">https://example.com/</text>
+      </g>
+    </svg>
+  </div>
+  
+  Framed documents can be <a>secure contexts</a> if they are delivered from
+  <a>potentially trustworthy</a> origins, <em>and</em> if they're embedded
+  in a <a>secure context</a>. That is:
+
+  <div class="example">
+    <p> if
+    <code>https://example.com/</code> opened in a <a>top-level browsing
+    context</a> opens <code>https://sub.example.com/</code> in a frame, then
+    both are <a>secure contexts</a>, as both were delivered over
+    authenticated and encrypted channels.</p>
+
+    <svg width="400" height="200">
+      <g transform="translate(10,10)">
+        <rect height="175" width="300" y="0" x="0" class="secure" />
+        <text transform="translate(10, 20)">https://example.com/</text>
+        <g transform="translate(20, 50)">
+          <rect height="105" width="250" y="0" x="0" class="secure" />
+          <text transform="translate(10, 20)">https://sub.example.com/</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <div class="example">
+    <p>If <code>https://example.com/</code> was somehow able to frame
+    <code>http://insecure.example.com/</code> (perhaps the user has
+    overridden mixed content checking?), the top-level frame would remain
+    secure, but the framed content would <em>not</em> be considered a secure
+    context.</p>
+
+    <svg width="400" height="200">
+      <g transform="translate(10,10)">
+        <rect height="175" width="300" y="0" x="0" class="secure" />
+        <text transform="translate(10, 20)">https://example.com/</text>
+        <g transform="translate(20, 50)">
+          <rect height="105" width="250" y="0" x="0" class="insecure" />
+          <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <div class="example">
+    <p>If, on the other hand, <code>https://example.com/</code> is framed
+    inside of <code>http://insecure.example.com/</code>, then it is
+    <em>not</em> considered to be a secure context, as its ancestor is not
+    delivered over an authenticated and encrypted channel.</p>
+
+    <svg width="400" height="200">
+      <g transform="translate(10,10)">
+        <rect height="175" width="300" y="0" x="0" class="insecure" />
+        <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        <g transform="translate(20, 50)">
+          <rect height="105" width="250" y="0" x="0" class="insecure" />
+          <text transform="translate(10, 20)">https://example.com/</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  Dedicated Web Workers are similar in nature to framed documents. They're
+  considered secure when they're delivered from <a>potentially trustworthy</a>
+  origins, and when their owner is itself a <a>secure context</a>:
+
+  <div class="example">
+    <p>If <code>https://example.com/</code> in a <a>top-level browsing
+    context</a> runs <code>https://example.com/worker.js</code>, then
+    both the document and the worker are considered secure contexts.</p>
+
+    <svg width="400" height="200">
+      <g transform="translate(10,10)">
+        <rect height="175" width="297" y="0" x="0" class="secure" />
+        <text transform="translate(10, 20)">https://example.com/</text>
+        <g transform="translate(125, 110)">
+          <circle r="50" class="secure" />
+          <text transform="translate(-75, -55)">https://example.com/worker.js</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <div class="example">
+    <p>If <code>http://insecure.example.com/</code> in a <a>top-level browsing
+    context</a> runs <code>https://example.com/worker.js</code>, then neither
+    the document nor the worker are considered secure contexts.</p>
+
+    <svg width="400" height="200">
+      <g transform="translate(10,10)">
+        <rect height="175" width="297" y="0" x="0" class="insecure" />
+        <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        <g transform="translate(125, 110)">
+          <circle r="50" class="insecure" />
+          <text transform="translate(-75, -55)">https://example.com/worker.js</text>
+        </g>
+      </g>
+    </svg>
+  </div>
 </section>
 
 <!--
@@ -146,14 +275,6 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
           upon its <a>global object</a>'s <a>relevant settings object</a>.
         </li>
       </ul>
-    </dd>
-
-    <dt><dfn>embedding document</dfn></dt>
-    <dd>
-      Given a {{Document}} <var>A</var>, the <strong>embedding
-      document</strong> of <var>A</var> is the {{Document}}
-      <a lt="nested through">through which</a> <var>A</var>'s <a>browsing
-      context</a> is nested.
     </dd>
   </dl>
 </section>
@@ -535,7 +656,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
     </h3>
 
     Given a {{Document}} (<var>document</var>), this algorithm returns a list of
-    {{Documents}} which ought to be considered when determining whether or not
+    {{Document}}s which ought to be considered when determining whether or not
     <var>document</var> is a <a>secure context</a>.
 
     <ol>
