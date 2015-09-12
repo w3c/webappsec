@@ -1,103 +1,44 @@
-<style>
-  button {
-    display: block;
-  }
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Credential Management API Demo</title>
+  <link href="style.css" rel="stylesheet"></link>
+  <script defer src="script.js"></script>
+  <meta charset="UTF-8">
+</head>
+<body class="signedout">
+  <header>
+    <h1>Exciting Website</h1>
+    <button id="signin">Sign In</button>
+  </header>
+  <section class="signedout">
+    Signed out.
+  </section>
+  <section class="signedin">
+    <p>Welcome, <var id="displayed-username">name</var>!</p>
+    <button id="signout">Sign Out</button>
+  </section>
+  <section>
+    <p>
+      This is where this websites' content would go if it was a real website.
+      Until then, lorem ipsum!
+    </p>
+    <p>Lorem ipsum dolor sït amet, sed éu dicit qûodsï sénserit. Id possïm çaûsaê meî, alîquip pérsècutï instructiœr te ëam, éx mél aliqùam çonsëtetur vituperatorîbùs. Cu his ullùm vïvendo dîsputâtioni, moderàtius scrîptorèm no dùo, eî quî diçô nobîs adolésçens! Ex sît ïllud delïcata, nœ ërrèm reprèhéndunt his.</p>
+    <p>Usu in soleat luptàtûm àdversarîum. Animal întellégat éx mël, ad quo consul habèmus quaéstîo. Té nèc illum iudicàbît. Dêcorè ménandri për èî. In pro quas hàbémùs quaêrendûm.</p>
+    <p>Sêd ne porrœ vivendùm sadïpscing, accumsan mênandri accusàmûs ïn meî, nàtum îracundïà àt ëàm. Vivëndûm elêïfênd cum ei, in aeque legimûs plaçerat mêî? Mêà ex tâtîœn exercî vôluptûà, libêr laudem vèrïtus vèl in. Eu âlïqùip èlàborarét quo, mèa no pèrsius urbanitâs sïgniferumqûè? Pri te solûta pôsîdonïum, zril apeïrian voluptatùm îd îus, ëà vim caûsâê deleniti dêlëctûs?</p>
+    <p>Te vix odiô summo contêntiœnès! Né modo ïntéllegebàt éam. Agàm quas êum èû! Cû qùî affert patrioque. Pri an ïdqûè mëlîus, sèa êi illud vîtaë.</p>
+  </section>
+  <dialog>
+    <form>
+    <!-- UGLY HACK: working around https://crbug.com/529272
+      <label for="username">Username:</label>
+      <input id="username" type="text" name="username" autocomplete="username"></input>
+      <label for="password">Password:</label>
+      <input id="password" type="password" name="password" autocomplete="new-password"></input>
+      <input type="submit">
+    -->
+    </form>
+  </dialog>
+</body>
+</html>
 
-  div {
-    display: none;
-  }
-</style>
-<button id="signin-button">Sign In</button>
-<button id="signout-button">Sign Out</button>
-<div>
-  <form id="signin">
-    <h2>Sign In!</h2>
-    <label for="username">Username:</label>
-    <input id="username" name="username" autocomplete="username"></input>
-    <label for="password">Password:</label>
-    <input id="password" name="password" autocomplete="current-password"></input>
-    <input type="submit">
-  </form>
-  <form id="signup">
-    <h2>Sign Up!</h2>
-    <label for="username-signup">Username:</label>
-    <input id="username-signup" name="username" autocomplete="username"></input>
-    <label for="password-signup">Password:</label>
-    <input id="password-signup" name="password" autocomplete="new-password"></input>
-    <input type="submit">
-  </form>
-</div>
-<script>
-  // Attempt to automatically sign a user in.
-  if (navigator.credentials) {
-    console.log("Automagical sign in?");
-    navigator.credentials.get({
-      'password': true,
-      'suppressUI': true
-    }).then(function (credential) {
-      if (credential) {
-        console.log("Got credentials! Signing in!");
-        document.querySelector('button').innerText = "Signed in!";
-        return;
-      }
-
-      console.log("No credentials. Sadness abounds.");
-    });
-  }
-
-  // When a user clicks on the sign in button, grab a credential, or render a sign in form.
-  document.querySelector('button').addEventListener('click', function () {
-    if (navigator.credentials) {
-      console.log("Manually-toggled credentials.get!");
-      navigator.credentials.get({ 'password': true }).then(function (credential) {
-        if (!credential) {
-          console.log("Still no credentials. Moar sadness.");
-          toggleSignInForm();
-          return;
-        }
-
-        console.log("Got credentials! Signing in!");
-        document.querySelector('button').innerText = "Signing in!";
-      });
-    } else {
-      toggleSignInForm();
-    }
-  });
-
-  function toggleSignInForm() {
-    document.querySelector('button').style.display = 'none';
-    document.querySelector('div').style.display = 'block';
-  }
-
-  // Capture "Sign Up" calls, store credentials.
-  document.querySelector('#signup').addEventListener('submit', function (e) {
-    if (navigator.credentials) {
-      console.log("Creating credentials!");
-      var c;
-      try {
-        c = new PasswordCredential({
-            id: document.querySelector('#username-signup').value,
-            password: document.querySelector('#password-signup').value
-        });
-      } catch (e) {
-        c = new PasswordCredential(
-            document.querySelector('#username-signup').value,
-            document.querySelector('#password-signup').value
-        );
-      }
-      navigator.credentials.store(c).then(function () {
-        console.log("Stored credential!");
-      });
-      e.preventDefault();
-      return false;
-    }
-  });
-
-  // Capture "sign out" calls.
-  document.querySelector('#signout-button').addEventListener('click', function () {
-    navigator.credentials.requireUserMediation();
-  });
-
-  [].forEach.call(document.querySelectorAll('input[type=submit]'), function(el) {
-  });
-</script>
