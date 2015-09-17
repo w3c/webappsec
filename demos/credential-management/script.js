@@ -10,6 +10,11 @@ if (navigator.credentials) {
     password: true,
     suppressUI: true
   }).then(processResponse);
+} else {
+  var section = document.createElement('section');
+  section.innerHTML = "<p><code>navigator.credentials</code> is not available! Have you enabled the feature in your browser? (Visit <code>chrome://flags/#enable-credential-manager-api</code> in Chrome, for example.)</p>";
+  section.classList.toggle('warning');
+  document.body.appendChild(section);
 }
 
 function toggleState() {
