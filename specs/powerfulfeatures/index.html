@@ -61,6 +61,11 @@
     text {
       font-family: monospace;
     }
+    text.rejection {
+      fill: #F00;
+      font-weight: 700; 
+      font-size: 2em;
+    }
     g path {
       stroke-width: 2px;
       stroke: #666;
@@ -73,7 +78,7 @@
   <div class="head">
    <p data-fill-with="logo"><a class="logo" href="http://www.w3.org/"> <img alt="W3C" height="48" src="https://www.w3.org/Icons/w3c_home" width="72"> </a> </p>
    <h1 class="p-name no-ref" id="title">Secure Contexts</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2015-09-15">15 September 2015</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2015-09-16">16 September 2015</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -359,12 +364,11 @@ exposed to the web only within a trustworthy environment.</p>
      </svg>
     </div>
     <h4 class="heading settled" data-level="1.1.4" id="examples-shared-workers"><span class="secno">1.1.4. </span><span class="content">Shared Workers</span><a class="self-link" href="#examples-shared-workers"></a></h4>
-    <p>Shared Workers are similar to dedicated Workers, but need to check through
-  each of the documents which share them:</p>
-    <p class="issue" id="issue-c5802c14"><a class="self-link" href="#issue-c5802c14"></a> The current handling of Shared Workers means that
-  the worker’s state will oscillate between secure and insecure based on the
-  documents that attach to it. That will likely confuse developers. Several
-  options for improvements have been suggested in the associated bug. <a href="https://github.com/w3c/webappsec/issues/406">&lt;https://github.com/w3c/webappsec/issues/406></a></p>
+    <p>Shared Workers can have multiple contexts attached, so their behavior is a
+  bit special. In short, if a Shared Worker is created from a secure context,
+  it is a secure context, and may only be connected to by other secure
+  contexts. If a Shared Worker is created from an insecure context, it is an
+  insecure context, and may only be connected to by other insecure contexts.</p>
     <div class="example" id="example-7e3c52b5">
      <a class="self-link" href="#example-7e3c52b5"></a> 
      <p>If <code>https://example.com/</code> in a <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level browsing
@@ -385,11 +389,11 @@ exposed to the web only within a trustworthy environment.</p>
       </g>
      </svg>
     </div>
-    <div class="example" id="example-44bac5c8">
-     <a class="self-link" href="#example-44bac5c8"></a> 
+    <div class="example" id="example-34d1a1ea">
+     <a class="self-link" href="#example-34d1a1ea"></a> 
      <p>If <code>https://example.com/</code> in a different <a data-link-type="dfn" href="http://www.w3.org/TR/html5/browsers.html#top-level-browsing-context">top-level
-    browsing context</a> (e.g. in a new window) access the same shared worker,
-    it is still a secure context, as every document accessing it is secure.</p>
+    browsing context</a> (e.g. in a new window) is a secure context, so it may
+    access the secure shared worker:</p>
      <svg height="400" width="600">
       <g transform="translate(10,10)">
        <rect class="secure" height="175" width="300" x="0" y="0"></rect>
@@ -411,9 +415,39 @@ exposed to the web only within a trustworthy environment.</p>
       </g>
      </svg>
     </div>
-    <div class="example" id="example-ba3d2b06">
-     <a class="self-link" href="#example-ba3d2b06"></a> 
-     <p>If <code>https://example.com/</code> nested in <code>http://insecure.example.com/</code> runs <code>https://example.com/worker.js</code> as a Shared
+    <div class="example" id="example-6a0d6906">
+     <a class="self-link" href="#example-6a0d6906"></a> 
+     <p><code>https://example.com/</code> nested in <code>http://insecure.example.com/</code> may not connect to the secure
+    worker, as it is not a secure context.</p>
+     <svg height="400" width="600">
+      <g transform="translate(10,10)">
+       <rect class="secure" height="175" width="300" x="0" y="0"></rect>
+       <text transform="translate(10, 20)">https://example.com/</text>
+       <g transform="translate(400, 110)">
+        <circle class="secure" r="50"></circle>
+        <text transform="translate(-75, -55)">https://example.com/worker.js</text>
+       </g>
+       <g>
+        <path d="M150, 87 C 200 75, 350 75, 405 110"></path>
+       </g>
+      </g>
+      <g transform="translate(10,200)">
+       <rect class="insecure" height="175" width="300" x="0" y="0"></rect>
+       <text transform="translate(10, 20)">http://insecure.example.com/</text>
+       <g transform="translate(20, 50)">
+        <rect class="insecure" height="105" width="250" x="0" y="0"></rect>
+        <text transform="translate(10, 20)">https://example.com/</text>
+       </g>
+       <g>
+        <path d="M150, 87 C 200 75, 350 75, 405 20"></path>
+        <text class="rejection" transform="translate(405, 20)">X</text>
+       </g>
+      </g>
+     </svg>
+    </div>
+    <div class="example" id="example-3ecd4071">
+     <a class="self-link" href="#example-3ecd4071"></a> 
+     <p>Likewise, if <code>https://example.com/</code> nested in <code>http://insecure.example.com/</code> runs <code>https://example.com/worker.js</code> as a Shared
     Worker, then both the document and the worker are considered insecure.</p>
      <svg height="400" width="600">
       <g transform="translate(10,10)">
@@ -435,7 +469,8 @@ exposed to the web only within a trustworthy environment.</p>
        <rect class="secure" height="175" width="300" x="0" y="0"></rect>
        <text transform="translate(10, 20)">https://example.com/</text>
        <g>
-        <path d="M150, 87 C 200 75, 350 75, 405 -80"></path>
+        <path d="M150, 87 C 200 75, 350 75, 405 20"></path>
+        <text class="rejection" transform="translate(405, 20)">X</text>
        </g>
       </g>
      </svg>
@@ -985,10 +1020,6 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://h
 </pre>
   <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue"> The current handling of Shared Workers means that
-  the worker’s state will oscillate between secure and insecure based on the
-  documents that attach to it. That will likely confuse developers. Several
-  options for improvements have been suggested in the associated bug. <a href="https://github.com/w3c/webappsec/issues/406">&lt;https://github.com/w3c/webappsec/issues/406></a><a href="#issue-c5802c14"> ↵ </a></div>
    <div class="issue"> WHATWG’s HTML for <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#creation-url">creation URL</a>, as W3C’s doesn’t
             define the primitive we need.<a href="#issue-091ab16c"> ↵ </a></div>
    <div class="issue"> <a data-link-type="dfn" href="https://fetch.spec.whatwg.org/#concept-response-https-state">HTTPS state</a> is poorly defined. For example, we should ensure

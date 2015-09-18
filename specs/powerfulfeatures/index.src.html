@@ -127,6 +127,11 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
     text {
       font-family: monospace;
     }
+    text.rejection {
+      fill: #F00;
+      font-weight: 700; 
+      font-size: 2em;
+    }
     g path {
       stroke-width: 2px;
       stroke: #666;
@@ -288,13 +293,11 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
   <h4 id="examples-shared-workers">Shared Workers</h4>
 
-  Shared Workers are similar to dedicated Workers, but need to check through
-  each of the documents which share them:
-
-  ISSUE(w3c/webappsec#406): The current handling of Shared Workers means that
-  the worker's state will oscillate between secure and insecure based on the
-  documents that attach to it. That will likely confuse developers. Several
-  options for improvements have been suggested in the associated bug.
+  Shared Workers can have multiple contexts attached, so their behavior is a
+  bit special. In short, if a Shared Worker is created from a secure context,
+  it is a secure context, and may only be connected to by other secure
+  contexts. If a Shared Worker is created from an insecure context, it is an
+  insecure context, and may only be connected to by other insecure contexts.
 
   <div class="example">
     <p>If <code>https://example.com/</code> in a <a>top-level browsing
@@ -319,8 +322,8 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
   <div class="example">
     <p>If <code>https://example.com/</code> in a different <a>top-level
-    browsing context</a> (e.g. in a new window) access the same shared worker,
-    it is still a secure context, as every document accessing it is secure.</p>
+    browsing context</a> (e.g. in a new window) is a secure context, so it may
+    access the secure shared worker:</p>
 
     <svg width="600" height="400">
       <g transform="translate(10,10)">
@@ -345,7 +348,40 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   </div>
 
   <div class="example">
-    <p>If <code>https://example.com/</code> nested in
+    <p><code>https://example.com/</code> nested in
+    <code>http://insecure.example.com/</code> may not connect to the secure
+    worker, as it is not a secure context.</p>
+
+    <svg width="600" height="400">
+      <g transform="translate(10,10)">
+        <rect height="175" width="300" y="0" x="0" class="secure" />
+        <text transform="translate(10, 20)">https://example.com/</text>
+        <g transform="translate(400, 110)">
+          <circle r="50" class="secure" />
+          <text transform="translate(-75, -55)">https://example.com/worker.js</text>
+        </g>
+        <g>
+          <path d="M150, 87 C 200 75, 350 75, 405 110"></path>
+        </g>
+      </g>
+      <g transform="translate(10,200)">
+        <rect height="175" width="300" y="0" x="0" class="insecure" />
+        <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        <g transform="translate(20, 50)">
+          <rect height="105" width="250" y="0" x="0" class="insecure" />
+          <text transform="translate(10, 20)">https://example.com/</text>
+        </g>
+        <g>
+          <path d="M150, 87 C 200 75, 350 75, 405 20"></path>
+          <text transform="translate(405, 20)" class="rejection">X</text>
+        </g>
+      </g>
+    </svg>
+
+  </div>
+
+  <div class="example">
+    <p>Likewise, if <code>https://example.com/</code> nested in
     <code>http://insecure.example.com/</code> runs
     <code>https://example.com/worker.js</code> as a Shared
     Worker, then both the document and the worker are considered insecure.</p>
@@ -370,7 +406,8 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
         <rect height="175" width="300" y="0" x="0" class="secure" />
         <text transform="translate(10, 20)">https://example.com/</text>
         <g>
-          <path d="M150, 87 C 200 75, 350 75, 405 -80"></path>
+          <path d="M150, 87 C 200 75, 350 75, 405 20"></path>
+          <text transform="translate(405, 20)" class="rejection">X</text>
         </g>
       </g>
     </svg>
