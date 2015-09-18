@@ -49,6 +49,15 @@ function processResponse(c) {
  * if no credential is provided).
  */
 document.querySelector('#signin').addEventListener('click', function () {
+  var formHTML = '' +
+    '<button>Sign in via Federation.com</button>' +
+    '<hr>' +
+    '<label for="username">Username:</label>' +
+    '<input id="username" type="text" name="username" autocomplete="username"></input>' +
+    '<label for="password">Password:</label>' +
+    '<input id="password" type="password" name="password" autocomplete="new-password"></input>' +
+    '<input type="submit">';
+
   console.log("Clicked 'sign in!'");
   if (navigator.credentials) {
     navigator.credentials.get({
@@ -56,12 +65,14 @@ document.querySelector('#signin').addEventListener('click', function () {
     }).then(function (c) {
       processResponse(c);
       if (!c) {
-        document.querySelector('form').innerHTML = '<label for="username">Username:</label><input id="username" type="text" name="username" autocomplete="username"></input><label for="password">Password:</label><input id="password" type="password" name="password" autocomplete="new-password"></input><input type="submit">';
+        document.querySelector('form').innerHTML = formHTML;
+        document.querySelector('form button').addEventListener('click', handleFederation);
         document.querySelector('dialog').showModal();
       }
     });
   } else {
-    document.querySelector('form').innerHTML = '<label for="username">Username:</label><input id="username" type="text" name="username" autocomplete="username"></input><label for="password">Password:</label><input id="password" type="password" name="password" autocomplete="new-password"></input><input type="submit">';
+    document.querySelector('form').innerHTML = formHTML;
+    document.querySelector('form button').addEventListener('click', handleFederation);
     document.querySelector('dialog').showModal();
   }
 });
@@ -76,6 +87,31 @@ document.querySelector('#signout').addEventListener('click', function () {
   document.body.classList.toggle('signedin');
   document.body.classList.toggle('signedout');
 });
+
+/*
+ * Wire up the 'sign in via' button.
+ */
+function handleFederation(e) {
+  console.log("Signed in via a federation!");
+  e.preventDefault();
+
+  if (navigator.credentials) {
+    var c = new FederatedCredential({
+      id: 'fred@federated.com',
+      provider: 'https://accounts.federation.com/',
+      iconURL: getFace('fred@federated.com')
+    });
+    navigator.credentials.store(c).then(function (a) { console.log(a); }).catch(function (e) { console.log(e); });
+  }
+
+  // Sign the user in asynchronously using the relevant SDK for the chosen federation.
+
+  toggleState();
+  document.querySelector('var').textContent = 'fred@federated.com';
+  document.querySelector('dialog').close();
+
+  return false;
+}
 
 /*
  * Finally, we'll wire up the submit button on the form to call `store()` upon
