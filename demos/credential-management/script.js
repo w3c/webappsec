@@ -153,26 +153,5 @@ document.querySelector('form').addEventListener('submit', function (e) {
 });
 
 function getFace(string) {
-  var hashString = function() {
-    var hash = 0, i, chr, len;
-    if (string.length == 0) return hash;
-    for (i = 0, len = string.length; i < len; i++) {
-      chr = string.charCodeAt(i);
-      hash = ((hash << 5) - hash) + chr;
-      hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
-  };
-
-  // Faces from uifaces.com. Thanks!
-  var faces = [
-    "https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg",
-    "https://s3.amazonaws.com/uifaces/faces/twitter/sauro/128.jpg",
-    "https://s3.amazonaws.com/uifaces/faces/twitter/brad_frost/128.jpg",
-    "https://s3.amazonaws.com/uifaces/faces/twitter/rem/128.jpg",
-    "https://s3.amazonaws.com/uifaces/faces/twitter/pixeliris/128.jpg",
-    "https://s3.amazonaws.com/uifaces/faces/twitter/csswizardry/128.jpg",
-  ];
-
-  return faces[hashString(string) % faces.length];
+  return "https://robohash.org/" + string + "?set=set3";
 }
