@@ -16,6 +16,7 @@ Abstract:
 Version History: https://github.com/w3c/webappsec/commits/master/specs/powerfulfeatures/index.src.html
 !Bug Reports: <a href="https://github.com/w3c/webappsec/issues/new?title=SECURE:%20">via the w3c/webappsec repository on GitHub</a>
 Indent: 2
+Markup Shorthands: markdown on
 </pre>
 <pre class="anchors">
 urlPrefix: http://www.w3.org/TR/dom/; spec: DOM
@@ -50,7 +51,11 @@ urlPrefix: http://www.w3.org/TR/html5/; spec: HTML5
       text: incumbent settings object
       text: settings object
       text: relevant settings object; url: relevant-settings-object-for-a-global-object
+      text: responsible document
       text: global object
+      text: script settings for browsing contexts
+      text: document environment
+      text: worker environment
   type: attribute
     urlPrefix: webstorage.html
       text: sessionStorage; for: WindowSessionStorage; url: the-sessionstorage-attribute
@@ -66,12 +71,9 @@ urlPrefix: http://www.w3.org/2014/Process-20140801/; spec: W3C-PROCESS
 urlPrefix: https://url.spec.whatwg.org/; spec: URL
   type: dfn
     text: origin of a url; url: concept-url-origin
+    text: scheme; for: URL; url: concept-url-scheme
   type: interface
     text: URL
-urlPrefix: http://www.w3.org/TR/workers/; spec: WORKERS
-  type: interface
-    text: Worker
-    text: SharedWorker
 urlPrefix: https://tools.ietf.org/html/rfc6454; spec: RFC6454
   type: dfn
     text: globally unique identifier; url: section-2.3
@@ -80,8 +82,17 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   type: dfn
     urlPrefix: workers.html
       text: the worker's documents
+      text: set up a worker environment settings object
     urlPrefix: webappapis.html
       text: creation URL
+  type: constructor
+    urlPrefix: workers.html
+      text: SharedWorker(); url: dom-sharedworker
+  type: interface
+    urlPrefix: workers.html
+      text: WorkerGlobalScope
+      text: Worker
+      text: SharedWorker
 </pre>
 <!--
 ████ ██    ██ ████████ ████████   ███████
@@ -442,48 +453,231 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
 </section>
 
-<!--
-████████  ████████ ████████ ████ ██    ██ ████ ████████ ████  ███████  ██    ██  ██████
-██     ██ ██       ██        ██  ███   ██  ██     ██     ██  ██     ██ ███   ██ ██    ██
-██     ██ ██       ██        ██  ████  ██  ██     ██     ██  ██     ██ ████  ██ ██
-██     ██ ██████   ██████    ██  ██ ██ ██  ██     ██     ██  ██     ██ ██ ██ ██  ██████
-██     ██ ██       ██        ██  ██  ████  ██     ██     ██  ██     ██ ██  ████       ██
-██     ██ ██       ██        ██  ██   ███  ██     ██     ██  ██     ██ ██   ███ ██    ██
-████████  ████████ ██       ████ ██    ██ ████    ██    ████  ███████  ██    ██  ██████
--->
 <section>
-  <h2 id="terms">Key Concepts and Terminology</h2>
+  <h2 id="framework">Framework</h2>
+  
+  A <a>settings object</a> is considered a <dfn export>secure context</dfn> if
+  its <a>secure context flag</a> is set to `Secure`.
 
-  <dl>
-    <dt><dfn export>
-      secure context
-    </dfn></dt>
-    <dd>
-      A <a>settings object</a> is considered a <strong>secure
-      context</strong> if the algorithm defined in [[#settings-secure]]
-      returns <code>Secure</code> when executed upon it. Moreover:
+  A {{Document}} is considered a <dfn export>secure document</dfn> if its
+  <a>global object</a>'s <a>relevant settings object</a> is a <a>secure
+  context</a>.
 
-      <ul>
-        <li>
-          A {{Document}} is considered a <dfn export>secure document</dfn>
-          if the algorithm defined in [[#settings-secure]] returns
-          <code>Secure</code> when executed upon its <a>global object</a>'s
-          <a>relevant settings object</a>.
-        </li>
-        <li>
-          A {{Worker}}, {{SharedWorker}}, or {{ServiceWorker}} is considered a
-          <dfn export>secure worker</dfn> if the algorithm defined in
-          [[#settings-secure]] returns <code>Secure</code> when executed
-          upon its <a>global object</a>'s <a>relevant settings object</a>.
-        </li>
-      </ul>
-    </dd>
-  </dl>
+  A {{Worker}}, {{SharedWorker}}, or {{ServiceWorker}} is considerd a
+  <dfn export>secure worker</dfn> if its <a>global object</a>'s <a>relevant
+  settings object</a> is a <a>secure context</a>.
+
+  <h3 id="monkey-patching">Modifications to HTML</h3>
+
+  <h4 id="monkey-patching-settings-object">Settings Object</h4>
+
+  This document extends the <a>settings object</a> with a new
+  <dfn export for="settings object">secure context flag</dfn>, which is set to
+  either `Secure` or `Not Secure`.
+
+  The <a>secure context flag</a> is set via the algorithm defined in
+  [[#settings-object-flag]], which is applied to <a>document environments</a> as
+  follows:
+
+  1.  After <a lt="script settings for browsing contexts">creating a `settings
+      object` for a browsing context</a> (<var>settings</var>), execute
+      [[#settings-object-flag]] on <var>settings</var>.
+
+  And to <a>worker environments</a> as follows:
+
+  1.  After <a lt="set up a worker environment settings object">setting up a
+      Worker's `settings object`</a> (<var>settings</var>), execute
+      [[#settings-object-flag]] on <var>settings</var>.
+
+  <h4 id="monkey-patching-shared-workers">Shared Workers</h4>
+  
+  During execution of the {{SharedWorker()}} constructor, a `SecurityError`
+  will be thrown if a <a>secure context</a> attempts to attach to an
+  insecure Worker, and if an insecure context attempts to attach to a
+  <a>secure Worker</a>. The constructor is modified as follows:
+
+  1.  As the first substep of the {{SharedWorker()}} constructor's current step
+      7.7 ("If <var>worker global scope</var> is not `null`, then run these
+      steps:"), run the following step:
+
+      1.  If the <a>incumbent settings object</a>'s <a>secure context flag</a>
+          does not match <var>worker global scope</var>'s <a>relevant settings
+          object</a>'s <a>secure context flag</a>, then throw a `SecurityError`
+          exception, and abort the remaining steps.
+
+  <h4 id="monkey-patching-global-object">Feature Detection</h4>
+
+  To determine whether a context is capable of making use of features which
+  require <a>secure contexts</a>, a simple boolean attribute is added to the
+  global object:
+
+  <pre class="idl">
+    partial interface Window {
+      readonly attribute boolean isSecureContext;
+    };
+
+    partial interface WorkerGlobalScope {
+      readonly attribute boolean isSecureContext;
+    };
+  </pre>
+
+  Both {{Window}}'s {{Window/isSecureContext}} and {{WorkerGlobalScope}}'s
+  {{WorkerGlobalScope/isSecureContext}} attribute's getters return
+  <code>true</code> if the <a>relevant settings object</a> for the getter's
+  <a>global object</a> is a <a>secure context</a>, and <code>false</code>
+  otherwise.
+</section>
+
+<section>
+  <h2 id="algorithms">Algorithms</h2>
+
+  <h3 id="settings-object-flag">
+    Set <var>settings object</var>'s <code>secure context flag</code>
+  </h3>
+
+  When a <a>settings object</a> is created, this algorithm is called to set its
+  <a>secure context flag</a> to <code>Secure</code> if the object represents a
+  <a>secure context</a>, and to <code>Not Secure</code> otherwise.
+
+  1.  If <var>settings</var>' <a>HTTPS State</a> is <strong>not</strong>
+      <code>modern</code>:
+
+      1.  Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
+
+      2.  If <var>origin</var> is a <a>globally unique identifier</a>, set
+          <var>origin</var> to the <a lt="origin of a url">origin</a>
+          of <var>settings</var>'s <a>creation URL</a>.
+
+          Note: We use the origin of the URL here in order to allow sandboxed
+          context to remain secure (as sandboxing is a strict reduction in the
+          context's capabilities, and therefore risk).
+
+      3.  If the result of executing the [[#is-origin-trustworthy]] algorithm
+          on <var>origin</var> is <strong>not</strong> <code>Potentially
+          Trustworthy</code>, then set <var>settings</var>' <a>secure context
+          flag</a> to <code>Not Secure</code> and return.
+
+      Note: This covers "potentially trustworthy", non-HTTPS origins like
+      <code>http://127.0.0.1</code>.
+
+  2.  Let <var>ancestors</var> be an empty list.
+
+  3.  If <var>settings</var>' <a>global object</a> is a {{WorkerGlobalScope}},
+      then:
+      
+      1.  For each {{Document}} (<var>document</var>) in <var>settings</var>'
+          <a>global object</a>'s list of <a>the worker's
+          <code>Documents</code></a>:
+
+          1.  Add each item in the result of executing [[#gather-ancestors]] on
+              <var>document</var> to <var>ancestors</var>.
+
+  4.  Otherwise, <var>settings</var>' <a>global object</a> is a
+      {{Window}}, so:
+
+      1.  Add each item in the result of executing [[#gather-ancestors]] on
+          <var>settings</var>' <a>responsible document</a> to
+          <var>ancestors</var>.
+
+  5.  For each <var>ancestor</var> in <var>ancestors</var>:
+
+      1.  If <var>ancestor</var>'s <a>relevant settings object</a>'s <a>secure
+          context flag</a> is <code>Not Secure</code>, then set
+          <var>settings</var>' <a>secure context flag</a> to <code>Not
+          Secure</code> and return.
+
+  6.  Set <var>settings</var>' <a>secure context flag</a> to <code>Secure</code>
+      and return.
+
+  <h3 id="is-origin-trustworthy">
+    Is <var>origin</var> potentially trustworthy?
+  </h3>
+
+  Certain origins are always <dfn>potentially trustworthy</dfn>. In
+  particular, UAs MUST treat <code>file</code> URLs and URLs with hostnames
+  names equivalent to "localhost" as potentially trustworthy. In principle
+  the UA could treat local files and local web servers as untrustworthy.
+  However, <em>given the information that is available to the UA at
+  runtime</em>, the resources appear to have been transported securely.
+  Additionally, treating such resources as potentially trustworthy is
+  convenient for developers building an application before deploying it to
+  the public.
+
+  A user agent MAY choose to extend this trust to other, vendor-specific URL
+  schemes like <code>app:</code> or <code>chrome-extension:</code>.
+
+  Given an <a>origin</a> <var>origin</var>, the following algorithm returns
+  <code>Potentially Trustworthy</code> or <code>Not Trustworthy</code> as
+  appropriate.
+
+  1.  If <var>origin</var> is a <a>potentially secure origin</a>, return
+      <code>Potentially Trustworthy</code>.
+
+      Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
+      is the origin of the context in which they were created. Therefore,
+      blobs created in an potentially secure origin will themselves be
+      potentially secure. The origin of <code>data:</code> and
+      <code>javascript:</code> URLs is an opaque identifier, which will not
+      be considered potentially secure.
+
+  2.  If <var>origin</var>'s <code>host</code> component is or falls within
+      <code>localhost.</code> [[!RFC6761]], return <code>Potentially
+      Trustworthy</code>.
+
+  3.  If <var>origin</var>'s <code>host</code> component matches one of
+      the CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
+      [[!RFC4632]], return <code>Potentially Trustworthy</code>.
+
+  4.  If <var>origin</var>'s <code>scheme</code> component is
+      <code>file</code>, return <code>Potentially Trustworthy</code>.
+
+  5.  If <var>origin</var>'s <code>scheme</code> component is one which
+      the user agent considers to be authenticated, return
+      <code>Potentially Trustworthy</code>.
+
+      Note: See [[#packaged-applications]] for detail here.
+
+  6.  If <var>origin</var> has been configured as a trustworthy origin,
+      return <code>Potentially Trustworthy</code>.
+
+      Note: See [[#development-environments]] for detail here.
+
+  7.  Return <code>Not Trusted</code>.
+
+  <h3 id="gather-ancestors">
+    Gather <var>document</var>'s relevant ancestors
+  </h3>
+
+  Given a {{Document}} (<var>document</var>), this algorithm returns a list of
+  {{Document}}s which ought to be considered when determining whether or not
+  <var>document</var> is a <a>secure context</a>.
+
+  1.  Let <var>documents to check</var> be a list containing
+      <var>document</var>.
+
+  2.  While <var>document</var> has a <a>creator <code>Document</code></a>
+      <var>creator</var>:
+     
+      1.  If <var>creator</var>'s <a>browsing context</a> is an <a>ancestor
+          browsing context</a> of <var>document</var>:
+
+          1.  Insert <var>creator</var> into <var>documents to check</var>.
+          
+          2.  Let <var>document</var> be <var>creator</var>.
+
+      2.  Otherwise, exit this loop.
+
+  3.  Return <var>documents to check</var>.
+
+  Note: When gathering a {{Document}}'s ancestors, we walk the browsing context
+  creation document chain, but stop when that chain spans across more than one
+  {{Window}}. That is, a newly opened window is evaluated on its own merits,
+  without regard for the status of the opener.
 </section>
 
 <section>
   <h2 id="threat-models-risks">
-      Threat models and risks
+    Threat models and risks
   </h2>
 
   <em>This section is non-normative.</em>
@@ -580,363 +774,6 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 </section>
 
 <section>
-  <h2 id="restrictions">Restricting Features</h2>
-
-  <h3 id="new">New Features</h3>
-
-  When writing a specification for new features, we recommend that authors
-  and editors guard sensitive APIs with checks against
-  [[#settings-secure]]. For example, something like the following
-  would be a good approach:
-
-  <div class="example">
-    <ol>
-      <li>
-        If the <a>incumbent settings object</a> is not a <a>secure
-        context</a>, then:
-     
-        <ol>
-          <li>
-            [<i>insert something appropriate here: perhaps a Promise could be
-            rejected with a <code>SecurityError</code>, an error callback could
-            be called, a permission request denied, etc.</i>].
-          </li>
-        </ol>
-      </li>
-    </ol>
-  </div>
-
-  <h3 id="legacy">Legacy Features</h3>
-
-  The list above clearly includes some existing functionality that is currently
-  available to the web over insecure channels. We recommend that such legacy
-  functionality begin requiring a <a>secure context</a> as quickly as is
-  reasonably possible.
-
-  <ol>
-    <li>
-      If such a feature is not widely implemented, we recommend that the
-      specification be immediately
-      <a lt="modify a specification">modified</a> to include a restriction
-      to <a>secure contexts</a>.
-    </li>
-    <li>
-      If such a feature is widely implemented, but not yet in wide use, we
-      recommend that it be quickly restricted to <a>secure contexts</a> by
-      adding a check as described in [[#new]] to existing implementations, and
-      <a lt="modify a specification">modifying the specification</a>
-      accordingly.
-    </li>
-    <li>
-      If such a feature is in wide use, we recommend that the existing
-      functionality be deprecated; the specification should be
-      <a lt="modify a specification">modified</a> to note that it does not
-      conform to the restrictions outlined in this document, and a plan should
-      be developed to both offer a conformant version of the feature and to
-      migrate existing users into that new version.
-    </li>
-  </ol>
-
-  <h4 id="legacy-example">Example: Geolocation</h4>
-
-  The [[GEOLOCATION-API]] is a good concrete example of such an feature; it is
-  widely implemented and used on a large number of insecure sites. A reasonable
-  path forward might look like this:
-
-  <ol>
-    <li>
-      <a lt="modify a specification">Modify</a> the specification to include
-      checks against [[#settings-secure] before executing the algorithms for
-      {{getCurrentPosition()}} and {{watchPosition()}}.
-
-      If [[#settings-secure]] returns <code>Not Secure</code>, then
-      the algorithms should be aborted, and the <var>errorCallback</var> invoked
-      with a <code>code</code> of <code>PERMISSION_DENIED</code>.
-    </li>
-    <li>
-      User agents should announce clear intentions to disable the API for
-      insecure contexts on a specific date, and warn developers accordingly
-      (via console messages, for example).
-    </li>
-    <li>
-      Leading up to the flag day, user agents should announce a deprecation
-      schedule to ensure both that site authors recognize the need to modify
-      their code before it simply stops working altogether, and to protect
-      users in the meantime. Such a plan might include:
-
-      <ul>
-        <li>
-          Disallowing persistent permission grants to insecure origins
-        </li>
-        <li>
-          Coarsening the accuracy of the API for insecure origins (perhaps
-          consistently returning city-level data rather than high-accuracy
-          data)
-        </li>
-        <li>
-          UI modifications to inform users and site authors of the risk
-        </li>
-      </ul>
-    </li>
-  </ol>
-</section>
-
-<section>
-  <h2 id="detection">Feature Detection</h2>
-
-  To determine whether a context is capable of making use of features which
-  require <a>secure contexts</a>, a simple boolean attribute is added to the
-  global object:
-
-  <pre class="idl">
-    partial interface Window {
-      readonly attribute boolean isSecureContext;
-    };
-
-    partial interface WorkerGlobalScope {
-      readonly attribute boolean isSecureContext;
-    };
-  </pre>
-
-  Both {{Window}}'s {{Window/isSecureContext}} and {{WorkerGlobalScope}}'s
-  {{WorkerGlobalScope/isSecureContext}} attribute's getters return
-  <code>true</code> if [[#settings-secure]] returns <code>Secure</code> when
-  executed on the <a>relevant settings object</a> for the getter's <a>global
-  object</a>, and <code>false</code> otherwise.
-</section>
-
-<section>
-  <h2 id="algorithms">Algorithms</h2>
-
-  <section>
-    <h3 id="settings-secure">
-      Is <var>settings object</var> a secure context?
-    </h3>
-
-    Given a <a>settings object</a> <var>settings</var>, this algorithm returns
-    <code>Secure</code> if the object represents a <a>secure
-    context</a>, and <code>Not Secure</code> otherwise.
-
-    <ol>
-      <li>
-        If <var>settings</var>' <a>HTTPS state</a> is <strong>not</strong>
-        <code>modern</code>:
-
-        <ol>
-          <li>
-            Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
-          </li>
-          <li>
-            If <var>origin</var> is a <a>globally unique identifier</a>, set
-            <var>origin</var> to the <a lt="origin of a url">origin</a>
-            of <var>settings</var>'s <a>creation URL</a>.
-
-            Note: We use the origin of the URL here in order to allow sandboxed
-            context to remain secure (as sandboxing is a strict reduction in the
-            context's capabilities, and therefore risk).
-
-            ISSUE: WHATWG's HTML for <a>creation URL</a>, as W3C's doesn't
-            define the primitive we need.
-          </li>
-          <li>
-            If the result of executing the [[#is-origin-trustworthy]] algorithm
-            on <var>origin</var> is <strong>not</strong> <code>Potentially
-            Trustworthy</code>, return <code>Not Secure</code>.
-          </li>
-        </ol>
-
-        Note: This covers "potentially trustworthy", non-HTTPS origins like
-        <code>http://127.0.0.1</code>.
-
-        ISSUE: <a>HTTPS state</a> is poorly defined. For example, we should ensure
-        that sandboxed documents retain the <a>HTTPS state</a>
-        associated with their transport mechanism. See
-        <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=27190">bug
-        27190</a>.
-      </li>
-      <li>
-        If <var>settings</var>' <a>global object</a> is a
-        <code>WorkerGlobalScope</code>, then for each <var>document</var> in
-        <var>settings</var>' <a>global object</a>'s list of <a>the worker's
-        <code>Documents</code></a>:
-
-        <ol>
-          <li>
-            Let <var>documents to check</var> be the result of executing
-            [[#gather-ancestors]] on <var>document</var>.
-          </li>
-          <li>
-            For each <var>ancestor</var> in <var>documents to check</var>:
-
-            <ol>
-              <li>
-                If <var>ancestor</var> corresponds to <a>an IFrame
-                <code>srcdoc</code> <code>Document</code></a>, skip to the next
-                <var>ancestor</var>.
-              </li>
-              <li>
-                If the <a>relevant settings object</a> for <var>ancestor</var>'s
-                <a>global object</a> has a <a>HTTPS state</a> of
-                <code>modern</code>, skip to the next
-                <var>ancestor</var>.
-              </li>
-              <li>
-                Let <var>origin</var> be <var>ancestor</var>'s <a>origin</a> if
-                <var>ancestor</var>'s active <a>sandboxing flag set</a> does not
-                have its <a>sandboxed origin browsing context flag</a> set, and
-                the <a lt="origin of a url">origin of <var>ancestor</var>'s
-                <code>URL</code></a> otherwise.
-
-                Note: We use the origin of the URL here in order to allow
-                sandboxed context to remain secure (as sandboxing is a strict
-                reduction in the context's capabilities, and therefore risk).
-              </li>
-              <li>
-                If the result of executing the [[#is-origin-trustworthy]]
-                algorithm on <var>origin</var> is <strong>not</strong>
-                <code>Potentially Trustworthy</code>, return
-                <code>Not Secure</code>.
-              </li>
-            </ol>
-          </li>
-        </ol>
-
-        Note: If <var>settings</var> maps to one or more {{Document}}s (either
-        directly, or as one of a {{Worker}}'s {{Document}}s), we'll walk all
-        the way up each document's ancestor chain to verify that the whole chain
-        is secure.
-
-        ISSUE: WHATWG's HTML for <a>the Worker's <code>Document</code>s</a>,
-        because W3C's Worker definition is obsolete.
-      </li>
-      <li>
-        Return <code>Secure</code>
-      </li>
-    </ol>
-  </section>
-
-  <section>
-    <h3 id="is-origin-trustworthy">
-      Is <var>origin</var> potentially trustworthy?
-    </h3>
-
-    Certain origins are always <dfn>potentially trustworthy</dfn>. In
-    particular, UAs MUST treat <code>file</code> URLs and URLs with hostnames
-    names equivalent to "localhost" as potentially trustworthy. In principle
-    the UA could treat local files and local web servers as untrustworthy.
-    However, <em>given the information that is available to the UA at
-    runtime</em>, the resources appear to have been transported securely.
-    Additionally, treating such resources as potentially trustworthy is
-    convenient for developers building an application before deploying it to
-    the public.
-
-    A user agent MAY choose to extend this trust to other, vendor-specific URL
-    schemes like <code>app:</code> or <code>chrome-extension:</code>.
-
-    Given an <a>origin</a> <var>origin</var>, the following algorithm returns
-    <code>Potentially Trustworthy</code> or <code>Not Trustworthy</code> as
-    appropriate.
-
-    <ol>
-      <li>
-        If <var>origin</var> is a <a>potentially secure origin</a>,
-        return <code>Potentially Trustworthy</code>.
-
-        Note: The origin of <code>blob:</code> and <code>filesystem:</code> URLs
-        is the origin of the context in which they were created. Therefore,
-        blobs created in an potentially secure origin will themselves be
-        potentially secure. The origin of <code>data:</code> and
-        <code>javascript:</code> URLs is an opaque identifier, which will not
-        be considered potentially secure.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>host</code> component is or falls within
-        <code>localhost.</code> [[!RFC6761]], return <code>Potentially
-        Trustworthy</code>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>host</code> component matches one of
-        the CIDR notations <code>127.0.0.0/8</code> or <code>::1/128</code>
-        [[!RFC4632]], return <code>Potentially Trustworthy</code>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>scheme</code> component is
-        <code>file</code>, return <code>Potentially Trustworthy</code>.
-      </li>
-      <li>
-        If <var>origin</var>'s <code>scheme</code> component is one which
-        the user agent considers to be authenticated, return
-        <code>Potentially Trustworthy</code>.
-
-        Note: See [[#packaged-applications]] for detail here.
-      </li>
-      <li>
-        If <var>origin</var> has been configured as a trustworthy origin,
-        return <code>Potentially Trustworthy</code>.
-
-        Note: See [[#development-environments]] for detail here.
-      </li>
-      <li>
-        Return <code>Not Trusted</code>.
-      </li>
-    </ol>
-  </section>
-
-  <section>
-    <h3 id="gather-ancestors">
-      Gather <var>document</var>'s relevant ancestors
-    </h3>
-
-    Given a {{Document}} (<var>document</var>), this algorithm returns a list of
-    {{Document}}s which ought to be considered when determining whether or not
-    <var>document</var> is a <a>secure context</a>.
-
-    <ol>
-      <li>
-        Let <var>documents to check</var> be a list containing
-        <var>document</var>.
-      </li>
-      <li>
-        While <var>document</var> has a <a>creator
-        <code>Document</code></a> <var>creator</var>:
-     
-        <ol>
-          <li>
-            If <var>creator</var>'s <a>browsing context</a> is an <a>ancestor
-            browsing context</a> of <var>document</var>:
-
-            <ol>
-              <li>
-                Insert <var>creator</var> into <var>documents to check</var>.
-              </li>
-              <li>
-                Let <var>document</var> be <var>creator</var>.
-              </li>
-            </ol>
-          <li>
-            Otherwise:
-
-            <ol>
-              <li>
-                Exit this loop.
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </li>
-      <li>
-        Return <var>documents to check</var>.
-      </li>
-    </ol>
-
-    Note: When gathering a {{Document}}'s ancestors, we walk the browsing context
-    creation document chain, but stop when that chain spans across more than one
-    {{Window}}. That is, a newly opened window is evaluated on its own merits,
-    without regard for the status of the opener.
-  </section>
-</section>
-
-<section>
   <h2 id="security-considerations">Security Considerations</h2>
 
   <h3 id="isolation">Incomplete Isolation</h3>
@@ -945,14 +782,13 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   isolate a "secure" view on an origin from an "insecure" view on the same
   origin. That is, a developer who is actively working to bypass the secure
   context restriction on a particular API will be able to create a
-  <code>postMessage</code>-based shim if they're willing to pop up a new window
+  `postMessage`-based shim if they're willing to pop up a new window
   and rely on its persistence (as the new window will be a new top-level
   browsing context, and will be evaluated without regard for the opener's
   state).
 
   More esoteric exfiltration methods will be available as well, ranging from
-  shared <code>localStorage</code> and related <code>storage</code> events to
-  <code>window.name</code> tricks.
+  shared `localStorage` and related `storage` events to `window.name` tricks.
 </section>
 
 <section>
@@ -963,16 +799,99 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   User agents that support packaged applications MAY whitelist specific URL
   schemes whose contents are authenticated by the user agent. For example,
   FirefoxOS application resources are referred to by a URL whose
-  <code>scheme</code> component is <code>app:</code>. Likewise, Chrome's
-  extensions and apps live on <code>chrome-extension:</code> schemes. These
-  could reasonably be considered trusted origins.
+  <a for="URL">scheme</a> component is `app:`. Likewise, Chrome's extensions
+  and apps live on `chrome-extension:` schemes. These could reasonably be
+  considered trusted origins.
 
   <h3 id="development-environments">Development Environments</h3>
 
   In order to support developers who run staging servers on non-loopback hosts,
   user agents MAY allow users to configure specific sets of origins as
   trustworthy, even though [[#is-origin-trustworthy]] would normally return
-  <code>Not Trusted</code>.
+  `Not Trusted`.
+
+  <h3 id="new">Restricting New Features</h3>
+
+  <em>This section is non-normative.</em>
+
+  When writing a specification for new features, we recommend that authors
+  and editors guard sensitive APIs with checks against <a>secure contexts</a>.
+  For example, something like the following might be a good approach:
+
+  <div class="example">
+    <ol>
+      <li>
+        If the <a>incumbent settings object</a> is <em>not</em> a <a>secure
+        context</a>, then:
+     
+        <ol>
+          <li>
+            [<i>insert something appropriate here: perhaps a Promise could be
+            rejected with a `SecurityError`, an error callback could be called,
+            a permission request denied, etc.</i>].
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </div>
+
+  <h3 id="legacy">Restricting Legacy Features</h3>
+
+  <em>This section is non-normative.</em>
+
+  The list above clearly includes some existing functionality that is currently
+  available to the web over insecure channels. We recommend that such legacy
+  functionality begin requiring a <a>secure context</a> as quickly as is
+  reasonably possible.
+
+  1.  If such a feature is not widely implemented, we recommend that the
+      specification be immediately
+      <a lt="modify a specification">modified</a> to include a restriction
+      to <a>secure contexts</a>.
+
+  2.  If such a feature is widely implemented, but not yet in wide use, we
+      recommend that it be quickly restricted to <a>secure contexts</a> by
+      adding a check as described in [[#new]] to existing implementations, and
+      <a lt="modify a specification">modifying the specification</a>
+      accordingly.
+
+  3.  If such a feature is in wide use, we recommend that the existing
+      functionality be deprecated; the specification should be
+      <a lt="modify a specification">modified</a> to note that it does not
+      conform to the restrictions outlined in this document, and a plan should
+      be developed to both offer a conformant version of the feature and to
+      migrate existing users into that new version.
+
+  <h4 id="legacy-example">Example: Geolocation</h4>
+
+  The [[GEOLOCATION-API]] is a good concrete example of such an feature; it is
+  widely implemented and used on a large number of insecure sites. A reasonable
+  path forward might look like this:
+
+  1.  <a lt="modify a specification">Modify</a> the specification to include
+      checks against <a>secure context</a> before executing the algorithms for
+      {{getCurrentPosition()}} and {{watchPosition()}}.
+
+      If the <a>incumbent settings object</a> is not a <a>secure context</a>,
+      then the algorithms should be aborted, and the <var>errorCallback</var>
+      invoked with a `code` of `PERMISSION_DENIED`.
+
+  2.  User agents should announce clear intentions to disable the API for
+      insecure contexts on a specific date, and warn developers accordingly
+      (via console messages, for example).
+      
+  3.  Leading up to the flag day, user agents should announce a deprecation
+      schedule to ensure both that site authors recognize the need to modify
+      their code before it simply stops working altogether, and to protect
+      users in the meantime. Such a plan might include any or all of:
+
+      1.  Disallowing persistent permission grants to insecure origins
+
+      2.  Coarsening the accuracy of the API for insecure origins (perhaps
+          consistently returning city-level data rather than high-accuracy
+          data)
+
+      3.  UI modifications to inform users and site authors of the risk
 </section>
 
 <!--
@@ -989,6 +908,6 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
   This document is largely based on the Chrome Security team's work on
   [[POWERFUL-NEW-FEATURES]]. Chris Palmer, Ryan Sleevi, and David Dorwin have
-  been particularly engaged. Anne van Kesteren and Henri Sivonen have also
-  provided very helpful feedback.
+  been particularly engaged. Anne van Kesteren, Boris Zbarsky, and Henri Sivonen
+  have also provided very helpful feedback.
 </section>
