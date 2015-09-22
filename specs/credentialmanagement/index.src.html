@@ -432,10 +432,14 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </dt>
     <dd>
       A <strong>credential store</strong> is an opaque storage mechanism which
-      offers a user agent the ability to save, retrieve, and modify
-      {{Credential}} objects; and to mark <a>origins</a> with a
-      <dfn>requires user mediation</dfn> flag. The implementation is
-      vendor-specific, and the interface provided is not exposed to the web.
+      offers a user agent the ability to:
+     
+      1. Store, retrieve, and modify {{Credential}} objects.
+      2. To mark an <a>origin</a> with a <dfn>requires user mediation</dfn> flag.
+      3. To associate an <a>origin</a> with a <dfn>protocol set</dfn>.
+      
+      The implementation is vendor-specific, and the interface provided is not
+      exposed to the web.
 
       Note: The types of credentials defined in this document are stored locally
       in a user agent's credential store, but future versions of this and other
@@ -632,6 +636,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     interface FederatedCredential : OriginBoundCredential {
       readonly attribute USVString provider;
       readonly attribute DOMString? protocol;
+
+      static Promise&lt;any&gt; registerAsProvider(DOMString protocol);
     };
   </pre>
   <dl dfn-for="FederatedCredential">
@@ -645,6 +651,12 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
       The credential's <a>federated identity provider</a>'s protocol (e.g.
       "openidconnect"). If this value is <code>null</code>, then the protocol
       can be inferred from the {{FederatedCredential/provider}}.
+    </dd>
+    <dt><dfn method>registerAsProvider(protocol)</dfn></dt>
+    <dd>
+      When this method is called, execute the [[#register-origin-protocol]]
+      algorithm on the <a>origin</a> of the <a>incumbent settings object</a>
+      and <var>protocol</var>.
     </dd>
     <dt>{{[[type]]}}</dt>
     <dd>
@@ -1585,6 +1597,29 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     </li>
   </ol>
 
+  <h3 id="processing-federated">
+    Processing <code>FederatedCredential</code>s
+  </h3>
+
+  <h4 id="register-origin-protocol">
+    Register <var>origin</var> as a federated identity provider which supports
+    <var>protocol</var>
+  </h4>
+
+  Given an <a>origin</a> (<var>origin</var>), and a string which identifies a
+  protocol (<var>protocol</var>), this algorithm registers the association in
+  the <a>credential store</a>:
+
+  <ol>
+    <li>
+      Let <var>protocols</var> be the <a>protocol set</a> obtained from the
+      <a>credential store</a> for <var>origin</var>.
+    </li>
+    <li>
+      Add <var>protocol</var> to <var>protocols</var>.
+    </li>
+  </ol>
+
   <h3 id="helpers">
     Helpful Algorithms
   </h3>
@@ -1801,14 +1836,11 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
             <dt>{{FederatedCredential}}</dt>
             <dd>
               When executing the [[#gather-originboundcredentials]] algorithm,
-              a user agent SHOULD populate the <a>chooser</a> with options based
-              on the following heuristic:
+              a user agent MAY populate the <a>chooser</a> with options based
+              on the following heuristic, if no {{OriginBoundCredential}}s are
+              available:
 
               <ol>
-                <li>
-                  Let <var>providers</var> be the value of <var>options</var>'
-                  <var>providers</var> property.
-                </li>
                 <li>
                   For each {{PasswordCredential}} <var>credential</var> in the
                   <a>credential store</a>:
@@ -1828,7 +1860,8 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                             <li>
                               Create a new {{FederatedCredential}} object
                               <var>new</var> whose {{[[origin]]}} slot is set to
-                              <var>origin</var>, {{Credential/id}} is set to
+                              the <a>origin</a> of the <a>incumbent settings
+                              object</a>, {{Credential/id}} is set to
                               <var>credential</var>'s {{Credential/id}},
                               {{FederatedCredential/provider}} is set to
                               <var>provider</var>.
@@ -1837,6 +1870,39 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
                               Append <var>new</var> to <var>synthesized</var>.
                             </li>
                           </ol>
+                        </li>
+                      </ol>
+                    </li>
+                  </ol>
+                </li>
+                <li>
+                  For each <var>origin</var> for which the <a>credential
+                  store</a> has stored a <a>protocol set</a>:
+
+                  <ol>
+                    <li>
+                      For each <var>protocol</var> in <var>options</var>'
+                      {{FederatedCredentialRequestOptions/protocols}} property:
+
+                      <ol>
+                        <li>
+                          If <var>origin</var>'s <a>protocol set</a> contains
+                          <var>protocol</var>:
+
+                          <ol>
+                            <li>
+                              Create a new {{FederatedCredential}} object
+                              <var>new</var> whose {{[[origin]]}} slot is set to
+                              the <a>origin</a> of the <a>incumbent settings
+                              object</a>, {{FederatedCredential/provider}} is
+                              set to <var>origin</var>, and
+                              {{FederatedCredential/protocol}} is set to
+                              <var>protocol</var>.
+                            </li>
+                            <li>
+                              Append <var>new</var> to <var>synthesized</var>.
+                            </li>
+                          </ol>   
                         </li>
                       </ol>
                     </li>
@@ -2066,6 +2132,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
   User agents SHOULD provide UI that makes it clear to a user that credential
   data is stored for an origin, and SHOULD make it easy for users to remove
   such data when they're no longer interested in keeping it around.
+
+  Moreover, the <a>credential store</a>'s association between <a>origins</a>
+  and <a>protocol sets</a> SHOULD be cleared along with "browsing data" if
+  no {{Credential}} has been stored for the origin.
 </section>
 
 <!--

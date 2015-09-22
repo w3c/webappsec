@@ -192,10 +192,15 @@ store user credentials for future use.</p>
         <li><a href="#generate-formdata"><span class="secno">4.3.1</span> <span class="content"> Generate a <code>FormData</code> object from <var>password credential</var> </span></a>
        </ul>
       <li>
-       <a href="#helpers"><span class="secno">4.4</span> <span class="content"> Helpful Algorithms </span></a>
+       <a href="#processing-federated"><span class="secno">4.4</span> <span class="content"> Processing <code>FederatedCredential</code>s </span></a>
        <ul class="toc">
-        <li><a href="#require-user-mediation-for-origin"><span class="secno">4.4.1</span> <span class="content"> Require user mediation for <var>origin</var> </span></a>
-        <li><a href="#is-match"><span class="secno">4.4.2</span> <span class="content"> Does <var>credential</var> match <var>origin B</var>? </span></a>
+        <li><a href="#register-origin-protocol"><span class="secno">4.4.1</span> <span class="content"> Register <var>origin</var> as a federated identity provider which supports <var>protocol</var> </span></a>
+       </ul>
+      <li>
+       <a href="#helpers"><span class="secno">4.5</span> <span class="content"> Helpful Algorithms </span></a>
+       <ul class="toc">
+        <li><a href="#require-user-mediation-for-origin"><span class="secno">4.5.1</span> <span class="content"> Require user mediation for <var>origin</var> </span></a>
+        <li><a href="#is-match"><span class="secno">4.5.2</span> <span class="content"> Does <var>credential</var> match <var>origin B</var>? </span></a>
        </ul>
      </ul>
     <li>
@@ -482,8 +487,17 @@ fetch("https://example.com/sign-in/", { body: credential.<a data-link-type="func
      <dt> <dfn data-dfn-type="dfn" data-export="" id="credential-store">Credential Store<a class="self-link" href="#credential-store"></a></dfn> 
      <dd>
        A <strong>credential store</strong> is an opaque storage mechanism which
-      offers a user agent the ability to save, retrieve, and modify <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects; and to mark <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origins</a> with a <dfn data-dfn-type="dfn" data-noexport="" id="requires-user-mediation">requires user mediation<a class="self-link" href="#requires-user-mediation"></a></dfn> flag. The implementation is
-      vendor-specific, and the interface provided is not exposed to the web. 
+      offers a user agent the ability to: 
+      <ol>
+       <li data-md="">
+        <p>Store, retrieve, and modify <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> objects.</p>
+       <li data-md="">
+        <p>To mark an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> with a <dfn data-dfn-type="dfn" data-noexport="" id="requires-user-mediation">requires user mediation<a class="self-link" href="#requires-user-mediation"></a></dfn> flag.</p>
+       <li data-md="">
+        <p>To associate an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> with a <dfn data-dfn-type="dfn" data-noexport="" id="protocol-set">protocol set<a class="self-link" href="#protocol-set"></a></dfn>.</p>
+      </ol>
+      <p>The implementation is vendor-specific, and the interface provided is not
+      exposed to the web.</p>
       <p class="note" role="note">Note: The types of credentials defined in this document are stored locally
       in a user agent’s credential store, but future versions of this and other
       documents will likely define credential types which are external to the
@@ -620,6 +634,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="pas
 interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="federatedcredential">FederatedCredential<a class="self-link" href="#federatedcredential"></a></dfn> : <a data-link-type="idl-name" href="#originboundcredential">OriginBoundCredential</a> {
   readonly attribute USVString <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="USVString " href="#dom-federatedcredential-provider">provider</a>;
   readonly attribute DOMString? <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="DOMString? " href="#dom-federatedcredential-protocol">protocol</a>;
+
+  static Promise&lt;any> <a class="idl-code" data-link-type="method" href="#dom-federatedcredential-registerasprovider">registerAsProvider</a>(DOMString <dfn class="idl-code" data-dfn-for="FederatedCredential/registerAsProvider(protocol)" data-dfn-type="argument" data-export="" id="dom-federatedcredential-registerasprovider-protocol-protocol">protocol<a class="self-link" href="#dom-federatedcredential-registerasprovider-protocol-protocol"></a></dfn>);
 };
 </pre>
     <dl>
@@ -630,6 +646,9 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
      <dd> The credential’s <a data-link-type="dfn" href="#federated-identity-provider">federated identity provider</a>’s protocol (e.g.
       "openidconnect"). If this value is <code>null</code>, then the protocol
       can be inferred from the <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-provider">provider</a></code>. 
+     <dt><dfn class="idl-code" data-dfn-for="FederatedCredential" data-dfn-type="method" data-export="" id="dom-federatedcredential-registerasprovider">registerAsProvider(protocol)<a class="self-link" href="#dom-federatedcredential-registerasprovider"></a></dfn>
+     <dd> When this method is called, execute the <a href="#register-origin-protocol">§4.4.1 Register origin as a federated identity provider which supports
+    protocol</a> algorithm on the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a> and <var>protocol</var>. 
      <dt><code class="idl"><a data-link-type="idl" href="#dom-credential-type-slot">[[type]]</a></code>
      <dd> All <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> objects have their <code class="idl"><a data-link-type="idl" href="#dom-credential-type-slot">[[type]]</a></code> slot’s value set to the string "<dfn class="idl-code" data-dfn-for="FederatedCredential" data-dfn-type="const" data-export="" id="dom-federatedcredential-federated"><code>federated</code><a class="self-link" href="#dom-federatedcredential-federated"></a></dfn>". 
     </dl>
@@ -734,7 +753,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
       called after a user signs out of a website, for instance, in order to
       ensure that she isn’t automatically signed back in next time she visits. 
       <p>When <code class="idl"><a data-link-type="idl" href="#dom-credentialcontainer-requireusermediation">requireUserMediation()</a></code> is called, the user agent MUST execute the
-      algorithm defined in <a href="#require-user-mediation-for-origin">§4.4.1 Require user mediation for origin</a> with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a> in which this method
+      algorithm defined in <a href="#require-user-mediation-for-origin">§4.5.1 Require user mediation for origin</a> with the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a> in which this method
       is called.</p>
     </dl>
     <h4 class="heading settled" data-level="3.2.1" id="interfaces-request-options"><span class="secno">3.2.1. </span><span class="content"> <code>get()</code> Parameters </span><a class="self-link" href="#interfaces-request-options"></a></h4>
@@ -1138,7 +1157,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
        Return a new <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> object <strong>and</strong> terminate this
       algorithm if any of the following conditions are true: 
       <ol>
-       <li> <a href="#is-match">§4.4.2 Does credential match origin B?</a> returns <code>No Match</code> when executed upon <var>credential</var> and <var>environment</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>. 
+       <li> <a href="#is-match">§4.5.2 Does credential match origin B?</a> returns <code>No Match</code> when executed upon <var>credential</var> and <var>environment</var>’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a>. 
        <li> <var>environment</var> is not a <a data-link-type="dfn" href="https://w3c.github.io/webappsec/specs/powerfulfeatures/#secure-context">secure context</a> 
       </ol>
      <li> Let <var>fd</var> be a new <code class="idl"><a data-link-type="idl" href="https://xhr.spec.whatwg.org/#interface-formdata">FormData</a></code> object. 
@@ -1149,15 +1168,24 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
       and whose value is <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-passwordcredential-password-slot">[[password]]</a></code>. 
      <li> Resolve <var>fd</var>. 
     </ol>
-    <h3 class="heading settled" data-level="4.4" id="helpers"><span class="secno">4.4. </span><span class="content"> Helpful Algorithms </span><a class="self-link" href="#helpers"></a></h3>
-    <h4 class="heading settled" data-level="4.4.1" id="require-user-mediation-for-origin"><span class="secno">4.4.1. </span><span class="content"> Require user mediation for <var>origin</var> </span><a class="self-link" href="#require-user-mediation-for-origin"></a></h4>
+    <h3 class="heading settled" data-level="4.4" id="processing-federated"><span class="secno">4.4. </span><span class="content"> Processing <code>FederatedCredential</code>s </span><a class="self-link" href="#processing-federated"></a></h3>
+    <h4 class="heading settled" data-level="4.4.1" id="register-origin-protocol"><span class="secno">4.4.1. </span><span class="content"> Register <var>origin</var> as a federated identity provider which supports <var>protocol</var> </span><a class="self-link" href="#register-origin-protocol"></a></h4>
+    <p>Given an <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> (<var>origin</var>), and a string which identifies a
+  protocol (<var>protocol</var>), this algorithm registers the association in
+  the <a data-link-type="dfn" href="#credential-store">credential store</a>:</p>
+    <ol>
+     <li> Let <var>protocols</var> be the <a data-link-type="dfn" href="#protocol-set">protocol set</a> obtained from the <a data-link-type="dfn" href="#credential-store">credential store</a> for <var>origin</var>. 
+     <li> Add <var>protocol</var> to <var>protocols</var>. 
+    </ol>
+    <h3 class="heading settled" data-level="4.5" id="helpers"><span class="secno">4.5. </span><span class="content"> Helpful Algorithms </span><a class="self-link" href="#helpers"></a></h3>
+    <h4 class="heading settled" data-level="4.5.1" id="require-user-mediation-for-origin"><span class="secno">4.5.1. </span><span class="content"> Require user mediation for <var>origin</var> </span><a class="self-link" href="#require-user-mediation-for-origin"></a></h4>
     <ol>
      <li> Let <var>promise</var> be a newly created <code>Promise</code> object. 
      <li> Return <var>promise</var>, and execute the remaining steps asynchronously. 
      <li> Set <var>origin</var>’s <a data-link-type="dfn" href="#requires-user-mediation">requires user mediation</a> flag to <code>true</code> in the user agent’s <a data-link-type="dfn" href="#credential-store">credential store</a>. 
      <li> Resolve <var>promise</var> with <code>undefined</code>. 
     </ol>
-    <h4 class="heading settled" data-level="4.4.2" id="is-match"><span class="secno">4.4.2. </span><span class="content"> Does <var>credential</var> match <var>origin B</var>? </span><a class="self-link" href="#is-match"></a></h4>
+    <h4 class="heading settled" data-level="4.5.2" id="is-match"><span class="secno">4.5.2. </span><span class="content"> Does <var>credential</var> match <var>origin B</var>? </span><a class="self-link" href="#is-match"></a></h4>
     <ol>
      <li> Let <var>origin A</var> be the value of <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-originboundcredential-origin-slot">[[origin]]</a></code> slot. 
      <li> If <var>origin A</var> is <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-5">the same</a> as <var>origin B</var>, return <code>Exact Match</code>. 
@@ -1219,7 +1247,7 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
       similar location. 
      <li> If a user clears her browsing data for an origin (cookies, localStorage,
       and so on), the user agent MUST require user mediation for that origin
-      by executing the algorithm defined in <a href="#require-user-mediation-for-origin">§4.4.1 Require user mediation for origin</a>. 
+      by executing the algorithm defined in <a href="#require-user-mediation-for-origin">§4.5.1 Require user mediation for origin</a>. 
     </ol>
     <h3 class="heading settled" data-level="5.3" id="user-mediated-selection"><span class="secno">5.3. </span><span class="content">Credential Selection</span><a class="self-link" href="#user-mediated-selection"></a></h3>
     <p>When responding to a call to <code class="idl"><a data-link-type="idl" href="#dom-credentialcontainer-get">get()</a></code> on an origin
@@ -1269,10 +1297,10 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
          <dt><code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code>
          <dd>
            When executing the <a href="#gather-originboundcredentials">§4.2.1 Gather OriginBoundCredentials</a> algorithm,
-              a user agent SHOULD populate the <a data-link-type="dfn" href="#credential-chooser">chooser</a> with options based
-              on the following heuristic: 
+              a user agent MAY populate the <a data-link-type="dfn" href="#credential-chooser">chooser</a> with options based
+              on the following heuristic, if no <code class="idl"><a data-link-type="idl" href="#originboundcredential">OriginBoundCredential</a></code>s are
+              available: 
           <ol>
-           <li> Let <var>providers</var> be the value of <var>options</var>' <var>providers</var> property. 
            <li>
              For each <code class="idl"><a data-link-type="idl" href="#passwordcredential">PasswordCredential</a></code> <var>credential</var> in the <a data-link-type="dfn" href="#credential-store">credential store</a>: 
             <ol>
@@ -1280,9 +1308,29 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
                For each <var>provider</var> in <var>options</var>' <code class="idl"><a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-providers">providers</a></code> property: 
               <ol>
                <li>
-                 If <a href="#is-match">§4.4.2 Does credential match origin B?</a> returns <code>Exact Match</code> or <code>Fuzzy Match</code> when executed upon <var>credential</var> and <var>provider</var>: 
+                 If <a href="#is-match">§4.5.2 Does credential match origin B?</a> returns <code>Exact Match</code> or <code>Fuzzy Match</code> when executed upon <var>credential</var> and <var>provider</var>: 
                 <ol>
-                 <li> Create a new <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> object <var>new</var> whose <code class="idl"><a data-link-type="idl" href="#dom-originboundcredential-origin-slot">[[origin]]</a></code> slot is set to <var>origin</var>, <code class="idl"><a data-link-type="idl" href="#dom-credential-id">id</a></code> is set to <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-credential-id">id</a></code>, <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-provider">provider</a></code> is set to <var>provider</var>. 
+                 <li> Create a new <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> object <var>new</var> whose <code class="idl"><a data-link-type="idl" href="#dom-originboundcredential-origin-slot">[[origin]]</a></code> slot is set to
+                              the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings
+                              object</a>, <code class="idl"><a data-link-type="idl" href="#dom-credential-id">id</a></code> is set to <var>credential</var>’s <code class="idl"><a data-link-type="idl" href="#dom-credential-id">id</a></code>, <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-provider">provider</a></code> is set to <var>provider</var>. 
+                 <li> Append <var>new</var> to <var>synthesized</var>. 
+                </ol>
+              </ol>
+            </ol>
+           <li>
+             For each <var>origin</var> for which the <a data-link-type="dfn" href="#credential-store">credential
+                  store</a> has stored a <a data-link-type="dfn" href="#protocol-set">protocol set</a>: 
+            <ol>
+             <li>
+               For each <var>protocol</var> in <var>options</var>' <code class="idl"><a data-link-type="idl" href="#dom-federatedcredentialrequestoptions-protocols">protocols</a></code> property: 
+              <ol>
+               <li>
+                 If <var>origin</var>’s <a data-link-type="dfn" href="#protocol-set">protocol set</a> contains <var>protocol</var>: 
+                <ol>
+                 <li> Create a new <code class="idl"><a data-link-type="idl" href="#federatedcredential">FederatedCredential</a></code> object <var>new</var> whose <code class="idl"><a data-link-type="idl" href="#dom-originboundcredential-origin-slot">[[origin]]</a></code> slot is set to
+                              the <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origin</a> of the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings
+                              object</a>, <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-provider">provider</a></code> is
+                              set to <var>origin</var>, and <code class="idl"><a data-link-type="idl" href="#dom-federatedcredential-protocol">protocol</a></code> is set to <var>protocol</var>. 
                  <li> Append <var>new</var> to <var>synthesized</var>. 
                 </ol>
               </ol>
@@ -1416,6 +1464,8 @@ interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="fed
     <p>User agents SHOULD provide UI that makes it clear to a user that credential
   data is stored for an origin, and SHOULD make it easy for users to remove
   such data when they’re no longer interested in keeping it around.</p>
+    <p>Moreover, the <a data-link-type="dfn" href="#credential-store">credential store</a>’s association between <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6454#section-3.2">origins</a> and <a data-link-type="dfn" href="#protocol-set">protocol sets</a> SHOULD be cleared along with "browsing data" if
+  no <code class="idl"><a data-link-type="idl" href="#credential">Credential</a></code> has been stored for the origin.</p>
    </section>
    <section>
     <h2 class="heading settled" data-level="8" id="implementation-considerations"><span class="secno">8. </span><span class="content">Implementation Considerations</span><a class="self-link" href="#implementation-considerations"></a></h2>
@@ -1632,9 +1682,11 @@ partial dictionary CredentialRequestOptions {
     protocol
     <ul>
      <li><a href="#dom-federatedcredentialdata-protocol">dict-member for FederatedCredentialData</a><span>, in §3.1.4</span>
+     <li><a href="#dom-federatedcredential-registerasprovider-protocol-protocol">argument for FederatedCredential/registerAsProvider(protocol)</a><span>, in §3.1.4</span>
      <li><a href="#dom-federatedcredential-protocol">attribute for FederatedCredential</a><span>, in §3.1.4</span>
     </ul>
    <li><a href="#dom-federatedcredentialrequestoptions-protocols">protocols</a><span>, in §3.2.1.2</span>
+   <li><a href="#protocol-set">protocol set</a><span>, in §2</span>
    <li>
     provider
     <ul>
@@ -1642,6 +1694,7 @@ partial dictionary CredentialRequestOptions {
      <li><a href="#dom-federatedcredential-provider">attribute for FederatedCredential</a><span>, in §3.1.4</span>
     </ul>
    <li><a href="#dom-federatedcredentialrequestoptions-providers">providers</a><span>, in §3.2.1.2</span>
+   <li><a href="#dom-federatedcredential-registerasprovider">registerAsProvider(protocol)</a><span>, in §3.1.4</span>
    <li><a href="#requires-user-mediation">requires user mediation</a><span>, in §2</span>
    <li><a href="#dom-credentialcontainer-requireusermediation">requireUserMediation()</a><span>, in §3.2</span>
    <li><a href="#dom-credentialcontainer-store">store(credential)</a><span>, in §3.2</span>
@@ -1840,6 +1893,8 @@ dictionary <a href="#dictdef-federatedcredentialdata">FederatedCredentialData</a
 interface <a href="#federatedcredential">FederatedCredential</a> : <a data-link-type="idl-name" href="#originboundcredential">OriginBoundCredential</a> {
   readonly attribute USVString <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="USVString " href="#dom-federatedcredential-provider">provider</a>;
   readonly attribute DOMString? <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="DOMString? " href="#dom-federatedcredential-protocol">protocol</a>;
+
+  static Promise&lt;any> <a class="idl-code" data-link-type="method" href="#dom-federatedcredential-registerasprovider">registerAsProvider</a>(DOMString <a href="#dom-federatedcredential-registerasprovider-protocol-protocol">protocol</a>);
 };
 
 partial interface <a class="idl-code" data-link-type="interface" href="http://www.w3.org/TR/html5/webappapis.html#navigator">Navigator</a> {
