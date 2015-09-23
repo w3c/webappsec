@@ -191,7 +191,8 @@ used to verify the response.
 ### Integrity metadata
 
 To verify the integrity of a response, a user agent requires <dfn>integrity
-metadata</dfn>, which consists of the following pieces of information:
+metadata</dfn> as part of the [request][]. This metadata consists of the following
+pieces of information:
 
 * cryptographic hash function ("alg")
 * [digest][] ("val")
@@ -223,6 +224,7 @@ result of the following command line:
 
     echo -n "alert('Hello, world.');" | openssl dgst -sha256 -binary | openssl enc -base64 -A
 
+[request]: https://fetch.spec.whatwg.org/#concept-request-integrity-metadata
 [csp2-section42]: http://www.w3.org/TR/CSP2/#source-list-syntax
 [openssl]: https://www.openssl.org/
 </div>
