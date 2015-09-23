@@ -55,7 +55,7 @@ from integrity validation. The scheme specified here also applies to `link`
 and future versions of the specification are likely to expand this coverage.
 
 [HSTS]: http://tools.ietf.org/html/rfc6797
-[pinned public keys]: http://tools.ietf.org/html/draft-ietf-websec-key-pinning
+[pinned public keys]: https://tools.ietf.org/html/rfc7469
 
 <section>
 ### Goals
@@ -127,11 +127,11 @@ The term <dfn>origin</dfn> is defined in the Origin specification.
 [[!RFC6454]]
 
 The terms <dfn>secure document</dfn> and
-<dfn>secure context</dfn> are defined in [section 2 of the Secure
+<dfn>secure context</dfn> are defined in section 2 of the [Secure
 Contexts][securecontext] specification. An example of a secure document is a
 document loaded over HTTPS. A counterexample is a document loaded over HTTP.
 
-[securecontext]: https://w3c.github.io/webappsec/specs/powerfulfeatures/#terms
+[securecontext]: http://www.w3.org/TR/powerful-features/
 [secure context]: #dfn-secure-context
 [secure document]: #dfn-secure-document
 
@@ -223,7 +223,7 @@ result of the following command line:
 
     echo -n "alert('Hello, world.');" | openssl dgst -sha256 -binary | openssl enc -base64 -A
 
-[csp2-section42]: http://www.w3.org/TR/CSP11/#source-list-syntax
+[csp2-section42]: http://www.w3.org/TR/CSP2/#source-list-syntax
 [openssl]: http://www.openssl.org/
 </div>
 
@@ -342,7 +342,7 @@ only deliver integrity metadata on a [potentially secure origin][].  See
 {:.note}
 
 [uri-origin]: http://tools.ietf.org/html/rfc6454#section-4
-[Non-secure contexts remain non-secure]: #non-secure-contexts-remain-non-secure-1
+[Non-secure contexts remain non-secure]: #non-secure-contexts-remain-non-secure
 
 The following algorithm details these restrictions:
 
@@ -693,7 +693,7 @@ algorithms as defined in [section 5 of the Mixed
 Content][mixedcontent-algorithms]
 specification.
 
-[Securing the Web]: https://w3ctag.github.io/web-https/
+[Securing the Web]: http://www.w3.org/2001/tag/doc/web-https
 [mixedcontent-algorithms]: http://www.w3.org/TR/mixed-content/#algorithms
 </section><!-- /Security::Non-secure contexts remain non-secure -->
 
