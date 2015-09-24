@@ -22,7 +22,7 @@ MIX: mixedcontent/index.html
 MIX-CR: mixedcontent/published/2015-09-CR.html
 MIX-PR: mixedcontent/published/2015-07-PR.html
 POWER: powerfulfeatures/index.html
-POWER-WD: powerfulfeatures/published/WD.html
+POWER-CR: powerfulfeatures/published/2015-10-CR.html
 REFERRER: referrer-policy/index.html
 UPGRADE: upgrade/index.html
 UPGRADE-CR: upgrade/published/2015-09-CR.html
@@ -75,8 +75,8 @@ referrer-policy/index.html: referrer-policy/index.src.html biblio.json
 powerfulfeatures/index.html: powerfulfeatures/index.src.html biblio.json
 	bikeshed -f spec ./powerfulfeatures/index.src.html
 
-powerfulfeatures/published/WD.html: powerfulfeatures/index.src.html biblio.json
-	bikeshed -f spec --md-status=WD ./powerfulfeatures/index.src.html ./powerfulfeatures/published/WD.html
+powerfulfeatures/published/2015-10-CR.html: powerfulfeatures/index.src.html biblio.json
+	bikeshed -f spec --md-status=CR --md-date=2015-10-13 --md-deadline=2015-11-13 ./powerfulfeatures/index.src.html ./powerfulfeatures/published/2015-10-CR.html
 
 upgrade/index.html: upgrade/index.src.html biblio.json
 	bikeshed -f spec ./upgrade/index.src.html
