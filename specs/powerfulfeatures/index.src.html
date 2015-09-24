@@ -24,8 +24,6 @@ urlPrefix: http://www.w3.org/TR/dom/; spec: DOM
     text: Document; url: interface-document
     text: Window; url: interface-window
 urlPrefix: https://fetch.spec.whatwg.org/; spec: FETCH
-  type: dfn
-    text: HTTPS state; url: concept-response-https-state
   type: interface
     text: Response
 urlPrefix: http://www.w3.org/TR/geolocation-API/; spec: GEOLOCATION-API
@@ -85,6 +83,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
       text: set up a worker environment settings object
     urlPrefix: webappapis.html
       text: creation URL
+      text: HTTPS state
   type: constructor
     urlPrefix: workers.html
       text: SharedWorker(); url: dom-sharedworker
@@ -455,55 +454,29 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
 <section>
   <h2 id="framework">Framework</h2>
-  
+
   A <a>settings object</a> is considered a <dfn export>secure context</dfn> if
-  its <a>secure context flag</a> is set to `Secure`.
-
-  A {{Document}} is considered a <dfn export>secure document</dfn> if its
-  <a>global object</a>'s <a>relevant settings object</a> is a <a>secure
-  context</a>.
-
-  A {{Worker}}, {{SharedWorker}}, or {{ServiceWorker}} is considerd a
-  <dfn export>secure worker</dfn> if its <a>global object</a>'s <a>relevant
-  settings object</a> is a <a>secure context</a>.
+  the algorithm in [[#settings-object]] returns "`Secure`".
 
   <h3 id="monkey-patching">Modifications to HTML</h3>
 
-  <h4 id="monkey-patching-settings-object">Settings Object</h4>
-
-  This document extends the <a>settings object</a> with a new
-  <dfn export for="settings object">secure context flag</dfn>, which is set to
-  either `Secure` or `Not Secure`.
-
-  The <a>secure context flag</a> is set via the algorithm defined in
-  [[#settings-object-flag]], which is applied to <a>document environments</a> as
-  follows:
-
-  1.  After <a lt="script settings for browsing contexts">creating a `settings
-      object` for a browsing context</a> (<var>settings</var>), execute
-      [[#settings-object-flag]] on <var>settings</var>.
-
-  And to <a>worker environments</a> as follows:
-
-  1.  After <a lt="set up a worker environment settings object">setting up a
-      Worker's `settings object`</a> (<var>settings</var>), execute
-      [[#settings-object-flag]] on <var>settings</var>.
-
   <h4 id="monkey-patching-shared-workers">Shared Workers</h4>
-  
+
   During execution of the {{SharedWorker()}} constructor, a `SecurityError`
   will be thrown if a <a>secure context</a> attempts to attach to an
-  insecure Worker, and if an insecure context attempts to attach to a
-  <a>secure Worker</a>. The constructor is modified as follows:
+  Worker which is not a <a>secure context</a>, and if an insecure context
+  attempts to attach to a Worker which is a <a>secure context</a>. The
+  constructor is modified as follows:
 
   1.  As the first substep of the {{SharedWorker()}} constructor's current step
       7.7 ("If <var>worker global scope</var> is not `null`, then run these
       steps:"), run the following step:
 
-      1.  If the <a>incumbent settings object</a>'s <a>secure context flag</a>
-          does not match <var>worker global scope</var>'s <a>relevant settings
-          object</a>'s <a>secure context flag</a>, then throw a `SecurityError`
-          exception, and abort the remaining steps.
+      1.  If the result of executing [[#settings-object]] on the <a>incumbent
+          settings object</a> does not match the result of executing the same
+          algorithm on <var>worker global scope</var>'s <a>relevant settings
+          object</a>, then throw a `SecurityError` exception, and abort
+          the remaining steps.
 
   <h4 id="monkey-patching-global-object">Feature Detection</h4>
 
@@ -531,40 +504,19 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 <section>
   <h2 id="algorithms">Algorithms</h2>
 
-  <h3 id="settings-object-flag">
-    Set <var>settings object</var>'s <code>secure context flag</code>
+  <h3 id="settings-object">
+    Is <var>settings object</var> a secure context?
   </h3>
 
-  When a <a>settings object</a> is created, this algorithm is called to set its
-  <a>secure context flag</a> to <code>Secure</code> if the object represents a
-  <a>secure context</a>, and to <code>Not Secure</code> otherwise.
+  Given a <a>settings object</a> (<var>settings</var>), this algorithm returns
+  "`Secure`" if the object represents a context which can be trusted as being
+  delivered securely, and "`Not Secure`" otherwise.
 
-  1.  If <var>settings</var>' <a>HTTPS State</a> is <strong>not</strong>
-      <code>modern</code>:
+  1.  Let <var>ancestors</var> be a list containing <var>settings</var>.
 
-      1.  Let <var>origin</var> be <var>settings</var>' <a>origin</a>.
-
-      2.  If <var>origin</var> is a <a>globally unique identifier</a>, set
-          <var>origin</var> to the <a lt="origin of a url">origin</a>
-          of <var>settings</var>'s <a>creation URL</a>.
-
-          Note: We use the origin of the URL here in order to allow sandboxed
-          context to remain secure (as sandboxing is a strict reduction in the
-          context's capabilities, and therefore risk).
-
-      3.  If the result of executing the [[#is-origin-trustworthy]] algorithm
-          on <var>origin</var> is <strong>not</strong> <code>Potentially
-          Trustworthy</code>, then set <var>settings</var>' <a>secure context
-          flag</a> to <code>Not Secure</code> and return.
-
-      Note: This covers "potentially trustworthy", non-HTTPS origins like
-      <code>http://127.0.0.1</code>.
-
-  2.  Let <var>ancestors</var> be an empty list.
-
-  3.  If <var>settings</var>' <a>global object</a> is a {{WorkerGlobalScope}},
+  2.  If <var>settings</var>' <a>global object</a> is a {{WorkerGlobalScope}},
       then:
-      
+
       1.  For each {{Document}} (<var>document</var>) in <var>settings</var>'
           <a>global object</a>'s list of <a>the worker's
           <code>Documents</code></a>:
@@ -572,22 +524,34 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
           1.  Add each item in the result of executing [[#gather-ancestors]] on
               <var>document</var> to <var>ancestors</var>.
 
-  4.  Otherwise, <var>settings</var>' <a>global object</a> is a
+  3.  Otherwise, <var>settings</var>' <a>global object</a> is a
       {{Window}}, so:
 
       1.  Add each item in the result of executing [[#gather-ancestors]] on
           <var>settings</var>' <a>responsible document</a> to
           <var>ancestors</var>.
 
-  5.  For each <var>ancestor</var> in <var>ancestors</var>:
+  4.  For each <var>ancestor settings</var> in <var>ancestors</var>:
 
-      1.  If <var>ancestor</var>'s <a>relevant settings object</a>'s <a>secure
-          context flag</a> is <code>Not Secure</code>, then set
-          <var>settings</var>' <a>secure context flag</a> to <code>Not
-          Secure</code> and return.
+      1.  If <var>ancestor settings</var>'s <a>HTTPS state</a> is "`modern`",
+          skip to the next <var>ancestor settings</var>.
 
-  6.  Set <var>settings</var>' <a>secure context flag</a> to <code>Secure</code>
-      and return.
+      2.  Let <var>origin</var> be <var>ancestor settings</var>' <a>origin</a>.
+
+      3.  If <var>origin</var> is a <a>globally unique identifier</a>, set
+          <var>origin</var> to the <a lt="origin of a url">origin</a>
+          of <var>settings</var>'s <a>creation URL</a>.
+
+          Note: We use the origin of the URL here in order to allow sandboxed
+          context to remain secure (as sandboxing is a strict reduction in the
+          context's capabilities, and therefore risk). This covers scenarios
+          such as `&lt;iframe sandbox src="http://localhost/"&gt;`.
+
+      4.  If the result of executing the [[#is-origin-trustworthy]] algorithm
+          on <var>origin</var> is <strong>not</strong> `Potentially
+          Trustworthy`, then return "`Not Secure`".
+
+  5.  Return "`Secure`".
 
   <h3 id="is-origin-trustworthy">
     Is <var>origin</var> potentially trustworthy?
@@ -649,25 +613,27 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   </h3>
 
   Given a {{Document}} (<var>document</var>), this algorithm returns a list of
-  {{Document}}s which ought to be considered when determining whether or not
-  <var>document</var> is a <a>secure context</a>.
+  <a>settings objects</a> which ought to be considered when determining whether
+  or not <var>document</var> is a <a>secure context</a>.
 
-  1.  Let <var>documents to check</var> be a list containing
-      <var>document</var>.
+  1.  Let <var>ancestors</var> be a list containing <var>document</var>'s
+      <a>relevant settings object</a>.
 
   2.  While <var>document</var> has a <a>creator <code>Document</code></a>
       <var>creator</var>:
-     
+
       1.  If <var>creator</var>'s <a>browsing context</a> is an <a>ancestor
           browsing context</a> of <var>document</var>:
 
-          1.  Insert <var>creator</var> into <var>documents to check</var>.
-          
+          1.  Insert <var>creator</var>'s <a>relevant settings object</a> into
+              <var>ancestors</var>, unless <var>creator</var> is <a>an IFrame
+              `srcdoc` `Document`</a>.
+
           2.  Let <var>document</var> be <var>creator</var>.
 
       2.  Otherwise, exit this loop.
 
-  3.  Return <var>documents to check</var>.
+  3.  Return <var>ancestors</var>.
 
   Note: When gathering a {{Document}}'s ancestors, we walk the browsing context
   creation document chain, but stop when that chain spans across more than one
@@ -879,7 +845,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   2.  User agents should announce clear intentions to disable the API for
       insecure contexts on a specific date, and warn developers accordingly
       (via console messages, for example).
-      
+
   3.  Leading up to the flag day, user agents should announce a deprecation
       schedule to ensure both that site authors recognize the need to modify
       their code before it simply stops working altogether, and to protect
