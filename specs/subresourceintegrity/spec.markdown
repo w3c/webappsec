@@ -372,16 +372,18 @@ valid hash expressions whose hash functions are understood by
 the user agent.
 
 1.  Let <var>result</var> be the empty set.
-2.  For each <var>token</var> returned by [splitting <var>metadata</var> on
+2.  Let <var>empty</var> be equal to `true`.
+3.  For each <var>token</var> returned by [splitting <var>metadata</var> on
     spaces][split-on-spaces]:
-    1.  If <var>token</var> is not a valid metadata, skip the remaining
+    1.  Set <var>empty</var> to `false`.
+    2.  If <var>token</var> is not a valid metadata, skip the remaining
         steps, and proceed to the next token.
-    2.  Parse <var>token</var> per the grammar in [integrity metadata][]
-    3.  Let <var>algorithm</var> be the <var>alg</var> component of
+    3.  Parse <var>token</var> per the grammar in [integrity metadata][]
+    4.  Let <var>algorithm</var> be the <var>alg</var> component of
         <var>token</var>.
-    4.  If <var>algorithm</var> is a hash function recognized by the user
+    5.  If <var>algorithm</var> is a hash function recognized by the user
         agent, add the parsed <var>token</var> to <var>result</var>.
-3.  Return `no metadata` if <var>result</var> is empty, otherwise return
+4.  Return `no metadata` if <var>empty</var> is `true`, otherwise return
     <var>result</var>.
 
 [split-on-spaces]: http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces
@@ -420,9 +422,10 @@ the user agent.
 2.  If <var>parsedMetadata</var> is `no metadata`, return `true`.
 3.  If [<var>response</var> is not eligible for integrity
     validation][eligible], return `false`.
-4.  Let <var>metadata</var> be the result of [getting the strongest
+4.  If <var>parsedMetadata</var> is the empty set, return `true`.
+5.  Let <var>metadata</var> be the result of [getting the strongest
     metadata from <var>parsedMetadata</var>][get-the-strongest].
-5.  For each <var>item</var> in <var>metadata</var>:
+6.  For each <var>item</var> in <var>metadata</var>:
     1.  Let <var>algorithm</var> be the <var>alg</var> component of
         <var>item</var>.
     2.  Let <var>expectedValue</var> be the <var>val</var> component of
@@ -431,7 +434,7 @@ the user agent.
         <var>algorithm</var> to <var>response</var>][apply-algorithm].
     4.  If <var>actualValue</var> is a case-sensitive match for
         <var>expectedValue</var>, return `true`.
-6.  Return `false`.
+7.  Return `false`.
 
 This algorithm allows the user agent to accept multiple, valid strong hash
 functions. For example, a developer might write a `script` element such as:
