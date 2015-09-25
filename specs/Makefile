@@ -12,6 +12,7 @@ CLEAR-FPWD: clear-site-data/published/2015-07-FPWD.html
 CREDENTIAL: credentialmanagement/index.html
 COWL: cowl/index.html
 CREDENTIAL-FPWD: credentialmanagement/published/2015-04-FPWD.html
+CSP-COOKIES: csp-cookies/index.html
 CSP-PINNING: csp-pinning/index.html
 CSP-PINNING-FPWD: csp-pinning/published/2015-02-FPWD.html
 CSP2: CSP2/index.html
@@ -32,6 +33,9 @@ clear-site-data/index.html: clear-site-data/index.src.html biblio.json
 
 clear-site-data/published/2015-07-FPWD.html: clear-site-data/index.src.html biblio.json
 	bikeshed -f spec --md-status=FPWD --md-date=2015-07-30 ./clear-site-data/index.src.html ./clear-site-data/published/2015-07-FPWD.html
+
+csp-cookies/index.html: csp-cookies/index.src.html biblio.json
+	bikeshed -f spec ./csp-cookies/index.src.html
 
 csp-pinning/index.html: csp-pinning/index.src.html biblio.json
 	bikeshed -f spec ./csp-pinning/index.src.html
