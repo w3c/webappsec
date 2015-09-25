@@ -10,14 +10,14 @@ Editor: Mike West 56384, Google Inc., mkwst@google.com
 Editor: Yan Zhu 75060, Yahoo! Inc., yzhu@yahoo-inc.com
 Group: webappsec
 Abstract:
-  This specification provides guidelines for user agent implementors and spec
-  authors for implementing features whose properties dictate that they be
-  exposed to the web only within a trustworthy environment.
+  This specification defines "secure contexts", thereby allowing user agent
+  implementers and specification authors to enable certain features only when
+  certain minimum standards of authentication and confidentiality are met.
 Version History: https://github.com/w3c/webappsec/commits/master/specs/powerfulfeatures/index.src.html
 !Participate: <a href="https://github.com/w3c/webappsec/issues/new?title=SECURE:%20">File an issue</a> (<a href="https://github.com/w3c/webappsec/labels/SECURE">open issues</a>)
 Indent: 2
 Markup Shorthands: markdown on
-Boilerplate: omit feedback-header
+Boilerplate: omit conformance, omit feedback-header
 </pre>
 <pre class="anchors">
 urlPrefix: http://www.w3.org/TR/dom/; spec: DOM
@@ -127,7 +127,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
     .secure {
       fill: #8F8;
     }
-    .insecure {
+    .non-secure {
       fill: #F88;
     }
     rect, circle {
@@ -140,7 +140,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
     }
     text.rejection {
       fill: #F00;
-      font-weight: 700; 
+      font-weight: 700;
       font-size: 2em;
     }
     g path {
@@ -169,16 +169,17 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   </div>
 
   <div class="example">
-    <p><code>http://insecure.example.com/</code> opened in a <a>top-level
+    <p><code>http://non-secure.example.com/</code> opened in a <a>top-level
     browsing context</a> pops open a new window containing
-    <code>https://example.com/</code>. The former is insecure, the latter is
-    a <a>secure context</a>, as it was delivered over an authenticated and
-    encrypted channel. The opener context doesn't play into this check.</p>
+    <code>https://example.com/</code>. The former is not a <a>secure
+    context</a>; the latter is a <a>secure context</a>, because it is a new
+    top-level browsing context delivered over an authenticated and encrypted
+    channel.</p>
 
     <svg width="400" height="400">
       <g transform="translate(10,10)">
-        <rect height="175" width="297" y="0" x="0" class="insecure" />
-        <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        <rect height="175" width="297" y="0" x="0" class="non-secure" />
+        <text transform="translate(10, 20)">http://non-secure.example.com/</text>
       </g>
       <g transform="translate(10,210)">
         <rect height="175" width="297" y="0" x="0" class="secure" />
@@ -190,11 +191,10 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
     </svg>
   </div>
 
-  
   <h4 id="examples-framed">Framed Documents</h4>
 
   Framed documents can be <a>secure contexts</a> if they are delivered from
-  <a>potentially trustworthy</a> origins, <em>and</em> if they're embedded
+  <a>potentially trustworthy origins</a>, <em>and</em> if they're embedded
   in a <a>secure context</a>. That is:
 
   <div class="example">
@@ -217,34 +217,33 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   </div>
   <div class="example">
     <p>If <code>https://example.com/</code> was somehow able to frame
-    <code>http://insecure.example.com/</code> (perhaps the user has
+    <code>http://non-secure.example.com/</code> (perhaps the user has
     overridden mixed content checking?), the top-level frame would remain
-    secure, but the framed content would <em>not</em> be considered a secure
-    context.</p>
+    secure, but the framed content is not</em> a secure context.</p>
 
     <svg width="400" height="200">
       <g transform="translate(10,10)">
         <rect height="175" width="300" y="0" x="0" class="secure" />
         <text transform="translate(10, 20)">https://example.com/</text>
         <g transform="translate(20, 50)">
-          <rect height="105" width="250" y="0" x="0" class="insecure" />
-          <text transform="translate(10, 20)">http://insecure.example.com/</text>
+          <rect height="105" width="250" y="0" x="0" class="non-secure" />
+          <text transform="translate(10, 20)">http://non-secure.example.com/</text>
         </g>
       </g>
     </svg>
   </div>
   <div class="example">
     <p>If, on the other hand, <code>https://example.com/</code> is framed
-    inside of <code>http://insecure.example.com/</code>, then it is
-    <em>not</em> considered to be a secure context, as its ancestor is not
-    delivered over an authenticated and encrypted channel.</p>
+    inside of <code>http://non-secure.example.com/</code>, then it is
+    <em>not</em> a secure context, as its ancestor is not delivered over an
+    authenticated and encrypted channel.</p>
 
     <svg width="400" height="200">
       <g transform="translate(10,10)">
-        <rect height="175" width="300" y="0" x="0" class="insecure" />
-        <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        <rect height="175" width="300" y="0" x="0" class="non-secure" />
+        <text transform="translate(10, 20)">http://non-secure.example.com/</text>
         <g transform="translate(20, 50)">
-          <rect height="105" width="250" y="0" x="0" class="insecure" />
+          <rect height="105" width="250" y="0" x="0" class="non-secure" />
           <text transform="translate(10, 20)">https://example.com/</text>
         </g>
       </g>
@@ -254,13 +253,14 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   <h4 id="examples-workers">Web Workers</h4>
 
   Dedicated Web Workers are similar in nature to framed documents. They're
-  considered secure when they're delivered from <a>potentially trustworthy</a>
-  origins, and when their owner is itself a <a>secure context</a>:
+  <a>secure contexts</a> when they're delivered from <a>potentially
+  trustworthy origins</a>, and when their owner is itself a <a>secure
+  context</a>:
 
   <div class="example">
     <p>If <code>https://example.com/</code> in a <a>top-level browsing
     context</a> runs <code>https://example.com/worker.js</code>, then
-    both the document and the worker are considered secure contexts.</p>
+    both the document and the worker are <a>secure contexts</a>.</p>
 
     <svg width="600" height="200">
       <g transform="translate(10,10)">
@@ -278,21 +278,21 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   </div>
 
   <div class="example">
-    <p>If <code>http://insecure.example.com/</code> in a <a>top-level browsing
+    <p>If <code>http://non-secure.example.com/</code> in a <a>top-level browsing
     context</a> frames <code>https://example.com/</code>, which runs
     <code>https://example.com/worker.js</code>, then neither the framed document
-    nor the worker are considered secure contexts.</p>
+    nor the worker are <a>secure contexts</a>.</p>
 
     <svg width="600" height="200">
       <g transform="translate(10,10)">
-        <rect height="175" width="297" y="0" x="0" class="insecure" />
-        <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        <rect height="175" width="297" y="0" x="0" class="non-secure" />
+        <text transform="translate(10, 20)">http://non-secure.example.com/</text>
         <g transform="translate(20, 50)">
-          <rect height="105" width="250" y="0" x="0" class="insecure" />
+          <rect height="105" width="250" y="0" x="0" class="non-secure" />
           <text transform="translate(10, 20)">https://example.com/</text>
         </g>
         <g transform="translate(400, 110)">
-          <circle r="50" class="insecure" />
+          <circle r="50" class="non-secure" />
           <text transform="translate(-75, -55)">https://example.com/worker.js</text>
         </g>
         <g>
@@ -304,11 +304,11 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
   <h4 id="examples-shared-workers">Shared Workers</h4>
 
-  Shared Workers can have multiple contexts attached, so their behavior is a
-  bit special. In short, if a Shared Worker is created from a secure context,
-  it is a secure context, and may only be connected to by other secure
-  contexts. If a Shared Worker is created from an insecure context, it is an
-  insecure context, and may only be connected to by other insecure contexts.
+  Multiple contexts may attach to a Shared Worker. If a <a>secure context</a>
+  creates a Shared Worker, then it is a <a>secure context</a>, and may only be
+  attached to by other <a>secure contexts</a>. If an non-secure context creates
+  a Shared Worker, then it is <em>not</em> a <a>secure context</a>, and may only
+  be attached to by other non-secure contexts.
 
   <div class="example">
     <p>If <code>https://example.com/</code> in a <a>top-level browsing
@@ -360,7 +360,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
   <div class="example">
     <p><code>https://example.com/</code> nested in
-    <code>http://insecure.example.com/</code> may not connect to the secure
+    <code>http://non-secure.example.com/</code> may not connect to the secure
     worker, as it is not a secure context.</p>
 
     <svg width="600" height="400">
@@ -376,10 +376,10 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
         </g>
       </g>
       <g transform="translate(10,200)">
-        <rect height="175" width="300" y="0" x="0" class="insecure" />
-        <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        <rect height="175" width="300" y="0" x="0" class="non-secure" />
+        <text transform="translate(10, 20)">http://non-secure.example.com/</text>
         <g transform="translate(20, 50)">
-          <rect height="105" width="250" y="0" x="0" class="insecure" />
+          <rect height="105" width="250" y="0" x="0" class="non-secure" />
           <text transform="translate(10, 20)">https://example.com/</text>
         </g>
         <g>
@@ -393,20 +393,20 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
   <div class="example">
     <p>Likewise, if <code>https://example.com/</code> nested in
-    <code>http://insecure.example.com/</code> runs
+    <code>http://non-secure.example.com/</code> runs
     <code>https://example.com/worker.js</code> as a Shared
-    Worker, then both the document and the worker are considered insecure.</p>
+    Worker, then both the document and the worker are considered non-secure.</p>
 
     <svg width="600" height="400">
       <g transform="translate(10,10)">
-        <rect height="175" width="300" y="0" x="0" class="insecure" />
-        <text transform="translate(10, 20)">http://insecure.example.com/</text>
+        <rect height="175" width="300" y="0" x="0" class="non-secure" />
+        <text transform="translate(10, 20)">http://non-secure.example.com/</text>
         <g transform="translate(20, 50)">
-          <rect height="105" width="250" y="0" x="0" class="insecure" />
+          <rect height="105" width="250" y="0" x="0" class="non-secure" />
           <text transform="translate(10, 20)">https://example.com/</text>
         </g>
         <g transform="translate(400, 110)">
-          <circle r="50" class="insecure" />
+          <circle r="50" class="non-secure" />
           <text transform="translate(-75, -55)">https://example.com/worker.js</text>
         </g>
         <g>
@@ -426,9 +426,9 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
   <h4 id="examples-service-workers">Service Workers</h4>
 
-  Service Workers are always secure contexts, which is reasonably safe to do,
-  since they may only be registered from secure contexts, and may only have
-  clients which are secure contexts.
+  Service Workers are always <a>secure contexts</a>. Only <a>secure contexts</a>
+  may register them, and they may only have clients which are <a>secure
+  contexts</a>.
 
   <div class="example">
     <p>If <code>https://example.com/</code> in a <a>top-level browsing
@@ -457,17 +457,18 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   <h2 id="framework">Framework</h2>
 
   A <a>settings object</a> is considered a <dfn export>secure context</dfn> if
-  the algorithm in [[#settings-object]] returns "`Secure`".
+  the algorithm in [[#settings-object]] returns "`Secure`". The <a>settings
+  object</a> is otherwise <dfn export lt="non-secure context">non-secure</dfn>.
 
   <h3 id="monkey-patching">Modifications to HTML</h3>
 
   <h4 id="monkey-patching-shared-workers">Shared Workers</h4>
 
-  During execution of the {{SharedWorker()}} constructor, a `SecurityError`
-  will be thrown if a <a>secure context</a> attempts to attach to an
-  Worker which is not a <a>secure context</a>, and if an insecure context
-  attempts to attach to a Worker which is a <a>secure context</a>. The
-  constructor is modified as follows:
+  The {{SharedWorker()}} constructor will throw a `SecurtyError` exception if
+  a if a <a>secure context</a> attempts to attach to an Worker which is not a
+  <a>secure context</a>, and if an non-secure context attempts to attach to a
+  Worker which is a <a>secure context</a>. The constructor is modified as
+  follows:
 
   1.  As the first substep of the {{SharedWorker()}} constructor's current step
       7.7 ("If <var>worker global scope</var> is not `null`, then run these
@@ -510,8 +511,8 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   </h3>
 
   Given a <a>settings object</a> (<var>settings</var>), this algorithm returns
-  "`Secure`" if the object represents a context which can be trusted as being
-  delivered securely, and "`Not Secure`" otherwise.
+  "`Secure`" if the object represents a context which the user agent fetched via
+  a secure channel, and "`Not Secure`" otherwise.
 
   1.  Let <var>ancestors</var> be a list containing <var>settings</var>.
 
@@ -545,8 +546,8 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
 
           Note: We use the origin of the URL here in order to allow sandboxed
           context to remain secure (as sandboxing is a strict reduction in the
-          context's capabilities, and therefore risk). This covers scenarios
-          such as `<iframe sandbox src="http://localhost/">`.
+          context's capabilities, and therefore to the risk it poses). This
+          covers scenarios such as `<iframe sandbox src="http://localhost/">`.
 
       4.  If the result of executing the [[#is-origin-trustworthy]] algorithm
           on <var>origin</var> is <strong>not</strong> `Potentially
@@ -558,15 +559,17 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
     Is <var>origin</var> potentially trustworthy?
   </h3>
 
-  Certain origins are always <dfn>potentially trustworthy</dfn>. In
-  particular, UAs MUST treat <code>file</code> URLs and URLs with hostnames
-  names equivalent to "localhost" as potentially trustworthy. In principle
-  the UA could treat local files and local web servers as untrustworthy.
-  However, <em>given the information that is available to the UA at
-  runtime</em>, the resources appear to have been transported securely.
-  Additionally, treating such resources as potentially trustworthy is
-  convenient for developers building an application before deploying it to
-  the public.
+  A <dfn export>potentially trustworthy origin</dfn> is one which a user agent
+  can generally trust as delivering data securely.
+
+  Certain origins are always potentially trustworthy. In particular, user agents
+  MUST treat <code>file</code> URLs and URLs with hostnames names equivalent to
+  `localhost` as potentially trustworthy. In principle the user agent could
+  treat local files and local web servers as untrustworthy, but, <em>given the
+  information that is available to the user agent at runtime</em>, the resources
+  appear to have been transported securely. Additionally, treating such
+  resources as potentially trustworthy is convenient for developers building an
+  application before deploying it to the public.
 
   A user agent MAY choose to extend this trust to other, vendor-specific URL
   schemes like <code>app:</code> or <code>chrome-extension:</code>.
@@ -683,12 +686,12 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   privacy who are able to target individual users, organizations or even
   entire populations.
 
-  <h3 id="threat-risks">Risks associated with insecure contexts</h3>
+  <h3 id="threat-risks">Risks associated with non-secure contexts</h3>
 
   Certain web platform features that have a distinct impact on a user's
   security or privacy should be available for use only in <a>secure
   contexts</a> in order to defend against the threats above. Features
-  available in insecure contexts risk exposing these capabilities to
+  available in non-secure contexts risk exposing these capabilities to
   network attackers:
 
   <ol>
@@ -746,7 +749,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   <h3 id="isolation">Incomplete Isolation</h3>
 
   The <a>secure context</a> definition in this document does not completely
-  isolate a "secure" view on an origin from an "insecure" view on the same
+  isolate a "secure" view on an origin from an "non-secure" view on the same
   origin. That is, a developer who is actively working to bypass the secure
   context restriction on a particular API will be able to create a
   `postMessage`-based shim if they're willing to pop up a new window
@@ -790,7 +793,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
       <li>
         If the <a>incumbent settings object</a> is <em>not</em> a <a>secure
         context</a>, then:
-     
+
         <ol>
           <li>
             [<i>insert something appropriate here: perhaps a Promise could be
@@ -807,7 +810,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   <em>This section is non-normative.</em>
 
   The list above clearly includes some existing functionality that is currently
-  available to the web over insecure channels. We recommend that such legacy
+  available to the web over non-secure channels. We recommend that such legacy
   functionality begin requiring a <a>secure context</a> as quickly as is
   reasonably possible.
 
@@ -832,7 +835,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
   <h4 id="legacy-example">Example: Geolocation</h4>
 
   The [[GEOLOCATION-API]] is a good concrete example of such an feature; it is
-  widely implemented and used on a large number of insecure sites. A reasonable
+  widely implemented and used on a large number of non-secure sites. A reasonable
   path forward might look like this:
 
   1.  <a lt="modify a specification">Modify</a> the specification to include
@@ -844,7 +847,7 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
       invoked with a `code` of `PERMISSION_DENIED`.
 
   2.  User agents should announce clear intentions to disable the API for
-      insecure contexts on a specific date, and warn developers accordingly
+      non-secure contexts on a specific date, and warn developers accordingly
       (via console messages, for example).
 
   3.  Leading up to the flag day, user agents should announce a deprecation
@@ -852,9 +855,9 @@ urlPrefix: https://html.spec.whatwg.org/multipage/; spec: HTML
       their code before it simply stops working altogether, and to protect
       users in the meantime. Such a plan might include any or all of:
 
-      1.  Disallowing persistent permission grants to insecure origins
+      1.  Disallowing persistent permission grants to non-secure origins
 
-      2.  Coarsening the accuracy of the API for insecure origins (perhaps
+      2.  Coarsening the accuracy of the API for non-secure origins (perhaps
           consistently returning city-level data rather than high-accuracy
           data)
 
