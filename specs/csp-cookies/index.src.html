@@ -1,0 +1,240 @@
+<h1>Content Security Policy: </h1>
+<pre class="metadata">
+Status: DREAM
+ED: https://w3c.github.io/webappsec/specs/csp-cookies/
+TR: http://www.w3.org/TR/csp-cookies/
+Shortname: csp-cookies
+Editor: Mike West 56384, Google Inc., mkwst@google.com
+Abstract:
+  This document defines several Content Security Policy directives which allow
+  web developers to limit the ways in which cookies may be set in the context
+  of a particular protected resource.
+Indent: 2
+Level: 1
+Markup Shorthands: markdown on
+Boilerplate: omit conformance, omit feedback-header
+</pre>
+<pre boilerplate="copyright">&copy;2015 Google, Inc.</pre>
+<pre class="anchors">
+spec: CSP3; urlPrefix: https://mikewest.github.io/webappsec/specs/content-security-policy/
+  type: dfn
+    text: content-security-policy; url: content_security_policy
+    text: protected resource
+    text: report a violation
+    text: directive
+    text: enforced Content Security Policies
+    text: monitored Content Security Policies
+spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
+  type: dfn
+    urlPrefix: webappapis.html
+      text: environment settings object; url: settings-object
+      text: incumbent settings object
+spec: URL; urlPrefix: http://www.w3.org/TR/url/
+  type: interface
+    text: URL; url: concept-url
+  type: attribute
+    text: host; for: URL; url: concept-url-host
+    text: path; for: URL; url: concept-url-path
+    text: port; for: URL; url: concept-url-port
+    text: scheme; for: URL; url: concept-url-scheme
+spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
+  type: dfn
+    text: BIT; url: appendix-B.1
+    text: WSP; url: appendix-B.1
+spec: RFC6265; urlPrefix: https://tools.ietf.org/html/rfc6265
+  type: dfn
+    text: cookie; url: section-1
+    text: cookie store; url: section-5.3
+    text: host-only-flag; url: section-5.3
+    text: secure-only-flag; url: section-5.3
+spec: RFC6454; urlPrefix: https://tools.ietf.org/html/rfc6454
+  type: dfn
+    text: origin; url: section-3.2
+spec: RFC7320; urlPrefix: https://tools.ietf.org/html/rfc7230
+  type: grammar
+    text: RWS; url: section-3.2.3
+</pre>
+
+<!-- BIBLIOGRAPHY -->
+<pre class="biblio">
+{
+  "ORIGIN-COOKIES": {
+    "authors": [ "Mike West" ],
+    "title": "Origin Cookies",
+    "href": "https://tools.ietf.org/html/draft-west-origin-cookies",
+    "status": "ID",
+    "publisher": "IETF"
+  },
+  "YUMMY-COOKIES": {
+    "authors": [ "Vincent Marti" ],
+    "title": "Yummy cookies across domains",
+    "href": "https://github.com/blog/1466-yummy-cookies-across-domains"
+  }
+}
+</pre>
+
+<!--
+████ ██    ██ ████████ ████████   ███████
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████
+-->
+<section>
+  <h2 id="intro">Introduction</h2>
+
+  <em>This section is not normative.</em>
+
+  Cookies are an HTTP state management mechanism that web developers rely on
+  heavily for important things like authentication. They are also quite fragile,
+  and have scoping rules that don't mesh well with the <a>origin</a> model that
+  developers are familiar with. Cookies flow freely between
+  <a for="URL" attribute>scheme</a>s by default, can be set from subdomains or
+  limited to paths, and ignore <a for="URL" attribute>port</a>s entirely. The
+  disconnect between cookies and other types of storage opens up a number of
+  risks that are difficult to fully mitigate. See [[YUMMY-COOKIES]] for some
+  real-world examples of problems that have cropped up in the past.
+
+  This document defines mechanisms which allow developers to limit the ways in
+  which cookies can be set for a given <a>protected resource</a>.
+
+  Note: [[ORIGIN-COOKIES]] could resolve some of the issues here in a different
+  way, but it's unclear if those will ever be adopted.
+
+  <h3 id="examples">Examples</h3>
+
+  <div class="example">
+    MegaCorp Inc. hosts a number of pages which have no real need to write
+    cookies. Following the principle of least privilege, the clever developers
+    responsible for those pages send the following headers along with every HTTP
+    response, ensuring that no cookies can be set via `Set-Cookie` or
+    `document.cookie`:
+
+    <pre>
+      <a>Content-Security-Policy</a>: <a>cookie-scope</a> <a grammar>none</a>
+    </pre>
+  </div>
+
+  <div class="example">
+    MegaCorp Inc. hosts a number of pages on `http://non-secure.example.com`
+    which need to write cookies, but don't need those cookies to span
+    subdomains. The following header ensures that cookies can only be set via
+    `Set-Cookie` or `document.cookie` if those cookies are "host only" (e.g. the
+    cookie's `domain` attribute is empty):
+
+    <pre>
+      <a>Content-Security-Policy</a>: <a>cookie-scope</a> <a grammar>host</a>
+    </pre>
+  </div>
+
+  <div class="example">
+    MegaCorp Inc. hosts a number of pages on `https://secure.example.com`
+    which need to write cookies, but don't need those cookies to span
+    subdomains. They'll certainly set the <a grammar>host</a> property, just
+    like the previous example, but since this is a secure site, they also wish
+    to ensure that any cookies they set also contain the `secure` attribute.
+    They can do so with the following header:
+
+    <pre>
+      <a>Content-Security-Policy</a>: <a>cookie-scope</a> <a grammar>host</a> <a grammar>secure</a>
+    </pre>
+  </div>
+</section>
+
+<!-- Big Text: DIRECTIVE -->
+<section>
+  <h2 id="cookie-scope-directive">The `cookie-scope` directive</h2>
+
+  <dfn export>`cookie-scope`</dfn> is a Content Security Policy
+  <a>directive</a> [[!CSP]] which restricts the scope in which <a>cookies</a>
+  [[!RFC6265]] can be set. The syntax is described by the following ABNF
+  grammar:
+
+  <pre link-type="grammar" dfn-type="grammar">
+    directive-name = "cookie-scope"
+    directive-value = <a>scoping-rules</a> *( <a>RWS</a> <a>scoping-rules</a> )
+    <dfn>scoping-rules</dfn> = "<dfn>host</dfn>" / "<dfn>none</dfn>" / "<dfn>secure</dfn>"
+  </pre>
+
+  ISSUE: Erik Nygren
+  <a href="https://lists.w3.org/Archives/Public/public-webappsec/2013Sep/0046.html">proposed</a>
+  adding `path` restrictions as well. Is that worthwhile?
+
+  <h3 id="monkey-patching-rfc6264">Enforcement and Monitoring</h3>
+
+  After step 10 of <a href="https://tools.ietf.org/html/rfc6265#section-5.3">the
+  storage algorithm in Section 5.3 of RFC 6265</a>, a cookie object has been
+  built. Insert the following validation steps before proceeding to the current
+  step 11:
+
+  <ol start="11">
+    <li>
+      If [[#block-cookie]] returns "`Blocked`" when executed upon
+      <var>cookie</var> and the <a>incumbent settings object</a>,
+      abort these steps without modifying the <a>cookie store</a>.
+    </li>
+  </ol>
+
+  ISSUE: Monkey patching! Hey, maybe it's time to reopen that cookie RFC after
+  all, eh @mnot? :)
+</section>
+
+<section>
+  <h2 id="algorithms">Algorithms</h2>
+
+  <h3 id="block-cookie">
+    Is <var>cookie</var> blocked for <var>settings object</var>?
+  </h3>
+
+  Given a <a>cookie</a> (<var>cookie</var>), and an <a>environment settings
+  object</a> (<var>settings</var>), this algorithm returns "`Allowed`" if
+  <var>cookie</var> can be written, and "`Blocked`" if it violates one or
+  more of <var>settings</var>'s enforced Content Security Policies:
+
+  1.  Let <var>status</var> be "`Allowed`".
+
+  2.  For each <var>policy</var> in <var>settings</var>'s <a>monitored Content
+      Security Policies</a>:
+
+      1.  If [[#violates]] returns "`Violates`" when executed upon the cookie
+          and <var>policy</var>, <a>report a violation</a>.
+
+          Note: We do <em>not</em> touch <var>status</var> here, as we're
+          only evaluating the monitored policies.
+
+  2.  For each <var>policy</var> in <var>settings</var>'s <a>enforced Content
+      Security Policies</a>:
+
+      1.  If [[#violates]] returns "`Violates`" when executed upon the cookie
+          and <var>policy</var>, <a>report a violation</a>, and set
+          <var>status</var> to "`Blocked`":
+
+  3.  Return <var>status</var>.
+
+  <h3 id="violates">
+    Does <var>cookie</var> violate <var>policy</var>?
+  </h3>
+
+  1.  Let <var>scope</var> be the value of <var>policy</var>'s
+      <a>cookie-scope</a> directive.
+
+  2.  If any of the following conditions are met, return "`Violates`":
+
+      1.  <var>scope</var> contains "<a grammar>host</a>", and the cookie's
+          `host-only-flag` is `false`.
+
+      2.  <var>scope</var> contains "<a grammar>none</a>".
+
+      3.  <var>scope</var> contains "<a grammar>secure</a>", and the
+          cookie's `secure-only-flag` is `false`.
+
+  3.  Return "`Does not violate`".
+</section>
+
+<section>
+  <h2 id="acknowledgements">Acknowledgements</h2>
+
+  Mark Nottingham proposed this directive several years ago. Sorry, Mark!
+</section>
