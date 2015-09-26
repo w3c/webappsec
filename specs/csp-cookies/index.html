@@ -994,7 +994,7 @@
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Content Security Policy: Cookie Controls</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">A Collection of Interesting Ideas, <time class="dt-updated" datetime="2015-09-25">25 September 2015</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">A Collection of Interesting Ideas, <time class="dt-updated" datetime="2015-09-26">26 September 2015</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1011,10 +1011,9 @@
   </div>
   <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
   <div class="p-summary" data-fill-with="abstract">
-   <p>This document defines several Content Security Policy directives which allow
+   <p>This document defines mechanisms by which web developers can limit the ways
 
-web developers to limit the ways in which cookies may be set in the context
-of a particular protected resource.</p>
+in which cookies may be set in the context of their sites and applications.</p>
   </div>
   <div data-fill-with="at-risk"></div>
   <h2 class="no-num no-toc no-ref heading settled" id="contents"><span class="content">Table of Contents</span></h2>
@@ -1028,15 +1027,21 @@ of a particular protected resource.</p>
     <li>
      <a href="#cookie-scope-directive"><span class="secno">2</span> <span class="content">The <code>cookie-scope</code> directive</span></a>
      <ul class="toc">
-      <li><a href="#monkey-patching-rfc6264"><span class="secno">2.1</span> <span class="content">Enforcement and Monitoring</span></a>
+      <li><a href="#monkey-patching-rfc6264"><span class="secno">2.1</span> <span class="content">Processing Model</span></a>
      </ul>
     <li>
      <a href="#algorithms"><span class="secno">3</span> <span class="content">Algorithms</span></a>
      <ul class="toc">
       <li><a href="#block-cookie"><span class="secno">3.1</span> <span class="content"> Is <var>cookie</var> blocked for <var>settings object</var>? </span></a>
       <li><a href="#violates"><span class="secno">3.2</span> <span class="content"> Does <var>cookie</var> violate <var>policy</var>? </span></a>
+      <li><a href="#parse"><span class="secno">3.3</span> <span class="content"> Parse <var>string</var> as a <code>cookie-scope</code> value </span></a>
      </ul>
-    <li><a href="#acknowledgements"><span class="secno">4</span> <span class="content">Acknowledgements</span></a>
+    <li>
+     <a href="#security-considerations"><span class="secno">4</span> <span class="content">Security Considerations</span></a>
+     <ul class="toc">
+      <li><a href="#existing"><span class="secno">4.1</span> <span class="content">Existing Cookies</span></a>
+     </ul>
+    <li><a href="#acknowledgements"><span class="secno">5</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content"> Conformance</span></a>
     <li>
      <a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
@@ -1078,36 +1083,64 @@ of a particular protected resource.</p>
 <pre><a data-link-type="dfn" href="https://mikewest.github.io/webappsec/specs/content-security-policy/#content_security_policy">Content-Security-Policy</a>: <a data-link-type="dfn" href="#cookie-scope">cookie-scope</a> <a data-link-type="grammar" href="#grammardef-none">none</a>
 </pre>
     </div>
-    <div class="example" id="example-55395680">
-     <a class="self-link" href="#example-55395680"></a> MegaCorp Inc. hosts a number of pages on <code>http://non-secure.example.com</code> which need to write cookies, but don’t need those cookies to span
+    <div class="example" id="example-3070c811">
+     <a class="self-link" href="#example-3070c811"></a> MegaCorp Inc. hosts a number of pages on <code>http://non-secure.example.com</code> which need to write cookies, but don’t need those cookies to span
     subdomains. The following header ensures that cookies can only be set via <code>Set-Cookie</code> or <code>document.cookie</code> if those cookies are "host only" (e.g. the
     cookie’s <code>domain</code> attribute is empty): 
 <pre><a data-link-type="dfn" href="https://mikewest.github.io/webappsec/specs/content-security-policy/#content_security_policy">Content-Security-Policy</a>: <a data-link-type="dfn" href="#cookie-scope">cookie-scope</a> <a data-link-type="grammar" href="#grammardef-host">host</a>
 </pre>
+     <p>That is, the following code would set a cookie:</p>
+<pre>document.cookie = "key=value";
+</pre>
+     <p>And the following would not:</p>
+<pre>document.cookie = "key=value; domain=example.com";
+</pre>
     </div>
-    <div class="example" id="example-b4774c33">
-     <a class="self-link" href="#example-b4774c33"></a> MegaCorp Inc. hosts a number of pages on <code>https://secure.example.com</code> which need to write cookies, but don’t need those cookies to span
+    <div class="example" id="example-e1a66362">
+     <a class="self-link" href="#example-e1a66362"></a> MegaCorp Inc. hosts a number of pages on <code>https://secure.example.com</code> which need to write cookies, but don’t need those cookies to span
     subdomains. They’ll certainly set the <a data-link-type="grammar" href="#grammardef-host">host</a> property, just
     like the previous example, but since this is a secure site, they also wish
     to ensure that any cookies they set also contain the <code>secure</code> attribute.
     They can do so with the following header: 
 <pre><a data-link-type="dfn" href="https://mikewest.github.io/webappsec/specs/content-security-policy/#content_security_policy">Content-Security-Policy</a>: <a data-link-type="dfn" href="#cookie-scope">cookie-scope</a> <a data-link-type="grammar" href="#grammardef-host">host</a> <a data-link-type="grammar" href="#grammardef-secure">secure</a>
 </pre>
+     <p>That is, the following code would set a cookie:</p>
+<pre>document.cookie = "key=value; secure";
+</pre>
+     <p>And the following would not:</p>
+<pre>document.cookie = "key=value";
+document.cookie = "key=value; domain=example.com; secure";
+</pre>
     </div>
    </section>
    <section>
     <h2 class="heading settled" data-level="2" id="cookie-scope-directive"><span class="secno">2. </span><span class="content">The <code>cookie-scope</code> directive</span><a class="self-link" href="#cookie-scope-directive"></a></h2>
     <p><dfn data-dfn-type="dfn" data-export="" id="cookie-scope"><code>cookie-scope</code><a class="self-link" href="#cookie-scope"></a></dfn> is a Content Security Policy <a data-link-type="dfn" href="https://mikewest.github.io/webappsec/specs/content-security-policy/#directive">directive</a> <a data-link-type="biblio" href="#biblio-csp">[CSP]</a> which restricts the scope in which <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-1">cookies</a> <a data-link-type="biblio" href="#biblio-rfc6265">[RFC6265]</a> can be set. The syntax is described by the following ABNF
-  grammar:</p>
+  grammar <a data-link-type="biblio" href="#biblio-rfc5234">[RFC5234]</a> (including the <a data-link-type="grammar" href="https://tools.ietf.org/html/rfc7230#section-3.2.3">RWS</a> rule from <a data-link-type="biblio" href="#biblio-rfc7230">[RFC7230]</a>:</p>
 <pre>directive-name = "cookie-scope"
 directive-value = <a data-link-type="grammar" href="#grammardef-scoping-rules">scoping-rules</a> *( <a data-link-type="grammar" href="https://tools.ietf.org/html/rfc7230#section-3.2.3">RWS</a> <a data-link-type="grammar" href="#grammardef-scoping-rules">scoping-rules</a> )
 <dfn data-dfn-type="grammar" data-export="" id="grammardef-scoping-rules">scoping-rules<a class="self-link" href="#grammardef-scoping-rules"></a></dfn> = "<dfn data-dfn-type="grammar" data-export="" id="grammardef-host">host<a class="self-link" href="#grammardef-host"></a></dfn>" / "<dfn data-dfn-type="grammar" data-export="" id="grammardef-none">none<a class="self-link" href="#grammardef-none"></a></dfn>" / "<dfn data-dfn-type="grammar" data-export="" id="grammardef-secure">secure<a class="self-link" href="#grammardef-secure"></a></dfn>"
 </pre>
+    <p>The directive has one of three values:</p>
+    <ol>
+     <li data-md="">
+      <p>"<a data-link-type="grammar" href="#grammardef-host">host</a>" allows "host only" cookies to be set, but will block
+  setting cookies which set a <code>domain</code> attribute.</p>
+     <li data-md="">
+      <p>"<a data-link-type="grammar" href="#grammardef-none">none</a>" blocks all cookies.</p>
+     <li data-md="">
+      <p>"<a data-link-type="grammar" href="#grammardef-secure">secure</a>" allows cookies to be set with a <code>secure</code> attribute, and will block setting any non-secure cookies.</p>
+    </ol>
+    <p>These values MAY be combined in order to tighten the restrictions on a cookie.
+  That is, if both "<a data-link-type="grammar" href="#grammardef-host">host</a>" and "<a data-link-type="grammar" href="#grammardef-secure">secure</a>" are
+  present, then cookies may only be set which are both secure and host-only.
+  If "<a data-link-type="grammar" href="#grammardef-none">none</a>" is present with any combination of the other values,
+  no cookies may be set.</p>
     <p class="issue" id="issue-6a48c646"><a class="self-link" href="#issue-6a48c646"></a> Erik Nygren <a href="https://lists.w3.org/Archives/Public/public-webappsec/2013Sep/0046.html">proposed</a> adding <code>path</code> restrictions as well. Is that worthwhile?</p>
-    <h3 class="heading settled" data-level="2.1" id="monkey-patching-rfc6264"><span class="secno">2.1. </span><span class="content">Enforcement and Monitoring</span><a class="self-link" href="#monkey-patching-rfc6264"></a></h3>
+    <h3 class="heading settled" data-level="2.1" id="monkey-patching-rfc6264"><span class="secno">2.1. </span><span class="content">Processing Model</span><a class="self-link" href="#monkey-patching-rfc6264"></a></h3>
     <p>After step 10 of <a href="https://tools.ietf.org/html/rfc6265#section-5.3">the
   storage algorithm in Section 5.3 of RFC 6265</a>, a cookie object has been
-  built. Insert the following validation steps before proceeding to the current
+  built. Insert the following validation step before proceeding to the current
   step 11:</p>
     <ol start="11">
      <li> If <a href="#block-cookie">§3.1 Is cookie blocked for settings object?</a> returns "<code>Blocked</code>" when executed upon <var>cookie</var> and the <a data-link-type="dfn" href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>,
@@ -1149,7 +1182,7 @@ directive-value = <a data-link-type="grammar" href="#grammardef-scoping-rules">s
     <h3 class="heading settled" data-level="3.2" id="violates"><span class="secno">3.2. </span><span class="content"> Does <var>cookie</var> violate <var>policy</var>? </span><a class="self-link" href="#violates"></a></h3>
     <ol>
      <li data-md="">
-      <p>Let <var>scope</var> be the value of <var>policy</var>’s <a data-link-type="dfn" href="#cookie-scope">cookie-scope</a> directive.</p>
+      <p>Let <var>scope</var> be the result of executing <a href="#parse">§3.3 Parse string as a cookie-scope value</a> on <var>policy</var>’s <a data-link-type="dfn" href="#cookie-scope">cookie-scope</a> directive.</p>
      <li data-md="">
       <p>If any of the following conditions are met, return "<code>Violates</code>":</p>
       <ol>
@@ -1164,10 +1197,40 @@ directive-value = <a data-link-type="grammar" href="#grammardef-scoping-rules">s
      <li data-md="">
       <p>Return "<code>Does not violate</code>".</p>
     </ol>
+    <h3 class="heading settled" data-level="3.3" id="parse"><span class="secno">3.3. </span><span class="content"> Parse <var>string</var> as a <code>cookie-scope</code> value </span><a class="self-link" href="#parse"></a></h3>
+    <p>Given a string (<var>string</var>), this algorithm returns a set of the valid <a data-link-type="dfn" href="#cookie-scope"><code>cookie-scope</code></a> values the string represents. Invalid values are
+  ignored:</p>
+    <ol>
+     <li data-md="">
+      <p><a data-link-type="dfn" href="http://www.w3.org/TR/html5/infrastructure.html#strip-leading-and-trailing-whitespace">Strip leading and trailing whitespace</a> from <var>string</var>.</p>
+     <li data-md="">
+      <p>Let <var>values</var> be an empty set.</p>
+     <li data-md="">
+      <p>For each <var>token</var> in the list generated by <a data-link-type="dfn" href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">splitting <var>string</var> on
+  spaces</a>:</p>
+      <ol>
+       <li data-md="">
+        <p>If <var>token</var> matches the grammar for <a data-link-type="grammar" href="#grammardef-scoping-rules">scoping-rules</a>, insert <var>token</var> into <var>values</var>.</p>
+      </ol>
+     <li data-md="">
+      <p>Return <var>values</var>.</p>
+    </ol>
    </section>
    <section>
-    <h2 class="heading settled" data-level="4" id="acknowledgements"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
-    <p>Mark Nottingham proposed this directive several years ago. Sorry, Mark!</p>
+    <h2 class="heading settled" data-level="4" id="security-considerations"><span class="secno">4. </span><span class="content">Security Considerations</span><a class="self-link" href="#security-considerations"></a></h2>
+    <h3 class="heading settled" data-level="4.1" id="existing"><span class="secno">4.1. </span><span class="content">Existing Cookies</span><a class="self-link" href="#existing"></a></h3>
+    <p>Note that the mechanisms defined here do not protect against cookies that
+  already exist in a user’s <a data-link-type="dfn" href="https://tools.ietf.org/html/rfc6265#section-5.3">cookie store</a>. Those cookies are delivered
+  along with the HTTP request, before Content Security Policy can be delivered
+  and applied. It is possible that future work like <a data-link-type="biblio" href="#biblio-csp-pinning">[CSP-PINNING]</a> might
+  enable these kinds of <i lang="la">a priori</i> restrictions, but, even then,
+  CSP should be seen as a mitigation strategy, layered on top of filters and
+  sanity checks for incoming data.</p>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="5" id="acknowledgements"><span class="secno">5. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+    <p>Mark Nottingham proposed this directive several years ago. Sorry it took so
+  long, Mark!</p>
    </section>
   </main>
   <h2 class="no-ref no-num heading settled" id="conformance"><span class="content"> Conformance</span><a class="self-link" href="#conformance"></a></h2>
@@ -1211,6 +1274,8 @@ directive-value = <a data-link-type="grammar" href="#grammardef-scoping-rules">s
     <ul>
      <li><a href="http://www.w3.org/TR/html5/webappapis.html#settings-object">environment settings object</a>
      <li><a href="http://www.w3.org/TR/html5/webappapis.html#incumbent-settings-object">incumbent settings object</a>
+     <li><a href="http://www.w3.org/TR/html5/infrastructure.html#split-a-string-on-spaces">split a string on spaces</a>
+     <li><a href="http://www.w3.org/TR/html5/infrastructure.html#strip-leading-and-trailing-whitespace">strip leading and trailing whitespace</a>
     </ul>
    <li>
     <a data-link-type="biblio" href="#biblio-rfc6265">[rfc6265]</a> defines the following terms:
@@ -1244,12 +1309,16 @@ directive-value = <a data-link-type="grammar" href="#grammardef-scoping-rules">s
    <dd>Mike West; Daniel Veditz. <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">Content Security Policy</a>. ED. URL: <a href="https://w3c.github.io/webappsec/specs/content-security-policy/">https://w3c.github.io/webappsec/specs/content-security-policy/</a>
    <dt id="biblio-rfc6454"><a class="self-link" href="#biblio-rfc6454"></a>[RFC6454]
    <dd>Adam Barth. <a href="http://www.ietf.org/rfc/rfc6454.txt">The Web Origin Concept</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc6454.txt">http://www.ietf.org/rfc/rfc6454.txt</a>
+   <dt id="biblio-rfc7230"><a class="self-link" href="#biblio-rfc7230"></a>[RFC7230]
+   <dd>Roy T. Fielding; Julian F. Reschke. <a href="http://www.ietf.org/rfc/rfc7230.txt">HTTP/1.1 Message Syntax and Routing</a>. RFC. URL: <a href="http://www.ietf.org/rfc/rfc7230.txt">http://www.ietf.org/rfc/rfc7230.txt</a>
    <dt id="biblio-url"><a class="self-link" href="#biblio-url"></a>[URL]
    <dd>Anne van Kesteren. <a href="https://url.spec.whatwg.org/">URL</a>. Living Standard. URL: <a href="https://url.spec.whatwg.org/">https://url.spec.whatwg.org/</a>
    <dt id="biblio-html5"><a class="self-link" href="#biblio-html5"></a>[HTML5]
    <dd>Ian Hickson; et al. <a href="http://www.w3.org/TR/html5/">HTML5</a>. 28 October 2014. REC. URL: <a href="http://www.w3.org/TR/html5/">http://www.w3.org/TR/html5/</a>
    <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
    <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+   <dt id="biblio-rfc5234"><a class="self-link" href="#biblio-rfc5234"></a>[RFC5234]
+   <dd>D. Crocker, Ed.; P. Overell. <a href="https://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>. January 2008. Internet Standard. URL: <a href="https://tools.ietf.org/html/rfc5234">https://tools.ietf.org/html/rfc5234</a>
    <dt id="biblio-rfc6265"><a class="self-link" href="#biblio-rfc6265"></a>[RFC6265]
    <dd>A. Barth. <a href="https://tools.ietf.org/html/rfc6265">HTTP State Management Mechanism</a>. April 2011. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc6265">https://tools.ietf.org/html/rfc6265</a>
    <dt id="biblio-rfc7320"><a class="self-link" href="#biblio-rfc7320"></a>[RFC7320]
@@ -1257,6 +1326,8 @@ directive-value = <a data-link-type="grammar" href="#grammardef-scoping-rules">s
   </dl>
   <h3 class="no-num heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-csp-pinning"><a class="self-link" href="#biblio-csp-pinning"></a>[CSP-PINNING]
+   <dd>Mike West. <a href="https://w3c.github.io/webappsec/specs/csp-pinning/">Content Security Policy: Pinning</a>. FPWD. URL: <a href="https://w3c.github.io/webappsec/specs/csp-pinning/">https://w3c.github.io/webappsec/specs/csp-pinning/</a>
    <dt id="biblio-origin-cookies"><a class="self-link" href="#biblio-origin-cookies"></a>[ORIGIN-COOKIES]
    <dd>Mike West. <a href="https://tools.ietf.org/html/draft-west-origin-cookies">Origin Cookies</a>. ID. URL: <a href="https://tools.ietf.org/html/draft-west-origin-cookies">https://tools.ietf.org/html/draft-west-origin-cookies</a>
    <dt id="biblio-yummy-cookies"><a class="self-link" href="#biblio-yummy-cookies"></a>[YUMMY-COOKIES]

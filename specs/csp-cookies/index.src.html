@@ -6,9 +6,8 @@ TR: http://www.w3.org/TR/csp-cookies/
 Shortname: csp-cookies
 Editor: Mike West 56384, Google Inc., mkwst@google.com
 Abstract:
-  This document defines several Content Security Policy directives which allow
-  web developers to limit the ways in which cookies may be set in the context
-  of a particular protected resource.
+  This document defines mechanisms by which web developers can limit the ways
+  in which cookies may be set in the context of their sites and applications.
 Indent: 2
 Level: 1
 Markup Shorthands: markdown on
@@ -26,6 +25,9 @@ spec: CSP3; urlPrefix: https://mikewest.github.io/webappsec/specs/content-securi
     text: monitored Content Security Policies
 spec: HTML5; urlPrefix: http://www.w3.org/TR/html5/
   type: dfn
+    urlPrefix: infrastructure.html
+      text: strip leading and trailing whitespace
+      text: split a string on spaces
     urlPrefix: webappapis.html
       text: environment settings object; url: settings-object
       text: incumbent settings object
@@ -34,12 +36,10 @@ spec: URL; urlPrefix: http://www.w3.org/TR/url/
     text: URL; url: concept-url
   type: attribute
     text: host; for: URL; url: concept-url-host
-    text: path; for: URL; url: concept-url-path
     text: port; for: URL; url: concept-url-port
     text: scheme; for: URL; url: concept-url-scheme
 spec: RFC5234; urlPrefix: https://tools.ietf.org/html/rfc5234
   type: dfn
-    text: BIT; url: appendix-B.1
     text: WSP; url: appendix-B.1
 spec: RFC6265; urlPrefix: https://tools.ietf.org/html/rfc6265
   type: dfn
@@ -58,6 +58,13 @@ spec: RFC7320; urlPrefix: https://tools.ietf.org/html/rfc7230
 <!-- BIBLIOGRAPHY -->
 <pre class="biblio">
 {
+  "CSP-PINNING": {
+    "authors": [ "Mike West" ],
+    "title": "Content Security Policy: Pinning",
+    "href": "https://w3c.github.io/webappsec/specs/csp-pinning/",
+    "status": "FPWD",
+    "publisher": "W3C"
+  },
   "ORIGIN-COOKIES": {
     "authors": [ "Mike West" ],
     "title": "Origin Cookies",
@@ -127,6 +134,18 @@ spec: RFC7320; urlPrefix: https://tools.ietf.org/html/rfc7230
     <pre>
       <a>Content-Security-Policy</a>: <a>cookie-scope</a> <a grammar>host</a>
     </pre>
+
+    That is, the following code would set a cookie:
+
+    <pre>
+      document.cookie = "key=value";
+    </pre>
+
+    And the following would not:
+
+    <pre>
+      document.cookie = "key=value; domain=example.com";
+    </pre>
   </div>
 
   <div class="example">
@@ -140,6 +159,19 @@ spec: RFC7320; urlPrefix: https://tools.ietf.org/html/rfc7230
     <pre>
       <a>Content-Security-Policy</a>: <a>cookie-scope</a> <a grammar>host</a> <a grammar>secure</a>
     </pre>
+
+    That is, the following code would set a cookie:
+
+    <pre>
+      document.cookie = "key=value; secure";
+    </pre>
+
+    And the following would not:
+
+    <pre>
+      document.cookie = "key=value";
+      document.cookie = "key=value; domain=example.com; secure";
+    </pre>
   </div>
 </section>
 
@@ -150,7 +182,7 @@ spec: RFC7320; urlPrefix: https://tools.ietf.org/html/rfc7230
   <dfn export>`cookie-scope`</dfn> is a Content Security Policy
   <a>directive</a> [[!CSP]] which restricts the scope in which <a>cookies</a>
   [[!RFC6265]] can be set. The syntax is described by the following ABNF
-  grammar:
+  grammar [[!RFC5234]] (including the <a grammar>RWS</a> rule from [[!RFC7230]]:
 
   <pre link-type="grammar" dfn-type="grammar">
     directive-name = "cookie-scope"
@@ -158,15 +190,31 @@ spec: RFC7320; urlPrefix: https://tools.ietf.org/html/rfc7230
     <dfn>scoping-rules</dfn> = "<dfn>host</dfn>" / "<dfn>none</dfn>" / "<dfn>secure</dfn>"
   </pre>
 
+  The directive has one of three values:
+
+  1.  "<a grammar>host</a>" allows "host only" cookies to be set, but will block
+      setting cookies which set a `domain` attribute.
+
+  2.  "<a grammar>none</a>" blocks all cookies.
+
+  3.  "<a grammar>secure</a>" allows cookies to be set with a `secure`
+      attribute, and will block setting any non-secure cookies.
+
+  These values MAY be combined in order to tighten the restrictions on a cookie.
+  That is, if both "<a grammar>host</a>" and "<a grammar>secure</a>" are
+  present, then cookies may only be set which are both secure and host-only.
+  If "<a grammar>none</a>" is present with any combination of the other values,
+  no cookies may be set.
+
   ISSUE: Erik Nygren
   <a href="https://lists.w3.org/Archives/Public/public-webappsec/2013Sep/0046.html">proposed</a>
   adding `path` restrictions as well. Is that worthwhile?
 
-  <h3 id="monkey-patching-rfc6264">Enforcement and Monitoring</h3>
+  <h3 id="monkey-patching-rfc6264">Processing Model</h3>
 
   After step 10 of <a href="https://tools.ietf.org/html/rfc6265#section-5.3">the
   storage algorithm in Section 5.3 of RFC 6265</a>, a cookie object has been
-  built. Insert the following validation steps before proceeding to the current
+  built. Insert the following validation step before proceeding to the current
   step 11:
 
   <ol start="11">
@@ -217,8 +265,8 @@ spec: RFC7320; urlPrefix: https://tools.ietf.org/html/rfc7230
     Does <var>cookie</var> violate <var>policy</var>?
   </h3>
 
-  1.  Let <var>scope</var> be the value of <var>policy</var>'s
-      <a>cookie-scope</a> directive.
+  1.  Let <var>scope</var> be the result of executing [[#parse]] on
+      <var>policy</var>'s <a>cookie-scope</a> directive.
 
   2.  If any of the following conditions are met, return "`Violates`":
 
@@ -231,10 +279,47 @@ spec: RFC7320; urlPrefix: https://tools.ietf.org/html/rfc7230
           cookie's `secure-only-flag` is `false`.
 
   3.  Return "`Does not violate`".
+
+  <h3 id="parse">
+    Parse <var>string</var> as a `cookie-scope` value
+  </h3>
+
+  Given a string (<var>string</var>), this algorithm returns a set of the valid
+  <a>`cookie-scope`</a> values the string represents. Invalid values are
+  ignored:
+
+  1.  <a>Strip leading and trailing whitespace</a> from <var>string</var>.
+
+  2.  Let <var>values</var> be an empty set.
+
+  3.  For each <var>token</var> in the list generated by
+      <a lt="split a string on spaces">splitting <var>string</var> on
+      spaces</a>:
+
+      1.  If <var>token</var> matches the grammar for
+          <a grammar>scoping-rules</a>, insert <var>token</var> into
+          <var>values</var>.
+
+  4.  Return <var>values</var>.
+</section>
+
+<section>
+  <h2 id="security-considerations">Security Considerations</h2>
+
+  <h3 id="existing">Existing Cookies</h3>
+
+  Note that the mechanisms defined here do not protect against cookies that
+  already exist in a user's <a>cookie store</a>. Those cookies are delivered
+  along with the HTTP request, before Content Security Policy can be delivered
+  and applied. It is possible that future work like [[CSP-PINNING]] might
+  enable these kinds of <i lang="la">a priori</i> restrictions, but, even then,
+  CSP should be seen as a mitigation strategy, layered on top of filters and
+  sanity checks for incoming data.
 </section>
 
 <section>
   <h2 id="acknowledgements">Acknowledgements</h2>
 
-  Mark Nottingham proposed this directive several years ago. Sorry, Mark!
+  Mark Nottingham proposed this directive several years ago. Sorry it took so
+  long, Mark!
 </section>
