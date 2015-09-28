@@ -33,9 +33,9 @@ This document specifies such a validation scheme, extending two HTML elements
 and the `fetch()` API with an `integrity` attribute that contains a cryptographic hash
 of the representation of the resource the author expects to load. For instance,
 an author may wish to load some framework from a shared server rather than hosting it
-on their own origin. Specifying that the _expected_ SHA-256 hash of
+on their own origin. Specifying that the _expected_ SHA-384 hash of
 `https://example.com/example-framework.js`
-is `C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=` means
+is `Li9vy3DqF8tnTXuiaAJuML3ky+er10rcgNR/VqsVpcw+ThHmYcwiB1pbOxEbzJr7` means
 that the user agent can verify that the data it loads from that URL matches
 that expected hash before executing the JavaScript it contains. This
 integrity verification significantly reduces the risk that an attacker can
@@ -45,7 +45,7 @@ This example can be communicated to a user agent by adding the hash to a
 `script` element, like so:
 
     <script src="https://example.com/example-framework.js"
-            integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg="
+            integrity="sha384-Li9vy3DqF8tnTXuiaAJuML3ky+er10rcgNR/VqsVpcw+ThHmYcwiB1pbOxEbzJr7"
             crossorigin="anonymous"></script>
 
 {:.example}
@@ -86,7 +86,7 @@ and future versions of the specification are likely to expand this coverage.
     [integrity metadata][] is added to the `link` element included on the page:
 
         <link rel="stylesheet" href="https://site53.example.net/style.css"
-              integrity="sha256-vjnUh7+rXHH2lg/5vDY8032ftNVCIEC21vL6szrVw9M="
+              integrity="sha384-+/M6kredJcxdsqkczBUjMLvqyHb1K/JThDXWsBVxMEeZHEaMKEOEct339VItX1zB"
               crossorigin="anonymous">
     {:.example}
 
@@ -96,7 +96,7 @@ and future versions of the specification are likely to expand this coverage.
     the script, and adds it to the `script` element:
 
         <script src="https://analytics-r-us.example.com/v1.0/include.js"
-                integrity="sha256-Rj/9XDU7F6pNSX8yBddiCIIS+XKDTtdq0//No0MH0AE="
+                integrity="sha384-MBO5IDfYaE6c6Aao94oZrIOiC6CGiSN2n4QUbHNPhzk5Xhm0djZLQqTpL0HzTUxk"
                 crossorigin="anonymous"></script>
     {:.example}
 
@@ -209,11 +209,11 @@ This metadata MUST be encoded in the same format as the `hash-source` (without t
 in [section 4.2 of the Content Security Policy Level 2 specification][csp2-section42].
 
 For example, given a script resource containing only the string \"alert(\'Hello, world.\');\",
-an author might choose [SHA-256][sha2] as a hash function.
-`qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=` is the base64-encoded
+an author might choose [SHA-384][sha2] as a hash function.
+`H8BRh8j48O9oYatfu5AZzq6A9RINhZO5H16dQZngK7T62em8MUt1FLm52t+eX6xO` is the base64-encoded
 digest that results. This can be encoded as follows:
 
-    sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+    sha384-H8BRh8j48O9oYatfu5AZzq6A9RINhZO5H16dQZngK7T62em8MUt1FLm52t+eX6xO
 {:.example}
 
 <div class="note">
@@ -221,7 +221,7 @@ Digests may be generated using any number of utilities. [OpenSSL][], for
 example, is quite commonly available. The example in this section is the
 result of the following command line:
 
-    echo -n "alert('Hello, world.');" | openssl dgst -sha256 -binary | openssl enc -base64 -A
+    echo -n "alert('Hello, world.');" | openssl dgst -sha384 -binary | openssl enc -base64 -A
 
 [csp2-section42]: http://www.w3.org/TR/CSP11/#source-list-syntax
 [openssl]: http://www.openssl.org/
@@ -247,13 +247,13 @@ resource in order to provide agility in the face of future cryptographic discove
 For example, the resource described in the previous section may be described
 by either of the following hash expressions:
 
-    sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+    sha384-dOTZf16X8p34q2/kYyEFm0jh89uTjikhnzjeLeF0FHsEaYKb1A1cv+Lyv4Hk8vHd
     sha512-Q2bFTOhEALkN8hOms2FKTDLy7eugP2zFZ1T8LCvX42Fp3WoNr3bjZSAHeOsHrbV1Fu9/A0EzCinRE7Af1ofPrw==
 
 Authors may choose to specify both, for example:
 
     <script src="hello_world.js"
-       integrity="sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=
+       integrity="sha384-dOTZf16X8p34q2/kYyEFm0jh89uTjikhnzjeLeF0FHsEaYKb1A1cv+Lyv4Hk8vHd
                   sha512-Q2bFTOhEALkN8hOms2FKTDLy7eugP2zFZ1T8LCvX42Fp3WoNr3bjZSAHeOsHrbV1Fu9/A0EzCinRE7Af1ofPrw=="
        crossorigin="anonymous"></script>
 
@@ -437,13 +437,13 @@ This algorithm allows the user agent to accept multiple, valid strong hash
 functions. For example, a developer might write a `script` element such as:
 
     <script src="https://example.com/example-framework.js"
-            integrity="sha256-C6CB9UYIS9UJeqinPHWTHVqh/E1uhG5Twh+Y5qFQmYg=
-                       sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng="
+            integrity="sha384-Li9vy3DqF8tnTXuiaAJuML3ky+er10rcgNR/VqsVpcw+ThHmYcwiB1pbOxEbzJr7
+                       sha384-+/M6kredJcxdsqkczBUjMLvqyHb1K/JThDXWsBVxMEeZHEaMKEOEct339VItX1zB"
             crossorigin="anonymous"></script>
 
 which would allow the user agent to accept two different content payloads, one
-of which matches the first SHA256 hash value and the other matches the second
-SHA256 hash value.
+of which matches the first SHA384 hash value and the other matches the second
+SHA384 hash value.
 
 {:.example}
 
@@ -703,7 +703,7 @@ specification.
 Digests are only as strong as the hash function used to generate them. User
 agents SHOULD refuse to support known-weak hashing functions like MD5 or SHA-1,
 and SHOULD restrict supported hashing functions to those known to be
-collision-resistant. At the time of writing, SHA-256 is a good baseline.
+collision-resistant. At the time of writing, SHA-384 is a good baseline.
 Moreover, user agents SHOULD re-evaluate their supported hash functions
 on a regular basis, and deprecate support for those functions shown to be
 insecure.
