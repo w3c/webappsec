@@ -657,23 +657,30 @@ insecure.
 <section>
 ### Cross-origin data leakage
 
-Attackers can determine whether some cross-origin resource has certain
-content by attempting to load it with a known digest, and watching for
-load failures. If the load fails, the attacker can surmise that the
-response didn't match the hash, and thereby gain some insight into its
-contents. This might reveal, for example, whether or not a user is
+This specification requires the [CORS settings attribute][] to be present on
+integrity-protected cross-origin requests. If that requirement were omitted,
+attackers could violate the [same-origin policy][] and determine whether
+a cross-origin resource has certain content.
+
+Attackers would attempt to load the resource with a known digest, and
+watch for load failures. If the load fails, the attacker could surmise
+that the response didn't match the hash and thereby gain some insight into
+its contents. This might reveal, for example, whether or not a user is
 logged into a particular service.
 
-Moreover, attackers can brute-force specific values in an otherwise
-static resource: consider a JSON response that looks like this:
+Moreover, attackers could brute-force specific values in an otherwise
+static resource. Consider a JSON response that looks like this:
 
     {'status': 'authenticated', 'username': 'admin'}
 {:.example}
 
-An attacker can precompute hashes for the response with a variety of
+An attacker could precompute hashes for the response with a variety of
 common usernames, and specify those hashes while repeatedly attempting
-to load the document.
+to load the document. A successful load would confirm that the attacker
+has correctly guessed the username.
 
+[CORS settings attribute]: http://www.w3.org/TR/html5/infrastructure.html#cors-settings-attributes
+[same-origin policy]: http://www.w3.org/Security/wiki/Same_Origin_Policy
 </section><!-- /Security::cross-origin -->
 
 </section><!-- /Security -->
