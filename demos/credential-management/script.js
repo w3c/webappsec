@@ -49,15 +49,6 @@ function processResponse(c) {
  * if no credential is provided).
  */
 document.querySelector('#signin').addEventListener('click', function () {
-  var formHTML = '' +
-    '<button>Sign in via Federation.com</button>' +
-    '<hr>' +
-    '<label for="username">Username:</label>' +
-    '<input id="username" type="text" name="username" autocomplete="username"></input>' +
-    '<label for="password">Password:</label>' +
-    '<input id="password" type="password" name="password" autocomplete="new-password"></input>' +
-    '<input type="submit">';
-
   console.log("Clicked 'sign in!'");
   if (navigator.credentials) {
     navigator.credentials.get({
@@ -65,13 +56,11 @@ document.querySelector('#signin').addEventListener('click', function () {
     }).then(function (c) {
       processResponse(c);
       if (!c) {
-        document.querySelector('form').innerHTML = formHTML;
         document.querySelector('form button').addEventListener('click', handleFederation);
         document.querySelector('dialog').showModal();
       }
     });
   } else {
-    document.querySelector('form').innerHTML = formHTML;
     document.querySelector('form button').addEventListener('click', handleFederation);
     document.querySelector('dialog').showModal();
   }
