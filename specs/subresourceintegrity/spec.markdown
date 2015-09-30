@@ -350,19 +350,27 @@ The following algorithm details these restrictions:
 
 1.  Let <var>request</var> be the request that fetched
     <var>resource</var>.
-2.  If the [mode][fetch-mode] of <var>request</var> is `CORS`,
+2.  If the [response type][] is `opaque`, return `false`.
+3.  If the [mode][fetch-mode] of <var>request</var> is `CORS`,
     return `true`.
-3.  If the [origin][fetch-origin] of <var>request</var> is
+4.  If the [origin][fetch-origin] of <var>request</var> is
     <var>resource</var>'s origin, return `true`.
-4.  Return `false`.
+5.  Return `false`.
 
-Step 2 returns `true` if the fetch was a CORS-enabled request. If the
+Step 3 returns `true` if the fetch was a CORS-enabled request. If the
 fetch failed the CORS checks, it won't be available to us for integrity
 checking because it won't have loaded successfully.
 {:.note}
 
+Since the [response type][] for data URLs will always be "opaque" for
+`script` and `link` elements, such URLs are never eligible for integrity
+checks. Blob URLs on the other hand are usually considered same-origin and
+therefore are eligible for integrity checks.
+{:.note}
+
 [fetch-mode]: https://fetch.spec.whatwg.org/#concept-request-mode
 [fetch-origin]: https://fetch.spec.whatwg.org/#concept-request-origin
+[response type]: https://fetch.spec.whatwg.org/#concept-response-type
 </section><!-- Algorithms::eligible -->
 <section>
 #### Parse <var>metadata</var>.
