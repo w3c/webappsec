@@ -6,48 +6,100 @@ Web Application Security Working Group
 * Tracker: <http://www.w3.org/2011/webappsec/track/>
 * Bugzilla: <http://www.w3.org/Bugs/Public/describecomponents.cgi?product=WebAppsSec>
 
-## Specifications
+## Table of Specifications
 
-* Content Security Policy
-    * Editor's draft: <https://w3c.github.io/webappsec/specs/content-security-policy/>
-        * Source: <https://github.com/w3c/webappsec/tree/master/specs/content-security-policy/>
-    * Level 1, Note: <http://w3.org/TR/CSP>
-    * Level 2, Candidate Recommendation: <http://w3.org/TR/CSP2>
-
-* Credential Management:
-    * Editor's draft: <https://w3c.github.io/webappsec/specs/credentialmanagement/>
-        * Source: <https://github.com/w3c/webappsec/tree/master/specs/credentialmanagement/>
-    * Use Cases: <https://w3c.github.io/webappsec/usecases/credentialmanagement/>
-
-* Confinement with Origin Web Labels
-    * Editor's draft: <https://w3c.github.io/webappsec/specs/cowl/>
-        * Source: <https://github.com/w3c/webappsec/tree/master/specs/cowl/>
-
-* Entry Point Regulation:
-    * Editor's draft: <https://w3c.github.io/webappsec/specs/epr/>
-        * Source: <https://github.com/w3c/webappsec/tree/master/specs/epr/>
-
-* Mixed Content:
-    * Editor's Draft: <https://w3c.github.io/webappsec/specs/mixedcontent/>
-        * Source: <https://github.com/w3c/webappsec/tree/master/specs/mixedcontent>
-    * Candidate Recommendation: <http://www.w3.org/TR/mixed-content/>
-
-* Privileged Contexts
-    * Editor's Draft: <https://w3c.github.io/webappsec/specs/powerfulfeatures/>
-        * Source: <https://github.com/w3c/webappsec/blob/master/specs/powerfulfeatures>
-    * Working Draft: <http://www.w3.org/TR/powerful-features/>
-
-* Referrer Policy
-    * Editor's Draft: <https://w3c.github.io/webappsec/specs/referrer-policy/>
-        * Source: <https://github.com/w3c/webappsec/tree/master/specs/referrer-policy>
-    * Working Draft: <http://w3.org/TR/referrer-policy>
-
-* Subresource Integrity
-    * Editor's Draft: <https://w3c.github.io/webappsec/specs/subresourceintegrity/>
-        * Source: <https://github.com/w3c/webappsec/tree/master/specs/subresourceintegrity>
-    * Working Draft: <http://w3.org/TR/SRI>
-
-* Upgrade Insecure Requests
-    * Editor's Draft: <https://w3c.github.io/webappsec/specs/upgrade/>
-        * Source: <https://github.com/w3c/webappsec/blob/master/specs/upgrade>
-    * Working Draft: <http://www.w3.org/TR/upgrade-insecure-requests/>
+<table>
+  <tbody id="complete">
+    <tr>
+      <th>Complete</th>
+      <th>ED</th>
+      <th>TR</th>
+    </tr>
+    <tr>
+      <td>Content Security Policy Level 1</td>
+      <td></td>
+      <td><a href="http://w3.org/TR/CSP1/" class="note">NOTE: /TR/CSP1</a></td>
+    </tr>
+  </tbody>
+  <tbody id="stable">
+    <tr>
+      <th>Stable</th>
+      <th>ED</th>
+      <th>TR</th>
+    </tr>
+    <tr>
+      <td>Content Security Policy Level 2</td>
+      <td><a href="https://w3c.github.io/webappsec-csp/2/">GitHub: w3c/webappsec-csp</a></td>
+      <td><a href="http://w3.org/TR/CSP2/" class="cr">CR: /TR/CSP2</a></td>
+    </tr>
+    <tr>
+      <td>Mixed Content</td>
+      <td><a href="https://w3c.github.io/webappsec-mixed-content/">GitHub: w3c/webappsec-mixed-content</a></td>
+      <td><a href="http://w3.org/TR/mixed-content/" class="cr">CR: /TR/mixed-content/</a></td>
+    </tr>
+    <tr>
+      <td>Subresource Integrity</td>
+      <td><a href="https://w3c.github.io/webappsec-subresource-integrity/">GitHub: w3c/webappsec-subresource-integrity</a></td>
+      <td><a href="http://w3.org/TR/SRI/" class="wd">WD: /TR/SRI/</a></td>
+    </tr>
+    <tr>
+      <td>Upgrade Insecure Requests</td>
+      <td><a href="https://w3c.github.io/webappsec-upgrade-insecure-requests/">GitHub: w3c/webappsec-upgrade-insecure-requests</a></td>
+      <td><a href="http://w3.org/TR/upgrade-insecure-requests/" class="wd">WD: /TR/upgrade-insecure-requests/</a></td>
+    </tr>
+  </tbody>
+  <tbody id="stabilizing">
+    <tr>
+      <th>Stabilizing</th>
+      <th>ED</th>
+      <th>TR</th>
+    </tr>
+    <tr>
+      <td>Credential Management Level 1</td>
+      <td><a href="https://w3c.github.io/webappsec-credential-management/">GitHub: w3c/webappsec-credential-management</a></td>
+      <td><a href="http://w3.org/TR/referrer-policy/" class="wd">WD: /TR/credential-management/</a></td>
+    </tr>
+    <tr>
+      <td>Permissions API</td>
+      <td><a href="https://w3c.github.io/permissions/">GitHub: w3c/permissions</a></td>
+      <td><a href="http://w3.org/TR/permissions/" class="fpwd">FPWD: /TR/permissions/</a></td>
+    </tr>
+    <tr>
+      <td>Referrer Policy</td>
+      <td><a href="https://w3c.github.io/webappsec-referrer-policy/">GitHub: w3c/webappsec-referrer-policy</a></td>
+      <td><a href="http://w3.org/TR/referrer-policy/" class="wd">WD: /TR/referrer-policy/</a></td>
+    </tr>
+    <tr>
+      <td>Secure Contexts</td>
+      <td><a href="https://w3c.github.io/webappsec-secure-contexts/">GitHub: w3c/webappsec-secure-contexts</a></td>
+      <td><a href="http://w3.org/TR/powerful-features/" class="wd">WD: /TR/powerful-features/</a></td>
+    </tr>
+  </tbody>
+  <tbody id="wip">
+    <tr>
+      <th>Works in Progress</th>
+      <th>ED</th>
+      <th>TR</th>
+    </tr>
+    <tr>
+      <td>Clear Site Data</td>
+      <td><a href="https://w3c.github.io/webappsec-clear-site-data/">GitHub: w3c/webappsec-clear-site-data</a></td>
+      <td><a href="http://w3.org/TR/clear-site-data/" class="fpwd">FPWD: /TR/clear-site-data/</a></td>
+    </tr>
+    <tr>
+      <td>Confinement with Origin Web Labels</td>
+      <td><a href="https://w3c.github.io/webappsec-cowl/">GitHub: w3c/webappsec-cowl</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>CSP Pinning</td>
+      <td><a href="https://w3c.github.io/webappsec-csp/pinning/">GitHub: w3c/webappsec-csp</a></td>
+      <td><a href="http://w3.org/TR/csp-pinning/" class="fpwd">FPWD: /TR/csp-pinning/</a></td>
+    </tr>
+    <tr>
+      <td>Entry Point Regulation</td>
+      <td><a href="https://w3c.github.io/webappsec-epr/">GitHub: w3c/webappsec-epr</a></td>
+      <td><a href="http://w3.org/TR/epr/" class="fpwd">FPWD: /TR/epr/</a></td>
+    </tr>
+  </tbody>
+</table>
