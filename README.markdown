@@ -29,22 +29,22 @@ Web Application Security Working Group
     </tr>
     <tr>
       <td>Content Security Policy Level 2</td>
-      <td><a href="https://w3c.github.io/webappsec-csp/2/">GitHub: w3c/webappsec-csp</a></td>
+      <td><a href="https://w3c.github.io/webappsec-csp/2/">webappsec-csp</a></td>
       <td><a href="http://w3.org/TR/CSP2/" class="cr">CR: /TR/CSP2</a></td>
     </tr>
     <tr>
       <td>Mixed Content</td>
-      <td><a href="https://w3c.github.io/webappsec-mixed-content/">GitHub: w3c/webappsec-mixed-content</a></td>
+      <td><a href="https://w3c.github.io/webappsec-mixed-content/">webappsec-mixed-content</a></td>
       <td><a href="http://w3.org/TR/mixed-content/" class="cr">CR: /TR/mixed-content/</a></td>
     </tr>
     <tr>
       <td>Subresource Integrity</td>
-      <td><a href="https://w3c.github.io/webappsec-subresource-integrity/">GitHub: w3c/webappsec-subresource-integrity</a></td>
+      <td><a href="https://w3c.github.io/webappsec-subresource-integrity/">webappsec-subresource-integrity</a></td>
       <td><a href="http://w3.org/TR/SRI/" class="wd">WD: /TR/SRI/</a></td>
     </tr>
     <tr>
       <td>Upgrade Insecure Requests</td>
-      <td><a href="https://w3c.github.io/webappsec-upgrade-insecure-requests/">GitHub: w3c/webappsec-upgrade-insecure-requests</a></td>
+      <td><a href="https://w3c.github.io/webappsec-upgrade-insecure-requests/">webappsec-upgrade-insecure-requests</a></td>
       <td><a href="http://w3.org/TR/upgrade-insecure-requests/" class="wd">WD: /TR/upgrade-insecure-requests/</a></td>
     </tr>
   </tbody>
@@ -56,22 +56,22 @@ Web Application Security Working Group
     </tr>
     <tr>
       <td>Credential Management Level 1</td>
-      <td><a href="https://w3c.github.io/webappsec-credential-management/">GitHub: w3c/webappsec-credential-management</a></td>
+      <td><a href="https://w3c.github.io/webappsec-credential-management/">webappsec-credential-management</a></td>
       <td><a href="http://w3.org/TR/referrer-policy/" class="wd">WD: /TR/credential-management/</a></td>
     </tr>
     <tr>
       <td>Permissions API</td>
-      <td><a href="https://w3c.github.io/permissions/">GitHub: w3c/permissions</a></td>
+      <td><a href="https://w3c.github.io/permissions/">permissions</a></td>
       <td><a href="http://w3.org/TR/permissions/" class="fpwd">FPWD: /TR/permissions/</a></td>
     </tr>
     <tr>
       <td>Referrer Policy</td>
-      <td><a href="https://w3c.github.io/webappsec-referrer-policy/">GitHub: w3c/webappsec-referrer-policy</a></td>
+      <td><a href="https://w3c.github.io/webappsec-referrer-policy/">webappsec-referrer-policy</a></td>
       <td><a href="http://w3.org/TR/referrer-policy/" class="wd">WD: /TR/referrer-policy/</a></td>
     </tr>
     <tr>
       <td>Secure Contexts</td>
-      <td><a href="https://w3c.github.io/webappsec-secure-contexts/">GitHub: w3c/webappsec-secure-contexts</a></td>
+      <td><a href="https://w3c.github.io/webappsec-secure-contexts/">webappsec-secure-contexts</a></td>
       <td><a href="http://w3.org/TR/powerful-features/" class="wd">WD: /TR/powerful-features/</a></td>
     </tr>
   </tbody>
@@ -83,22 +83,22 @@ Web Application Security Working Group
     </tr>
     <tr>
       <td>Clear Site Data</td>
-      <td><a href="https://w3c.github.io/webappsec-clear-site-data/">GitHub: w3c/webappsec-clear-site-data</a></td>
+      <td><a href="https://w3c.github.io/webappsec-clear-site-data/">webappsec-clear-site-data</a></td>
       <td><a href="http://w3.org/TR/clear-site-data/" class="fpwd">FPWD: /TR/clear-site-data/</a></td>
     </tr>
     <tr>
       <td>Confinement with Origin Web Labels</td>
-      <td><a href="https://w3c.github.io/webappsec-cowl/">GitHub: w3c/webappsec-cowl</a></td>
+      <td><a href="https://w3c.github.io/webappsec-cowl/">webappsec-cowl</a></td>
       <td></td>
     </tr>
     <tr>
       <td>CSP Pinning</td>
-      <td><a href="https://w3c.github.io/webappsec-csp/pinning/">GitHub: w3c/webappsec-csp</a></td>
+      <td><a href="https://w3c.github.io/webappsec-csp/pinning/">webappsec-csp</a></td>
       <td><a href="http://w3.org/TR/csp-pinning/" class="fpwd">FPWD: /TR/csp-pinning/</a></td>
     </tr>
     <tr>
       <td>Entry Point Regulation</td>
-      <td><a href="https://w3c.github.io/webappsec-epr/">GitHub: w3c/webappsec-epr</a></td>
+      <td><a href="https://w3c.github.io/webappsec-epr/">webappsec-epr</a></td>
       <td><a href="http://w3.org/TR/epr/" class="fpwd">FPWD: /TR/epr/</a></td>
     </tr>
   </tbody>
