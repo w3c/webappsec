@@ -89,7 +89,7 @@ Web Application Security Working Group
     <tr>
       <td>Confinement with Origin Web Labels</td>
       <td><a href="https://w3c.github.io/webappsec-cowl/">webappsec-cowl</a></td>
-      <td></td>
+      <td><a href="http://w3.org/TR/cowl/" class="fpwd">FPWD: /TR/cowl/</a></td>
     </tr>
     <tr>
       <td>CSP Pinning</td>
