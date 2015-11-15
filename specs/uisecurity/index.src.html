@@ -1,0 +1,736 @@
+<pre class='metadata'>
+Title: User Interface Security and the Visibility API
+Status: ED
+Group: WebAppSec
+ED: https://w3c.github.io/webappsec/specs/uisecurity/
+Shortname: UI Security
+Level: 1
+Editor: Brad Hill, Facebook, hillbrad@fb.com
+!Author: Dan Kaminsky, Invited Expert
+!Author: David Lin-Shung Huang, Carnegie Mellon University
+!Author: Giorgio Maone, Invited Expert
+Abstract:
+	UI Security and the Visiblity API defines both a
+	declarative and imperative means for resources
+	displayed in an embedded context to protect 
+	themselves against having their content obscured,
+	moved, or otherwise displayed in a misleading
+	manner.
+Indent: 4
+Ignored Terms: long, boolean
+</pre>
+<pre class="anchors">
+spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
+	urlPrefix: wwebappapis.html
+		type: interface
+			text: Navigator; url: the-navigator-object
+</pre>
+<pre class="link-defaults">
+spec:dom-ls; type:interface; text:Event
+</pre>
+<!--
+████ ██    ██ ████████ ████████   ███████
+ ██  ███   ██    ██    ██     ██ ██     ██
+ ██  ████  ██    ██    ██     ██ ██     ██
+ ██  ██ ██ ██    ██    ████████  ██     ██
+ ██  ██  ████    ██    ██   ██   ██     ██
+ ██  ██   ███    ██    ██    ██  ██     ██
+████ ██    ██    ██    ██     ██  ███████
+-->
+<section>
+    <h2 id="intro">Introduction</h2>
+
+    <em>This section is not normative.</em>
+
+		Composite or "mash-up" web applications built using iframes
+		are ubiquitous because they allow users to interact seamlessly and
+		simultaneously with content from multiple origins while
+		maintaining isolation boundaries that are essential to
+		security and privacy for both users and applications.
+
+		However, those boundaries are not absolute.  In particular,
+		the visual and temporal integrity of embedded content is
+		not protected from manipulation by the embedding resource.
+		An embedding resource might constrain the viewport,
+		draw over, transform, reposition, or resize the user's
+		view of a third-party resource.
+
+		Collectively known as User Interface Redressing, the goal
+		of such manipulations might be to entice the user to interact
+		with embedded content without knowing its context, (e.g. to 
+		send a payment or share content) commonly known as "clickjacking",
+		or to convince paid content that it is being shown to the user
+		when it is actually obscured, commonly known in the advertising
+		business as "display fraud".
+
+    Existing anti-clickjacking measures such as frame-busting 
+    scripts and headers granting origin-based embedding permissions have 
+		shortcomings which prevent their application to important use-cases.
+    Frame-busting scripts, for example, rely on browser behavior that has not been 
+		engineered to provide a security guarantee and as a consequence,
+		such scripts may be unreliable if loaded inside a sandbox
+    or otherwise disabled. The X-Frame-Options header and the frame-ancestors
+		Content Security Policy directive offer an all-or-none approach to
+		display of embedded content that is not appropriate for content
+		which may be embedded in arbitrary locations, or known locations
+		which might still be adversarial.
+
+		This document defines mechanisms to allow resources to
+		protect themselves from embedding contexts which might otherwise
+		interfere with their display and interaction characteristics.
+		First, it defines an imperative API by which a resource can
+		request that a conforming user agent guarantee unmodified
+		display of its viewport, and report events on the success or
+		failure of meeting such guarantees.  This API should be suitable
+		for e.g. paid content such as advertising to receive trustworthy
+		signals about its viewability from a conforming user agent.
+		
+		Secondly, this specification defines a declarative mechanism
+		(via a Content Security Poicy directive) to request visiblity
+		protection and receive notification, via event properties or
+		out-of-band reporting, if certain events are delivered to
+		a resource while it does not meet its requested visiblity 
+		contract.
+
+    ISSUE: how to interact with frame-ancestors and XFO?
+    
+</section>
+<!--
+ ██████   ███████  ██    ██ ████████  ███████  ████████  ██     ██    ███    ██    ██  ██████  ████████
+██    ██ ██     ██ ███   ██ ██       ██     ██ ██     ██ ███   ███   ██ ██   ███   ██ ██    ██ ██      
+██       ██     ██ ████  ██ ██       ██     ██ ██     ██ ████ ████  ██   ██  ████  ██ ██       ██      
+██       ██     ██ ██ ██ ██ ██████   ██     ██ ████████  ██ ███ ██ ██     ██ ██ ██ ██ ██       ██████  
+██       ██     ██ ██  ████ ██       ██     ██ ██   ██   ██     ██ █████████ ██  ████ ██       ██      
+██    ██ ██     ██ ██   ███ ██       ██     ██ ██    ██  ██     ██ ██     ██ ██   ███ ██    ██ ██      
+ ██████   ███████  ██    ██ ██        ███████  ██     ██ ██     ██ ██     ██ ██    ██  ██████  ████████
+-->
+<section>
+    <h2 id="special-conformance">Special Conformance Notes</h2>
+
+    <em>This section is not normative.</em>
+
+    UI Redressing attacks rely on fooling the subjective perceptions of
+    human actors to induce them to interact with a web application out of
+    its intended context.  Because of this, the specific mechanisms which
+    may be used in attack and defense may vary greatly with the details of
+    a user agent implementation.  For example, attacks which rely on
+    redressing the cursor may not apply in a touch environment, or entire
+    classes of attack may be impossible on a text-only browser or screen
+    reader.
+
+    Similarly, the implementation of the policies specified herein is highly
+    dependent on internal architecture and implementation strategies of
+    the user agent; such strategies may vary greatly between user agents
+    or even across versions or platforms for a single user agent.
+
+    This specification provides a normative means by which a resource
+    owner can communicate to a user agent its desire for additional
+    protective measures, actions to take if violations are detected,
+    and tuning hints which may be useful for certain means of
+    implementation.  A user agent is conformant if it understands
+		these directives and makes a best effort to provide the desired 
+		security properties, which might require no additional implementation
+		steps, e.g. in the case of a screen reader that does not support
+		embedded resources in a manner that is subject to any of the
+		attack classes of concern.
+
+    While the indeterminacy of the user agent implementation protects
+    applications from needing to constantly update their policies as
+    user agents make internal changes, application authors should
+    understand that even a conformant user agent cannot make
+    perfect security guarantees against UI Redressing.
+    Some potential checks suggested here might not be made as a
+    consequence of implementation strategies, or to avoid unacceptable
+    performance costs, and the intrepretation of policies
+    might differ among user agents. (e.g. a tolerance hint may appy
+    strictly to rectangular clipping in one implementation but
+    to pixel or sub-pixel comparisions in another)
+    
+    These directives should be used as part of a comprehensive risk
+    mitigation strategy with an appropriate understanding of their
+    limitations.
+</section>
+<!--
+      ██  ██████           ███    ████████  ████
+      ██ ██    ██         ██ ██   ██     ██  ██ 
+      ██ ██              ██   ██  ██     ██  ██ 
+      ██  ██████        ██     ██ ████████   ██ 
+██    ██       ██       █████████ ██         ██ 
+██    ██ ██    ██       ██     ██ ██         ██ 
+ ██████   ██████        ██     ██ ██        ████
+-->
+<section>
+
+  <h2 id="dom-api">JavaScript API</h2>
+
+	ISSUE: should this look more like MutationObserver?
+
+	ISSUE: shoudl we have an argument that doesn't apply GraphicsLayer raising?
+
+  <div class="example">
+    Sterling-Cooper Online wants to be able to determine if ad impressions
+		it is serving are actually visible to users.  The following example code
+		will send a beacon containing the resource's location fragment, after a
+		full second of uninterrupted visibility, in a viewport of at least 300x100,
+		with content positioned at the origin.
+
+    <pre>
+		  function viewabilityHandler() {
+
+				var lastEvent = null, done = false;
+
+				function inTolerance (event) {
+					return 
+						(event.viewportWidth >= 300 && 
+							event.viewportHeight >= 100)) &&
+						(event.viewportX == 0 && event.viewportY == 0 &&
+							event.visibleX == 0 && event.visibleY == 0) &&
+					  (event.visibleWidth == event.viewportWidth && 
+							event.visibleHeight = event.viewportHeight);
+				}
+
+				function handleEvent (event) {
+				  if (event.type.toLowerCase() == "visibilityevent" && !done) {
+					  lastEvent = event;
+						if (inTolerane(event)) {
+					    window.setTimeout(
+								function() { if (lastEvent === event) { report() } },
+								1000
+							);	
+				}}}
+
+				function report() {
+						done = true;
+						navigator.sendBeacon(
+							'/viewabilityEvent',
+							new FormData().set('id', window.location.hash)
+						);
+				}
+	
+				return handleEvent();
+			};
+
+			var handler = viewabilityHandler();
+
+		  window.addEventListener('visiblity', handler);
+      navigator.<a method>requestVisiblity()</a>;
+    </pre>
+
+	</div>
+
+  <h3 id="request_visibility">requestVisiblity method</h3>
+
+  <pre class="idl">
+	  partial interface Navigator {
+			void requestVisibility();
+		};
+	</pre>
+
+	<dl dfn-for="Navigator">
+    <dt><dfn method lt="requestVisiblity()">requestVisiblity()</dfn></dt>
+    <dd>
+      Request that this browsing context be made visible and that
+			VisibilityEvents be delivered to the Window object.
+    </dd>
+  </dl>
+
+	<h3 id="visiblity-event">VisibilityEvent</h3>
+
+	<pre class="idl">
+		interface VisibilityEvent : Event {
+			readonly attribute long viewportWidth;
+			readonly attribute long viewportHeight;
+			readonly attribute long viewportX;
+			readonly attribute long viewportY;
+			readonly attribute long visibleWidth;
+			readonly attribute long visibleHeight;
+			readonly attribute long visibleX;
+			readonly attribute long visibleY;
+		};
+	</pre>
+
+	<dl dfn-for="VisibilityEvent">
+		<dt><dfn attribute lt="viewportWidth">viewportWidth</dfn></dt>
+		<dd>
+			The current width of the viewport.
+		</dd>
+		<dt><dfn attribute lt="viewportHeight">viewportHeight</dfn></dt>
+		<dd>
+			The current height of the viewport.
+		</dd>
+		<dt><dfn attribute lt="viewportX">viewportX</dfn></dt>
+		<dd>
+			The X position of the viewport root, relative to the root window's coordinate set.
+		</dd>
+		<dt><dfn attribute lt="viewportY">viewportY</dfn></dt>
+		<dd>
+			The Y position of the viewport root, relative to the root window's coordinate set.
+		</dd>
+		<dt><dfn attribute lt="visibleWidth">visibleWidth</dfn></dt>
+		<dd>
+			The current width of the visible rectangle.
+		</dd>
+		<dt><dfn attribute lt="visibleHeight">visibleHeight</dfn></dt>
+		<dd>
+			The current height of the visible rectangle.
+		</dd>
+		<dt><dfn attribute lt="visibleX">visibleX</dfn></dt>
+		<dd>
+			The X position of the top-left corner of the visible rectangle,
+			relative to the current document's coordinate set.
+		</dd>
+		<dt><dfn attribute lt="visibleY">visibleY</dfn></dt>
+		<dd>
+			The Y position of the top-left corner of the visible rectangle,
+			relative to the current document's coordinate set.
+		</dd>
+  </dl>
+
+  ISSUE: are viewportX and Y relative to current document coordinates or root window coords?
+  </div>
+
+</section>
+<!--
+ ██████   ██████  ████████        ████████  ████ ████████  ████████  ██████  ████████ ████ ██     ██ ████████
+██    ██ ██    ██ ██     ██       ██     ██  ██  ██     ██ ██       ██    ██    ██     ██  ██     ██ ██      
+██       ██       ██     ██       ██     ██  ██  ██     ██ ██       ██          ██     ██  ██     ██ ██      
+██        ██████  ████████        ██     ██  ██  ████████  ██████   ██          ██     ██  ██     ██ ██████  
+██             ██ ██              ██     ██  ██  ██   ██   ██       ██          ██     ██   ██   ██  ██      
+██    ██ ██    ██ ██              ██     ██  ██  ██    ██  ██       ██    ██    ██     ██    ██ ██   ██      
+ ██████   ██████  ██              ████████  ████ ██     ██ ████████  ██████     ██    ████    ███    ████████
+-->
+<section>
+ <h2 id="directives">CSP Directive</h2>
+
+    This section describes the content security policy
+    directives introduced in this specification.
+
+        <h3 id="input-protection"><code>input-protection</code></h3>
+
+        The <code>input-protection</code> directive, if present or
+        implied, is declaritive syntatic sugar for the same fundamental
+				mechanism as the JavaScript API.  If a user input event, such as
+        <code>click</code>, <code>keypress</code>, <code>touch</code>, and
+        <code>drag</code>, is generated when the document is not in a
+				visibility state that matches the visibility policy, this
+				directive is violated.
+
+        If the <code>input-protection</code> directive is set as
+        part of a <code>Content-Security-Policy</code>, violating 
+        the policy should cancel delivery of the UI event to the
+        target and and fire a violation event.  If set as
+        part of a <code>Content-Security-Policy-Report-Only</code>,
+        triggering of the heuristic should result in the event being
+        delivered with the <code>unsafe</code> attribute on the
+        <code>UIEvent</code> set to <code>true</code>
+        and fire a violation event. (TODO: Pointer Events?)
+
+        The optional directive value allows resource authors to
+        provide <a href="#input-protection-options">options</a>
+        for heuristic tuning in the form of space-separated
+        <code>option-name=option-value</code> pairs.
+
+        <pre>
+directive-name    = "input-protection"
+directive-value   = ["display-time=" num-val]
+										["height=" num-val]
+										["width=" num-val]
+										["protected-element=" id-selector]
+        </pre>
+
+        If the policy does not contain a value for this directive
+        or any of the hint name=value pairs are absent, the user
+        agent SHOULD apply default values for hints as described
+        in the following.
+
+        <dl id="input-protection-options">
+            <dt>
+                <code>display-time</code>
+            </dt>
+            <dd>
+                is a numeric value from 0 to 10000 that specifies how long, in
+                milliseconds, the screen area containing the protected user
+                interface must have unmodified viewability properties
+                when the event is processed.
+                
+                If not specified, it defaults to 800. If a value out of the
+                range stated above is specified, it defaults to the nearest
+                value between the lower and the higher bounds.
+            </dd>
+
+            <dt>
+                <code>width</code>
+            </dt>
+            <dd>
+								is a numeric value that specifies the minimum viewable area's
+								X dimension.  If unspecified, it defaults to the width of the
+								protectedElement's boundingClientRect.
+            </dd>
+
+            <dt>
+                <code>height</code>
+            </dt>
+            <dd>
+								is a numeric value that specifies the minimum viewable area's
+								Y dimension.  If unspecified, it defaults to the height of the
+								protectedElement's boundingClientRect.
+            </dd>
+
+            <dt>
+                <code>protected-element</code>
+            </dt>
+            <dd>
+								An id querySelector expression which uniquely identifies an element in the protected
+								document.  The protected element's boundingClientRect will be used as
+								the boundaries for visibility calculations.  If a minWidth and minHeight are
+								specified, they are calculated relative to the origin of the protected element's
+								boundingClientRect.  If unspecified, this value defaults to the Document element.
+            </dd>
+        </dl>
+
+				ISSUE: should the event have a timestamp or just let the event handler assume it 
+				happened close enough to when it recieves it?
+
+				ISSUE: innerHeight, innerWidth (ask Dan)
+
+				ISSUE: ancestorOrigins
+</section>
+<!--
+████████  ████████ ████████ ████ ██    ██ ████ ████████ ████  ███████  ██    ██  ██████ 
+██     ██ ██       ██        ██  ███   ██  ██     ██     ██  ██     ██ ███   ██ ██    ██
+██     ██ ██       ██        ██  ████  ██  ██     ██     ██  ██     ██ ████  ██ ██      
+██     ██ ██████   ██████    ██  ██ ██ ██  ██     ██     ██  ██     ██ ██ ██ ██  ██████ 
+██     ██ ██       ██        ██  ██  ████  ██     ██     ██  ██     ██ ██  ████       ██
+██     ██ ██       ██        ██  ██   ███  ██     ██     ██  ██     ██ ██   ███ ██    ██
+████████  ████████ ██       ████ ██    ██ ████    ██    ████  ███████  ██    ██  ██████ 
+-->
+<section>
+	<h2 id="defiitions">Definitions</h2>
+
+		<h3 id="visibility">Visibility</h3>
+			An area is defined as <em>visible</em> if it has <em>visual</em> and <em>spatio-temporal
+			integrity</em> and meets minimum required width and height requirements.
+
+	  <h4 id="visual-integrity">Visual Integrity</h4>
+			An area has <em>visual integrity</em> if it is not subject to being occuluded, drawn over,
+			blurred, zoomed, clipped, rotated, scaled, transformed or subject to any other effects which 
+			would change its appearance relative to being painted in the same size viewport in the root
+			window.  The property of <em>visual integrity</em> applies to rectangular areas, and an area
+			only has the property if no such changes occur within its entire bounding rectangle.
+
+	 	<h4 id="spatio-temporal-integrity">Spatio-Temporal Integrity</h4>
+			An area's <em>spatio-temporal integrity</em> refers to it being displayed without modifications
+			to its display state, viewport size, position of content within the viewport, or position
+			of the viewport relative to the root window's coordinate system.  Any modification to these
+			properties generates a new visibility state.
+
+		<h4 id="visibility-state">Visibility State</h4>
+			A <em>visibility state</em> is the description of a document's <em>visual</em> and <em>spatio-temporal
+			integrity</em> and size and the elapsed time since those properties have last changed.
+
+</section>
+<!--
+   ███    ██        ██████    ███████  ████████  ████ ████████ ██     ██ ██     ██  ██████ 
+  ██ ██   ██       ██    ██  ██     ██ ██     ██  ██     ██    ██     ██ ███   ███ ██    ██
+ ██   ██  ██       ██        ██     ██ ██     ██  ██     ██    ██     ██ ████ ████ ██      
+██     ██ ██       ██   ████ ██     ██ ████████   ██     ██    █████████ ██ ███ ██  ██████ 
+█████████ ██       ██    ██  ██     ██ ██   ██    ██     ██    ██     ██ ██     ██       ██
+██     ██ ██       ██    ██  ██     ██ ██    ██   ██     ██    ██     ██ ██     ██ ██    ██
+██     ██ ████████  ██████    ███████  ██     ██ ████    ██    ██     ██ ██     ██  ██████ 
+-->
+<section>
+<h2 id="algorithms">Algorithms</h2>
+
+	<h3 id="requesting-visibility">Requesting Visibility</h3>
+
+	When a document calls requestVisibility(), the user agent SHOULD attempt to display the document's
+	viewport in a manner that is not subject to perturbation by ancestor frames and MUST report
+	visibilityEvents.
+
+	NOTE: The exact procedures of this algorithm are not normative. Any algorithm which produces
+	equivalent results is conformant and implementations are encouraged to optimize wherever possible.
+
+	1. 	Complete any pending layout and painting tasks, (find more precice language here)
+			including layer hoisting as described in the non-normative implementation advice.  
+
+	2. 	Visibility events should not be fired until DOMContentReady has fired on the protected
+			document and all ancestor documents.
+
+	3.	Calculate a visibiltyEvent
+
+			1.	Obtain the height and width of the protected document's viewport
+
+			2.	Obtain the x and y coordinates of the origin of the protected document's viewport in
+					the coordinate system of the root window.
+
+			3.	Obtain the bounding rectangle of the protected document that has <em>visual integrity</em>.
+
+					1. 	If the entire viewport does not have <em>visual integrity</em>, the user agent MAY
+							always report a rectangle of zero dimensions, e.g. if the viewport is subject to 
+							transformations with complex outlines, or modifications which section the viewport
+							into multiple distinct visible regions.
+					
+					2.	Otherwise, the user agent MAY report the largest bounding rectangle within the
+							viewport with <em>visual integrity</em>, if e.g. only a small portion of the
+							viewport is cropped.
+			
+		 	4. 	Dispatch a <em>visibilityEvent</em> to the window object of the protected document.	
+
+	4.	Whenever the <em>spatio-temporal</em> or <em>visual integrity</em> of the protected 
+			document's viewport changes, a new <em>visibility state</em> is created and step 3
+			of this algorithm MUST be repeated.
+
+	Internal changes to the contents of the protected document such as CSS effects, 
+	modifications to the DOM, or animations, MUST NOT create a new <em>visibility state</em>,
+	but internally generated events which scroll or resize the viewport MUST.
+
+	<h3 id="input-protection-algorithm">Input Protection Algorithm</h3>
+
+	Implementation of the <em>input-protection</em> CSP directive is internally defined in
+	terms of the <em>Requesting Visibilty</em> algorithm.  
+	
+	1.	If the directive is specified, begin as if <em>requestVisibiity()</em> was invoked.
+
+	2.	At step 3.4 (dispatch a <em>visibilityEvent</em>), do not dispatch the event (unless
+			visibility events have also been requested with the imperative API) but retain
+			the calculated values of the <em>visibility state</em>, plus a timestamp, as internal state.
+
+	3.  At step 4 (handle new <em>visibility states</em>), replace the retained internal state with
+			the new calculated values and a new timestamp.
+	
+	5.  Parse the directive options and determine values (or use defaults) for <em>display time</em>,
+			<em>height</em>, <em>width</em> and <em>protected-element</em>.
+	
+	During hit testing for user initiated events (UIEvents, PointerEvents, drag-and-drop, 
+	copy/paste, etc.):
+
+	ISSUE: do we need keypress or a keyboard-driven click events?
+	
+	1.	Examine the element the event is delivered to to deterimine if it matches the id 
+			selector that is the value of <em>protected-element</em>.
+
+		1.  If element matches the selector, continue to step 2.
+
+		2.  If the element does not match and the element has a parent
+				
+			1.	Set element to element.parent and go to step 1.1
+
+		3.	If no element in the set of elements which might handle the event matches the
+				selector, deliver the event and terminate this portion of the algorithm.
+				Continue monitoring <em>visibility states</em>.
+
+	2. If an event will be delivered to the <em>protected-element</em> or one of its children
+
+		1.	Get the current timestamp and the retained internal state of the most recent
+				<em>visibility state</em>
+
+		2.	Get the bounding rectangle of the <em>protected-element</em>
+
+		3.	If <em>height</em> and <em>width</em> were not set explicitly as part of the
+				directive, set them to the current height and width of the 
+				protected element's bounding rectangle for the purposes of processing this event
+
+		2.	Get the viewport height and width of the displayport for the protected document.
+
+			1.	If the size of the viewport is less in either dimention than the <em>height</em> 
+					and <em>width</em> values, go to <b>handle a violation</b>.
+
+		2.	Get the bounding rectangle of the <em>protected-element</em> and determine the x and
+				y coordinates of the origin of that rectangle in the document's own coordinate system.
+
+		3.	Calculate the protected rectangle that must be visibile by applying the <em>height</em> and
+				<em>width</em> values to those origin coordinates.  (if these values are not explicitly
+				specified in the directive options, this is the bounding rectangle of the element)
+
+		4.	If the protected rectangle is not entirely within the rectangle defined by the 
+				<em>visibleX</em>, <em>visibleY</em>, <em>visibleWidth</em>, and <em>visibleHeight</em>
+				values of the <em>visibility state</em>, go to <b>handle a violation</b>.
+
+		5.	If the protected rectangle is entirely within the visible rectangle, subtract the
+				timestamp of the <em>visibility state</em> from the current timestamp and compare it to
+				the <em>display-time</em> value of the directive, or 800 if unset.  If the calculated
+				value is less than the specified value, go to <b>handle a violation</b>.
+
+		6.	Otherwise, deliver the event as normal and terminate this portion of the algorithm.
+				Continue monitoring <em>visibility states</em>.
+
+	ISSUE: Cursor redressing.
+
+		<h4 id="handle-a-violation">Handling Violations</h4>
+
+		When a violation is raised:
+
+		1.	If the directive is being enforced, cancel delivery of the event and Fire a Violation Event
+				as defined in [[!CSP2]].
+
+		2.  If the directive is being monitored, add a property <em>unsafe</em> to the event, set to
+				<em>true</em>, and Fire a Violation Event as defined in [[CSP2]].
+
+
+	<h3 id="usafe-attribute">Unsafe Attribute</h3>
+
+	<pre class="idl">
+		partial interface Event {
+			readonly attribute boolean unsafe;
+		};
+	</pre>
+
+	<dl dfn-for="Event">
+		<dt><dfn attribute lt="unsafe">unsafe</dfn></dt>
+		<dd>
+			Will be set to true if the event fired when the document's <em>visibility state</em> did not
+			meet <em>input-protection</em> requirements.
+		</dd>
+  </dl>
+
+<!--
+████ ██     ██ ████████  ██       ████████ ██     ██ ████████ ██    ██ ████████    ███    ████████ ████  ███████  ██    ██
+ ██  ███   ███ ██     ██ ██       ██       ███   ███ ██       ███   ██    ██      ██ ██      ██     ██  ██     ██ ███   ██
+ ██  ████ ████ ██     ██ ██       ██       ████ ████ ██       ████  ██    ██     ██   ██     ██     ██  ██     ██ ████  ██
+ ██  ██ ███ ██ ████████  ██       ██████   ██ ███ ██ ██████   ██ ██ ██    ██    ██     ██    ██     ██  ██     ██ ██ ██ ██
+ ██  ██     ██ ██        ██       ██       ██     ██ ██       ██  ████    ██    █████████    ██     ██  ██     ██ ██  ████
+ ██  ██     ██ ██        ██       ██       ██     ██ ██       ██   ███    ██    ██     ██    ██     ██  ██     ██ ██   ███
+████ ██     ██ ██        ████████ ████████ ██     ██ ████████ ██    ██    ██    ██     ██    ██    ████  ███████  ██    ██
+-->
+<section>
+<h2 id="implementation-considerations">Implementation Considerations</h2>
+
+<em>This section is non-normative.</em>
+
+	The internal details of the full pipeline between the normatively specified portions of
+	the Web Platform, such as the Document Object Model and CSS, and pixels actually displayed
+	to the user, is not standardized.  There may exist considerable variability in the 
+	implementations and strategies employed between different user agents, or even within a
+	single user agent on platforms with differing capabilities.
+
+	The implementation strategy detailed in this section is not normative. Any 
+	strategy which produces correct outcomes for the normative algorithms is conformant and
+	implementers are encouraged to optimize whenever possible.
+
+	The possibility of wide variance among user agent implementations notwithstanding, the
+	normative algorithms of this specification are designed such that a highly performant 
+	implementation should be possible on the most common internal architectures that are
+	state-of-the-art as of the time of writing.
+
+	Roughly, at some point along the transformation from DOM to pixels, a user agent will
+	arrive at an intermediate representation which represents a set of surfaces to be
+	painted / clipped / scrolled.  We will designate this a GraphicsLayer.
+
+	1.	On the way to preparing the set of GraphicsLayers, determine if an iframe which has
+			invoked requestVisibliity() will be put into its own GraphicsLayer.  If it is not, apply
+			whatever implemenation-specific transformations are necessary to generate it as a
+			distinct layer.  (e.g. add translatez(0) to the documentElement)
+
+	2.	Determine the GraphicsLayer associated with the root document, topmost in the window.
+
+	3.	Without reordering prior intermediate representations in a manner which would 
+			change event dispatching, hit testing or the DOM as exposed to JavaScript, reorder
+			the GraphicsLayers such that the iframe which has requested visibility is on top 
+			of the root GraphicsLayer. (e.g. by making it a direct child of the root layer)
+
+	NOTE: By reordering the layers such that an iframe which has requested visibility is topmost,
+	it should naturally avoid being subject to nearly all manipulations and transformations 
+	by parent layers which could otherwise change its display characteristics.
+
+	4. 	Clipping transformations must be respected.  An iframe requesting visibility
+			is not allowed to take over more of the display than allowed by its ancestor documents.
+
+		1. Determine the size of the protected GraphicsLayer to be raised.
+
+		2. Determine the position of that rectangle on the top viewport.
+
+	5. Re-implement necessary clipping that would be otherwise bypassed by the layer raising.
+
+		1.	Obtain the bounds of the iframe in the viewport space of its parent
+
+		2.  Intersect those boundaries with those of the to-be-raised GraphicsLayer
+
+		3.  Repeat by finding the bounds in the viewport space of the next ancestor document, 
+				until the topmost document in the window is reached.
+
+	6. Determine and clip appropriately for the position of content in the viewport.
+
+		1.	Correct the boundaries, position and offset of the to-be-raised GrapicsLayer
+				to account for scrolling of both the root document and any intermediate frames
+
+		ISSUE: Dan, I'm not sure I got those last 2 or so step exactly correct....
+	
+	7.	If multiple	iframes in the rendering tree have requested visibility, they may overlap,
+			and only one can be topmost.  It is undefined which should actually be topmost, only
+			that each knows what its true visible boundaries are.  If there are other to-be-raised
+			GraphicsLayers subsequent and superior to this one, calculate and then intersect those
+			boundaries with these boundaries to arrive at the final visible area.
+
+	8. 	Report back the viewport and visible portion.
+</section>
+
+</section>
+<!--
+████████  ████████  ████ ██     ██    ███     ██████  ██    ██
+██     ██ ██     ██  ██  ██     ██   ██ ██   ██    ██  ██  ██ 
+██     ██ ██     ██  ██  ██     ██  ██   ██  ██         ████  
+████████  ████████   ██  ██     ██ ██     ██ ██          ██   
+██        ██   ██    ██   ██   ██  █████████ ██          ██   
+██        ██    ██   ██    ██ ██   ██     ██ ██    ██    ██   
+██        ██     ██ ████    ███    ██     ██  ██████     ██   
+-->
+<section>
+<h2 id="privacy-considerations">Privacy Considerations</h2>
+
+<em>This section is non-normative.</em>
+
+	The timing of visibilityEvents may leak some information across Origin boundaries.  An embedded
+	document might have previously been unable to learn that it was obscured, or the timing and
+	nature of repositioning of ancestor frame's viewports.  In some circumstances, this information
+	leak might have privacy implications, but the granularity and nature of the information is such
+	that it should not be of much value to attackers.  Compared to anti-clickjacking strategies
+	which rely on pixel comparisions, the side channels exposed by comparing rectulangar masks are
+	very low bandwidth. The privacy gains from preventing clickjacking, considered in a holistic
+	system context, may be quite large.
+
+</section>
+
+<!--
+ ██████  ████████  ██████  ██     ██ ████████  ████ ████████ ██    ██
+██    ██ ██       ██    ██ ██     ██ ██     ██  ██     ██     ██  ██ 
+██       ██       ██       ██     ██ ██     ██  ██     ██      ████  
+ ██████  ██████   ██       ██     ██ ████████   ██     ██       ██   
+      ██ ██       ██       ██     ██ ██   ██    ██     ██       ██   
+██    ██ ██       ██    ██ ██     ██ ██    ██   ██     ██       ██   
+ ██████  ████████  ██████   ███████  ██     ██ ████    ██       ██   
+-->
+<section>
+<h2 id="security-considerations">Security Considerations</h2>
+
+<em>This section is non-normative.</em>
+
+	UI Redressing and Clickjacking attacks rely on violating the contextual and temporal 
+	integrity of embedded content. Because these attacks target the subjective perception 
+	of the user and not well-defined security boundaries, the heuristic protections 
+	afforded by the input-protection directive can never be 100% effective for every 
+	interface. It provides no protection against certain classes of attacks, such as 
+	displaying content around an embedded resource that appears to extend a trusted 
+	dialog but provides misleading information.
+
+</section>
+
+<!--
+   ███       ██      ██   ██    ██
+  ██ ██    ████    ████    ██  ██ 
+ ██   ██     ██      ██     ████  
+██     ██    ██      ██      ██   
+█████████    ██      ██      ██   
+██     ██    ██      ██      ██   
+██     ██  ██████  ██████    ██   
+-->
+<section>
+<h2 id="accessibility-considerations">Accessibility Considerations</h2>
+
+	User of accessibility tools MUST NOT be prevented from accessing content
+	because of input-protection or VisibilityEvents. Accessibility tools MAY
+	undefine requestVisibility(), report a synthesized event with a
+	<em>visibility state</em> at onDOMContentReady that indicates the entire
+	document is visible, and/or redefine violation handling for 
+	input-protection to a no-op.
+
+</section>

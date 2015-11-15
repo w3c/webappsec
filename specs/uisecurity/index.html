@@ -1,0 +1,1738 @@
+<!doctype html><html lang="en">
+ <head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  <title>User Interface Security and the Visibility API</title>
+<style data-fill-with="stylesheet">/* This section copied from the W3C's ED styles. */
+
+	body {
+		color: black;
+		font-family: sans-serif;
+		margin: 0 auto;
+		max-width: 50em;
+		padding: 2em 1em 2em 70px;
+	}
+	:link { color: #00C; background: transparent }
+	:visited { color: #609; background: transparent }
+	a[href]:active { color: #C00; background: transparent }
+	a[href]:hover { background: #ffa }
+
+	a[href] img { border-style: none }
+
+	h1, h2, h3, h4, h5, h6 { text-align: left }
+	h1, h2, h3 { color: #005A9C; }
+	h1 { font: 170% sans-serif }
+	h2 { font: 140% sans-serif }
+	h3 { font: 120% sans-serif }
+	h4 { font: bold 100% sans-serif }
+	h5 { font: italic 100% sans-serif }
+	h6 { font: small-caps 100% sans-serif }
+
+	.hide { display: none }
+
+	div.head { margin-bottom: 1em }
+	div.head h1 { margin-top: 2em; clear: both }
+	div.head table { margin-left: 2em; margin-top: 2em }
+
+	p.copyright { font-size: small }
+	p.copyright small { font-size: small }
+
+	pre { margin-left: 2em }
+	dt { font-weight: bold }
+
+	ul.toc, ol.toc {
+		list-style: none;
+	}
+
+/* The rest copied from the CSSWG's default.css */
+
+	body {
+		counter-reset: exampleno figure issue;
+		max-width: 50em;
+		margin: 0 auto !important;
+		line-height: 1.5;
+	}
+
+/******************************************************************************/
+/*                                Sectioning                                  */
+/******************************************************************************/
+
+/** Headings ******************************************************************/
+
+	h1, h2, h3, h4, h5, h6, dt {
+		page-break-after: avoid;
+	}
+
+	h2, h3, h5, h6 {
+		margin-top: 3em;
+	}
+	h4 {
+		 margin-top: 4em;
+	}
+
+/** Subheadings ***************************************************************/
+
+	h1 + h2,
+	#subtitle + h2 {
+		/* #subtitle is a subtitle in an H2 under the H1 */
+		margin-top: 0;
+	}
+	h2 + h3,
+	h3 + h4,
+	h4 + h5,
+	h5 + h6 {
+		margin-top: 1.2em; /* = 1 x line-height */
+	}
+
+/** Section divider ***********************************************************/
+	/* <hr> used to separate TMI into the second half of a section              */
+	hr:not([title]) {
+		font-size: 1.5em;
+		text-align: center;
+		margin: 1em auto;
+		height: auto;
+		border: transparent solid 0;
+		background: transparent;
+	}
+	hr:not([title])::before {
+		content: "\1F411\2003\2003\1F411\2003\2003\1F411";
+	}
+	/* note: <hr> with title separates document header from contents */
+
+/******************************************************************************/
+/*                            Paragraphs and Lists                            */
+/******************************************************************************/
+
+	p {
+		margin: 1em 0;
+	}
+	dd     > p:first-child,
+	li     > p:first-child {
+		margin-top: 0;
+	}
+
+	ul, ol {
+		margin-left: 0;
+		padding-left: 2em;
+	}
+	li {
+		margin: 0.25em 2em 0.5em 0;
+		padding-left: 0;
+	}
+
+	dl dd {
+		margin: 0 0 1em 2em;
+	}
+	.head dd {
+		margin-bottom: 0;
+	}
+
+	/* Style for algorithms */
+	ol.algorithm ol {
+	 border-left: 1px solid #90b8de;
+	 margin-left: 1em;
+	}
+	ol.algorithm ol.algorithm {
+	 border-left: none;
+	 margin-left: 0;
+	}
+
+	/* Style for switch/case <dl>s */
+	dl.switch > dd > ol.only {
+	 margin-left: 0;
+	}
+	dl.switch > dd > ol.algorithm {
+	 margin-left: -2em;
+	}
+	dl.switch {
+	 padding-left: 2em;
+	}
+	dl.switch > dt {
+	 text-indent: -1.5em;
+	 margin-top: 1em;
+	}
+	dl.switch > dt + dt {
+	 margin-top: 0;
+	}
+	dl.switch > dt::before {
+	 content: '\21AA';
+	 padding: 0 0.5em 0 0;
+	 display: inline-block;
+	 width: 1em;
+	 text-align: right;
+	 line-height: 0.5em;
+	}
+
+	/* Style for paragraphs I know are in MD-genned lists */
+	[data-md] > :first-child {
+		margin-top: 0;
+	}
+	[data-md] > :last-child {
+		margin-bottom: 0;
+	}
+
+/** Inline Lists **************************************************************/
+	/* This is mostly to make the list inside the CR exit criteria more compact. */
+
+	ol.inline, ol.inline li {
+		display: inline;
+		padding: 0; margin: 0;
+	}
+	ol.inline {
+		counter-reset: list-item;
+	}
+	ol.inline li {
+		counter-increment: list-item;
+	}
+	ol.inline li::before {
+		content: "(" counter(list-item) ") ";
+		font-weight: bold;
+	}
+
+/** Terminology Markup ********************************************************/
+
+
+/******************************************************************************/
+/*                                 Inline Markup                              */
+/******************************************************************************/
+
+/** Terminology Markup ********************************************************/
+	dfn   { /* Defining instance */
+		font-weight: bolder;
+	}
+	a > i { /* Instance of term */
+		font-style: normal;
+	}
+	dt dfn code, code.idl {
+		font-size: inherit;
+	}
+	dfn var {
+		font-style: normal;
+	}
+
+/** Change Marking ************************************************************/
+
+	del { color: red;  text-decoration: line-through; }
+	ins { color: #080; text-decoration: underline;    }
+
+/** Miscellaneous improvements to inline formatting ***************************/
+
+	sup {
+		vertical-align: super;
+		font-size: 80%
+	}
+
+/******************************************************************************/
+/*                                    Code                                    */
+/******************************************************************************/
+
+/** General monospace/pre rules ***********************************************/
+
+	pre, code {
+		font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+		font-size: .9em;
+		page-break-inside: avoid;
+	}
+	pre {
+		margin-top: 1em;
+		margin-bottom: 1em;
+		overflow: auto;
+	}
+
+/** Syntax-Highlighted Code ***************************************************/
+
+	.example pre[class*="language-"],
+	.example [class*="language-"] pre,
+	.example pre[class*="lang-"],
+	.example [class*="lang-"] pre {
+		background: transparent; /* Prism applies a gray background that doesn't work well in the template. */
+	}
+
+/** Example Code **************************************************************/
+
+	div.html, div.xml,
+	pre.html, pre.xml {
+		padding: 0.5em;
+		margin: 1em 0;
+		position: relative;
+		clear: both;
+		color: #600;
+	}
+	pre.example,
+	pre.html,
+	pre.xml {
+		padding-top: 1.5em;
+	}
+
+	pre.illegal, .illegal pre
+	pre.deprecated, .deprecated pre {
+		color: red;
+	}
+
+/** IDL fragments *************************************************************/
+
+	pre.idl {
+		/* Match blue propdef boxes */
+		padding: .5em 1em;
+		background: #DEF;
+		margin: 1.2em 0;
+		border-left: 0.5em solid #8CCBF2;
+	}
+	pre.idl :link, pre.idl :visited {
+		color:inherit;
+		background:transparent;
+	}
+
+/** Inline CSS fragments ******************************************************/
+
+	.css.css, .property.property, .descriptor.descriptor {
+		color: #005a9c;
+		font-size: inherit;
+		font-family: inherit;
+	}
+	.css::before, .property::before, .descriptor::before {
+		content: "‘";
+	}
+	.css::after, .property::after, .descriptor::after {
+		content: "’";
+	}
+	.property, .descriptor {
+		/* Don't wrap property and descriptor names */
+		white-space: nowrap;
+	}
+	.type { /* CSS value <type> */
+	font-style: italic;
+	}
+	pre .property::before, pre .property::after {
+		content: "";
+	}
+
+/** Inline markup fragments ***************************************************/
+
+	code.html, code.xml {
+		color: #660000;
+	}
+
+/** Autolinks produced using Bikeshed *****************************************/
+
+	[data-link-type="property"]::before,
+	[data-link-type="propdesc"]::before,
+	[data-link-type="descriptor"]::before,
+	[data-link-type="value"]::before,
+	[data-link-type="function"]::before,
+	[data-link-type="at-rule"]::before,
+	[data-link-type="selector"]::before,
+	[data-link-type="maybe"]::before {
+		content: "‘";
+	}
+	[data-link-type="property"]::after,
+	[data-link-type="propdesc"]::after,
+	[data-link-type="descriptor"]::after,
+	[data-link-type="value"]::after,
+	[data-link-type="function"]::after,
+	[data-link-type="at-rule"]::after,
+	[data-link-type="selector"]::after,
+	[data-link-type="maybe"]::after {
+		content: "’";
+	}
+
+	[data-link-type].production::before,
+	[data-link-type].production::after,
+	.prod [data-link-type]::before,
+	.prod [data-link-type]::after {
+		content: "";
+	}
+
+	[data-link-type=element]         { font-family: monospace; }
+	[data-link-type=element]::before { content: "<" }
+	[data-link-type=element]::after  { content: ">" }
+
+	[data-link-type=biblio] {
+		white-space: pre;
+	}
+
+
+/******************************************************************************/
+/*                                    Links                                   */
+/******************************************************************************/
+
+/** General Hyperlinks ********************************************************/
+
+	/* We hyperlink a lot, so make it less intrusive */
+	a:link, a:visited {
+		color: inherit;
+		text-decoration: none;
+		border-bottom: 1px solid silver;
+	}
+	@supports (text-decoration-color: silver) {
+		a:link, a:visited {
+			border-bottom: none;
+			text-decoration: underline;
+			text-decoration-color: silver;
+		}
+		a:visited {
+			text-decoration-style: dotted;
+		}
+	}
+
+	a.logo:link, a.logo:visited { /* backout above styling for W3C logo */
+		padding: 0;
+		border: none;
+		text-decoration: none;
+	}
+
+/** Self-Links ****************************************************************/
+	/* Auto-generated links from an element to its own anchor, for usability */
+
+	.heading, .issue, .note, .example, li, dt {
+		position: relative;
+	}
+	a.self-link {
+		position: absolute;
+		top: 0;
+		left: -2.5em;
+		width: 2em;
+		height: 2em;
+		text-align: center;
+		border: none;
+		transition: opacity .2s;
+		opacity: .5;
+	}
+	a.self-link:hover {
+		opacity: 1;
+	}
+	.heading > a.self-link {
+		font-size: 83%;
+	}
+	li > a.self-link {
+		left: -3.5em;
+	}
+	dfn > a.self-link {
+		top: auto;
+		left: auto;
+		opacity: 0;
+		width: 1.5em;
+		height: 1.5em;
+		background: gray;
+		color: white;
+		font-style: normal;
+		transition: opacity .2s, background-color .2s, color .2s;
+	}
+	dfn:hover > a.self-link {
+		opacity: 1;
+	}
+	dfn > a.self-link:hover {
+		color: black;
+	}
+
+	a.self-link::before            { content: "¶"; }
+	.heading > a.self-link::before { content: "§"; }
+	dfn > a.self-link::before      { content: "#"; }
+
+/******************************************************************************/
+/*                                    Images                                  */
+/******************************************************************************/
+
+	img {
+		border-style: none;
+	}
+
+	figure, div.figure, div.sidefigure {
+		page-break-inside: avoid;
+	}
+
+	div.figure, p.figure, div.sidefigure, figure {
+		text-align: center;
+		margin: 2.5em 0;
+	}
+	div.figure pre, div.sidefigure pre, figure pre {
+		text-align: left;
+		display: table;
+		margin: 1em auto;
+	}
+	.figure table, figure table {
+		margin: auto;
+	}
+	div.sidefigure, figure.sidefigure {
+		float: right;
+		width: 50%;
+		margin: 0 0 0.5em 0.5em
+	}
+	div.figure img, div.sidefigure img, figure img,
+	div.figure object, div.sidefigure object, figure object {
+		display: block;
+		margin: auto;
+		max-width: 100%
+	}
+	p.caption, figcaption, caption {
+		text-align: center;
+		font-style: italic;
+		font-size: 90%;
+	}
+	p.caption:not(.no-marker)::before, figcaption:not(.no-marker)::before {
+		content: "Figure " counter(figure) ". ";
+	}
+	p.caption::before, figcaption::before, figcaption > .marker {
+		font-weight: bold;
+	}
+	p.caption, figcaption {
+		counter-increment: figure;
+	}
+
+	/* DL list is indented 2em, but figure inside it is not */
+	dd > div.figure, dd > figure { margin-left: -2em }
+
+	pre.ascii-art {
+		display: table; /* shrinkwrap */
+		margin: 1em auto;
+	}
+
+	/* Displaying the output of text layout, particularly when
+		 line-breaking is being invoked, and thus having a
+		 visible width is good. */
+	pre.output {
+		margin: 1em;
+		border: solid thin silver;
+		padding: 0.25em;
+		display: table;
+	}
+
+/******************************************************************************/
+/*                             Colored Boxes                                  */
+/******************************************************************************/
+
+	.issue, .note, .example, .why, .advisement, blockquote {
+		padding: .5em;
+		border: .5em;
+		border-left-style: solid;
+		page-break-inside: avoid;
+	}
+	span.issue, span.note {
+		padding: .1em .5em .15em;
+		border-right-style: solid;
+	}
+
+	div.issue,
+	div.note,
+	div.example,
+	details.why,
+	blockquote {
+		margin: 1em auto;
+	}
+	.note  > p:first-child,
+	.issue > p:first-child,
+	blockquote > :first-child {
+		margin-top: 0;
+	}
+	blockquote > :last-child {
+		margin-bottom: 0;
+	}
+
+/** Blockquotes ***************************************************************/
+
+	blockquote {
+		border-color: silver;
+	}
+
+/** Open issue ****************************************************************/
+	/* not intended for CR+ publication */
+
+	.issue {
+		border-color: #E05252;
+		background: #FBE9E9;
+		counter-increment: issue;
+		overflow: auto;
+	}
+	.issue:not(.no-marker)::before {
+		content: "ISSUE " counter(issue);
+		padding-right: 1em;
+	}
+	.issue::before, .issue > .marker {
+		color: #AE1E1E;
+	}
+
+/** Example *******************************************************************/
+
+	.example {
+		border-color: #E0CB52;
+		background: #FCFAEE;
+		counter-increment: exampleno;
+		overflow: auto;
+		clear: both;
+	}
+	.example::before, .example > .marker {
+		color: #827017;
+		font-family: sans-serif;
+		min-width: 7.5em;
+		display: block;
+	}
+	.example:not(.no-marker)::before {
+		content: "EXAMPLE";
+		content: "EXAMPLE " counter(exampleno);
+	}
+	.invalid.example::before, .invalid.example > .marker,
+	.illegal.example::before, .illegal.example > .marker {
+		color: red;
+	}
+	.invalid.example:not(.no-marker)::before,
+	.illegal.example:not(.no-marker)::before {
+		content: "INVALID EXAMPLE";
+		content: "INVALID EXAMPLE" counter(exampleno);
+	}
+
+/** Non-normative Note ********************************************************/
+
+	.note, .why {
+		border-color: #52E052;
+		background: #E9FBE9;
+		overflow: auto;
+	}
+	.note::before, .note > .marker {
+		display: block;
+		color: hsl(120, 70%, 30%);
+	}
+
+/** Advisement Box ************************************************************/
+	/*  for attention-grabbing normative statements */
+
+	.advisement {
+		border-color: orange;
+		border-style: none solid;
+		background: #FFEECC;
+		text-align: center;
+	}
+	strong.advisement {
+		display: block;
+	}
+	/*.advisement::before { color: #FF8800; } */
+
+/** ??? ***********************************************************************/
+
+	details.why {
+		border-color: #52E052;
+		background: #E9FBE9;
+		display: block;
+	}
+
+	details.why > summary {
+		font-style: italic;
+		display: block;
+	}
+
+	details.why[open] > summary {
+		border-bottom: 1px silver solid;
+	}
+
+/** Spec Obsoletion Notice ****************************************************/
+	/* obnoxious obsoletion notice for older/abandoned specs. */
+
+	details.annoying-warning {
+		display: block;
+	}
+
+	details.annoying-warning[open] {
+		background: #fdd;
+		color: red;
+		font-weight: bold;
+		text-align: center;
+		padding: .5em;
+		border: thick solid red;
+		border-radius: 1em;
+	}
+@media not print {
+	details.annoying-warning[open] {
+		position: fixed;
+		left: 1em;
+		right: 1em;
+		bottom: 1em;
+		z-index: 1000;
+	}
+}
+
+	details.annoying-warning:not([open]) > summary {
+		background: #fdd;
+		color: red;
+		font-weight: bold;
+		text-align: center;
+		padding: .5em;
+	}
+
+/******************************************************************************/
+/*                                    Tables                                  */
+/******************************************************************************/
+
+/** Property/Descriptor Definition Tables *************************************/
+
+	table.propdef, table.propdef-extra,
+	table.descdef, table.definition-table {
+		page-break-inside: avoid;
+		width: 100%;
+		margin: 1.2em 0;
+		border-left: 0.5em solid #8CCBF2;
+		padding: 0.5em 1em;
+		background: #DEF;
+		border-spacing: 0;
+	}
+
+	table.propdef td, table.propdef-extra td,
+	table.descdef td, table.definition-table td,
+	table.propdef th, table.propdef-extra th,
+	table.descdef th, table.definition-table th {
+		padding: 0.5em;
+		vertical-align: baseline;
+		border-bottom: 1px solid #bbd7e9;
+	}
+	table.propdef > tbody > tr:last-child th,
+	table.propdef-extra > tbody > tr:last-child th,
+	table.descdef > tbody > tr:last-child th,
+	table.definition-table > tbody > tr:last-child th,
+	table.propdef > tbody > tr:last-child td,
+	table.propdef-extra > tbody > tr:last-child td,
+	table.descdef > tbody > tr:last-child td,
+	table.definition-table > tbody > tr:last-child td {
+		border-bottom: 0;
+	}
+
+	table.propdef th,
+	table.propdef-extra th,
+	table.descdef th,
+	table.definition-table th {
+		font-style: italic;
+		font-weight: normal;
+		width: 8.3em;
+		padding-left: 1em;
+	}
+
+	/* For when values are extra-complex and need formatting for readability */
+	table td.pre {
+		white-space: pre-wrap;
+	}
+
+	/* A footnote at the bottom of a propdef */
+	table.propdef td.footnote,
+	table.propdef-extra td.footnote,
+	table.descdef td.footnote,
+	table.definition-table td.footnote {
+		padding-top: 0.6em;
+	}
+	table.propdef td.footnote::before,
+	table.propdef-extra td.footnote::before,
+	table.descdef td.footnote::before,
+	table.definition-table td.footnote::before {
+		content: " ";
+		display: block;
+		height: 0.6em;
+		width: 4em;
+		border-top: thin solid;
+	}
+
+/** Profile Tables ************************************************************/
+	/* table of required features in a CSS profile */
+
+	table.features th {
+		background: #00589f;
+		color: #fff;
+		text-align: left;
+		padding: 0.2em 0.2em 0.2em 0.5em;
+	}
+	table.features td {
+		vertical-align: top;
+		border-bottom: 1px solid #ccc;
+		padding: 0.3em 0.3em 0.3em 0.7em;
+	}
+
+/** Data tables (and properly marked-up proptables) ***************************/
+	/*
+		 <table class="data"> highlights structural relationships in a table
+		 when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
+
+		 Use class="complex data" for particularly complicated tables --
+		 (This will draw more lines: busier, but clearer.)
+
+		 Use class="long" on table cells with paragraph-like contents
+		 (This will adjust text alignment accordingly.)
+	*/
+
+	.data, .proptable {
+		margin: 1em auto;
+		border-collapse: collapse;
+		width: 100%;
+		border: hidden;
+	}
+	.data {
+		text-align: center;
+		width: auto;
+	}
+	.data caption {
+		width: 100%;
+	}
+
+	.data td, .data th,
+	.proptable td, .proptable th {
+		padding: 0.5em;
+		border-width: 1px;
+		border-color: silver;
+		border-top-style: solid;
+	}
+
+	.data thead td:empty {
+		padding: 0;
+		border: 0;
+	}
+
+	.data thead th[scope="row"],
+	.proptable thead th[scope="row"] {
+		text-align: right;
+		color: inherit;
+	}
+
+	.data thead,
+	.proptable thead,
+	.data tbody,
+	.proptable tbody {
+		color: inherit;
+		border-bottom: 2px solid;
+	}
+
+	.data colgroup {
+		border-left: 2px solid;
+	}
+
+	.data tbody th:first-child,
+	.proptable tbody th:first-child ,
+	.data tbody td[scope="row"]:first-child,
+	.proptable tbody td[scope="row"]:first-child {
+		text-align: right;
+		color: inherit;
+		border-right: 2px solid;
+		border-top: 1px solid silver;
+		padding-right: 1em;
+	}
+	.data.define td:last-child {
+		text-align: left;
+	}
+
+	.data tbody th[rowspan],
+	.proptable tbody th[rowspan],
+	.data tbody td[rowspan],
+	.proptable tbody td[rowspan]{
+		border-left:  1px solid silver;
+		border-right: 1px solid silver;
+	}
+
+	.complex.data th,
+	.complex.data td {
+		border: 1px solid silver;
+	}
+
+	.data td.long {
+	 vertical-align: baseline;
+	 text-align: left;
+	}
+
+	.data img {
+		vertical-align: middle;
+	}
+
+
+/******************************************************************************/
+/*                                  Indices                                   */
+/******************************************************************************/
+
+
+/** Table of Contents *********************************************************/
+
+	/* ToC not indented, but font style shows hierarchy */
+	ul.toc           { margin: 1em 0;     font-weight: bold; /*text-transform: uppercase;*/ }
+	ul.toc ul        { margin: 0;        font-weight: normal; text-transform: none; }
+	ul.toc ul ul     { margin: 0 0 0 2em; font-style: italic; }
+	ul.toc ul ul ul  { margin: 0; }
+	ul.toc > li      { margin: 1.5em 0; }
+	ul.toc ul.toc li { margin: 0.3em 0 0 0; }
+
+	ul.toc, ul.toc ul, ul.toc li { padding: 0; line-height: 1.3; }
+	ul.toc a { text-decoration: none; border-bottom-style: none; }
+	ul.toc a:hover, ul.toc a:focus  { border-bottom-style: solid; }
+	@supports (text-decoration-style: solid) {
+		ul.toc a:hover, ul.toc a:focus  {
+			border-bottom-style: none;
+			text-decoration-style: solid;
+		}
+	}
+	/*
+	ul.toc li li li, ul.toc li li li ul {margin-left: 0; display: inline}
+	ul.toc li li li ul, ul.toc li li li ul li {margin-left: 0; display: inline}
+	*/
+
+	/* Section numbers in a column of their own */
+	ul.toc {
+		margin-left: 5em
+	}
+	ul.toc span.secno {
+		float: left;
+		width: 4em;
+		margin-left: -5em;
+	}
+	ul.toc ul ul span.secno {
+		margin-left: -7em;
+	}
+	/*ul.toc span.secno {text-align: right}*/
+	ul.toc li {
+		clear: both;
+	}
+	/* If we had 'tab', floats would not be needed here:
+		 ul.toc span.secno {tab: 5em right; margin-right: 1em}
+		 ul.toc li {text-indent: 5em hanging}
+	 The second line in case items wrap
+	*/
+
+/** At-risk List **************************************************************/
+	/* Style for At Risk features (intended as editorial aid, not intended for publishing) */
+
+	.atrisk::before {
+	 float: right;
+	 margin-top: -0.25em;
+	 padding: 0.5em 1em 0.5em 0;
+	 text-indent: -0.9em;
+	 border: 1px solid;
+	 content: '\25C0    Not yet widely implemented';
+	 white-space: pre;
+	 font-size: small;
+	 background-color: white;
+	 color: gray;
+	 text-align: center;
+	}
+
+	.toc .atrisk::before { content:none }
+
+/** Index *********************************************************************/
+
+	/* Index Lists: Layout */
+	ul.indexlist       { margin-left: 0; columns: 15em; -webkit-columns: 15em; text-indent: 1em hanging; }
+	ul.indexlist li    { margin-left: 0; list-style: none; break-inside: avoid; word-break: break-word; }
+	ul.indexlist li li { margin-left: 1em }
+	ul.indexlist dl    { margin-top: 0; }
+	ul.indexlist dt    { margin: .2em 0 .2em 20px;}
+	ul.indexlist dd    { margin: .2em 0 .2em 40px;}
+	/* Index Lists: Typography */
+	ul.indexlist ul,
+	ul.indexlist dl { font-size: smaller; }
+	ul.indexlist li span {
+		white-space: nowrap;
+		position: absolute;
+		color: transparent; }
+	ul.indexlist li a:hover + span,
+	ul.indexlist li a:focus + span {
+		color: gray;
+	}
+	@media print {
+		ul.indexlist li span { color: gray; }
+	}
+
+/** Property Index Tables *****************************************************/
+	/* See also the data table styling section, which this effectively subclasses */
+
+	table.proptable {
+		font-size: small;
+		border-collapse: collapse;
+		border-spacing: 0;
+		text-align: left;
+		margin: 1em 0;
+	}
+
+	table.proptable td,
+	table.proptable th {
+		padding: 0.4em;
+		text-align: center;
+	}
+
+	table.proptable tr:hover td {
+		background: #DEF;
+	}
+	.propdef th {
+		font-style: italic;
+		font-weight: normal;
+		text-align: left;
+		width: 3em;
+	}
+	/* The link in the first column in the property table (formerly a TD) */
+	table.proptable td .property,
+	table.proptable th .property {
+		display: block;
+		text-align: left;
+		font-weight: bold;
+	}
+
+/** Extra-large Elements ******************************************************/
+
+	.big-element-wrapper {
+		max-width: 50em;
+		overflow-x: auto;
+	}
+
+/******************************************************************************/
+/*                                    Print                                   */
+/******************************************************************************/
+
+	@media print {
+		html {
+			margin: 0 !important; }
+		body {
+			font-family: serif; }
+		th, td {
+			font-family: inherit; }
+		a {
+			color: inherit !important; }
+
+		a:link, a:visited {
+			text-decoration: none !important }
+		a:link::after, a:visited::after { /* create a cross-ref "see..." */ }
+		.example::before {
+			font-family: serif !important; }
+	}
+	@page {
+		margin: 1.5cm 1.1cm;
+	}
+
+</style>
+  <meta content="Bikeshed 1.0.0" name="generator">
+ </head>
+ <body class="h-entry">
+  <div class="head">
+   <p data-fill-with="logo"><a class="logo" href="http://www.w3.org/"> <img alt="W3C" height="48" src="https://www.w3.org/Icons/w3c_home" width="72"> </a> </p>
+   <h1 class="p-name no-ref" id="title">User Interface Security and the Visibility API</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2015-11-13">13 November 2015</time></span></h2>
+   <div data-fill-with="spec-metadata">
+    <dl>
+     <dt>This version:
+     <dd><a class="u-url" href="https://w3c.github.io/webappsec/specs/uisecurity/">https://w3c.github.io/webappsec/specs/uisecurity/</a>
+     <dt>Feedback:
+     <dd><span><a href="mailto:public-webappsec@w3.org?subject=%5BUI Security%5D%20YOUR%20TOPIC%20HERE">public-webappsec@w3.org</a> with subject line “<kbd>[UI Security] <i data-lt="">… message topic …</i></kbd>” (<a href="http://lists.w3.org/Archives/Public/public-webappsec/" rel="discussion">archives</a>)</span>
+     <dt class="editor">Editor:
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:hillbrad@fb.com">Brad Hill</a> (<span class="p-org org">Facebook</span>)
+     <dt>Author:
+     <dd><span>Dan Kaminsky, Invited Expert</span>
+     <dd><span>David Lin-Shung Huang, Carnegie Mellon University</span>
+     <dd><span>Giorgio Maone, Invited Expert</span>
+    </dl>
+   </div>
+   <div data-fill-with="warning"></div>
+   <p class="copyright" data-fill-with="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> © 2015 <a href="http://www.w3.org/"><abbr title="World Wide Web Consortium">W3C</abbr></a><sup>®</sup> (<a href="http://www.csail.mit.edu/"><abbr title="Massachusetts Institute of Technology">MIT</abbr></a>, <a href="http://www.ercim.eu/"><abbr title="European Research Consortium for Informatics and Mathematics">ERCIM</abbr></a>, <a href="http://www.keio.ac.jp/">Keio</a>, <a href="http://ev.buaa.edu.cn/">Beihang</a>). W3C <a href="http://www.w3.org/Consortium/Legal/ipr-notice#Legal_Disclaimer">liability</a>, <a href="http://www.w3.org/Consortium/Legal/ipr-notice#W3C_Trademarks">trademark</a> and <a href="http://www.w3.org/Consortium/Legal/copyright-documents">document use</a> rules apply. </p>
+   <hr title="Separator for header">
+  </div>
+  <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
+  <div class="p-summary" data-fill-with="abstract">
+   <p>UI Security and the Visiblity API defines both a
+
+declarative and imperative means for resources
+displayed in an embedded context to protect
+themselves against having their content obscured,
+moved, or otherwise displayed in a misleading
+manner.</p>
+  </div>
+  <h2 class="no-num no-toc no-ref heading settled" id="status"><span class="content">Status of this document</span></h2>
+  <div data-fill-with="status">
+   <p> This is a public copy of the editors’ draft.
+	It is provided for discussion only and may change at any moment.
+	Its publication here does not imply endorsement of its contents by W3C.
+	Don’t cite this document other than as work in progress. </p>
+   <p> <strong>Changes to this document may be tracked at <a href="https://github.com/w3c/webappsec">https://github.com/w3c/webappsec</a>.</strong> </p>
+   <p> The (<a href="http://lists.w3.org/Archives/Public/public-webappsec/">archived</a>) public mailing list <a href="mailto:public-webappsec@w3.org?Subject=%5BUI Security%5D%20PUT%20SUBJECT%20HERE">public-webappsec@w3.org</a> (see <a href="http://www.w3.org/Mail/Request">instructions</a>)
+	is preferred for discussion of this specification.
+	When sending e-mail,
+	please put the text “UI Security” in the subject,
+	preferably like this:
+	“[UI Security] <em>…summary of comment…</em>” </p>
+   <p> This document was produced by the <a href="http://www.w3.org/2011/webappsec/">Web Application Security Working Group</a>. </p>
+   <p> This document was produced by a group operating under
+	the <a href="http://www.w3.org/Consortium/Patent-Policy-20040205/">5 February 2004 W3C Patent Policy</a>.
+	W3C maintains a <a href="http://www.w3.org/2004/01/pp-impl/49309/status" rel="disclosure">public list of any patent disclosures</a> made in connection with the deliverables of the group;
+	that page also includes instructions for disclosing a patent.
+	An individual who has actual knowledge of a patent which the individual believes contains <a href="http://www.w3.org/Consortium/Patent-Policy-20040205/#def-essential">Essential Claim(s)</a> must disclose the information in accordance with <a href="http://www.w3.org/Consortium/Patent-Policy-20040205/#sec-Disclosure">section 6 of the W3C Patent Policy</a>. </p>
+   <p> This document is governed by the <a href="http://www.w3.org/2015/Process-20150901/" id="w3c_process_revision">1 September 2015 W3C Process Document</a>. </p>
+   <p></p>
+  </div>
+  <div data-fill-with="at-risk"></div>
+  <h2 class="no-num no-toc no-ref heading settled" id="contents"><span class="content">Table of Contents</span></h2>
+  <div data-fill-with="table-of-contents" role="navigation">
+   <ul class="toc" role="directory">
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li><a href="#special-conformance"><span class="secno">2</span> <span class="content">Special Conformance Notes</span></a>
+    <li>
+     <a href="#dom-api"><span class="secno">3</span> <span class="content">JavaScript API</span></a>
+     <ul class="toc">
+      <li><a href="#request_visibility"><span class="secno">3.1</span> <span class="content">requestVisiblity method</span></a>
+      <li><a href="#visiblity-event"><span class="secno">3.2</span> <span class="content">VisibilityEvent</span></a>
+     </ul>
+    <li>
+     <a href="#directives"><span class="secno">4</span> <span class="content">CSP Directive</span></a>
+     <ul class="toc">
+      <li><a href="#input-protection"><span class="secno">4.1</span> <span class="content"><code>input-protection</code></span></a>
+     </ul>
+    <li>
+     <a href="#defiitions"><span class="secno">5</span> <span class="content">Definitions</span></a>
+     <ul class="toc">
+      <li>
+       <a href="#visibility"><span class="secno">5.1</span> <span class="content">Visibility</span></a>
+       <ul class="toc">
+        <li><a href="#visual-integrity"><span class="secno">5.1.1</span> <span class="content">Visual Integrity</span></a>
+        <li><a href="#spatio-temporal-integrity"><span class="secno">5.1.2</span> <span class="content">Spatio-Temporal Integrity</span></a>
+        <li><a href="#visibility-state"><span class="secno">5.1.3</span> <span class="content">Visibility State</span></a>
+       </ul>
+     </ul>
+    <li>
+     <a href="#algorithms"><span class="secno">6</span> <span class="content">Algorithms</span></a>
+     <ul class="toc">
+      <li><a href="#requesting-visibility"><span class="secno">6.1</span> <span class="content">Requesting Visibility</span></a>
+      <li>
+       <a href="#input-protection-algorithm"><span class="secno">6.2</span> <span class="content">Input Protection Algorithm</span></a>
+       <ul class="toc">
+        <li><a href="#handle-a-violation"><span class="secno">6.2.1</span> <span class="content">Handling Violations</span></a>
+       </ul>
+      <li><a href="#usafe-attribute"><span class="secno">6.3</span> <span class="content">Unsafe Attribute</span></a>
+     </ul>
+    <li><a href="#implementation-considerations"><span class="secno">7</span> <span class="content">Implementation Considerations</span></a>
+    <li><a href="#privacy-considerations"><span class="secno">8</span> <span class="content">Privacy Considerations</span></a>
+    <li><a href="#security-considerations"><span class="secno">9</span> <span class="content">Security Considerations</span></a>
+    <li><a href="#accessibility-considerations"><span class="secno">10</span> <span class="content">Accessibility Considerations</span></a>
+    <li>
+     <a href="#conformance"><span class="secno"></span> <span class="content">Conformance</span></a>
+     <ul class="toc">
+      <li><a href="#conventions"><span class="secno"></span> <span class="content">Document conventions</span></a>
+      <li><a href="#conformant-algorithms"><span class="secno"></span> <span class="content">Conformant Algorithms</span></a>
+     </ul>
+    <li>
+     <a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
+     <ul class="toc">
+      <li><a href="#index-defined-here"><span class="secno"></span> <span class="content">Terms defined by this specification</span></a>
+      <li><a href="#index-defined-elsewhere"><span class="secno"></span> <span class="content">Terms defined by reference</span></a>
+     </ul>
+    <li>
+     <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+     <ul class="toc">
+      <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
+     </ul>
+    <li><a href="#idl-index"><span class="secno"></span> <span class="content">IDL Index</span></a>
+    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
+   </ul>
+  </div>
+  <main>
+   <section>
+    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+    <p><em>This section is not normative.</em></p>
+    <p>Composite or "mash-up" web applications built using iframes
+		are ubiquitous because they allow users to interact seamlessly and
+		simultaneously with content from multiple origins while
+		maintaining isolation boundaries that are essential to
+		security and privacy for both users and applications.</p>
+    <p>However, those boundaries are not absolute.  In particular,
+		the visual and temporal integrity of embedded content is
+		not protected from manipulation by the embedding resource.
+		An embedding resource might constrain the viewport,
+		draw over, transform, reposition, or resize the user’s
+		view of a third-party resource.</p>
+    <p>Collectively known as User Interface Redressing, the goal
+		of such manipulations might be to entice the user to interact
+		with embedded content without knowing its context, (e.g. to 
+		send a payment or share content) commonly known as "clickjacking",
+		or to convince paid content that it is being shown to the user
+		when it is actually obscured, commonly known in the advertising
+		business as "display fraud".</p>
+    <p>Existing anti-clickjacking measures such as frame-busting
+    scripts and headers granting origin-based embedding permissions have 
+		shortcomings which prevent their application to important use-cases.
+    Frame-busting scripts, for example, rely on browser behavior that has not been 
+		engineered to provide a security guarantee and as a consequence,
+		such scripts may be unreliable if loaded inside a sandbox
+    or otherwise disabled. The X-Frame-Options header and the frame-ancestors
+		Content Security Policy directive offer an all-or-none approach to
+		display of embedded content that is not appropriate for content
+		which may be embedded in arbitrary locations, or known locations
+		which might still be adversarial.</p>
+    <p>This document defines mechanisms to allow resources to
+		protect themselves from embedding contexts which might otherwise
+		interfere with their display and interaction characteristics.
+		First, it defines an imperative API by which a resource can
+		request that a conforming user agent guarantee unmodified
+		display of its viewport, and report events on the success or
+		failure of meeting such guarantees.  This API should be suitable
+		for e.g. paid content such as advertising to receive trustworthy
+		signals about its viewability from a conforming user agent.</p>
+    <p>Secondly, this specification defines a declarative mechanism
+		(via a Content Security Poicy directive) to request visiblity
+		protection and receive notification, via event properties or
+		out-of-band reporting, if certain events are delivered to
+		a resource while it does not meet its requested visiblity 
+		contract.</p>
+    <p class="issue" id="issue-b233e40b"><a class="self-link" href="#issue-b233e40b"></a> how to interact with frame-ancestors and XFO?</p>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="2" id="special-conformance"><span class="secno">2. </span><span class="content">Special Conformance Notes</span><a class="self-link" href="#special-conformance"></a></h2>
+    <p><em>This section is not normative.</em></p>
+    <p>UI Redressing attacks rely on fooling the subjective perceptions of
+    human actors to induce them to interact with a web application out of
+    its intended context.  Because of this, the specific mechanisms which
+    may be used in attack and defense may vary greatly with the details of
+    a user agent implementation.  For example, attacks which rely on
+    redressing the cursor may not apply in a touch environment, or entire
+    classes of attack may be impossible on a text-only browser or screen
+    reader.</p>
+    <p>Similarly, the implementation of the policies specified herein is highly
+    dependent on internal architecture and implementation strategies of
+    the user agent; such strategies may vary greatly between user agents
+    or even across versions or platforms for a single user agent.</p>
+    <p>This specification provides a normative means by which a resource
+    owner can communicate to a user agent its desire for additional
+    protective measures, actions to take if violations are detected,
+    and tuning hints which may be useful for certain means of
+    implementation.  A user agent is conformant if it understands
+		these directives and makes a best effort to provide the desired 
+		security properties, which might require no additional implementation
+		steps, e.g. in the case of a screen reader that does not support
+		embedded resources in a manner that is subject to any of the
+		attack classes of concern.</p>
+    <p>While the indeterminacy of the user agent implementation protects
+    applications from needing to constantly update their policies as
+    user agents make internal changes, application authors should
+    understand that even a conformant user agent cannot make
+    perfect security guarantees against UI Redressing.
+    Some potential checks suggested here might not be made as a
+    consequence of implementation strategies, or to avoid unacceptable
+    performance costs, and the intrepretation of policies
+    might differ among user agents. (e.g. a tolerance hint may appy
+    strictly to rectangular clipping in one implementation but
+    to pixel or sub-pixel comparisions in another)</p>
+    <p>These directives should be used as part of a comprehensive risk
+    mitigation strategy with an appropriate understanding of their
+    limitations.</p>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="3" id="dom-api"><span class="secno">3. </span><span class="content">JavaScript API</span><a class="self-link" href="#dom-api"></a></h2>
+    <p class="issue" id="issue-f2c76be3"><a class="self-link" href="#issue-f2c76be3"></a> should this look more like MutationObserver?</p>
+    <p class="issue" id="issue-a953f179"><a class="self-link" href="#issue-a953f179"></a> shoudl we have an argument that doesn’t apply GraphicsLayer raising?</p>
+    <div class="example" id="example-8e19ad81">
+     <a class="self-link" href="#example-8e19ad81"></a> Sterling-Cooper Online wants to be able to determine if ad impressions
+		it is serving are actually visible to users.  The following example code
+		will send a beacon containing the resource’s location fragment, after a
+		full second of uninterrupted visibility, in a viewport of at least 300x100,
+		with content positioned at the origin. 
+<pre>function viewabilityHandler() {
+
+  var lastEvent = null, done = false;
+
+  function inTolerance (event) {
+    return 
+      (event.viewportWidth >= 300 &amp;&amp; 
+        event.viewportHeight >= 100)) &amp;&amp;
+      (event.viewportX == 0 &amp;&amp; event.viewportY == 0 &amp;&amp;
+        event.visibleX == 0 &amp;&amp; event.visibleY == 0) &amp;&amp;
+      (event.visibleWidth == event.viewportWidth &amp;&amp; 
+        event.visibleHeight = event.viewportHeight);
+  }
+
+  function handleEvent (event) {
+    if (event.type.toLowerCase() == "visibilityevent" &amp;&amp; !done) {
+      lastEvent = event;
+      if (inTolerane(event)) {
+        window.setTimeout(
+          function() { if (lastEvent === event) { report() } },
+          1000
+        );  
+  }}}
+
+  function report() {
+      done = true;
+      navigator.sendBeacon(
+        '/viewabilityEvent',
+        new FormData().set('id', window.location.hash)
+      );
+  }
+	
+  return handleEvent();
+};
+
+var handler = viewabilityHandler();
+
+window.addEventListener('visiblity', handler);
+navigator.<a class="idl-code" data-link-type="method" href="#dom-navigator-requestvisiblity">requestVisiblity()</a>;
+</pre>
+    </div>
+    <h3 class="heading settled" data-level="3.1" id="request_visibility"><span class="secno">3.1. </span><span class="content">requestVisiblity method</span><a class="self-link" href="#request_visibility"></a></h3>
+<pre class="idl">partial interface <a class="idl-code" data-link-type="interface" href="https://html.spec.whatwg.org/multipage/wwebappapis.html#the-navigator-object">Navigator</a> {
+  void <dfn class="idl-code" data-dfn-for="Navigator" data-dfn-type="method" data-export="" data-lt="requestVisibility()" id="dom-navigator-requestvisibility">requestVisibility<a class="self-link" href="#dom-navigator-requestvisibility"></a></dfn>();
+};
+</pre>
+    <dl>
+     <dt><dfn class="idl-code" data-dfn-for="Navigator" data-dfn-type="method" data-export="" id="dom-navigator-requestvisiblity">requestVisiblity()<a class="self-link" href="#dom-navigator-requestvisiblity"></a></dfn>
+     <dd> Request that this browsing context be made visible and that
+			VisibilityEvents be delivered to the Window object. 
+    </dl>
+    <h3 class="heading settled" data-level="3.2" id="visiblity-event"><span class="secno">3.2. </span><span class="content">VisibilityEvent</span><a class="self-link" href="#visiblity-event"></a></h3>
+<pre class="idl">interface <dfn class="idl-code" data-dfn-type="interface" data-export="" id="visibilityevent">VisibilityEvent<a class="self-link" href="#visibilityevent"></a></dfn> : <a data-link-type="idl-name" href="https://dom.spec.whatwg.org/#event">Event</a> {
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-viewportwidth">viewportWidth</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-viewportheight">viewportHeight</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-viewportx">viewportX</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-viewporty">viewportY</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-visiblewidth">visibleWidth</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-visibleheight">visibleHeight</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-visiblex">visibleX</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-visibley">visibleY</a>;
+};
+</pre>
+    <dl>
+     <dt><dfn class="idl-code" data-dfn-for="VisibilityEvent" data-dfn-type="attribute" data-export="" id="dom-visibilityevent-viewportwidth">viewportWidth<a class="self-link" href="#dom-visibilityevent-viewportwidth"></a></dfn>, <span> of type <a data-link-type="idl-name">long</a>, readonly</span>
+     <dd> The current width of the viewport. 
+     <dt><dfn class="idl-code" data-dfn-for="VisibilityEvent" data-dfn-type="attribute" data-export="" id="dom-visibilityevent-viewportheight">viewportHeight<a class="self-link" href="#dom-visibilityevent-viewportheight"></a></dfn>, <span> of type <a data-link-type="idl-name">long</a>, readonly</span>
+     <dd> The current height of the viewport. 
+     <dt><dfn class="idl-code" data-dfn-for="VisibilityEvent" data-dfn-type="attribute" data-export="" id="dom-visibilityevent-viewportx">viewportX<a class="self-link" href="#dom-visibilityevent-viewportx"></a></dfn>, <span> of type <a data-link-type="idl-name">long</a>, readonly</span>
+     <dd> The X position of the viewport root, relative to the root window’s coordinate set. 
+     <dt><dfn class="idl-code" data-dfn-for="VisibilityEvent" data-dfn-type="attribute" data-export="" id="dom-visibilityevent-viewporty">viewportY<a class="self-link" href="#dom-visibilityevent-viewporty"></a></dfn>, <span> of type <a data-link-type="idl-name">long</a>, readonly</span>
+     <dd> The Y position of the viewport root, relative to the root window’s coordinate set. 
+     <dt><dfn class="idl-code" data-dfn-for="VisibilityEvent" data-dfn-type="attribute" data-export="" id="dom-visibilityevent-visiblewidth">visibleWidth<a class="self-link" href="#dom-visibilityevent-visiblewidth"></a></dfn>, <span> of type <a data-link-type="idl-name">long</a>, readonly</span>
+     <dd> The current width of the visible rectangle. 
+     <dt><dfn class="idl-code" data-dfn-for="VisibilityEvent" data-dfn-type="attribute" data-export="" id="dom-visibilityevent-visibleheight">visibleHeight<a class="self-link" href="#dom-visibilityevent-visibleheight"></a></dfn>, <span> of type <a data-link-type="idl-name">long</a>, readonly</span>
+     <dd> The current height of the visible rectangle. 
+     <dt><dfn class="idl-code" data-dfn-for="VisibilityEvent" data-dfn-type="attribute" data-export="" id="dom-visibilityevent-visiblex">visibleX<a class="self-link" href="#dom-visibilityevent-visiblex"></a></dfn>, <span> of type <a data-link-type="idl-name">long</a>, readonly</span>
+     <dd> The X position of the top-left corner of the visible rectangle,
+			relative to the current document’s coordinate set. 
+     <dt><dfn class="idl-code" data-dfn-for="VisibilityEvent" data-dfn-type="attribute" data-export="" id="dom-visibilityevent-visibley">visibleY<a class="self-link" href="#dom-visibilityevent-visibley"></a></dfn>, <span> of type <a data-link-type="idl-name">long</a>, readonly</span>
+     <dd> The Y position of the top-left corner of the visible rectangle,
+			relative to the current document’s coordinate set. 
+    </dl>
+    <p class="issue" id="issue-e3bf0e2b"><a class="self-link" href="#issue-e3bf0e2b"></a> are viewportX and Y relative to current document coordinates or root window coords?</p>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="4" id="directives"><span class="secno">4. </span><span class="content">CSP Directive</span><a class="self-link" href="#directives"></a></h2>
+    <p>This section describes the content security policy
+    directives introduced in this specification.</p>
+    <h3 class="heading settled" data-level="4.1" id="input-protection"><span class="secno">4.1. </span><span class="content"><code>input-protection</code></span><a class="self-link" href="#input-protection"></a></h3>
+    <p>The <code>input-protection</code> directive, if present or
+        implied, is declaritive syntatic sugar for the same fundamental
+				mechanism as the JavaScript API.  If a user input event, such as <code>click</code>, <code>keypress</code>, <code>touch</code>, and <code>drag</code>, is generated when the document is not in a
+				visibility state that matches the visibility policy, this
+				directive is violated.</p>
+    <p>If the <code>input-protection</code> directive is set as
+        part of a <code>Content-Security-Policy</code>, violating 
+        the policy should cancel delivery of the UI event to the
+        target and and fire a violation event.  If set as
+        part of a <code>Content-Security-Policy-Report-Only</code>,
+        triggering of the heuristic should result in the event being
+        delivered with the <code>unsafe</code> attribute on the <code>UIEvent</code> set to <code>true</code> and fire a violation event. (TODO: Pointer Events?)</p>
+    <p>The optional directive value allows resource authors to
+        provide <a href="#input-protection-options">options</a> for heuristic tuning in the form of space-separated <code>option-name=option-value</code> pairs.</p>
+<pre>directive-name    = "input-protection"
+directive-value   = ["display-time=" num-val]
+                    ["height=" num-val]
+                    ["width=" num-val]
+                    ["protected-element=" id-selector]
+</pre>
+    <p>If the policy does not contain a value for this directive
+        or any of the hint name=value pairs are absent, the user
+        agent SHOULD apply default values for hints as described
+        in the following.</p>
+    <dl id="input-protection-options">
+     <dt> <code>display-time</code> 
+     <dd>
+       is a numeric value from 0 to 10000 that specifies how long, in
+                milliseconds, the screen area containing the protected user
+                interface must have unmodified viewability properties
+                when the event is processed. 
+      <p>If not specified, it defaults to 800. If a value out of the
+                range stated above is specified, it defaults to the nearest
+                value between the lower and the higher bounds.</p>
+     <dt> <code>width</code> 
+     <dd> is a numeric value that specifies the minimum viewable area’s
+								X dimension.  If unspecified, it defaults to the width of the
+								protectedElement’s boundingClientRect. 
+     <dt> <code>height</code> 
+     <dd> is a numeric value that specifies the minimum viewable area’s
+								Y dimension.  If unspecified, it defaults to the height of the
+								protectedElement’s boundingClientRect. 
+     <dt> <code>protected-element</code> 
+     <dd> An id querySelector expression which uniquely identifies an element in the protected
+								document.  The protected element’s boundingClientRect will be used as
+								the boundaries for visibility calculations.  If a minWidth and minHeight are
+								specified, they are calculated relative to the origin of the protected element’s
+								boundingClientRect.  If unspecified, this value defaults to the Document element. 
+    </dl>
+    <p class="issue" id="issue-55ac3ee1"><a class="self-link" href="#issue-55ac3ee1"></a> should the event have a timestamp or just let the event handler assume it
+				happened close enough to when it recieves it?</p>
+    <p class="issue" id="issue-0916d05d"><a class="self-link" href="#issue-0916d05d"></a> innerHeight, innerWidth (ask Dan)</p>
+    <p class="issue" id="issue-74c069fd"><a class="self-link" href="#issue-74c069fd"></a> ancestorOrigins</p>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="5" id="defiitions"><span class="secno">5. </span><span class="content">Definitions</span><a class="self-link" href="#defiitions"></a></h2>
+    <h3 class="heading settled" data-level="5.1" id="visibility"><span class="secno">5.1. </span><span class="content">Visibility</span><a class="self-link" href="#visibility"></a></h3>
+     An area is defined as <em>visible</em> if it has <em>visual</em> and <em>spatio-temporal
+			integrity</em> and meets minimum required width and height requirements. 
+    <h4 class="heading settled" data-level="5.1.1" id="visual-integrity"><span class="secno">5.1.1. </span><span class="content">Visual Integrity</span><a class="self-link" href="#visual-integrity"></a></h4>
+     An area has <em>visual integrity</em> if it is not subject to being occuluded, drawn over,
+			blurred, zoomed, clipped, rotated, scaled, transformed or subject to any other effects which 
+			would change its appearance relative to being painted in the same size viewport in the root
+			window.  The property of <em>visual integrity</em> applies to rectangular areas, and an area
+			only has the property if no such changes occur within its entire bounding rectangle. 
+    <h4 class="heading settled" data-level="5.1.2" id="spatio-temporal-integrity"><span class="secno">5.1.2. </span><span class="content">Spatio-Temporal Integrity</span><a class="self-link" href="#spatio-temporal-integrity"></a></h4>
+     An area’s <em>spatio-temporal integrity</em> refers to it being displayed without modifications
+			to its display state, viewport size, position of content within the viewport, or position
+			of the viewport relative to the root window’s coordinate system.  Any modification to these
+			properties generates a new visibility state. 
+    <h4 class="heading settled" data-level="5.1.3" id="visibility-state"><span class="secno">5.1.3. </span><span class="content">Visibility State</span><a class="self-link" href="#visibility-state"></a></h4>
+     A <em>visibility state</em> is the description of a document’s <em>visual</em> and <em>spatio-temporal
+			integrity</em> and size and the elapsed time since those properties have last changed. 
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="6" id="algorithms"><span class="secno">6. </span><span class="content">Algorithms</span><a class="self-link" href="#algorithms"></a></h2>
+    <h3 class="heading settled" data-level="6.1" id="requesting-visibility"><span class="secno">6.1. </span><span class="content">Requesting Visibility</span><a class="self-link" href="#requesting-visibility"></a></h3>
+    <p>When a document calls requestVisibility(), the user agent SHOULD attempt to display the document’s
+	viewport in a manner that is not subject to perturbation by ancestor frames and MUST report
+	visibilityEvents.</p>
+    <p class="note" role="note">NOTE: The exact procedures of this algorithm are not normative. Any algorithm which produces
+	equivalent results is conformant and implementations are encouraged to optimize wherever possible.</p>
+    <ol>
+     <li data-md="">
+      <p>Complete any pending layout and painting tasks, (find more precice language here)
+	including layer hoisting as described in the non-normative implementation advice.</p>
+     <li data-md="">
+      <p>Visibility events should not be fired until DOMContentReady has fired on the protected
+	document and all ancestor documents.</p>
+     <li data-md="">
+      <p>Calculate a visibiltyEvent</p>
+      <ol>
+       <li data-md="">
+        <p>Obtain the height and width of the protected document’s viewport</p>
+       <li data-md="">
+        <p>Obtain the x and y coordinates of the origin of the protected document’s viewport in
+	the coordinate system of the root window.</p>
+       <li data-md="">
+        <p>Obtain the bounding rectangle of the protected document that has <em>visual integrity</em>.</p>
+        <ol>
+         <li data-md="">
+          <p>If the entire viewport does not have <em>visual integrity</em>, the user agent MAY
+	always report a rectangle of zero dimensions, e.g. if the viewport is subject to 
+	transformations with complex outlines, or modifications which section the viewport
+	into multiple distinct visible regions.</p>
+         <li data-md="">
+          <p>Otherwise, the user agent MAY report the largest bounding rectangle within the
+	viewport with <em>visual integrity</em>, if e.g. only a small portion of the
+	viewport is cropped.</p>
+        </ol>
+      </ol>
+      <ol>
+       <li data-md="">
+        <p>Dispatch a <em>visibilityEvent</em> to the window object of the protected document.</p>
+      </ol>
+     <li data-md="">
+      <p>Whenever the <em>spatio-temporal</em> or <em>visual integrity</em> of the protected
+	document’s viewport changes, a new <em>visibility state</em> is created and step 3
+	of this algorithm MUST be repeated.</p>
+    </ol>
+    <p>Internal changes to the contents of the protected document such as CSS effects,
+	modifications to the DOM, or animations, MUST NOT create a new <em>visibility state</em>,
+	but internally generated events which scroll or resize the viewport MUST.</p>
+    <h3 class="heading settled" data-level="6.2" id="input-protection-algorithm"><span class="secno">6.2. </span><span class="content">Input Protection Algorithm</span><a class="self-link" href="#input-protection-algorithm"></a></h3>
+    <p>Implementation of the <em>input-protection</em> CSP directive is internally defined in
+	terms of the <em>Requesting Visibilty</em> algorithm.</p>
+    <ol>
+     <li data-md="">
+      <p>If the directive is specified, begin as if <em>requestVisibiity()</em> was invoked.</p>
+     <li data-md="">
+      <p>At step 3.4 (dispatch a <em>visibilityEvent</em>), do not dispatch the event (unless
+	visibility events have also been requested with the imperative API) but retain
+	the calculated values of the <em>visibility state</em>, plus a timestamp, as internal state.</p>
+     <li data-md="">
+      <p>At step 4 (handle new <em>visibility states</em>), replace the retained internal state with
+	the new calculated values and a new timestamp.</p>
+     <li data-md="">
+      <p>Parse the directive options and determine values (or use defaults) for <em>display time</em>, <em>height</em>, <em>width</em> and <em>protected-element</em>.</p>
+    </ol>
+    <p>During hit testing for user initiated events (UIEvents, PointerEvents, drag-and-drop,
+	copy/paste, etc.):</p>
+    <p class="issue" id="issue-31b0ddd5"><a class="self-link" href="#issue-31b0ddd5"></a> do we need keypress or a keyboard-driven click events?</p>
+    <ol>
+     <li data-md="">
+      <p>Examine the element the event is delivered to to deterimine if it matches the id
+	selector that is the value of <em>protected-element</em>.</p>
+      <ol>
+       <li data-md="">
+        <p>If element matches the selector, continue to step 2.</p>
+       <li data-md="">
+        <p>If the element does not match and the element has a parent</p>
+        <ol>
+         <li data-md="">
+          <p>Set element to element.parent and go to step 1.1</p>
+        </ol>
+       <li data-md="">
+        <p>If no element in the set of elements which might handle the event matches the
+	selector, deliver the event and terminate this portion of the algorithm.
+	Continue monitoring <em>visibility states</em>.</p>
+      </ol>
+     <li data-md="">
+      <p>If an event will be delivered to the <em>protected-element</em> or one of its children</p>
+      <ol>
+       <li data-md="">
+        <p>Get the current timestamp and the retained internal state of the most recent <em>visibility state</em></p>
+       <li data-md="">
+        <p>Get the bounding rectangle of the <em>protected-element</em></p>
+       <li data-md="">
+        <p>If <em>height</em> and <em>width</em> were not set explicitly as part of the
+	directive, set them to the current height and width of the 
+	protected element’s bounding rectangle for the purposes of processing this event</p>
+       <li data-md="">
+        <p>Get the viewport height and width of the displayport for the protected document.</p>
+        <ol>
+         <li data-md="">
+          <p>If the size of the viewport is less in either dimention than the <em>height</em> and <em>width</em> values, go to <b>handle a violation</b>.</p>
+        </ol>
+       <li data-md="">
+        <p>Get the bounding rectangle of the <em>protected-element</em> and determine the x and
+	y coordinates of the origin of that rectangle in the document’s own coordinate system.</p>
+       <li data-md="">
+        <p>Calculate the protected rectangle that must be visibile by applying the <em>height</em> and <em>width</em> values to those origin coordinates.  (if these values are not explicitly
+	specified in the directive options, this is the bounding rectangle of the element)</p>
+       <li data-md="">
+        <p>If the protected rectangle is not entirely within the rectangle defined by the <em>visibleX</em>, <em>visibleY</em>, <em>visibleWidth</em>, and <em>visibleHeight</em> values of the <em>visibility state</em>, go to <b>handle a violation</b>.</p>
+       <li data-md="">
+        <p>If the protected rectangle is entirely within the visible rectangle, subtract the
+	timestamp of the <em>visibility state</em> from the current timestamp and compare it to
+	the <em>display-time</em> value of the directive, or 800 if unset.  If the calculated
+	value is less than the specified value, go to <b>handle a violation</b>.</p>
+       <li data-md="">
+        <p>Otherwise, deliver the event as normal and terminate this portion of the algorithm.
+	Continue monitoring <em>visibility states</em>.</p>
+      </ol>
+    </ol>
+    <p class="issue" id="issue-b4a972f3"><a class="self-link" href="#issue-b4a972f3"></a> Cursor redressing.</p>
+    <h4 class="heading settled" data-level="6.2.1" id="handle-a-violation"><span class="secno">6.2.1. </span><span class="content">Handling Violations</span><a class="self-link" href="#handle-a-violation"></a></h4>
+    <p>When a violation is raised:</p>
+    <ol>
+     <li data-md="">
+      <p>If the directive is being enforced, cancel delivery of the event and Fire a Violation Event
+	as defined in <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a>.</p>
+     <li data-md="">
+      <p>If the directive is being monitored, add a property <em>unsafe</em> to the event, set to <em>true</em>, and Fire a Violation Event as defined in <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a>.</p>
+    </ol>
+    <h3 class="heading settled" data-level="6.3" id="usafe-attribute"><span class="secno">6.3. </span><span class="content">Unsafe Attribute</span><a class="self-link" href="#usafe-attribute"></a></h3>
+<pre class="idl">partial interface <a class="idl-code" data-link-type="interface" href="https://dom.spec.whatwg.org/#event">Event</a> {
+  readonly attribute boolean <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="boolean " href="#dom-event-unsafe">unsafe</a>;
+};
+</pre>
+    <dl>
+     <dt><dfn class="idl-code" data-dfn-for="Event" data-dfn-type="attribute" data-export="" id="dom-event-unsafe">unsafe<a class="self-link" href="#dom-event-unsafe"></a></dfn>, <span> of type <a data-link-type="idl-name">boolean</a>, readonly</span>
+     <dd> Will be set to true if the event fired when the document’s <em>visibility state</em> did not
+			meet <em>input-protection</em> requirements. 
+    </dl>
+    <section>
+     <h2 class="heading settled" data-level="7" id="implementation-considerations"><span class="secno">7. </span><span class="content">Implementation Considerations</span><a class="self-link" href="#implementation-considerations"></a></h2>
+     <p><em>This section is non-normative.</em></p>
+     <p>The internal details of the full pipeline between the normatively specified portions of
+	the Web Platform, such as the Document Object Model and CSS, and pixels actually displayed
+	to the user, is not standardized.  There may exist considerable variability in the 
+	implementations and strategies employed between different user agents, or even within a
+	single user agent on platforms with differing capabilities.</p>
+     <p>The implementation strategy detailed in this section is not normative. Any
+	strategy which produces correct outcomes for the normative algorithms is conformant and
+	implementers are encouraged to optimize whenever possible.</p>
+     <p>The possibility of wide variance among user agent implementations notwithstanding, the
+	normative algorithms of this specification are designed such that a highly performant 
+	implementation should be possible on the most common internal architectures that are
+	state-of-the-art as of the time of writing.</p>
+     <p>Roughly, at some point along the transformation from DOM to pixels, a user agent will
+	arrive at an intermediate representation which represents a set of surfaces to be
+	painted / clipped / scrolled.  We will designate this a GraphicsLayer.</p>
+     <ol>
+      <li data-md="">
+       <p>On the way to preparing the set of GraphicsLayers, determine if an iframe which has
+	invoked requestVisibliity() will be put into its own GraphicsLayer.  If it is not, apply
+	whatever implemenation-specific transformations are necessary to generate it as a
+	distinct layer.  (e.g. add translatez(0) to the documentElement)</p>
+      <li data-md="">
+       <p>Determine the GraphicsLayer associated with the root document, topmost in the window.</p>
+      <li data-md="">
+       <p>Without reordering prior intermediate representations in a manner which would
+	change event dispatching, hit testing or the DOM as exposed to JavaScript, reorder
+	the GraphicsLayers such that the iframe which has requested visibility is on top 
+	of the root GraphicsLayer. (e.g. by making it a direct child of the root layer)</p>
+     </ol>
+     <p class="note" role="note">NOTE: By reordering the layers such that an iframe which has requested visibility is topmost,
+	it should naturally avoid being subject to nearly all manipulations and transformations 
+	by parent layers which could otherwise change its display characteristics.</p>
+     <ol>
+      <li data-md="">
+       <p>Clipping transformations must be respected.  An iframe requesting visibility
+	is not allowed to take over more of the display than allowed by its ancestor documents.</p>
+       <ol>
+        <li data-md="">
+         <p>Determine the size of the protected GraphicsLayer to be raised.</p>
+        <li data-md="">
+         <p>Determine the position of that rectangle on the top viewport.</p>
+       </ol>
+      <li data-md="">
+       <p>Re-implement necessary clipping that would be otherwise bypassed by the layer raising.</p>
+       <ol>
+        <li data-md="">
+         <p>Obtain the bounds of the iframe in the viewport space of its parent</p>
+        <li data-md="">
+         <p>Intersect those boundaries with those of the to-be-raised GraphicsLayer</p>
+        <li data-md="">
+         <p>Repeat by finding the bounds in the viewport space of the next ancestor document,
+	until the topmost document in the window is reached.</p>
+       </ol>
+      <li data-md="">
+       <p>Determine and clip appropriately for the position of content in the viewport.</p>
+       <ol>
+        <li data-md="">
+         <p>Correct the boundaries, position and offset of the to-be-raised GrapicsLayer
+	to account for scrolling of both the root document and any intermediate frames</p>
+       </ol>
+       <p class="issue" id="issue-b02a3286"><a class="self-link" href="#issue-b02a3286"></a> Dan, I’m not sure I got those last 2 or so step exactly correct....</p>
+      <li data-md="">
+       <p>If multiple	iframes in the rendering tree have requested visibility, they may overlap,
+	and only one can be topmost.  It is undefined which should actually be topmost, only
+	that each knows what its true visible boundaries are.  If there are other to-be-raised
+	GraphicsLayers subsequent and superior to this one, calculate and then intersect those
+	boundaries with these boundaries to arrive at the final visible area.</p>
+      <li data-md="">
+       <p>Report back the viewport and visible portion.</p>
+     </ol>
+    </section>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="8" id="privacy-considerations"><span class="secno">8. </span><span class="content">Privacy Considerations</span><a class="self-link" href="#privacy-considerations"></a></h2>
+    <p><em>This section is non-normative.</em></p>
+    <p>The timing of visibilityEvents may leak some information across Origin boundaries.  An embedded
+	document might have previously been unable to learn that it was obscured, or the timing and
+	nature of repositioning of ancestor frame’s viewports.  In some circumstances, this information
+	leak might have privacy implications, but the granularity and nature of the information is such
+	that it should not be of much value to attackers.  Compared to anti-clickjacking strategies
+	which rely on pixel comparisions, the side channels exposed by comparing rectulangar masks are
+	very low bandwidth. The privacy gains from preventing clickjacking, considered in a holistic
+	system context, may be quite large.</p>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="9" id="security-considerations"><span class="secno">9. </span><span class="content">Security Considerations</span><a class="self-link" href="#security-considerations"></a></h2>
+    <p><em>This section is non-normative.</em></p>
+    <p>UI Redressing and Clickjacking attacks rely on violating the contextual and temporal
+	integrity of embedded content. Because these attacks target the subjective perception 
+	of the user and not well-defined security boundaries, the heuristic protections 
+	afforded by the input-protection directive can never be 100% effective for every 
+	interface. It provides no protection against certain classes of attacks, such as 
+	displaying content around an embedded resource that appears to extend a trusted 
+	dialog but provides misleading information.</p>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="10" id="accessibility-considerations"><span class="secno">10. </span><span class="content">Accessibility Considerations</span><a class="self-link" href="#accessibility-considerations"></a></h2>
+    <p>User of accessibility tools MUST NOT be prevented from accessing content
+	because of input-protection or VisibilityEvents. Accessibility tools MAY
+	undefine requestVisibility(), report a synthesized event with a <em>visibility state</em> at onDOMContentReady that indicates the entire
+	document is visible, and/or redefine violation handling for 
+	input-protection to a no-op.</p>
+   </section>
+  </main>
+  <h2 class="no-ref no-num heading settled" id="conformance"><span class="content">Conformance</span><a class="self-link" href="#conformance"></a></h2>
+  <h3 class="no-ref no-num heading settled" id="conventions"><span class="content">Document conventions</span><a class="self-link" href="#conventions"></a></h3>
+  <p>Conformance requirements are expressed with a combination of
+    descriptive assertions and RFC 2119 terminology. The key words "MUST",
+    "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+    "RECOMMENDED", "MAY", and "OPTIONAL" in the normative parts of this
+    document are to be interpreted as described in RFC 2119.
+    However, for readability, these words do not appear in all uppercase
+    letters in this specification. </p>
+  <p>All of the text of this specification is normative except sections
+    explicitly marked as non-normative, examples, and notes. <a data-link-type="biblio" href="#biblio-rfc2119">[RFC2119]</a></p>
+  <p>Examples in this specification are introduced with the words "for example"
+    or are set apart from the normative text with <code>class="example"</code>,
+    like this: </p>
+  <div class="example" id="example-f839f6c8">
+   <a class="self-link" href="#example-f839f6c8"></a> 
+   <p>This is an example of an informative example.</p>
+  </div>
+  <p>Informative notes begin with the word "Note" and are set apart from the
+    normative text with <code>class="note"</code>, like this: </p>
+  <p class="note" role="note">Note, this is an informative note.</p>
+  <h3 class="no-ref no-num heading settled" id="conformant-algorithms"><span class="content">Conformant Algorithms</span><a class="self-link" href="#conformant-algorithms"></a></h3>
+  <p>Requirements phrased in the imperative as part of algorithms (such as
+    "strip any leading space characters" or "return false and abort these
+    steps") are to be interpreted with the meaning of the key word ("must",
+    "should", "may", etc) used in introducing the algorithm.</p>
+  <p>Conformance requirements phrased as algorithms or specific steps can be
+    implemented in any manner, so long as the end result is equivalent. In
+    particular, the algorithms defined in this specification are intended to
+    be easy to understand and are not intended to be performant. Implementers
+    are encouraged to optimize.</p>
+  <h2 class="no-num heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
+  <h3 class="no-num heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
+  <ul class="indexlist">
+   <li><a href="#dom-navigator-requestvisibility">requestVisibility()</a><span>, in §3.1</span>
+   <li><a href="#dom-navigator-requestvisiblity">requestVisiblity()</a><span>, in §3.1</span>
+   <li><a href="#dom-event-unsafe">unsafe</a><span>, in §6.3</span>
+   <li><a href="#dom-visibilityevent-viewportheight">viewportHeight</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityevent-viewportwidth">viewportWidth</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityevent-viewportx">viewportX</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityevent-viewporty">viewportY</a><span>, in §3.2</span>
+   <li><a href="#visibilityevent">VisibilityEvent</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityevent-visibleheight">visibleHeight</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityevent-visiblewidth">visibleWidth</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityevent-visiblex">visibleX</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityevent-visibley">visibleY</a><span>, in §3.2</span>
+  </ul>
+  <h3 class="no-num heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
+  <ul class="indexlist">
+   <li>
+    <a data-link-type="biblio" href="#biblio-html">[HTML]</a> defines the following terms:
+    <ul>
+     <li><a href="https://html.spec.whatwg.org/multipage/wwebappapis.html#the-navigator-object">Navigator</a>
+    </ul>
+   <li>
+    <a data-link-type="biblio" href="#biblio-dom-ls">[dom-ls]</a> defines the following terms:
+    <ul>
+     <li><a href="https://dom.spec.whatwg.org/#event">Event</a>
+    </ul>
+  </ul>
+  <h2 class="no-num heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+  <h3 class="no-num heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
+  <dl>
+   <dt id="biblio-csp2"><a class="self-link" href="#biblio-csp2"></a>[CSP2]
+   <dd>Mike West; Adam Barth; Daniel Veditz. <a href="http://www.w3.org/TR/CSP2/">Content Security Policy Level 2</a>. 21 July 2015. CR. URL: <a href="http://www.w3.org/TR/CSP2/">http://www.w3.org/TR/CSP2/</a>
+   <dt id="biblio-html"><a class="self-link" href="#biblio-html"></a>[HTML]
+   <dd>Ian Hickson. <a href="https://html.spec.whatwg.org/multipage/">HTML Standard</a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/multipage/">https://html.spec.whatwg.org/multipage/</a>
+   <dt id="biblio-dom-ls"><a class="self-link" href="#biblio-dom-ls"></a>[DOM-LS]
+   <dd>Document Object Model URL: <a href="https://dom.spec.whatwg.org/">https://dom.spec.whatwg.org/</a>
+   <dt id="biblio-rfc2119"><a class="self-link" href="#biblio-rfc2119"></a>[RFC2119]
+   <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+  </dl>
+  <h2 class="no-num heading settled" id="idl-index"><span class="content">IDL Index</span><a class="self-link" href="#idl-index"></a></h2>
+<pre class="idl">partial interface <a class="idl-code" data-link-type="interface" href="https://html.spec.whatwg.org/multipage/wwebappapis.html#the-navigator-object">Navigator</a> {
+  void <a href="#dom-navigator-requestvisibility">requestVisibility</a>();
+};
+
+interface <a href="#visibilityevent">VisibilityEvent</a> : <a data-link-type="idl-name" href="https://dom.spec.whatwg.org/#event">Event</a> {
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-viewportwidth">viewportWidth</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-viewportheight">viewportHeight</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-viewportx">viewportX</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-viewporty">viewportY</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-visiblewidth">visibleWidth</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-visibleheight">visibleHeight</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-visiblex">visibleX</a>;
+  readonly attribute long <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="long " href="#dom-visibilityevent-visibley">visibleY</a>;
+};
+
+partial interface <a class="idl-code" data-link-type="interface" href="https://dom.spec.whatwg.org/#event">Event</a> {
+  readonly attribute boolean <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="boolean " href="#dom-event-unsafe">unsafe</a>;
+};
+
+</pre>
+  <h2 class="no-num heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
+  <div style="counter-reset:issue">
+   <div class="issue"> how to interact with frame-ancestors and XFO?<a href="#issue-b233e40b"> ↵ </a></div>
+   <div class="issue"> should this look more like MutationObserver?<a href="#issue-f2c76be3"> ↵ </a></div>
+   <div class="issue"> shoudl we have an argument that doesn’t apply GraphicsLayer raising?<a href="#issue-a953f179"> ↵ </a></div>
+   <div class="issue"> are viewportX and Y relative to current document coordinates or root window coords?<a href="#issue-e3bf0e2b"> ↵ </a></div>
+   <div class="issue"> should the event have a timestamp or just let the event handler assume it
+				happened close enough to when it recieves it?<a href="#issue-55ac3ee1"> ↵ </a></div>
+   <div class="issue"> innerHeight, innerWidth (ask Dan)<a href="#issue-0916d05d"> ↵ </a></div>
+   <div class="issue"> ancestorOrigins<a href="#issue-74c069fd"> ↵ </a></div>
+   <div class="issue"> do we need keypress or a keyboard-driven click events?<a href="#issue-31b0ddd5"> ↵ </a></div>
+   <div class="issue"> Cursor redressing.<a href="#issue-b4a972f3"> ↵ </a></div>
+   <div class="issue"> Dan, I’m not sure I got those last 2 or so step exactly correct....<a href="#issue-b02a3286"> ↵ </a></div>
+  </div>
+ </body>
+</html>
