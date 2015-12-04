@@ -1000,7 +1000,7 @@
   <div class="head">
    <p data-fill-with="logo"><a class="logo" href="http://www.w3.org/"> <img alt="W3C" height="48" src="https://www.w3.org/Icons/w3c_home" width="72"> </a> </p>
    <h1 class="p-name no-ref" id="title">User Interface Security and the Visibility API</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2015-12-03">3 December 2015</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2015-12-04">4 December 2015</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1069,7 +1069,7 @@ manner.</p>
      <a href="#csp-interface"><span class="secno">4</span> <span class="content">Content Security Policy Interface</span></a>
      <ul class="toc">
       <li>
-       <a href="#input-protection-directive"><span class="secno">4.1</span> <span class="content">The <span>input-protection Directive</span></span></a>
+       <a href="#input-protection-interface"><span class="secno">4.1</span> <span class="content">The <span>input-protection Directive</span></span></a>
        <ul class="toc">
         <li><a href="#directive-value"><span class="secno">4.1.1</span> <span class="content">Directive Value</span></a>
        </ul>
@@ -1088,18 +1088,19 @@ manner.</p>
       <li>
        <a href="#algorithms"><span class="secno">5.2</span> <span class="content">Algorithms</span></a>
        <ul class="toc">
-        <li><a href="#queue-visibility-observer-task"><span class="secno">5.2.1</span> <span class="content">Queue a Visibility Observer Task</span></a>
+        <li><a href="#queue-visibility-observer-task-algo"><span class="secno">5.2.1</span> <span class="content">Queue a Visibility Observer Task</span></a>
         <li><a href="#notify-visibility-observers-algo"><span class="secno">5.2.2</span> <span class="content">Notify Visibility Observers</span></a>
         <li><a href="#queue-visibility-observer-entry-algo"><span class="secno">5.2.3</span> <span class="content">Queue a VisibilityObserverEntry</span></a>
-        <li><a href="#promote-observed-graphicslayers"><span class="secno">5.2.4</span> <span class="content">Promote Observed GraphicsLayers</span></a>
-        <li><a href="#enforce-an-input-protection-directive"><span class="secno">5.2.5</span> <span class="content">Enforce An input-protection Directive</span></a>
-        <li><a href="#handle-a-violation"><span class="secno">5.2.6</span> <span class="content">Handle a Violation</span></a>
+        <li><a href="#promote-observed-graphicslayers-algo"><span class="secno">5.2.4</span> <span class="content">Promote Observed GraphicsLayers</span></a>
+        <li><a href="#enforce-an-input-protection-directive-algo"><span class="secno">5.2.5</span> <span class="content">Enforce An input-protection Directive</span></a>
+        <li><a href="#handle-a-violation-algo"><span class="secno">5.2.6</span> <span class="content">Handle a Violation</span></a>
        </ul>
       <li>
        <a href="#external-spec-integrations"><span class="secno">5.3</span> <span class="content">External Spec Integrations</span></a>
        <ul class="toc">
         <li><a href="#event-loop"><span class="secno">5.3.1</span> <span class="content">HTML Processing Model: Event Loop</span></a>
-        <li><a href="#usafe-attribute"><span class="secno">5.3.2</span> <span class="content">Unsafe Attribute</span></a>
+        <li><a href="#dispatching-events-algo"><span class="secno">5.3.2</span> <span class="content">DOM: Dispatching Events</span></a>
+        <li><a href="#usafe-attribute"><span class="secno">5.3.3</span> <span class="content">isUnsafe Attribute</span></a>
        </ul>
      </ul>
     <li><a href="#privacy-considerations"><span class="secno">6</span> <span class="content">Privacy Considerations</span></a>
@@ -1344,7 +1345,7 @@ percentage of the area as specified by <em>target</em>.<code class="idl"><a data
        <p><dfn class="idl-code" data-dfn-for="VisibilityObserverInit" data-dfn-type="dict-member" data-export="" id="dom-visibilityobserverinit-displacementaware">displacementAware<a class="self-link" href="#dom-visibilityobserverinit-displacementaware"></a></dfn>, <span> of type <code class="idl-code">(boolean)</code>, defaulting to <code>false</code></span></p>
       <dd data-md="">
        <p>If <em>true</em>, this observer should trigger the callback
-when the position of the <var>observedElement</var> changes relative to the
+when the position of the <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-observedelement-slot">[[observedElement]]</a></code> changes relative to the
 global viewport.</p>
       <dt data-md="">
        <p><dfn class="idl-code" data-dfn-for="VisibilityObserverInit" data-dfn-type="dict-member" data-export="" id="dom-visibilityobserverinit-visiblemargin">visibleMargin<a class="self-link" href="#dom-visibilityobserverinit-visiblemargin"></a></dfn>, <span> of type <code class="idl-code">(DOMString)</code>, defaulting to <code>"0px"</code></span></p>
@@ -1369,7 +1370,7 @@ global viewport.</p>
        <p><dfn class="idl-code" data-dfn-for="VisibilityObserverInit" data-dfn-type="dict-member" data-export="" id="dom-visibilityobserverinit-observedelement">observedElement<a class="self-link" href="#dom-visibilityobserverinit-observedelement"></a></dfn>, <span> of type <code class="idl-code">(Element)</code>, nullable</span></p>
       <dd data-md="">
        <p>The <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> being observed.  If unset, the internal slot will be
-initialized to the <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a></code> element.</p>
+initialized to the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> element.</p>
      </dl>
     </div>
     <section>
@@ -1381,7 +1382,7 @@ initialized to the <code class="idl"><a data-link-type="idl" href="https://html.
 		visibility requirements.</p>
       <p>The optional directive-value allows configuration of conditions for which violations
 		will be triggered.</p>
-      <h3 class="heading settled" data-level="4.1" id="input-protection-directive"><span class="secno">4.1. </span><span class="content">The <dfn data-dfn-type="dfn" data-noexport="" id="input-protection-directive0">input-protection Directive<a class="self-link" href="#input-protection-directive0"></a></dfn></span><a class="self-link" href="#input-protection-directive"></a></h3>
+      <h3 class="heading settled" data-level="4.1" id="input-protection-interface"><span class="secno">4.1. </span><span class="content">The <dfn data-dfn-type="dfn" data-noexport="" id="input-protection-directive">input-protection Directive<a class="self-link" href="#input-protection-directive"></a></dfn></span><a class="self-link" href="#input-protection-interface"></a></h3>
 <pre>directive-name    = 'input-protection'
 directive-value   = ['area-threshold=' num-val]
                     ['protected-element=' id-selector]
@@ -1397,7 +1398,7 @@ directive-value   = ['area-threshold=' num-val]
 				adjusted by <a data-link-type="dfn" href="#visible-margin">visible-margin</a>.  Unlike the imperative API,
 				only a single value may be specified.</p>
       <p><dfn data-dfn-type="dfn" data-noexport="" id="protected-element">protected-element<a class="self-link" href="#protected-element"></a></dfn> A <code class="idl"><a data-link-type="idl" href="http://heycam.github.io/webidl/#idl-DOMString">DOMString</a></code> used as the argument to <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#dom-nonelementparentnode-getelementbyid">getElementById()</a></code> to resolve the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> to which the policy applies.</p>
-      <p>If unspecified the policy is applied to the resource’s <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a></code> node.</p>
+      <p>If unspecified the policy is applied to the resource’s <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> node.</p>
       <p><dfn data-dfn-type="dfn" data-noexport="" id="time-threshold">time-threshold<a class="self-link" href="#time-threshold"></a></dfn> A numeric value in the range [0, 10000] that specifies how long,
 				in milliseconds, the screen area containing the protected-element
 				must have unmodified viewiability properties when an event is 
@@ -1420,7 +1421,7 @@ directive-value   = ['area-threshold=' num-val]
        <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> objects have an internal <dfn class="idl-code" data-dfn-for="Element" data-dfn-type="attribute" data-export="" id="dom-element-inputprotectionobservers-slot">[[InputProtectionObservers]]<a class="self-link" href="#dom-element-inputprotectionobservers-slot"></a></dfn> list,
 			which is initially empty. 
       <h4 class="heading settled" data-level="5.1.3" id="document-private-slots"><span class="secno">5.1.3. </span><span class="content">Document</span><a class="self-link" href="#document-private-slots"></a></h4>
-       <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a></code> objects have an internal <dfn class="idl-code" data-dfn-for="Document" data-dfn-type="attribute" data-export="" id="dom-document-registeredvisibilityobservers-slot">[[RegisteredVisibilityObservers]]<a class="self-link" href="#dom-document-registeredvisibilityobservers-slot"></a></dfn> list,
+       <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> objects have an internal <dfn class="idl-code" data-dfn-for="Document" data-dfn-type="attribute" data-export="" id="dom-document-registeredvisibilityobservers-slot">[[RegisteredVisibilityObservers]]<a class="self-link" href="#dom-document-registeredvisibilityobservers-slot"></a></dfn> list,
 			which is initially empty, and an <dfn class="idl-code" data-dfn-for="Document" data-dfn-type="attribute" data-export="" id="dom-document-inputprotectionrequested-slot">[[InputProtectionRequested]]<a class="self-link" href="#dom-document-inputprotectionrequested-slot"></a></dfn> flag which is intitially <i>false</i>. 
       <h4 class="heading settled" data-level="5.1.4" id="visibility-observer-private-slots"><span class="secno">5.1.4. </span><span class="content">VisibilityObserver</span><a class="self-link" href="#visibility-observer-private-slots"></a></h4>
        <code class="idl"><a data-link-type="idl" href="#visibilityobserver">VisibilityObserver</a></code> objects have the following internal slots: 
@@ -1436,16 +1437,16 @@ directive-value   = ['area-threshold=' num-val]
        <li><dfn class="idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" id="dom-visibilityobserver-displacementaware-slot">[[displacementAware]]<a class="self-link" href="#dom-visibilityobserver-displacementaware-slot"></a></dfn>
        <li><dfn class="idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" id="dom-visibilityobserver-visiblemargin-slot">[[visibleMargin]]<a class="self-link" href="#dom-visibilityobserver-visiblemargin-slot"></a></dfn>
        <li><dfn class="idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" id="dom-visibilityobserver-observedelement-slot">[[observedElement]]<a class="self-link" href="#dom-visibilityobserver-observedelement-slot"></a></dfn> which is
-				initialized to the <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a></code> Element if not set in the <code class="idl"><a data-link-type="idl" href="#dictdef-visibilityobserverinit">VisibilityObserverInit</a></code> dictionary
+				initialized to the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> Element if not set in the <code class="idl"><a data-link-type="idl" href="#dictdef-visibilityobserverinit">VisibilityObserverInit</a></code> dictionary
       </ul>
        The following internal slots will be initialzed to <i>null</i> unless the 
-		 object was constructed to represent an <a data-link-type="dfn" href="#input-protection-directive0">input-protection directive</a>. 
+		 object was constructed to represent an <a data-link-type="dfn" href="#input-protection-directive">input-protection directive</a>. 
       <ul>
        <li><dfn class="idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" id="dom-visibilityobserver-timethreshold-slot">[[timeThreshold]]<a class="self-link" href="#dom-visibilityobserver-timethreshold-slot"></a></dfn>
        <li><dfn class="idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" id="dom-visibilityobserver-associatedcontentsecuritypolicy-slot">[[associatedContentSecurityPolicy]]<a class="self-link" href="#dom-visibilityobserver-associatedcontentsecuritypolicy-slot"></a></dfn>
       </ul>
       <h3 class="heading settled" data-level="5.2" id="algorithms"><span class="secno">5.2. </span><span class="content">Algorithms</span><a class="self-link" href="#algorithms"></a></h3>
-      <h4 class="heading settled" data-level="5.2.1" id="queue-visibility-observer-task"><span class="secno">5.2.1. </span><span class="content">Queue a Visibility Observer Task</span><a class="self-link" href="#queue-visibility-observer-task"></a></h4>
+      <h4 class="heading settled" data-level="5.2.1" id="queue-visibility-observer-task-algo"><span class="secno">5.2.1. </span><span class="content">Queue a Visibility Observer Task</span><a class="self-link" href="#queue-visibility-observer-task-algo"></a></h4>
        To <dfn data-dfn-type="dfn" data-noexport="" id="queue-a-visibility-observer-task">queue a visibility observer task<a class="self-link" href="#queue-a-visibility-observer-task"></a></dfn> for a <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts">unit of related similar-origin browsing contexts</a> <var>unit</var>,
 			run these steps: 
       <ol>
@@ -1478,7 +1479,7 @@ directive-value   = ['area-threshold=' num-val]
        <li>Append <var>entry</var> to <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot">[[QueuedEntries]]</a></code> slot.
        <li><a data-link-type="dfn" href="#queue-a-visibility-observer-task">Queue a visibility observer task</a> for <var>unit</var>.
       </ol>
-      <h4 class="heading settled" data-level="5.2.4" id="promote-observed-graphicslayers"><span class="secno">5.2.4. </span><span class="content">Promote Observed GraphicsLayers</span><a class="self-link" href="#promote-observed-graphicslayers"></a></h4>
+      <h4 class="heading settled" data-level="5.2.4" id="promote-observed-graphicslayers-algo"><span class="secno">5.2.4. </span><span class="content">Promote Observed GraphicsLayers</span><a class="self-link" href="#promote-observed-graphicslayers-algo"></a></h4>
       <p><em>This section is non-normative.</em></p>
       <div class="note" role="note">
         NOTE: The full internal details of rendering a document to the pixels 
@@ -1514,7 +1515,7 @@ directive-value   = ['area-threshold=' num-val]
 				be arranged in the layer stack such that at a later phase in the rendering 
 				it is automatically clipped and positioned relative to the series of viewports 
 				above it, and also subject to being drawn over or transformed by the layers above it.</p>
-      <p>To prevent potentially malicious composition, the user agent can <dfn data-dfn-type="dfn" data-noexport="" id="promote-observed-graphicslayers0">promote observed graphicsLayers<a class="self-link" href="#promote-observed-graphicslayers0"></a></dfn> by manipulating them such that
+      <p>To prevent potentially malicious composition, the user agent can <dfn data-dfn-type="dfn" data-noexport="" id="promote-observed-graphicslayers">promote observed graphicsLayers<a class="self-link" href="#promote-observed-graphicslayers"></a></dfn> by manipulating them such that
 				a document with <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot">[[RegisteredVisibilityObservers]]</a></code></p>
       <ul>
        <li>Is clipped and positioned as-if-unmodified within the set of viewports of its ancestor 
@@ -1526,21 +1527,21 @@ directive-value   = ['area-threshold=' num-val]
 							except other promoted layers, which should be treated as fully opaque occlusions 
 							when reporting the visibility state of the document.
       </ul>
-      <p>To <a data-link-type="dfn" href="#promote-observed-graphicslayers0">promote observed graphicsLayers</a>, given a time <var>now</var>, run these steps during the rendering
-				loop at the stage where the intermediate representation of a set of <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a></code>s is a set of <a data-link-type="dfn" href="#graphicslayer">GraphicsLayer</a>s <var>graphicsLayers</var>.</p>
+      <p>To <a data-link-type="dfn" href="#promote-observed-graphicslayers">promote observed graphicsLayers</a>, given a time <var>now</var>, run these steps during the rendering
+				loop at the stage where the intermediate representation of a set of <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code>s is a set of <a data-link-type="dfn" href="#graphicslayer">GraphicsLayer</a>s <var>graphicsLayers</var>.</p>
       <ol>
        <li>For each <var>graphicsLayer</var> in <var>graphicsLayers</var>
-       <li>For each <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a></code> <var>document</var> with an intermediate representation in <var>graphicsLayer</var>
+       <li>For each <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> <var>document</var> with an intermediate representation in <var>graphicsLayer</var>
        <ol>
         <li>If <var>document</var> has an empty list of <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot">[[RegisteredVisibilityObservers]]</a></code>, continue.
         <li>If <var>document</var> has a non-empty list of <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot">[[RegisteredVisibilityObservers]]</a></code>
         <ol>
-         <li>If <var>document</var> is not the only <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a></code> represented  in <var>graphicsLayer</var>, apply
+         <li>If <var>document</var> is not the only <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> represented  in <var>graphicsLayer</var>, apply
 											whatever implementation-specific steps are necessary to place it in its own layer.
 											(e.g. apply translatez(0) to the documentElement) Let <var>graphicsLayer</var> be that
 											new layer.
         </ol>
-        <li>Let <var>originalRect</var> and <var>rectToRaise</var> be the value of <var>document</var>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>.
+        <li>Let <var>rectToRaise</var> be the value of <var>document</var>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>.
         <li>Intersect <var>rectToRaise</var> with <var>document</var>’s viewport clip rect.
         <li>For every <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#parent-browsing-context">parent browsing context</a> <var>parent</var> between <var>document</var> and the top-level document,
 									intersect <var>rectToRaise</var> with <var>parent</var>’s viewport cip rect,
@@ -1552,8 +1553,8 @@ directive-value   = ['area-threshold=' num-val]
 									the <a data-link-type="dfn" href="#graphicslayer">GraphicsLayer</a>s such that <var>rectToRaise</var> is on top of the root <a data-link-type="dfn" href="#graphicslayer">GraphicsLayer</a>. 
 									(e.g. by making it a direct child of the root layer)
         <li>Let <var>protectedRect</var> be the value of <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-observedelement-slot">[[observedElement]]</a></code>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>,
-									adjusted by <var>visibleMargin</var>.
-        <li>Let <var>visibileRatio</var> be the intersection of <var>protectedRect</var> with <var>visibleRect</var>, divided by <var>protectedRect</var> if <var>protectedRect</var> is non-zero, and <i>0</i> otherwise.
+									adjusted by <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-visiblemargin-slot">[[visibleMargin]]</a></code>.
+        <li>Let <var>visibleRatio</var> be the intersection of <var>protectedRect</var> with <var>rectToRaise</var>, divided by <var>protectedRect</var> if <var>protectedRect</var> is non-zero, and <i>0</i> otherwise.
         <li>For each of <var>document</var>’s <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot">[[RegisteredVisibilityObservers]]</a></code> <var>observer</var>
         <ol>
          <li>Let <var>threshold</var> be the index of the first entry in <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot">[[areaThreshold]]</a></code> slot whose value
@@ -1573,8 +1574,8 @@ directive-value   = ['area-threshold=' num-val]
        </ol>
       </ol>
       <p class="issue" id="issue-99e12d30"><a class="self-link" href="#issue-99e12d30"></a> find exact terms to make sure that we have viewport definitions minus scrollbars</p>
-      <h4 class="heading settled" data-level="5.2.5" id="enforce-an-input-protection-directive"><span class="secno">5.2.5. </span><span class="content">Enforce An input-protection Directive</span><a class="self-link" href="#enforce-an-input-protection-directive"></a></h4>
-       To <dfn data-dfn-type="dfn" data-noexport="" id="enforce-an-input-protection-directive0">enforce an input-protection directive<a class="self-link" href="#enforce-an-input-protection-directive0"></a></dfn> for a <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a></code> <var>document</var>,
+      <h4 class="heading settled" data-level="5.2.5" id="enforce-an-input-protection-directive-algo"><span class="secno">5.2.5. </span><span class="content">Enforce An input-protection Directive</span><a class="self-link" href="#enforce-an-input-protection-directive-algo"></a></h4>
+       To <dfn data-dfn-type="dfn" data-noexport="" id="enforce-an-input-protection-directive">enforce an input-protection directive<a class="self-link" href="#enforce-an-input-protection-directive"></a></dfn> for a <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> <var>document</var>,
 		run the following steps: 
       <ol>
        <li>Parse the policy according to <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a>.
@@ -1586,39 +1587,43 @@ directive-value   = ['area-threshold=' num-val]
 					and <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-callback-slot">[[callback]]</a></code> set to a new function with an empty function body.
        <li>Set the internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-timethreshold-slot">[[timeThreshold]]</a></code> slot of <var>observer</var> to the value of <a data-link-type="dfn" href="#time-threshold">time-threshold</a>
        <li>Set the internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-associatedcontentsecuritypolicy-slot">[[associatedContentSecurityPolicy]]</a></code> slot of <var>observer</var> to a reference to the
-					Content Security Policy which the <a data-link-type="dfn" href="#input-protection-directive0">input-protection directive</a> is associated with.
-       <li>When <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#dispatching-events">dispatching events</a>, when an <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> <var>element</var> will handle an <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#event">Event</a></code> <var>event</var>: 
-       <li>If <var>event</var> is of type Mouse Event, Pointer Event, Drag-and-Drop, or Clipboard Event, (TODO:linkify)
+					Content Security Policy which the <a data-link-type="dfn" href="#input-protection-directive">input-protection directive</a> is associated with.
+       <li>When <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#dispatching-events">dispatching events</a>, when an <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> <var>element</var> will handle an <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#event">Event</a></code> <var>event</var>,
+					if <var>event</var> is of type Mouse Event, Pointer Event, Drag-and-Drop, or Clipboard Event, (TODO:linkify)
 					and if <var>element</var> has <code class="idl"><a data-link-type="idl" href="#dom-element-inputprotectionobservers-slot">[[InputProtectionObservers]]</a></code> <var>observers</var>:
        <ol>
         <li>If applicable, check the computed style for the cursor.  If a cursor is typically displayed but
-								has been hidden or changed to a non-standard bitmap, <a data-link-type="dfn" href="#handle-a-violation0">handle a violation</a> for <var>event</var> and each <var>observer</var> in <var>observers</var>.
+								has been hidden or changed to a non-standard bitmap, <a data-link-type="dfn" href="#handle-a-violation">handle a violation</a> for <var>event</var> and each <var>observer</var> in <var>observers</var>.
         <li>Otherwise, for each <var>observer</var> in <var>observers</var>:
         <ol>
-         <li>If <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousvisibleratio-slot">[[previousVisibleRatio]]</a></code> is less than <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot">[[areaThreshold]]</a></code>, <a data-link-type="dfn" href="#handle-a-violation0">handle a violation</a> for <var>observer</var>.
+         <li>If <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousvisibleratio-slot">[[previousVisibleRatio]]</a></code> is less than <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot">[[areaThreshold]]</a></code>, <a data-link-type="dfn" href="#handle-a-violation">handle a violation</a> for <var>observer</var>.
          <li>If <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousvisibleratio-slot">[[previousVisibleRatio]]</a></code> is greater than <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot">[[areaThreshold]]</a></code>,
-										get the most recent <code class="idl"><a data-link-type="idl" href="#visibilityobserverentry">VisibilityObserverEntry</a></code> <var>entry</var> from <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot">[[QueuedEntries]]</a></code>.  If the difference between <var>entry</var>.<code class="idl"><a data-link-type="idl" href="#dom-visibilityobserverentry-time">time</a></code> and <var>now</var> is less than <var>timeThreshold</var>, <a data-link-type="dfn" href="#handle-a-violation0">handle a violation</a> for <var>observer</var>. 
+										get the most recent <code class="idl"><a data-link-type="idl" href="#visibilityobserverentry">VisibilityObserverEntry</a></code> <var>entry</var> from <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot">[[QueuedEntries]]</a></code>.  If the difference between <var>entry</var>.<code class="idl"><a data-link-type="idl" href="#dom-visibilityobserverentry-time">time</a></code> and <var>now</var> is less than <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-timethreshold-slot">[[timeThreshold]]</a></code>, <a data-link-type="dfn" href="#handle-a-violation">handle a violation</a> for <var>observer</var>. 
         </ol>
        </ol>
       </ol>
-      <h4 class="heading settled" data-level="5.2.6" id="handle-a-violation"><span class="secno">5.2.6. </span><span class="content">Handle a Violation</span><a class="self-link" href="#handle-a-violation"></a></h4>
-       To <dfn data-dfn-type="dfn" data-noexport="" id="handle-a-violation0">handle a violation<a class="self-link" href="#handle-a-violation0"></a></dfn> of an <a data-link-type="dfn" href="#input-protection-directive0">input-protection directive</a> for <var>observer</var> and <var>event</var>, run the following steps: 
+      <h4 class="heading settled" data-level="5.2.6" id="handle-a-violation-algo"><span class="secno">5.2.6. </span><span class="content">Handle a Violation</span><a class="self-link" href="#handle-a-violation-algo"></a></h4>
+       To <dfn data-dfn-type="dfn" data-noexport="" id="handle-a-violation">handle a violation<a class="self-link" href="#handle-a-violation"></a></dfn> of an <a data-link-type="dfn" href="#input-protection-directive">input-protection directive</a> for <var>observer</var> and <var>event</var>, run the following steps: 
       <ul>
        <li>Follow the steps in <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> to report a violation for <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-associatedcontentsecuritypolicy-slot">[[associatedContentSecurityPolicy]]</a></code> <var>policy</var>.
        <li>Determine if <var>policy</var> is being <i>enforced</i> or <i>monitored</i>. <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a>
-       <li>If <var>policy</var> is being <i>enforced</i>, set <var>event</var>’s <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#cancelled-flag">cancelled flag</a>.
-       <li>If <var>policy</var> is being <i>monitored</i>, set <var>event</var>.<code class="idl"><a data-link-type="idl" href="#dom-event-unsafe">unsafe</a></code> to <i>true</i>.
+       <li>If <var>policy</var> is being <i>enforced</i>, set <var>event</var>’s <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#cancelled-flag">cancelled flag</a> and <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#stop-propagation-flag">stop propagation flag</a>.
+       <li>If <var>policy</var> is being <i>monitored</i>, set <var>event</var>.<code class="idl"><a data-link-type="idl" href="#dom-event-isunsafe">isUnsafe</a></code> to <i>true</i>.
       </ul>
       <h3 class="heading settled" data-level="5.3" id="external-spec-integrations"><span class="secno">5.3. </span><span class="content">External Spec Integrations</span><a class="self-link" href="#external-spec-integrations"></a></h3>
       <h4 class="heading settled" data-level="5.3.1" id="event-loop"><span class="secno">5.3.1. </span><span class="content">HTML Processing Model: Event Loop</span><a class="self-link" href="#event-loop"></a></h4>
-       As part of substep 10 of the <a href="https://html.spec.whatwg.org/multipage/webappapis.html#processing-model-8"> update the rendering</a> event loop in the HTML Processing Model, <a data-link-type="dfn" href="#promote-observed-graphicslayers0">Promote Observed GraphicsLayers</a>, passing in <i>now</i> as the timestamp. 
-      <h4 class="heading settled" data-level="5.3.2" id="usafe-attribute"><span class="secno">5.3.2. </span><span class="content">Unsafe Attribute</span><a class="self-link" href="#usafe-attribute"></a></h4>
+       As part of substep 10 of the <a href="https://html.spec.whatwg.org/multipage/webappapis.html#processing-model-8"> update the rendering</a> event loop in the HTML Processing Model, <a data-link-type="dfn" href="#promote-observed-graphicslayers">Promote Observed GraphicsLayers</a>, passing in <i>now</i> as the timestamp. 
+      <h4 class="heading settled" data-level="5.3.2" id="dispatching-events-algo"><span class="secno">5.3.2. </span><span class="content">DOM: Dispatching Events</span><a class="self-link" href="#dispatching-events-algo"></a></h4>
+       As part of <a href="https://dom.spec.whatwg.org/#dispatching-events">dispatching events</a> in the DOM Standard, add a substep to step 5, ("For each <i>object</i> in <i>event path</i>..."),
+		invoking step 7 of <a data-link-type="dfn" href="#enforce-an-input-protection-directive">enforce an input-protection directive</a> before proceeding to
+		"<a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-event-listener-invoke">invoke</a> <i>object</i> with <i>event</i>". 
+      <h4 class="heading settled" data-level="5.3.3" id="usafe-attribute"><span class="secno">5.3.3. </span><span class="content">isUnsafe Attribute</span><a class="self-link" href="#usafe-attribute"></a></h4>
 <pre class="idl">partial interface <a class="idl-code" data-link-type="interface" href="https://dom.spec.whatwg.org/#event">Event</a> {
-  readonly attribute boolean <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="boolean " href="#dom-event-unsafe">unsafe</a>;
+  readonly attribute boolean <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="boolean " href="#dom-event-isunsafe">isUnsafe</a>;
 };
 </pre>
       <dl>
-       <dt><dfn class="idl-code" data-dfn-for="Event" data-dfn-type="attribute" data-export="" id="dom-event-unsafe">unsafe<a class="self-link" href="#dom-event-unsafe"></a></dfn>, <span> of type <a data-link-type="idl-name">boolean</a>, readonly</span>
+       <dt><dfn class="idl-code" data-dfn-for="Event" data-dfn-type="attribute" data-export="" id="dom-event-isunsafe">isUnsafe<a class="self-link" href="#dom-event-isunsafe"></a></dfn>, <span> of type <a data-link-type="idl-name">boolean</a>, readonly</span>
        <dd> Will be set to true if the event fired when the event did not
 				meet the document’s <em>input-protection</em> requirements. 
       </dl>
@@ -1704,7 +1709,7 @@ directive-value   = ['area-threshold=' num-val]
    <li><a href="#dom-visibilityobserver-callback-slot">[[callback]]</a><span>, in §5.1.4</span>
    <li><a href="#dom-visibilityobserverinit-displacementaware">displacementAware</a><span>, in §3.4</span>
    <li><a href="#dom-visibilityobserver-displacementaware-slot">[[displacementAware]]</a><span>, in §5.1.4</span>
-   <li><a href="#enforce-an-input-protection-directive0">enforce an input-protection directive</a><span>, in §5.2.5</span>
+   <li><a href="#enforce-an-input-protection-directive">enforce an input-protection directive</a><span>, in §5.2.5</span>
    <li><a href="#dom-visibilityobservercallback-entries">entries</a><span>, in §3.1</span>
    <li>
     globalVisibleBounds
@@ -1714,10 +1719,11 @@ directive-value   = ['area-threshold=' num-val]
      <li><a href="#dom-visiblityobserverentry-globalvisiblebounds">attribute for VisiblityObserverEntry</a><span>, in §3.2</span>
     </ul>
    <li><a href="#graphicslayer">GraphicsLayer</a><span>, in §5.2.4</span>
-   <li><a href="#handle-a-violation0">handle a violation</a><span>, in §5.2.6</span>
-   <li><a href="#input-protection-directive0">input-protection Directive</a><span>, in §4.1</span>
+   <li><a href="#handle-a-violation">handle a violation</a><span>, in §5.2.6</span>
+   <li><a href="#input-protection-directive">input-protection Directive</a><span>, in §4.1</span>
    <li><a href="#dom-element-inputprotectionobservers-slot">[[InputProtectionObservers]]</a><span>, in §5.1.2</span>
    <li><a href="#dom-document-inputprotectionrequested-slot">[[InputProtectionRequested]]</a><span>, in §5.1.3</span>
+   <li><a href="#dom-event-isunsafe">isUnsafe</a><span>, in §5.3.3</span>
    <li><a href="#notify-visibility-observers">notify visibility observers</a><span>, in §5.2.2</span>
    <li><a href="#dom-visibilityobserver-observe">observe()</a><span>, in §3.3</span>
    <li><a href="#dom-visibilityobserverinit-observedelement">observedElement</a><span>, in §3.4</span>
@@ -1725,7 +1731,7 @@ directive-value   = ['area-threshold=' num-val]
    <li><a href="#dom-visibilityobservercallback-observer">observer</a><span>, in §3.1</span>
    <li><a href="#dom-visibilityobserver-previousglobalviewportposition-slot">[[previousGlobalViewportPosition]]</a><span>, in §5.1.4</span>
    <li><a href="#dom-visibilityobserver-previousvisibleratio-slot">[[previousVisibleRatio]]</a><span>, in §5.1.4</span>
-   <li><a href="#promote-observed-graphicslayers0">promote observed graphicsLayers</a><span>, in §5.2.4</span>
+   <li><a href="#promote-observed-graphicslayers">promote observed graphicsLayers</a><span>, in §5.2.4</span>
    <li><a href="#protected-element">protected-element</a><span>, in §4.1.1</span>
    <li><a href="#queue-a-visibilityobserverentry">queue a VisibilityObserverEntry</a><span>, in §5.2.3</span>
    <li><a href="#queue-a-visibility-observer-task">queue a visibility observer task</a><span>, in §5.2.1</span>
@@ -1742,7 +1748,6 @@ directive-value   = ['area-threshold=' num-val]
    <li><a href="#dom-visibilityobserver-timethreshold-slot">[[timeThreshold]]</a><span>, in §5.1.4</span>
    <li><a href="#time-threshold">time-threshold</a><span>, in §4.1.1</span>
    <li><a href="#dom-visibilityobserver-unobserve">unobserve()</a><span>, in §3.3</span>
-   <li><a href="#dom-event-unsafe">unsafe</a><span>, in §5.3.2</span>
    <li><a href="#visibilityobserver">VisibilityObserver</a><span>, in §3.3</span>
    <li><a href="#visibility-observer">Visibility Observer</a><span>, in §3</span>
    <li><a href="#callbackdef-visibilityobservercallback">VisibilityObserverCallback</a><span>, in §3.1</span>
@@ -1781,9 +1786,12 @@ directive-value   = ['area-threshold=' num-val]
    <li>
     <a data-link-type="biblio" href="#biblio-dom-ls">[dom-ls]</a> defines the following terms:
     <ul>
+     <li><a href="https://dom.spec.whatwg.org/#document">Document</a>
      <li><a href="https://dom.spec.whatwg.org/#element">Element</a>
      <li><a href="https://dom.spec.whatwg.org/#event">Event</a>
      <li><a href="https://dom.spec.whatwg.org/#dom-nonelementparentnode-getelementbyid">getElementById(elementId)</a>
+     <li><a href="https://dom.spec.whatwg.org/#concept-event-listener-invoke">invoke</a>
+     <li><a href="https://dom.spec.whatwg.org/#stop-propagation-flag">stop propagation flag</a>
     </ul>
    <li>
     <a data-link-type="biblio" href="#biblio-geometry-1">[geometry-1]</a> defines the following terms:
@@ -1791,11 +1799,6 @@ directive-value   = ['area-threshold=' num-val]
      <li><a href="https://drafts.fxtf.org/geometry-1/#domrect">DOMRect</a>
      <li><a href="https://drafts.fxtf.org/geometry-1/#dictdef-domrectinit">DOMRectInit</a>
      <li><a href="https://drafts.fxtf.org/geometry-1/#domrectreadonly">DOMRectReadOnly</a>
-    </ul>
-   <li>
-    <a data-link-type="biblio" href="#biblio-html">[HTML]</a> defines the following terms:
-    <ul>
-     <li><a href="https://html.spec.whatwg.org/multipage/infrastructure.html#dom-document">Document</a>
     </ul>
    <li>
     <a data-link-type="biblio" href="#biblio-webidl">[WebIDL]</a> defines the following terms:
@@ -1810,8 +1813,6 @@ directive-value   = ['area-threshold=' num-val]
    <dd>Mike West; Adam Barth; Daniel Veditz. <a href="http://www.w3.org/TR/CSP2/">Content Security Policy Level 2</a>. 21 July 2015. CR. URL: <a href="http://www.w3.org/TR/CSP2/">http://www.w3.org/TR/CSP2/</a>
    <dt id="biblio-css21"><a class="self-link" href="#biblio-css21"></a>[CSS21]
    <dd>Bert Bos; et al. <a href="http://www.w3.org/TR/CSS2">Cascading Style Sheets Level 2 Revision 1 (CSS 2.1) Specification</a>. 7 June 2011. REC. URL: <a href="http://www.w3.org/TR/CSS2">http://www.w3.org/TR/CSS2</a>
-   <dt id="biblio-html"><a class="self-link" href="#biblio-html"></a>[HTML]
-   <dd>Ian Hickson. <a href="https://html.spec.whatwg.org/multipage/">HTML Standard</a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/multipage/">https://html.spec.whatwg.org/multipage/</a>
    <dt id="biblio-webidl"><a class="self-link" href="#biblio-webidl"></a>[WebIDL]
    <dd>Cameron McCormack; Boris Zbarsky. <a href="http://www.w3.org/TR/WebIDL-1/">WebIDL Level 1</a>. 4 August 2015. WD. URL: <a href="http://www.w3.org/TR/WebIDL-1/">http://www.w3.org/TR/WebIDL-1/</a>
    <dt id="biblio-cssom-view"><a class="self-link" href="#biblio-cssom-view"></a>[CSSOM-VIEW]
@@ -1854,7 +1855,7 @@ dictionary <a href="#dictdef-visibilityobserverinit">VisibilityObserverInit</a> 
 };
 
 partial interface <a class="idl-code" data-link-type="interface" href="https://dom.spec.whatwg.org/#event">Event</a> {
-  readonly attribute boolean <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="boolean " href="#dom-event-unsafe">unsafe</a>;
+  readonly attribute boolean <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="boolean " href="#dom-event-isunsafe">isUnsafe</a>;
 };
 
 </pre>
