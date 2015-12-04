@@ -38,8 +38,8 @@ spec: HTML; urlPrefix: https://html.spec.whatwg.org/multipage/
 </pre>
 
 <pre class='link-defaults'>
-spec:html; type:interface; text:Document
 spec:dom-ls; type:interface; text:Event
+spec:dom-ls; type:interface; text:Document
 </pre>
 
 <!--
@@ -331,7 +331,7 @@ spec:dom-ls; type:interface; text:Event
 		: <dfn>displacementAware</dfn>
 		::
 			If <em>true</em>, this observer should trigger the callback
-			when the position of the |observedElement| changes relative to the
+			when the position of the {{[[observedElement]]}} changes relative to the
 			global viewport.
 
 
@@ -387,7 +387,7 @@ spec:dom-ls; type:interface; text:Event
 		The optional directive-value allows configuration of conditions for which violations
 		will be triggered.
 
-		<h3 id='input-protection-directive'>The <dfn>input-protection Directive</dfn></h3>
+		<h3 id='input-protection-interface'>The <dfn>input-protection Directive</dfn></h3>
 
 		<pre>
 			directive-name    = 'input-protection'
@@ -495,7 +495,7 @@ spec:dom-ls; type:interface; text:Event
 
 	<h3 id='algorithms'>Algorithms</h3>
 
-		<h4 id='queue-visibility-observer-task'>Queue a Visibility Observer Task</h4>
+		<h4 id='queue-visibility-observer-task-algo'>Queue a Visibility Observer Task</h4>
 			To <dfn>queue a visibility observer task</dfn> for a
 			<a>unit of related similar-origin browsing contexts</a> |unit|,
 			run these steps:
@@ -545,7 +545,7 @@ spec:dom-ls; type:interface; text:Event
 				<li><a>Queue a visibility observer task</a> for |unit|.</li>
 			</ol>
 
-		<h4 id='promote-observed-graphicslayers'>Promote Observed GraphicsLayers</h4>
+		<h4 id='promote-observed-graphicslayers-algo'>Promote Observed GraphicsLayers</h4>
 
 			<em>This section is non-normative.</em>
 
@@ -618,7 +618,7 @@ spec:dom-ls; type:interface; text:Event
 											(e.g. apply translatez(0) to the documentElement) Let |graphicsLayer| be that
 											new layer.</li>
 								</ol>
-							<li>Let |originalRect| and |rectToRaise| be the value of |document|.{{Element/getBoundingClientRect()}}.</li>
+							<li>Let |rectToRaise| be the value of |document|.{{Element/getBoundingClientRect()}}.</li>
 							<li>Intersect |rectToRaise| with |document|'s viewport clip rect.</li>
 							<li>For every <a>parent browsing context</a> |parent| between |document| and the top-level document,
 									intersect |rectToRaise| with |parent|'s viewport cip rect,
@@ -630,8 +630,8 @@ spec:dom-ls; type:interface; text:Event
 									the <a>GraphicsLayer</a>s such that |rectToRaise| is on top of the root <a>GraphicsLayer</a>. 
 									(e.g. by making it a direct child of the root layer)</li>
 							<li>Let |protectedRect| be the value of |observer|'s {{[[observedElement]]}}.{{Element/getBoundingClientRect()}},
-									adjusted by |visibleMargin|.</li>
-							<li>Let |visibileRatio| be the intersection of |protectedRect| with |visibleRect|, divided by |protectedRect|
+									adjusted by {{[[visibleMargin]]}}.</li>
+							<li>Let |visibleRatio| be the intersection of |protectedRect| with |rectToRaise|, divided by |protectedRect|
 									if |protectedRect| is non-zero, and <i>0</i> otherwise.</li>
 							<li>For each of |document|'s {{[[RegisteredVisibilityObservers]]}} |observer|</li>
 								<ol>
@@ -666,7 +666,7 @@ spec:dom-ls; type:interface; text:Event
 				
 		ISSUE: find exact terms to make sure that we have viewport definitions minus scrollbars	
 
-	<h4 id='enforce-an-input-protection-directive'>Enforce An input-protection Directive</h4>
+	<h4 id='enforce-an-input-protection-directive-algo'>Enforce An input-protection Directive</h4>
 		To <dfn>enforce an input-protection directive</dfn> for a {{Document}} |document|,
 		run the following steps:	
 		<ol>
@@ -683,8 +683,8 @@ spec:dom-ls; type:interface; text:Event
 			<li>Set the internal {{[[timeThreshold]]}} slot of |observer| to the value of <a>time-threshold</a></li> 
 			<li>Set the internal {{[[associatedContentSecurityPolicy]]}} slot of |observer| to a reference to the
 					Content Security Policy which the <a>input-protection directive</a> is associated with.</li>
-			<li>When <a>dispatching events</a>, when an {{Element}} |element| will handle an {{Event}} |event|:
-			<li>If |event| is of type Mouse Event, Pointer Event, Drag-and-Drop, or Clipboard Event, (TODO:linkify)
+			<li>When <a>dispatching events</a>, when an {{Element}} |element| will handle an {{Event}} |event|,
+					if |event| is of type Mouse Event, Pointer Event, Drag-and-Drop, or Clipboard Event, (TODO:linkify)
 					and if |element| has {{[[InputProtectionObservers]]}} |observers|:</li>
 					<ol>
 						<li>If applicable, check the computed style for the cursor.  If a cursor is typically displayed but
@@ -697,18 +697,18 @@ spec:dom-ls; type:interface; text:Event
 								<li>If |observer|'s {{[[previousVisibleRatio]]}} is greater than {{[[areaThreshold]]}},
 										get the most recent {{VisibilityObserverEntry}} |entry| from |observer|'s 
 										{{[[QueuedEntries]]}}.  If the difference between |entry|.{{VisibilityObserverEntry/time}}
-										and |now| is less than |timeThreshold|, <a>handle a violation</a> for |observer|.
+										and |now| is less than {{[[timeThreshold]]}}, <a>handle a violation</a> for |observer|.
 							</ol>
 				 	</ol>
 		</ol>
 	
-	<h4 id='handle-a-violation'>Handle a Violation</h4>
+	<h4 id='handle-a-violation-algo'>Handle a Violation</h4>
 		To <dfn>handle a violation</dfn> of an <a>input-protection directive</a> for |observer| and |event|, run the following steps:
 		<ul>
 			<li>Follow the steps in [[!CSP2]] to report a violation for |observer|'s {{[[associatedContentSecurityPolicy]]}} |policy|.</li>
 			<li>Determine if |policy| is being <i>enforced</i> or <i>monitored</i>. [[!CSP2]]</li>
-			<li>If |policy| is being <i>enforced</i>, set |event|'s <a>cancelled flag</a>.</li>
-			<li>If |policy| is being <i>monitored</i>, set |event|.{{unsafe}} to <i>true</i>.</li>
+			<li>If |policy| is being <i>enforced</i>, set |event|'s <a>cancelled flag</a> and <a>stop propagation flag</a>.</li>
+			<li>If |policy| is being <i>monitored</i>, set |event|.{{isUnsafe}} to <i>true</i>.</li>
 	
 		</ul>
 
@@ -720,16 +720,22 @@ spec:dom-ls; type:interface; text:Event
     update the rendering</a> event loop in the HTML Processing Model, 
 		<a>Promote Observed GraphicsLayers</a>, passing in <i>now</i> as the timestamp.
 
-	<h4 id='usafe-attribute'>Unsafe Attribute</h4>
+	<h4 id='dispatching-events-algo'>DOM: Dispatching Events</h4>
+		As part of <a href="https://dom.spec.whatwg.org/#dispatching-events">dispatching events</a>
+		in the DOM Standard, add a substep to step 5, ("For each <i>object</i> in <i>event path</i>..."),
+		invoking step 7 of <a>enforce an input-protection directive</a> before proceeding to
+		"<a>invoke</a> <i>object</i> with <i>event</i>".
+
+	<h4 id='usafe-attribute'>isUnsafe Attribute</h4>
 
 		<pre class='idl'>
 			partial interface Event {
-				readonly attribute boolean unsafe;
+				readonly attribute boolean isUnsafe;
 			};
 		</pre>
 
 		<dl dfn-for='Event'>
-			<dt><dfn attribute lt='unsafe'>unsafe</dfn></dt>
+			<dt><dfn attribute lt='isUnsafe'>isUnsafe</dfn></dt>
 			<dd>
 				Will be set to true if the event fired when the event did not
 				meet the document's <em>input-protection</em> requirements.
