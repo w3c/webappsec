@@ -1527,7 +1527,7 @@ directive-value   = ['area-threshold=' num-val]
 							except other promoted layers, which should be treated as fully opaque occlusions 
 							when reporting the visibility state of the document.
       </ul>
-      <p>To <a data-link-type="dfn" href="#promote-observed-graphicslayers">promote observed graphicsLayers</a>, given a time <var>now</var>, run these steps during the rendering
+      <p>To <a data-link-type="dfn" href="#promote-observed-graphicslayers">promote observed graphicsLayers</a>, given a time <var>now</var>, and an initially empty list <var>promotedLayers</var>, run these steps during the rendering
 				loop at the stage where the intermediate representation of a set of <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code>s is a set of <a data-link-type="dfn" href="#graphicslayer">GraphicsLayer</a>s <var>graphicsLayers</var>.</p>
       <ol>
        <li>For each <var>graphicsLayer</var> in <var>graphicsLayers</var>
@@ -1544,14 +1544,16 @@ directive-value   = ['area-threshold=' num-val]
         <li>Let <var>rectToRaise</var> be the value of <var>document</var>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>.
         <li>Intersect <var>rectToRaise</var> with <var>document</var>’s viewport clip rect.
         <li>For every <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#parent-browsing-context">parent browsing context</a> <var>parent</var> between <var>document</var> and the top-level document,
-									intersect <var>rectToRaise</var> with <var>parent</var>’s viewport cip rect,
+									intersect <var>rectToRaise</var> with <var>parent</var>’s viewport clip rect,
 									and finally with the global viewport clip rect.
         <li>Clip <var>graphicsLayer</var> to <var>rectToRaise</var>.  (<var>graphicsLayer</var> may have zero width and height
 									if it is scrolled off screen by an ancestor browsing context)
+        <li>Intersect <var>rectToRaise</var> with any items in the <var>promotedLayers</var> list.
+        <li>Add <var>rectToRaise</var> to the <var>promotedLayers</var> list.
         <li>Without reordering prior intermediate representations in a manner which would 
 									change event dispatching, hit testing, or the DOM as exposed to JavaScript, reorder
 									the <a data-link-type="dfn" href="#graphicslayer">GraphicsLayer</a>s such that <var>rectToRaise</var> is on top of the root <a data-link-type="dfn" href="#graphicslayer">GraphicsLayer</a>. 
-									(e.g. by making it a direct child of the root layer)
+									(e.g. by making it a direct child of the root layer) but beneath any layers in <var>promotedLayers</var> that clipped it.
         <li>Let <var>protectedRect</var> be the value of <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-observedelement-slot">[[observedElement]]</a></code>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>,
 									adjusted by <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-visiblemargin-slot">[[visibleMargin]]</a></code>.
         <li>Let <var>visibleRatio</var> be the intersection of <var>protectedRect</var> with <var>rectToRaise</var>, divided by <var>protectedRect</var> if <var>protectedRect</var> is non-zero, and <i>0</i> otherwise.
@@ -1573,7 +1575,9 @@ directive-value   = ['area-threshold=' num-val]
         </ol>
        </ol>
       </ol>
-      <p class="issue" id="issue-99e12d30"><a class="self-link" href="#issue-99e12d30"></a> find exact terms to make sure that we have viewport definitions minus scrollbars</p>
+      <p class="issue" id="issue-b826d361"><a class="self-link" href="#issue-b826d361"></a> find exact terms to make sure that we have viewport definitions minus scrollbars
+		ISSUE: need to also clip to any other layers that were promoted ahead of us!
+		ISSUE: if a parent and child layer both request to be promoted, the parent’s clipping window will have a complex geometry with holes in it that is not accounted for by this algorithm.  Likely need to specify that graphics layers be processed by order of depth.</p>
       <h4 class="heading settled" data-level="5.2.5" id="enforce-an-input-protection-directive-algo"><span class="secno">5.2.5. </span><span class="content">Enforce An input-protection Directive</span><a class="self-link" href="#enforce-an-input-protection-directive-algo"></a></h4>
        To <dfn data-dfn-type="dfn" data-noexport="" id="enforce-an-input-protection-directive">enforce an input-protection directive<a class="self-link" href="#enforce-an-input-protection-directive"></a></dfn> for a <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> <var>document</var>,
 		run the following steps: 
@@ -1659,7 +1663,7 @@ directive-value   = ['area-threshold=' num-val]
      </section>
      <section>
       <h2 class="heading settled" data-level="8" id="accessibility-considerations"><span class="secno">8. </span><span class="content">Accessibility Considerations</span><a class="self-link" href="#accessibility-considerations"></a></h2>
-      <p>User of accessibility tools MUST NOT be prevented from accessing content
+      <p>Users of accessibility tools MUST NOT be prevented from accessing content
 	because of input-protection or VisibilityEvents. If a user agent’s interaction
 	modality is not subject to UI redressing attacks or definitions of "visibility"
 	do not apply, the user agent SHOULD report a VisibilityEvent indicating 100%
@@ -1864,7 +1868,9 @@ partial interface <a class="idl-code" data-link-type="interface" href="https://d
    <div class="issue"> Do we need to deal with form submission / navigations that aren’t JS-event-based?<a href="#issue-b24dcbe0"> ↵ </a></div>
    <div class="issue"> how to interact with frame-ancestors and XFO?<a href="#issue-b233e40b"> ↵ </a></div>
    <div class="issue"> Should we define an appropriate <var>timeout</var>?<a href="#issue-49b6accd"> ↵ </a></div>
-   <div class="issue"> find exact terms to make sure that we have viewport definitions minus scrollbars<a href="#issue-99e12d30"> ↵ </a></div>
+   <div class="issue"> find exact terms to make sure that we have viewport definitions minus scrollbars
+		ISSUE: need to also clip to any other layers that were promoted ahead of us!
+		ISSUE: if a parent and child layer both request to be promoted, the parent’s clipping window will have a complex geometry with holes in it that is not accounted for by this algorithm.  Likely need to specify that graphics layers be processed by order of depth.<a href="#issue-b826d361"> ↵ </a></div>
   </div>
  </body>
 </html>
