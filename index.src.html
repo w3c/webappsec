@@ -603,7 +603,8 @@ spec:dom-ls; type:interface; text:Document
 							when reporting the visibility state of the document.</li>
 				</ul>
 			
-				To <a>promote observed graphicsLayers</a>, given a time |now|, run these steps during the rendering
+				To <a>promote observed graphicsLayers</a>, given a time |now|, and an initially empty list
+				|promotedLayers|, run these steps during the rendering
 				loop at the stage where the intermediate representation of a set of {{Document}}s is a set of
 				<a>GraphicsLayer</a>s |graphicsLayers|.
 					<ol>
@@ -621,14 +622,17 @@ spec:dom-ls; type:interface; text:Document
 							<li>Let |rectToRaise| be the value of |document|.{{Element/getBoundingClientRect()}}.</li>
 							<li>Intersect |rectToRaise| with |document|'s viewport clip rect.</li>
 							<li>For every <a>parent browsing context</a> |parent| between |document| and the top-level document,
-									intersect |rectToRaise| with |parent|'s viewport cip rect,
+									intersect |rectToRaise| with |parent|'s viewport clip rect,
 									and finally with the global viewport clip rect.</li>
 							<li>Clip |graphicsLayer| to |rectToRaise|.  (|graphicsLayer| may have zero width and height
 									if it is scrolled off screen by an ancestor browsing context)</li> 
+							<li>Intersect |rectToRaise| with any items in the |promotedLayers| list.</li> 
+							<li>Add |rectToRaise| to the |promotedLayers| list.</li>
 							<li>Without reordering prior intermediate representations in a manner which would 
 									change event dispatching, hit testing, or the DOM as exposed to JavaScript, reorder
 									the <a>GraphicsLayer</a>s such that |rectToRaise| is on top of the root <a>GraphicsLayer</a>. 
-									(e.g. by making it a direct child of the root layer)</li>
+									(e.g. by making it a direct child of the root layer) but beneath any layers in |promotedLayers|
+									that clipped it.</li>
 							<li>Let |protectedRect| be the value of |observer|'s {{[[observedElement]]}}.{{Element/getBoundingClientRect()}},
 									adjusted by {{[[visibleMargin]]}}.</li>
 							<li>Let |visibleRatio| be the intersection of |protectedRect| with |rectToRaise|, divided by |protectedRect|
@@ -665,6 +669,10 @@ spec:dom-ls; type:interface; text:Document
 					</ol>
 				
 		ISSUE: find exact terms to make sure that we have viewport definitions minus scrollbars	
+
+		ISSUE: need to also clip to any other layers that were promoted ahead of us!
+
+		ISSUE: if a parent and child layer both request to be promoted, the parent's clipping window will have a complex geometry with holes in it that is not accounted for by this algorithm.  Likely need to specify that graphics layers be processed by order of depth.
 
 	<h4 id='enforce-an-input-protection-directive-algo'>Enforce An input-protection Directive</h4>
 		To <dfn>enforce an input-protection directive</dfn> for a {{Document}} |document|,
@@ -814,7 +822,7 @@ spec:dom-ls; type:interface; text:Document
 <section>
 <h2 id='accessibility-considerations'>Accessibility Considerations</h2>
 
-	User of accessibility tools MUST NOT be prevented from accessing content
+	Users of accessibility tools MUST NOT be prevented from accessing content
 	because of input-protection or VisibilityEvents. If a user agent's interaction
 	modality is not subject to UI redressing attacks or definitions of "visibility"
 	do not apply, the user agent SHOULD report a VisibilityEvent indicating 100%
