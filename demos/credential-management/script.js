@@ -21,6 +21,8 @@ function toggleState() {
   console.log("Toggling UI state.");
   document.body.classList.toggle('signedin');
   document.body.classList.toggle('signedout');
+
+  document.querySelector('#signin').textContent = document.body.classList.contains('signedin') ? "Sign out!" : "Sign in!";
 }
 
 function processResponse(c) {
@@ -48,6 +50,12 @@ function processResponse(c) {
  * if no credential is provided).
  */
 document.querySelector('#signin').addEventListener('click', function () {
+  if (document.body.classList.contains('signedin')) {
+    console.log("Clicked #signin while signed in! Signing out!");
+    toggleState();
+    return;
+  }
+
   console.log("Clicked 'sign in!'");
   if (navigator.credentials) {
     navigator.credentials.get({
