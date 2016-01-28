@@ -91,9 +91,12 @@ document.querySelector('#signout').addEventListener('click', function () {
  */
 function handleFederation(e) {
   console.log("Signed in via a federation!");
-  e.preventDefault();
 
   if (navigator.credentials) {
+    // Stop the default form submission.
+    e.preventDefault();
+
+    // In a real environment extract the credentials from the federated credential response.
     var c = new FederatedCredential({
       id: 'fred@federated.com',
       provider: 'https://accounts.federation.com/',
@@ -117,9 +120,13 @@ function handleFederation(e) {
  */
 document.querySelector('form').addEventListener('submit', function (e) {
   console.log("Submitted a sign-in form.");
-  e.preventDefault();
 
   if (navigator.credentials) {
+    // Stop the default form submission.
+    e.preventDefault();
+
+    // In a real site, we'd check the credentials are valid
+
     var c = new PasswordCredential({
       id: document.querySelector('#username').value,
       password: document.querySelector('#password').value,
