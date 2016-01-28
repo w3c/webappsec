@@ -52,6 +52,9 @@ function processResponse(c) {
 document.querySelector('#signin').addEventListener('click', function () {
   if (document.body.classList.contains('signedin')) {
     console.log("Clicked #signin while signed in! Signing out!");
+
+    if (navigator.credentials)
+      navigator.credentials.requireUserMediation();
     toggleState();
     return;
   }
@@ -80,8 +83,7 @@ document.querySelector('#signout').addEventListener('click', function () {
   console.log("Clicked 'sign out!'");
   if (navigator.credentials)
     navigator.credentials.requireUserMediation();
-  document.body.classList.toggle('signedin');
-  document.body.classList.toggle('signedout');
+  toggleState();
 });
 
 /*
