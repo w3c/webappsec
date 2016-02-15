@@ -8,6 +8,9 @@ if (navigator.credentials) {
   console.log("Trying automatic sign-in.");
   navigator.credentials.get({
     password: true,
+    federated: {
+      provider: 'https://accounts.federation.com/'
+    },
     suppressUI: true
   }).then(processResponse);
 } else {
@@ -62,7 +65,10 @@ document.querySelector('#signin').addEventListener('click', function () {
   console.log("Clicked 'sign in!'");
   if (navigator.credentials) {
     navigator.credentials.get({
-      password: true
+      password: true,
+      federated: {
+        provider: 'https://accounts.federation.com/'
+      }
     }).then(function (c) {
       processResponse(c);
       if (!c) {
