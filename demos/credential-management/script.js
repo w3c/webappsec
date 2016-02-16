@@ -9,7 +9,7 @@ if (navigator.credentials) {
   navigator.credentials.get({
     password: true,
     federated: {
-      provider: 'https://accounts.federation.com/'
+      providers: ['https://accounts.federation.com/', 'https://accounts.industrious.com/' ]
     },
     suppressUI: true
   }).then(processResponse);
@@ -67,12 +67,13 @@ document.querySelector('#signin').addEventListener('click', function () {
     navigator.credentials.get({
       password: true,
       federated: {
-        provider: 'https://accounts.federation.com/'
+        providers: ['https://accounts.federation.com/', 'https://accounts.industrious.com/' ]
       }
     }).then(function (c) {
       processResponse(c);
       if (!c) {
-        document.querySelector('form button').addEventListener('click', handleFederation);
+        document.querySelector('#fed1').addEventListener('click', handleFederation);
+        document.querySelector('#fed2').addEventListener('click', handleFederation);
         document.querySelector('dialog').showModal();
       }
     });
@@ -100,18 +101,25 @@ function handleFederation(e) {
   e.preventDefault();
 
   if (navigator.credentials) {
-    var c = new FederatedCredential({
+    var data = e.target.id == "fed1" ? {
       id: 'fred@federated.com',
+      name: 'Funky Fred',
       provider: 'https://accounts.federation.com/',
       iconURL: getFace('fred@federated.com')
-    });
+    } : {
+      id: 'ichabald@industrious.com',
+      provider: 'https://accounts.industrious.com/',
+      iconURL: getFace('ichabald@industrious.com')
+    };
+
+    var c = new FederatedCredential(data);
     navigator.credentials.store(c).then(function (a) { console.log(a); }).catch(function (e) { console.log(e); });
   }
 
   // Sign the user in asynchronously using the relevant SDK for the chosen federation.
 
   toggleState();
-  document.querySelector('var').textContent = 'fred@federated.com';
+  document.querySelector('var').textContent = e.target.id == "fed1" ? 'fred@federated.com' : 'ichabald@industrious.com';
   document.querySelector('dialog').close();
 
   return false;
@@ -129,6 +137,7 @@ document.querySelector('form').addEventListener('submit', function (e) {
     var c = new PasswordCredential({
       id: document.querySelector('#username').value,
       password: document.querySelector('#password').value,
+      name: document.querySelector('#friendly').value ? document.querySelector('#friendly').value : undefined,
       iconURL: getFace(document.querySelector('#username').value)
     });
 
