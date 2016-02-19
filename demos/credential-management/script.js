@@ -11,7 +11,8 @@ if (navigator.credentials) {
     federated: {
       providers: ['https://accounts.federation.com/', 'https://accounts.industrious.com/' ]
     },
-    suppressUI: true
+    suppressUI: true, // old and boring
+    unmediated: true  // new hotness
   }).then(processResponse);
 } else {
   var section = document.createElement('section');
@@ -48,7 +49,7 @@ function processResponse(c) {
 }
 
 /*
- * Next, wire up the "Sign In" button to call `get()` without the `suppressUI`
+ * Next, wire up the "Sign In" button to call `get()` without the `unmediated`
  * option, and to fall back to a sign in form if the API is not available (or
  * if no credential is provided).
  */
