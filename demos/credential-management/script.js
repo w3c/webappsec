@@ -14,6 +14,13 @@ if (navigator.credentials) {
     suppressUI: true, // old and boring
     unmediated: true  // new hotness
   }).then(processResponse);
+
+  if (window.location.protocol !== "https:") {
+    var section = document.createElement('section');
+    section.innerHTML = "<p><code>navigator.credentials</code> is available, but will only work in a secure context. Try <a href='https://w3c.github.io/webappsec/demos/credential-management/'>visiting this page over HTTPS</a>!</p>";
+    section.classList.toggle('warning');
+    document.body.appendChild(section);
+  }
 } else {
   var section = document.createElement('section');
   section.innerHTML = "<p><code>navigator.credentials</code> is not available! Have you enabled the feature in your browser? (Visit <code>chrome://flags/#enable-credential-manager-api</code> in Chrome, for example.)</p>";
