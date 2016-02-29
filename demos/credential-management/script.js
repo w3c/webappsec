@@ -6,14 +6,16 @@
  */
 if (navigator.credentials) {
   console.log("Trying automatic sign-in.");
-  navigator.credentials.get({
+
+  var getData = {
     password: true,
     federated: {
       providers: ['https://accounts.federation.com/', 'https://accounts.industrious.com/' ]
     },
-    suppressUI: true, // old and boring
-    unmediated: true  // new hotness
-  }).then(processResponse);
+    unmediated: window.location.search !== "?fullauto"
+  };
+
+  navigator.credentials.get(getData).then(processResponse);
 
   if (window.location.protocol !== "https:") {
     var section = document.createElement('section');
