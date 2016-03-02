@@ -1,0 +1,28 @@
+language: python
+python:
+ - "2.7"
+before_install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq python-dev python-pip libxslt1-dev libxml2-dev
+ - sudo pip install pygments
+install:
+ - git clone --depth=1 --branch=master https://github.com/tabatkins/bikeshed.git ./bikeshed
+ - sudo pip install --editable ./bikeshed
+ - bikeshed update
+script:
+ - cd specs
+ - bikeshed spec ./credentialmanagement/index.src.html
+ - bikeshed spec ./csp-pinning/index.src.html
+ - bikeshed spec ./powerfulfeatures/index.src.html
+ - bikeshed spec ./content-security-policy/index.src.html
+ - bikeshed spec ./CSP2/index.src.html
+ - bikeshed spec ./mixedcontent/index.src.html
+ - bikeshed spec ./referrer-policy/index.src.html
+ - bikeshed spec ./upgrade/index.src.html
+env:
+  global:
+    - URL="https://w3c.github.io/webappsec/echidna-manifest-mixed-content.txt"
+    - DECISION="[TO-DO]"
+    - secure: "[TO-DO run: 'gem install travis; travis encrypt TOKEN=<the-token>']"
+after_success:
+  - curl "https://labs.w3.org/echidna/api/request" --data "url=$URL" --data "decision=$DECISION" --data "token=$TOKEN"
