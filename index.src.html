@@ -10,7 +10,7 @@ Editor: Brad Hill, Facebook, hillbrad@fb.com
 !Author: David Lin-Shung Huang, Carnegie Mellon University
 !Author: Giorgio Maone, Invited Expert
 Abstract:
-	UI Security and the Visiblity API defines both a
+	UI Security and the Visibility API defines both a
 	declarative and imperative means for resources
 	displayed in an embedded context to protect 
 	themselves against having their content obscured,
@@ -97,7 +97,7 @@ spec:dom-ls; type:interface; text:Document
 		sufficient granularity to make decisions that can protect both users
 		and content purveyors from various types of fraud.
 
-		First, this document defines an imperative API, VisiblityObserver,
+		First, this document defines an imperative API, VisibilityObserver,
 		by which a resource can request that a conforming user agent guarantee
 		unmodified display of its viewport, and report events on the success or
 		failure of meeting such guarantees.  This API should be suitable
@@ -105,14 +105,14 @@ spec:dom-ls; type:interface; text:Document
 		signals about its viewability from a conforming user agent.
 		
 		Secondly, this specification defines a declarative mechanism
-		(via a Content Security Poicy directive) to request visiblity
+		(via a Content Security Poicy directive) to request visibility
 		protection and receive notification, via event properties or
 		out-of-band reporting, if certain events are delivered to
-		a resource while it does not meet its requested visiblity 
+		a resource while it does not meet its requested visibility 
 		contract.
 
 		The declarative CSP interface does not offer the same fine-granularity control as 
-		the <a>Visibility Observer</a> API.  It's goal is to allow protection to be
+		the JavaScript API.  Its goal is to allow protection to be
 		retrofitted to legacy applications, with no or minimal code changes, as a replacement for
 		X-Frame-Options, or potentially for use with content that is sandboxed and cannot
 		execute JavaScript.
@@ -135,7 +135,7 @@ spec:dom-ls; type:interface; text:Document
 		calculation of element visibility for, e.g purposes of
 		<a href="http://www.iab.net/iablog/2014/03/viewability-has-arrived-what-you-need-to-know-to-see-through-this-sea-change.html">
 		reporting ad visibility for monetizing impressions</a>.  The current specification
-		adds the goals of prevent clickjacking and other UI redressing attacks both by enforcing that
+		adds the goals of preventing clickjacking and other UI redressing attacks both by enforcing that
 		an iframe which has requested visibility be free of any transforms, movement or re-clipping
 		within a defined time threshold, and by allowing event delivery to be intercepted or
 		annotated when policies are not met.
@@ -194,12 +194,6 @@ spec:dom-ls; type:interface; text:Document
     user agents make internal changes, application authors should
     understand that even a conformant user agent cannot make
     perfect security guarantees against UI Redressing.
-    Some potential checks suggested here might not be made as a
-    consequence of implementation strategies, or to avoid unacceptable
-    performance costs, and the intrepretation of policies
-    might differ among user agents. (e.g. a tolerance hint may appy
-    strictly to rectangular clipping in one implementation but
-    to pixel or sub-pixel comparisions in another)
     
     These directives should be used as part of a comprehensive risk
     mitigation strategy with an appropriate understanding of their
@@ -218,10 +212,10 @@ spec:dom-ls; type:interface; text:Document
 
 <section>
 
-<h2 id='visibility-observer-api'>Visibility Observer API</h2>
+<h2 id='visibility-observer-api'>VisibilityObserver API</h2>
 
-	The <dfn>Visibility Observer</dfn> API provides an imperative API for developers to
-	receive notification of visiblity state changes for their document relative to
+	The VisibilityObserver API provides an imperative API for developers to
+	receive notification of visibility state changes for their document relative to
 	the global viewport.
 
 	<h3 id='visibility-observer-callback'>The VisibilityObserverCallback</h3>
@@ -230,7 +224,7 @@ spec:dom-ls; type:interface; text:Document
 		</pre>
 		This callback will be invoked when there are changes to the document's <em>visibility state</em>.
 
-	<h3 id='visibility-observer-entry'>The VisiblityObserverEntry interface</h3>
+	<h3 id='visibility-observer-entry'>The VisibilityObserverEntry interface</h3>
 		<pre class="idl">
 			[Constructor(VisibilityObserverCallback callback, optional VisibilityObserverEntryInit visibilityObserverEntryInit), Exposed=Window]
 			interface VisibilityObserverEntry {
@@ -246,13 +240,13 @@ spec:dom-ls; type:interface; text:Document
 			};
 		</pre>
 
-		<div dfn-for='VisiblityObserverEntry'>
+		<div dfn-for='VisibilityObserverEntry'>
 			<dfn attribute lt='globalVisibleBounds'>globalVisibleBounds</dfn>
 				The {{DOMRect}} coresponding to the visible dimensions of the 
 				top-level document in the global viewport's coordinate space.
 
 			<dfn attribute lt='visibleBounds'>visibleBounds</dfn>
-				The {{DOMRect}} corresponding to the document's <i>boundingClienRect</i>,
+				The {{DOMRect}} corresponding to the document's <i>boundingClientRect</i>,
 				intersected by each of the document's ancestor's clipping rects,
 				intersected with {{VisibilityObserverEntry/globalVisibleBounds}}.
 				This value represents the portion of the document actually visible within
@@ -263,8 +257,8 @@ spec:dom-ls; type:interface; text:Document
 				state was recorded.
 		</div>
 	
-	<h3 id='visibility-observer-interface'>The VisiblityObserver Interface</h3>
-		The {{VisibilityObserver}} interface can be used to observe changes in the
+	<h3 id='visibility-observer-interface'>The VisibilityObserver Interface</h3>
+		The VisibilityObserver interface can be used to observe changes in the
 		document's visibility state relative to the global viewport.
 
 		<pre class='idl'>
@@ -275,7 +269,7 @@ spec:dom-ls; type:interface; text:Document
 				sequence&lt;VisibilityObserverEntry&gt; takeRecords ();
 			};
 		</pre>
-
+	
 	<div dfn-type='method' dfn-for='VisibilityObserver'>
     : <dfn constructor lt='VisibilityObserver(callback, options)'>new VisibilityObserver(callback, options)</dfn>
 		:: 
@@ -286,8 +280,7 @@ spec:dom-ls; type:interface; text:Document
 		: <dfn>observe()</dfn>
 		::
 			<ol>
-				<li>Add |this| to the document's {{[[RegisteredVisibilityObservers]]}} list and the
-				<a>unit of related similar-origin browsing contexts</a>'s <a>VisibilityObservers</a>.</li>
+				<li>Add |this| to the document's {{[[RegisteredVisibilityObservers]]}} list</li> 
 			</ol>
 		: <dfn>unobserve()</dfn>
 		::
@@ -318,7 +311,7 @@ spec:dom-ls; type:interface; text:Document
 		: <dfn>areaThreshold</dfn>
 		::
 			List of threshold(s) at which to trigger callback.
-			callback will be invoked when visibleBounds' area changes from
+			callback will be invoked when visibleBounds area changes from
 			greater than or equal to any threshold to less than that threshold,
 			and vice versa.
 
@@ -447,15 +440,14 @@ spec:dom-ls; type:interface; text:Document
 
 <h2 id='processing-model'>Processing Model</h2>
 	This section outlines the steps the user agent must take when implementing the
-	Visibility Observer API.
+	VisibilityObserver API.
 
 	<h3 id='defines'>Internal Slot Definitions</h3>
 
 		<h4 id='browsing-context-slots'>Browsing Contexts</h4>
 			Each <a>unit of related similar-origin browsing contexts</a> has an
 			<dfn for="browsing context">VisibilityObserverTaskQueued</dfn> flag which
-			is initialized to false and a <dfn for="browsing context">
-			VisibilityObservers</dfn> list which is initially empty.
+			is initialized to false.
 			
 		<h4 id='element-private-slots'>Element</h4>
 			{{Element}} objects have an internal
@@ -495,7 +487,7 @@ spec:dom-ls; type:interface; text:Document
 
 	<h3 id='algorithms'>Algorithms</h3>
 
-		<h4 id='queue-visibility-observer-task-algo'>Queue a Visibility Observer Task</h4>
+		<h4 id='queue-visibility-observer-task-algo'>Queue a VisibilityObserver Task</h4>
 			To <dfn>queue a visibility observer task</dfn> for a
 			<a>unit of related similar-origin browsing contexts</a> |unit|,
 			run these steps:
@@ -512,33 +504,36 @@ spec:dom-ls; type:interface; text:Document
 			</ol>
 
 
-		<h4 id='notify-visibility-observers-algo'>Notify Visibility Observers</h4>
+		<h4 id='notify-visibility-observers-algo'>Notify VisibilityObservers</h4>
 			To <dfn>notify visibility observers</dfn> for a 
 			<a>unit of related similar-origin browsing contexts</a> |unit|,
 			run these steps:
 			<ol>
 				<li>Set |unit|'s <a>VisibilityObserverTaskQueued</a> flag to false.</li>
-				<li>Let |notify list| be a copy of |unit|'s <a>VisibilityObservers</a>
-						list.</li>
-				<li>For each {{VisibilityObserver}} object |observer| in
-						|notify list|, run these steps:</li>
-						<ol>
-							<li>If |observer|'s internal {{[[QueuedEntries]]}} slot is
-									empty, continue.</li>
-							<li>Let |queue| be a copy of |observer|'s internal
-									{{[[QueuedEntries]]}} slot.</li>
-							<li>Clear |observer|'s internal {{[[QueuedEntries]]}} slot.</li>
-							<li>Invoke |callback| with |queue| as the first argument and
-									|observer| as the second argument and
-									<a>callback this value</a>. If this throws an exception,
-									<a>report the exception</a>.</li>
-						</ol>
+				<li>For each {{Document}} |document| in |unit|</li>
+				<ol>
+					<li>Let |notify list| be a copy of |document|'s {{[[RegisteredVisibilityObservers]]}}</a>
+							list.</li>
+					<li>For each {{VisibilityObserver}} object |observer| in
+							|notify list|, run these steps:</li>
+							<ol>
+								<li>If |observer|'s internal {{[[QueuedEntries]]}} slot is
+										empty, continue.</li>
+								<li>Let |queue| be a copy of |observer|'s internal
+										{{[[QueuedEntries]]}} slot.</li>
+								<li>Clear |observer|'s internal {{[[QueuedEntries]]}} slot.</li>
+								<li>Invoke |callback| with |queue| as the first argument and
+										|observer| as the second argument and
+										<a>callback this value</a>. If this throws an exception,
+										<a>report the exception</a>.</li>
+							</ol>
+					</ol>
 				</ol>
 
 
 		<h4 id='queue-visibility-observer-entry-algo'>Queue a VisibilityObserverEntry</h4>
 			To <dfn>queue a VisibilityObserverEntry</dfn> for |observer|, given a
-			<a>unit of related similar-origin browsing contexts</a> |unit|, VisiblityObserver
+			<a>unit of related similar-origin browsing contexts</a> |unit|, VisibilityObserver
 			|observer|, and VisibilityObserverEntry |entry| run these steps:
 			<ol>
 				<li>Append |entry| to |observer|'s internal {{[[QueuedEntries]]}} slot.</li>
@@ -551,10 +546,8 @@ spec:dom-ls; type:interface; text:Document
 
 			<div class="note">
 				NOTE: The full internal details of rendering a document to the pixels 
-				actually displayed to the user is not standardized.  There may exist 
-				considerable variability in the implementations and strategies employed
-				by different user agents, or even within a single user agent on 
-				platforms with differing capabilities. (e.g. GPU accelerated vs. not)
+				actually displayed to the user is not standardized. UA implementations 
+				may vary widely.
 
 				The implementation strategy detailed in this section is not normative. Any 
 				strategy which produces correct outcomes for the normative algorithms is 
@@ -684,7 +677,7 @@ spec:dom-ls; type:interface; text:Document
 					the value as the input, or |document| if <i>null</i> or unset.</li>
 			<li>If |document|'s {{[[InputProtectionRequested]]}} flag is <i>false</i>, set it
 					to <i>true</i>.</li>
-			<li>Construct a new <a>VisibilityObserver</a> |observer|, with {{[[areaThreshold]]}} set to the value of
+			<li>Construct a new {{VisibilityObserver}} |observer|, with {{[[areaThreshold]]}} set to the value of
 					<a>area-threshold</a>, {{[[visibleMargin]]}} set to the value of <a>visible-margin</a>,
 					{{[[observedElement]]}} set to |protectedElement|, {{[[displacementAware]]}} set to <i>true</i>,
 					and {{[[callback]]}} set to a new function with an empty function body.</li>
