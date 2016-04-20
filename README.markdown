@@ -57,7 +57,7 @@ Web Application Security Working Group
     <tr>
       <td>Credential Management Level 1</td>
       <td><a href="https://w3c.github.io/webappsec-credential-management/">webappsec-credential-management</a></td>
-      <td><a href="http://w3.org/TR/referrer-policy/" class="wd">WD: /TR/credential-management/</a></td>
+      <td><a href="http://w3.org/TR/credential-management/" class="wd">WD: /TR/credential-management/</a></td>
     </tr>
     <tr>
       <td>Permissions API</td>
