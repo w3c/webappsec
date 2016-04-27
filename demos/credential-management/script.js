@@ -45,7 +45,7 @@ function processResponse(c) {
     // In a real site, we'd do something like the following to asynchronously
     // sign the user in:
     //
-    //   fetch("https://example.com/signinEndpoint/", { body: c, method: "POST" })
+    //   fetch("https://example.com/signinEndpoint/", { credentials: c, method: "POST" })
     //       .then(function (response) {
     //         if ([check that the response is a valid signin event])
     //           updateUI();
