@@ -20,6 +20,11 @@ Web Application Security Working Group
       <td></td>
       <td><a href="http://w3.org/TR/CSP1/" class="note">NOTE: /TR/CSP1</a></td>
     </tr>
+        <tr>
+      <td>Subresource Integrity</td>
+      <td><a href="https://w3c.github.io/webappsec-subresource-integrity/">webappsec-subresource-integrity</a></td>
+      <td><a href="http://w3.org/TR/SRI/" class="REC">REC: /TR/SRI/</a></td>
+    </tr>
   </tbody>
   <tbody id="stable">
     <tr>
@@ -36,11 +41,6 @@ Web Application Security Working Group
       <td>Mixed Content</td>
       <td><a href="https://w3c.github.io/webappsec-mixed-content/">webappsec-mixed-content</a></td>
       <td><a href="http://w3.org/TR/mixed-content/" class="cr">CR: /TR/mixed-content/</a></td>
-    </tr>
-    <tr>
-      <td>Subresource Integrity</td>
-      <td><a href="https://w3c.github.io/webappsec-subresource-integrity/">webappsec-subresource-integrity</a></td>
-      <td><a href="http://w3.org/TR/SRI/" class="wd">WD: /TR/SRI/</a></td>
     </tr>
     <tr>
       <td>Upgrade Insecure Requests</td>
