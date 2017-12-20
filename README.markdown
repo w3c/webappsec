@@ -32,13 +32,12 @@ Web Application Security Working Group
     </tr>
   </tbody>
   <tbody id="stable">
-    <tr>
-      <th>Stable</th>
+    < tr>
+        <th>Stable</th>
       <th>ED</th>
       <th>TR</th>
     </tr>
-   
-    <tr>
+       <tr>
       <td>Mixed Content</td>
       <td><a href="https://w3c.github.io/webappsec-mixed-content/">webappsec-mixed-content</a></td>
       <td><a href="http://w3.org/TR/mixed-content/" class="cr">CR: /TR/mixed-content/</a></td>
@@ -75,8 +74,6 @@ Web Application Security Working Group
       <td><a href="https://w3c.github.io/permissions/">permissions</a></td>
       <td><a href="http://w3.org/TR/permissions/" class="fpwd">FPWD: /TR/permissions/</a></td>
     </tr>
-
-
    <tr>
       <td>Content Security Policy Level 3</td>
       <td><a href="https://w3c.github.io/webappsec-csp/2/">webappsec-csp</a></td>
