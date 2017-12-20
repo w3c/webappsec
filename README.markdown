@@ -35,7 +35,7 @@ Web Application Security Working Group
     <tr>
       <td>Content Security Policy Level 2</td>
       <td><a href="https://w3c.github.io/webappsec-csp/2/">webappsec-csp</a></td>
-      <td><a href="http://w3.org/TR/CSP2/" class="cr">CR: /TR/CSP2</a></td>
+      <td><a href="http://w3.org/TR/CSP2/" class="REC">REC: /TR/CSP2</a></td>
     </tr>
     <tr>
       <td>Mixed Content</td>
