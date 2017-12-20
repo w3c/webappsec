@@ -25,6 +25,11 @@ Web Application Security Working Group
       <td><a href="https://w3c.github.io/webappsec-subresource-integrity/">webappsec-subresource-integrity</a></td>
       <td><a href="http://w3.org/TR/SRI/" class="REC">REC: /TR/SRI/</a></td>
     </tr>
+     <tr>
+      <td>Content Security Policy Level 2</td>
+      <td><a href="https://w3c.github.io/webappsec-csp/2/">webappsec-csp</a></td>
+      <td><a href="http://w3.org/TR/CSP2/" class="REC">REC: /TR/CSP2</a></td>
+    </tr>
   </tbody>
   <tbody id="stable">
     <tr>
@@ -32,11 +37,7 @@ Web Application Security Working Group
       <th>ED</th>
       <th>TR</th>
     </tr>
-    <tr>
-      <td>Content Security Policy Level 2</td>
-      <td><a href="https://w3c.github.io/webappsec-csp/2/">webappsec-csp</a></td>
-      <td><a href="http://w3.org/TR/CSP2/" class="REC">REC: /TR/CSP2</a></td>
-    </tr>
+   
     <tr>
       <td>Mixed Content</td>
       <td><a href="https://w3c.github.io/webappsec-mixed-content/">webappsec-mixed-content</a></td>
@@ -46,6 +47,16 @@ Web Application Security Working Group
       <td>Upgrade Insecure Requests</td>
       <td><a href="https://w3c.github.io/webappsec-upgrade-insecure-requests/">webappsec-upgrade-insecure-requests</a></td>
       <td><a href="http://w3.org/TR/upgrade-insecure-requests/" class="wd">WD: /TR/upgrade-insecure-requests/</a></td>
+    </tr>
+        <tr>
+      <td>Secure Contexts</td>
+      <td><a href="https://w3c.github.io/webappsec-secure-contexts/">webappsec-secure-contexts</a></td>
+      <td><a href="http://w3.org/TR/powerful-features/" class="CR">CR: /TR/powerful-features/</a></td>
+    </tr>
+        <tr>
+      <td>Referrer Policy</td>
+      <td><a href="https://w3c.github.io/webappsec-referrer-policy/">webappsec-referrer-policy</a></td>
+      <td><a href="http://w3.org/TR/referrer-policy/" class="CR">CR: /TR/referrer-policy/</a></td>
     </tr>
   </tbody>
   <tbody id="stabilizing">
@@ -64,15 +75,12 @@ Web Application Security Working Group
       <td><a href="https://w3c.github.io/permissions/">permissions</a></td>
       <td><a href="http://w3.org/TR/permissions/" class="fpwd">FPWD: /TR/permissions/</a></td>
     </tr>
-    <tr>
-      <td>Referrer Policy</td>
-      <td><a href="https://w3c.github.io/webappsec-referrer-policy/">webappsec-referrer-policy</a></td>
-      <td><a href="http://w3.org/TR/referrer-policy/" class="wd">WD: /TR/referrer-policy/</a></td>
-    </tr>
-    <tr>
-      <td>Secure Contexts</td>
-      <td><a href="https://w3c.github.io/webappsec-secure-contexts/">webappsec-secure-contexts</a></td>
-      <td><a href="http://w3.org/TR/powerful-features/" class="wd">WD: /TR/powerful-features/</a></td>
+
+
+   <tr>
+      <td>Content Security Policy Level 3</td>
+      <td><a href="https://w3c.github.io/webappsec-csp/2/">webappsec-csp</a></td>
+      <td><a href="http://w3.org/TR/CSP2/" class="wd">WD: /TR/CSP</a></td>
     </tr>
   </tbody>
   <tbody id="wip">
