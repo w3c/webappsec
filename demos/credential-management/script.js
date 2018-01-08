@@ -12,7 +12,7 @@ if (navigator.credentials) {
     federated: {
       providers: ['https://accounts.federation.com/', 'https://accounts.industrious.com/' ]
     },
-    unmediated: window.location.search !== "?fullauto"
+    mediation: (window.location.search !== "?fullauto") ? "optional" : "silent"
   };
 
   navigator.credentials.get(getData).then(processResponse);
@@ -67,7 +67,7 @@ document.querySelector('#signin').addEventListener('click', function () {
     console.log("Clicked #signin while signed in! Signing out!");
 
     if (navigator.credentials)
-      navigator.credentials.requireUserMediation();
+      navigator.credentials.preventSilentAccess();
     toggleState();
     return;
   }
@@ -94,12 +94,12 @@ document.querySelector('#signin').addEventListener('click', function () {
 });
 
 /*
- * Wire up the 'Sign Out' link to call `requireUserMediation()`
+ * Wire up the 'Sign Out' link to call `preventSilentAccess()`
  */
 document.querySelector('#signout').addEventListener('click', function () {
   console.log("Clicked 'sign out!'");
   if (navigator.credentials)
-    navigator.credentials.requireUserMediation();
+    navigator.credentials.preventSilentAccess();
   toggleState();
 });
 
