@@ -1,0 +1,2241 @@
+<!doctype html><html lang="en">
+ <head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+  <title>User Interface Security and the Visibility API</title>
+<style data-fill-with="stylesheet">/******************************************************************************
+ *                   Style sheet for the W3C specifications                   *
+ *
+ * Special classes handled by this style sheet include:
+ *
+ * Indices
+ *   - .toc for the Table of Contents (<ol class="toc">)
+ *     -> <span class="secno"> for the section numbers
+ *   - #toc for the Table of Contents (<nav id="toc">)
+ *   - ul.index for Indices (<a href="#ref">term</a><span>, in §N.M</span>)
+ *   - table.index for Index Tables (e.g. for properties or elements)
+ *
+ * Structural Markup
+ *   - table.data for general data tables
+ *     -> use 'scope' attribute, <colgroup>, <thead>, and <tbody> for best results !
+ *     -> use <table class='complex data'> for extra-complex tables
+ *     -> use <td class='long'> for paragraph-length cell content
+ *     -> use <td class='pre'> when manual line breaks/indentation would help readability
+ *   - dl.switch for switch statements
+ *   - ol.algorithm for algorithms (helps to visualize nesting)
+ *   - .figure and .caption (HTML4) and figure and figcaption (HTML5)
+ *     -> .sidefigure for right-floated figures
+ *   - ins/del
+ *
+ * Code
+ *   - pre and code
+ *
+ * Special Sections
+ *   - .note       for informative notes             (div, p, span, aside, details)
+ *   - .example    for informative examples          (div, p, pre, span)
+ *   - .issue      for issues                        (div, p, span)
+ *   - .advisement for loud normative statements     (div, p, strong)
+ *   - .annoying-warning for spec obsoletion notices (div, aside, details)
+ *
+ * Definition Boxes
+ *   - pre.def   for WebIDL definitions
+ *   - table.def for tables that define other entities (e.g. CSS properties)
+ *   - dl.def    for definition lists that define other entitles (e.g. HTML elements)
+ *
+ * Numbering
+ *   - .secno for section numbers in .toc and headings (<span class='secno'>3.2</span>)
+ *   - .marker for source-inserted example/figure/issue numbers (<span class='marker'>Issue 4</span>)
+ *   - ::before styled for CSS-generated issue/example/figure numbers:
+ *     -> Documents wishing to use this only need to add
+ *        figcaption::before,
+ *        .caption::before { content: "Figure "  counter(figure);  }
+ *        .example::before { content: "Example " counter(example); }
+ *        .issue::before   { content: "Issue "   counter(issue);   }
+ *
+ * Header Stuff (ignore, just don't conflict with these classes)
+ *   - .head for the header
+ *   - .copyright for the copyright
+ *
+ * Miscellaneous
+ *   - .overlarge for things that should be as wide as possible, even if
+ *     that overflows the body text area. This can be used on an item or
+ *     on its container, depending on the effect desired.
+ *     Note that this styling basically doesn't help at all when printing,
+ *     since A4 paper isn't much wider than the max-width here.
+ *     It's better to design things to fit into a narrower measure if possible.
+ *   - js-added ToC jump links (see fixup.js)
+ *
+ ******************************************************************************/
+
+/******************************************************************************/
+/*                                   Body                                     */
+/******************************************************************************/
+
+	body {
+		counter-reset: example figure issue;
+
+		/* Layout */
+		max-width: 50em;               /* limit line length to 50em for readability   */
+		margin: 0 auto;                /* center text within page                     */
+		padding: 1.6em 1.5em 2em 50px; /* assume 16px font size for downlevel clients */
+		padding: 1.6em 1.5em 2em calc(26px + 1.5em); /* leave space for status flag     */
+
+		/* Typography */
+		line-height: 1.5;
+		font-family: sans-serif;
+		widows: 2;
+		orphans: 2;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		hyphens: auto;
+
+		/* Colors */
+		color: black;
+		background: white top left fixed no-repeat;
+		background-size: 25px auto;
+	}
+
+
+/******************************************************************************/
+/*                         Front Matter & Navigation                          */
+/******************************************************************************/
+
+/** Header ********************************************************************/
+
+	div.head { margin-bottom: 1em }
+	div.head hr { border-style: solid; }
+
+	div.head h1 {
+		font-weight: bold;
+		margin: 0 0 .1em;
+		font-size: 220%;
+	}
+
+	div.head h2 { margin-bottom: 1.5em;}
+
+	div.head .logo {
+		float: right;
+		margin: 0;
+	}
+
+	@media screen {
+		div.head .logo > a {
+			display: inline-block;
+			margin: 0.4rem 0 0.2rem .4rem;
+		}
+
+		div.head img[src*="logos/W3C"] {
+			display: block;
+			border: solid #1a5e9a;
+			border-width: .65rem .7rem .6rem;
+			border-radius: .4rem;
+			background: #1a5e9a;
+			color: white;
+			font-weight: bold;
+		}
+
+		div.head a:hover > img[src*="logos/W3C"],
+		div.head a:focus > img[src*="logos/W3C"] {
+			background: #457cad;
+			border-color: #457cad;
+		}
+
+		div.head a:active > img[src*="logos/W3C"] {
+			background: #c00;
+			border-color: #c00;
+		}
+	}
+
+
+	p.copyright,
+	p.copyright small { font-size: small }
+
+/** Back to Top / ToC Toggle **************************************************/
+
+	@media print {
+		#toc-nav {
+			display: none;
+		}
+	}
+	@media not print {
+		#toc-nav {
+			position: fixed;
+			z-index: 2;
+			bottom: 0; left: 0;
+			margin: 0;
+			min-width: 1.33em;
+			border-top-right-radius: 2rem;
+			box-shadow: 0 0 2px;
+			font-size: 1.5em;
+			color: black;
+		}
+		#toc-nav > a {
+			display: block;
+			white-space: nowrap;
+
+			height: 1.33em;
+			padding: .1em 0.3em;
+			margin: 0;
+
+			background: white;
+			box-shadow: 0 0 2px;
+			border: none;
+			border-top-right-radius: 1.33em;
+			background: white;
+		}
+		#toc-nav > #toc-jump {
+			padding-bottom: 2em;
+			margin-bottom: -1.9em;
+		}
+
+		#toc-nav > a:hover,
+		#toc-nav > a:focus {
+			background: #f8f8f8;
+		}
+		#toc-nav > a:not(:hover):not(:focus) {
+			color: #707070;
+		}
+
+		/* statusbar gets in the way on keyboard focus; remove once browsers fix */
+		#toc-nav > a[href="#toc"]:not(:hover):focus:last-child {
+			padding-bottom: 1.5rem;
+		}
+
+		#toc-nav:not(:hover) > a:not(:focus) > span + span {
+			/* Ideally this uses :focus-within on #toc-nav */
+			display: none;
+		}
+		#toc-nav > a > span + span {
+			padding-right: 0.2em;
+		}
+
+		#toc-toggle-inline {
+			vertical-align: 0.05em;
+			font-size: 80%;
+			color: gray;
+			color: hsla(203,20%,40%,.7);
+			border-style: none;
+			background: transparent;
+			position: relative;
+		}
+		#toc-toggle-inline:hover:not(:active),
+		#toc-toggle-inline:focus:not(:active) {
+			text-shadow: 1px 1px silver;
+			top: -1px;
+			left: -1px;
+		}
+
+		#toc-nav :active {
+			color: #C00;
+		}
+	}
+
+/** ToC Sidebar ***************************************************************/
+
+	/* Floating sidebar */
+	@media screen {
+		body.toc-sidebar #toc {
+			position: fixed;
+			top: 0; bottom: 0;
+			left: 0;
+			width: 23.5em;
+			max-width: 80%;
+			max-width: calc(100% - 2em - 26px);
+			overflow: auto;
+			padding: 0 1em;
+			padding-left: 42px;
+			padding-left: calc(1em + 26px);
+			background: inherit;
+			background-color: #f7f8f9;
+			z-index: 1;
+			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+		}
+		body.toc-sidebar #toc h2 {
+			margin-top: .8rem;
+			font-variant: small-caps;
+			font-variant: all-small-caps;
+			text-transform: lowercase;
+			font-weight: bold;
+			color: gray;
+			color: hsla(203,20%,40%,.7);
+		}
+		body.toc-sidebar #toc-jump:not(:focus) {
+			width: 0;
+			height: 0;
+			padding: 0;
+			position: absolute;
+			overflow: hidden;
+		}
+	}
+	/* Hide main scroller when only the ToC is visible anyway */
+	@media screen and (max-width: 28em) {
+		body.toc-sidebar {
+			overflow: hidden;
+		}
+	}
+
+	/* Sidebar with its own space */
+	@media screen and (min-width: 78em) {
+		body:not(.toc-inline) #toc {
+			position: fixed;
+			top: 0; bottom: 0;
+			left: 0;
+			width: 23.5em;
+			overflow: auto;
+			padding: 0 1em;
+			padding-left: 42px;
+			padding-left: calc(1em + 26px);
+			background: inherit;
+			background-color: #f7f8f9;
+			z-index: 1;
+			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+		}
+		body:not(.toc-inline) #toc h2 {
+			margin-top: .8rem;
+			font-variant: small-caps;
+			font-variant: all-small-caps;
+			text-transform: lowercase;
+			font-weight: bold;
+			color: gray;
+			color: hsla(203,20%,40%,.7);
+		}
+
+		body:not(.toc-inline) {
+			padding-left: 29em;
+		}
+		/* See also Overflow section at the bottom */
+
+		body:not(.toc-inline) #toc-jump:not(:focus) {
+			width: 0;
+			height: 0;
+			padding: 0;
+			position: absolute;
+			overflow: hidden;
+		}
+	}
+	@media screen and (min-width: 90em) {
+		body:not(.toc-inline) {
+			margin: 0 4em;
+		}
+	}
+
+/******************************************************************************/
+/*                                Sectioning                                  */
+/******************************************************************************/
+
+/** Headings ******************************************************************/
+
+	h1, h2, h3, h4, h5, h6, dt {
+		page-break-after: avoid;
+		page-break-inside: avoid;
+		font: 100% sans-serif;   /* Reset all font styling to clear out UA styles */
+		font-family: inherit;    /* Inherit the font family. */
+		line-height: 1.2;        /* Keep wrapped headings compact */
+	}
+
+	h2, h3, h4, h5, h6 {
+		margin-top: 3rem;
+	}
+
+	h1, h2, h3 {
+		color: #005A9C;
+		background: transparent;
+	}
+
+	h1 { font-size: 170%; }
+	h2 { font-size: 140%; }
+	h3 { font-size: 120%; }
+	h4 { font-weight: bold; }
+	h5 { font-style: italic; }
+	h6 { font-variant: small-caps; }
+	dt { font-weight: bold; }
+
+/** Subheadings ***************************************************************/
+
+	h1 + h2,
+	#subtitle {
+		/* #subtitle is a subtitle in an H2 under the H1 */
+		margin-top: 0;
+	}
+	h2 + h3,
+	h3 + h4,
+	h4 + h5,
+	h5 + h6 {
+		margin-top: 1.2em; /* = 1 x line-height */
+	}
+
+/** Section divider ***********************************************************/
+
+	:not(.head) > hr {
+		font-size: 1.5em;
+		text-align: center;
+		margin: 1em auto;
+		height: auto;
+		border: transparent solid 0;
+		background: transparent;
+	}
+	:not(.head) > hr::before {
+		content: "\2727\2003\2003\2727\2003\2003\2727";
+	}
+
+/******************************************************************************/
+/*                            Paragraphs and Lists                            */
+/******************************************************************************/
+
+	p {
+		margin: 1em 0;
+	}
+
+	dd > p:first-child,
+	li > p:first-child {
+		margin-top: 0;
+	}
+
+	ul, ol {
+		margin-left: 0;
+		padding-left: 2em;
+	}
+
+	li {
+		margin: 0.25em 0 0.5em;
+		padding: 0;
+	}
+
+	dl dd {
+		margin: 0 0 .5em 2em;
+	}
+
+	.head dd + dd { /* compact for header */
+		margin-top: -.5em;
+	}
+
+	/* Style for algorithms */
+	ol.algorithm ol:not(.algorithm) {
+	 border-left: 0.5em solid #DEF;
+	}
+
+	/* Style for switch/case <dl>s */
+	dl.switch > dd > ol.only {
+	 margin-left: 0;
+	}
+	dl.switch > dd > ol.algorithm {
+	 margin-left: -2em;
+	}
+	dl.switch {
+	 padding-left: 2em;
+	}
+	dl.switch > dt {
+	 text-indent: -1.5em;
+	 margin-top: 1em;
+	}
+	dl.switch > dt + dt {
+	 margin-top: 0;
+	}
+	dl.switch > dt::before {
+	 content: '\21AA';
+	 padding: 0 0.5em 0 0;
+	 display: inline-block;
+	 width: 1em;
+	 text-align: right;
+	 line-height: 0.5em;
+	}
+
+/** Terminology Markup ********************************************************/
+
+
+/******************************************************************************/
+/*                                 Inline Markup                              */
+/******************************************************************************/
+
+/** Terminology Markup ********************************************************/
+	dfn   { /* Defining instance */
+		font-weight: bolder;
+	}
+	a > i { /* Instance of term */
+		font-style: normal;
+	}
+	dt dfn code, code.idl {
+		font-size: inherit;
+	}
+	dfn var {
+		font-style: normal;
+	}
+
+/** Change Marking ************************************************************/
+
+	del { color: red;  text-decoration: line-through; }
+	ins { color: #080; text-decoration: underline;    }
+
+/** Miscellaneous improvements to inline formatting ***************************/
+
+	sup {
+		vertical-align: super;
+		font-size: 80%
+	}
+
+/******************************************************************************/
+/*                                    Code                                    */
+/******************************************************************************/
+
+/** General monospace/pre rules ***********************************************/
+
+	pre, code, samp {
+		font-family: Menlo, Consolas, "DejaVu Sans Mono", Monaco, monospace;
+		font-size: .9em;
+		page-break-inside: avoid;
+		hyphens: none;
+		text-transform: none;
+	}
+	pre code,
+	code code {
+		font-size: 100%;
+	}
+
+	pre {
+		margin-top: 1em;
+		margin-bottom: 1em;
+		overflow: auto;
+	}
+
+/** Inline Code fragments *****************************************************/
+
+  /* Do something nice. */
+
+/******************************************************************************/
+/*                                    Links                                   */
+/******************************************************************************/
+
+/** General Hyperlinks ********************************************************/
+
+	/* We hyperlink a lot, so make it less intrusive */
+	a[href] {
+		color: #034575;
+		text-decoration: none;
+		border-bottom: 1px solid #707070;
+		/* Need a bit of extending for it to look okay */
+		padding: 0 1px 0;
+		margin: 0 -1px 0;
+	}
+	a:visited {
+		border-bottom-color: #BBB;
+	}
+
+	/* Use distinguishing colors when user is interacting with the link */
+	a[href]:focus,
+	a[href]:hover {
+		background: #f8f8f8;
+		background: rgba(75%, 75%, 75%, .25);
+		border-bottom-width: 3px;
+		margin-bottom: -2px;
+	}
+	a[href]:active {
+		color: #C00;
+		border-color: #C00;
+	}
+
+	/* Backout above styling for W3C logo */
+	.head > p:first-child > a {
+		border: none;
+		text-decoration: none;
+	}
+
+/******************************************************************************/
+/*                                    Images                                  */
+/******************************************************************************/
+
+	img {
+		border-style: none;
+	}
+
+	/* For autogen numbers, add
+	   .caption::before, figcaption::before { content: "Figure " counter(figure) ". "; }
+	*/
+
+	figure, .figure, .sidefigure {
+		page-break-inside: avoid;
+		text-align: center;
+		margin: 2.5em 0;
+	}
+	.figure img,    .sidefigure img,    figure img,
+	.figure object, .sidefigure object, figure object {
+		max-width: 100%;
+		margin: auto;
+	}
+	.figure pre, .sidefigure pre, figure pre {
+		text-align: left;
+		display: table;
+		margin: 1em auto;
+	}
+	.figure table, figure table {
+		margin: auto;
+	}
+	@media screen and (min-width: 20em) {
+		.sidefigure {
+			float: right;
+			width: 50%;
+			margin: 0 0 0.5em 0.5em
+		}
+	}
+	.caption, figcaption, caption {
+		font-style: italic;
+		font-size: 90%;
+	}
+	.caption::before, figcaption::before, figcaption > .marker {
+		font-weight: bold;
+	}
+	.caption, figcaption {
+		counter-increment: figure;
+	}
+
+	/* DL list is indented 2em, but figure inside it is not */
+	dd > .figure, dd > figure { margin-left: -2em }
+
+/******************************************************************************/
+/*                             Colored Boxes                                  */
+/******************************************************************************/
+
+	.issue, .note, .example, .advisement, blockquote {
+		padding: .5em;
+		border: .5em;
+		border-left-style: solid;
+		page-break-inside: avoid;
+	}
+	span.issue, span.note {
+		padding: .1em .5em .15em;
+		border-right-style: solid;
+	}
+
+	.issue,
+	.note,
+	.example,
+	.advisement,
+	blockquote {
+		margin: 1em auto;
+	}
+	.note  > p:first-child,
+	.issue > p:first-child,
+	blockquote > :first-child {
+		margin-top: 0;
+	}
+	blockquote > :last-child {
+		margin-bottom: 0;
+	}
+
+/** Blockquotes ***************************************************************/
+
+	blockquote {
+		border-color: silver;
+	}
+
+/** Open issue ****************************************************************/
+
+	.issue {
+		border-color: #E05252;
+		background: #FBE9E9;
+		counter-increment: issue;
+		overflow: auto;
+	}
+	.issue::before, .issue > .marker {
+		text-transform: uppercase;
+		color: #AE1E1E;
+		padding-right: 1em;
+		text-transform: uppercase;
+	}
+	/* Add .issue::before { content: "Issue " counter(issue); } for autogen numbers,
+	   or use class="marker" to mark up the issue number in source. */
+
+/** Example *******************************************************************/
+
+	.example {
+		border-color: #E0CB52;
+		background: #FCFAEE;
+		counter-increment: example;
+		overflow: auto;
+		clear: both;
+	}
+	.example::before, .example > .marker {
+		text-transform: uppercase;
+		color: #827017;
+		min-width: 7.5em;
+		display: block;
+	}
+	/* Add .example::before { content: "Example " counter(example); } for autogen numbers,
+	   or use class="marker" to mark up the example number in source. */
+
+/** Non-normative Note ********************************************************/
+
+	.note {
+		border-color: #52E052;
+		background: #E9FBE9;
+		overflow: auto;
+	}
+
+	.note::before, .note > .marker,
+	details.note > summary::before,
+	details.note > summary > .marker {
+		text-transform: uppercase;
+		display: block;
+		color: hsl(120, 70%, 30%);
+	}
+	/* Add .note::before { content: "Note"; } for autogen label,
+	   or use class="marker" to mark up the label in source. */
+
+	details.note > summary {
+		display: block;
+		color: hsl(120, 70%, 30%);
+	}
+	details.note[open] > summary {
+		border-bottom: 1px silver solid;
+	}
+
+/** Advisement Box ************************************************************/
+	/*  for attention-grabbing normative statements */
+
+	.advisement {
+		border-color: orange;
+		border-style: none solid;
+		background: #FFEECC;
+	}
+	strong.advisement {
+		display: block;
+		text-align: center;
+	}
+	.advisement > .marker {
+		color: #B35F00;
+	}
+
+/** Spec Obsoletion Notice ****************************************************/
+	/* obnoxious obsoletion notice for older/abandoned specs. */
+
+	details {
+		display: block;
+	}
+	summary {
+		font-weight: bolder;
+	}
+
+	.annoying-warning:not(details),
+	details.annoying-warning:not([open]) > summary,
+	details.annoying-warning[open] {
+		background: #fdd;
+		color: red;
+		font-weight: bold;
+		padding: .75em 1em;
+		border: thick red;
+		border-style: solid;
+		border-radius: 1em;
+	}
+	.annoying-warning :last-child {
+		margin-bottom: 0;
+	}
+
+@media not print {
+	details.annoying-warning[open] {
+		position: fixed;
+		left: 1em;
+		right: 1em;
+		bottom: 1em;
+		z-index: 1000;
+	}
+}
+
+	details.annoying-warning:not([open]) > summary {
+		text-align: center;
+	}
+
+/** Entity Definition Boxes ***************************************************/
+
+	.def {
+		padding: .5em 1em;
+		background: #DEF;
+		margin: 1.2em 0;
+		border-left: 0.5em solid #8CCBF2;
+	}
+
+/******************************************************************************/
+/*                                    Tables                                  */
+/******************************************************************************/
+
+	th, td {
+		text-align: left;
+		text-align: start;
+	}
+
+/** Property/Descriptor Definition Tables *************************************/
+
+	table.def {
+		/* inherits .def box styling, see above */
+		width: 100%;
+		border-spacing: 0;
+	}
+
+	table.def td,
+	table.def th {
+		padding: 0.5em;
+		vertical-align: baseline;
+		border-bottom: 1px solid #bbd7e9;
+	}
+
+	table.def > tbody > tr:last-child th,
+	table.def > tbody > tr:last-child td {
+		border-bottom: 0;
+	}
+
+	table.def th {
+		font-style: italic;
+		font-weight: normal;
+		padding-left: 1em;
+		width: 3em;
+	}
+
+	/* For when values are extra-complex and need formatting for readability */
+	table td.pre {
+		white-space: pre-wrap;
+	}
+
+	/* A footnote at the bottom of a def table */
+	table.def           td.footnote {
+		padding-top: 0.6em;
+	}
+	table.def           td.footnote::before {
+		content: " ";
+		display: block;
+		height: 0.6em;
+		width: 4em;
+		border-top: thin solid;
+	}
+
+/** Data tables (and properly marked-up index tables) *************************/
+	/*
+		 <table class="data"> highlights structural relationships in a table
+		 when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
+
+		 Use class="complex data" for particularly complicated tables --
+		 (This will draw more lines: busier, but clearer.)
+
+		 Use class="long" on table cells with paragraph-like contents
+		 (This will adjust text alignment accordingly.)
+		 Alternately use class="longlastcol" on tables, to have the last column assume "long".
+	*/
+
+	table {
+		word-wrap: normal;
+		overflow-wrap: normal;
+		hyphens: manual;
+	}
+
+	table.data,
+	table.index {
+		margin: 1em auto;
+		border-collapse: collapse;
+		width: 100%;
+		border: hidden;
+	}
+	table.data caption,
+	table.index caption {
+		max-width: 50em;
+		margin: 0 auto 1em;
+	}
+
+	table.data td,  table.data th,
+	table.index td, table.index th {
+		padding: 0.5em 1em;
+		border-width: 1px;
+		border-color: silver;
+		border-top-style: solid;
+	}
+
+	table.data thead td:empty {
+		padding: 0;
+		border: 0;
+	}
+
+	table.data  thead,
+	table.index thead,
+	table.data  tbody,
+	table.index tbody {
+		border-bottom: 2px solid;
+	}
+
+	table.data colgroup,
+	table.index colgroup {
+		border-left: 2px solid;
+	}
+
+	table.data  tbody th:first-child,
+	table.index tbody th:first-child  {
+		border-right: 2px solid;
+		border-top: 1px solid silver;
+		padding-right: 1em;
+	}
+
+	table.data th[colspan],
+	table.data td[colspan] {
+		text-align: center;
+	}
+
+	table.complex.data th,
+	table.complex.data td {
+		border: 1px solid silver;
+		text-align: center;
+	}
+
+	table.data.longlastcol td:last-child,
+	table.data td.long {
+	 vertical-align: baseline;
+	 text-align: left;
+	}
+
+	table.data img {
+		vertical-align: middle;
+	}
+
+
+/*
+Alternate table alignment rules
+
+	table.data,
+	table.index {
+		text-align: center;
+	}
+
+	table.data  thead th[scope="row"],
+	table.index thead th[scope="row"] {
+		text-align: right;
+	}
+
+	table.data  tbody th:first-child,
+	table.index tbody th:first-child  {
+		text-align: right;
+	}
+
+Possible extra rowspan handling
+
+	table.data  tbody th[rowspan]:not([rowspan='1']),
+	table.index tbody th[rowspan]:not([rowspan='1']),
+	table.data  tbody td[rowspan]:not([rowspan='1']),
+	table.index tbody td[rowspan]:not([rowspan='1']) {
+		border-left: 1px solid silver;
+	}
+
+	table.data  tbody th[rowspan]:first-child,
+	table.index tbody th[rowspan]:first-child,
+	table.data  tbody td[rowspan]:first-child,
+	table.index tbody td[rowspan]:first-child{
+		border-left: 0;
+		border-right: 1px solid silver;
+	}
+*/
+
+/******************************************************************************/
+/*                                  Indices                                   */
+/******************************************************************************/
+
+
+/** Table of Contents *********************************************************/
+
+	.toc a {
+		/* More spacing; use padding to make it part of the click target. */
+		padding-top: 0.1em;
+		/* Larger, more consistently-sized click target */
+		display: block;
+		/* Reverse color scheme */
+		color: black;
+		border-color: #3980B5;
+	}
+	.toc a:visited {
+		border-color: #054572;
+	}
+	.toc a:not(:focus):not(:hover) {
+		/* Allow colors to cascade through from link styling */
+		border-bottom-color: transparent;
+	}
+
+	.toc, .toc ol, .toc ul, .toc li {
+		list-style: none; /* Numbers must be inlined into source */
+		/* because generated content isn't search/selectable and markers can't do multilevel yet */
+		margin:  0;
+		padding: 0;
+		line-height: 1.1rem; /* consistent spacing */
+	}
+
+	/* ToC not indented until third level, but font style & margins show hierarchy */
+	.toc > li             { font-weight: bold;   }
+	.toc > li li          { font-weight: normal; }
+	.toc > li li li       { font-style:  italic; }
+	.toc > li li li li    { font-style:  normal; }
+	.toc > li li li li li { font-style:  italic;
+	                        font-size:   85%;    }
+
+	.toc > li             { margin: 1.5em 0;     }
+	.toc > li li          { margin: 0.3rem 0;    }
+	.toc > li li li       { margin-left: 2em;
+	                        margin-left: 2rem;   }
+
+	/* Section numbers in a column of their own */
+	:not(li) > .toc {
+		margin-left: 5em;
+	}
+
+	.toc .secno {
+		float: left;
+		width: 4em;
+		white-space: nowrap;
+	}
+	.toc > li li li li .secno {
+		font-size: 85%;
+	}
+	.toc > li li li li li .secno {
+		font-size: 100%;
+	}
+
+	:not(li) > .toc              { margin-left:  5rem; }
+	.toc .secno                  { margin-left: -5rem; }
+	.toc > li li li .secno       { margin-left: -7rem; }
+	.toc > li li li li .secno    { margin-left: -9rem; }
+	.toc > li li li li li .secno { margin-left: -11rem; }
+
+	/* Tighten up indentation in narrow ToCs */
+	@media (max-width: 30em) {
+		:not(li) > .toc              { margin-left:  4rem; }
+		.toc .secno                  { margin-left: -4rem; }
+		.toc > li li li              { margin-left:  1rem; }
+		.toc > li li li .secno       { margin-left: -5rem; }
+		.toc > li li li li .secno    { margin-left: -6rem; }
+		.toc > li li li li li .secno { margin-left: -7rem; }
+	}
+	@media screen and (min-width: 78em) {
+		body:not(.toc-inline) :not(li) > .toc              { margin-left:  4rem; }
+		body:not(.toc-inline) .toc .secno                  { margin-left: -4rem; }
+		body:not(.toc-inline) .toc > li li li              { margin-left:  1rem; }
+		body:not(.toc-inline) .toc > li li li .secno       { margin-left: -5rem; }
+		body:not(.toc-inline) .toc > li li li li .secno    { margin-left: -6rem; }
+		body:not(.toc-inline) .toc > li li li li li .secno { margin-left: -7rem; }
+	}
+	body.toc-sidebar #toc :not(li) > .toc              { margin-left:  4rem; }
+	body.toc-sidebar #toc .toc .secno                  { margin-left: -4rem; }
+	body.toc-sidebar #toc .toc > li li li              { margin-left:  1rem; }
+	body.toc-sidebar #toc .toc > li li li .secno       { margin-left: -5rem; }
+	body.toc-sidebar #toc .toc > li li li li .secno    { margin-left: -6rem; }
+	body.toc-sidebar #toc .toc > li li li li li .secno { margin-left: -7rem; }
+
+	.toc li {
+		clear: both;
+	}
+
+
+/** Index *********************************************************************/
+
+	/* Index Lists: Layout */
+	ul.index       { margin-left: 0; columns: 15em; -webkit-columns: 15em; -moz-columns: 15em; text-indent: 1em hanging; }
+	ul.index li    { margin-left: 0; list-style: none; break-inside: avoid; }
+	ul.index li li { margin-left: 1em }
+	ul.index dl    { margin-top: 0; }
+	ul.index dt    { margin: .2em 0 .2em 20px;}
+	ul.index dd    { margin: .2em 0 .2em 40px;}
+	/* Index Lists: Typography */
+	ul.index ul,
+	ul.index dl { font-size: smaller; }
+	@media not print {
+		ul.index li span {
+			white-space: nowrap;
+			color: transparent; }
+		ul.index li a:hover + span,
+		ul.index li a:focus + span {
+			color: #707070;
+		}
+	}
+
+/** Index Tables *****************************************************/
+	/* See also the data table styling section, which this effectively subclasses */
+
+	table.index {
+		font-size: small;
+		border-collapse: collapse;
+		border-spacing: 0;
+		text-align: left;
+		margin: 1em 0;
+	}
+
+	table.index td,
+	table.index th {
+		padding: 0.4em;
+	}
+
+	table.index tr:hover td:not([rowspan]),
+	table.index tr:hover th:not([rowspan]) {
+		background: #f7f8f9;
+	}
+
+	/* The link in the first column in the property table (formerly a TD) */
+	table.index th:first-child a {
+		font-weight: bold;
+	}
+
+/******************************************************************************/
+/*                                    Print                                   */
+/******************************************************************************/
+
+	@media print {
+		/* Pages have their own margins. */
+		html {
+			margin: 0;
+		}
+		/* Serif for print. */
+		body {
+			font-family: serif;
+		}
+	}
+	@page {
+		margin: 1.5cm 1.1cm;
+	}
+
+/******************************************************************************/
+/*                                    Legacy                                  */
+/******************************************************************************/
+
+	/* This rule is inherited from past style sheets. No idea what it's for. */
+	.hide { display: none }
+
+
+
+/******************************************************************************/
+/*                             Overflow Control                               */
+/******************************************************************************/
+
+	.figure .caption, .sidefigure .caption, figcaption {
+		/* in case figure is overlarge, limit caption to 50em */
+		max-width: 50rem;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	@media (min-width: 55em) {
+		.overlarge {
+			margin-left: calc(13px + 26.5rem - 50vw);
+			margin-right: calc(13px + 26.5rem - 50vw);
+			max-width: none;
+		}
+	}
+	@media screen and (min-width: 78em) {
+		body:not(.toc-inline) .overlarge {
+			/* 30.5em body padding 50em content area */
+			margin-left: calc(40em - 50vw) !important;
+			margin-right: calc(40em - 50vw) !important;
+		}
+	}
+	@media screen and (min-width: 90em) {
+		body:not(.toc-inline) .overlarge {
+			/* 4em html margin 30.5em body padding 50em content area */
+			margin-left: 0 !important;
+			margin-right: calc(84.5em - 100vw) !important;
+		}
+	}
+
+	@media not print {
+		.overlarge {
+			overflow-x: auto;
+			/* See Lea Verou's explanation background-attachment:
+			 * http://lea.verou.me/2012/04/background-attachment-local/
+			 *
+			background: top left  / 4em 100% linear-gradient(to right,  #ffffff, rgba(255, 255, 255, 0)) local,
+			            top right / 4em 100% linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0)) local,
+			            top left  / 1em 100% linear-gradient(to right,  #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+			            top right / 1em 100% linear-gradient(to left, #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+			            white;
+			background-repeat: no-repeat;
+			*/
+		}
+	}
+
+/******************************************************************************/
+/*                                  Bikeshed                                  */
+/******************************************************************************/
+
+	/* Style for paragraphs I know are in MD-genned lists */
+	/* This is a weird hack for me not yet following the commonmark spec
+	   regarding paragraph and lists. */
+	[data-md] > :first-child {
+		margin-top: 0;
+	}
+	[data-md] > :last-child {
+		margin-bottom: 0;
+	}
+
+/** Inline CSS fragments ******************************************************/
+
+	.css.css, .property.property, .descriptor.descriptor {
+		color: #005a9c;
+		font-size: inherit;
+		font-family: inherit;
+	}
+	.css::before, .property::before, .descriptor::before {
+		content: "‘";
+	}
+	.css::after, .property::after, .descriptor::after {
+		content: "’";
+	}
+	.property, .descriptor {
+		/* Don't wrap property and descriptor names */
+		white-space: nowrap;
+	}
+	.type { /* CSS value <type> */
+		font-style: italic;
+	}
+	pre .property::before, pre .property::after {
+		content: "";
+	}
+
+/** Autolinks produced using Bikeshed *****************************************/
+
+	[data-link-type="property"]::before,
+	[data-link-type="propdesc"]::before,
+	[data-link-type="descriptor"]::before,
+	[data-link-type="value"]::before,
+	[data-link-type="function"]::before,
+	[data-link-type="at-rule"]::before,
+	[data-link-type="selector"]::before,
+	[data-link-type="maybe"]::before {
+		content: "‘";
+	}
+	[data-link-type="property"]::after,
+	[data-link-type="propdesc"]::after,
+	[data-link-type="descriptor"]::after,
+	[data-link-type="value"]::after,
+	[data-link-type="function"]::after,
+	[data-link-type="at-rule"]::after,
+	[data-link-type="selector"]::after,
+	[data-link-type="maybe"]::after {
+		content: "’";
+	}
+
+	[data-link-type].production::before,
+	[data-link-type].production::after,
+	.prod [data-link-type]::before,
+	.prod [data-link-type]::after {
+		content: "";
+	}
+
+	[data-link-type=element],
+	[data-link-type=element-attr] {
+		font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+		font-size: .9em;
+	}
+	[data-link-type=element]::before { content: "<" }
+	[data-link-type=element]::after  { content: ">" }
+
+	[data-link-type=biblio] {
+		white-space: pre;
+	}
+
+/** Self-Links ****************************************************************/
+/* Auto-generated links from an element to its own anchor, for usability */
+
+	.heading, .issue, .note, .example, li, dt {
+		position: relative;
+	}
+	a.self-link {
+		position: absolute;
+		top: 0;
+		left: calc(-1 * (3.5rem - 26px));
+		width: calc(3.5rem - 26px);
+		height: 2em;
+		text-align: center;
+		border: none;
+		transition: opacity .2s;
+		opacity: .5;
+	}
+	a.self-link:hover {
+		opacity: 1;
+	}
+	.heading > a.self-link {
+		font-size: 83%;
+	}
+	dfn > a.self-link {
+		top: auto;
+		left: auto;
+		opacity: 0;
+		width: 1.5em;
+		height: 1.5em;
+		background: gray;
+		color: white;
+		font-style: normal;
+		transition: opacity .2s, background-color .2s, color .2s;
+	}
+	dfn:hover > a.self-link {
+		opacity: 1;
+	}
+	dfn > a.self-link:hover {
+		color: black;
+	}
+
+	a.self-link::before            { content: "¶"; }
+	.heading > a.self-link::before { content: "§"; }
+	dfn > a.self-link::before      { content: "#"; }
+
+/** Counters ******************************************************************/
+/* Adds the auto-genned issue/example counters,
+   until Bikeshed fills in manual ones. */
+	.issue:not(.no-marker)::before {
+		content: "Issue " counter(issue);
+	}
+
+	.example:not(.no-marker)::before {
+		content: "Example";
+		content: "Example " counter(example);
+	}
+	.invalid.example:not(.no-marker)::before,
+	.illegal.example:not(.no-marker)::before {
+		content: "Invalid Example";
+		content: "Invalid Example" counter(example);
+	}
+
+
+
+/********************************************
+ Remember to remove the logo section when copypasting freshly.
+ */
+</style>
+  <meta content="Bikeshed 1.0.0" name="generator">
+<style>
+        .dfn-panel {
+            display: inline-block;
+            position: absolute;
+            z-index: 35;
+            height: auto;
+            width: -webkit-fit-content;
+            max-width: 300px;
+            max-height: 500px;
+            overflow: auto;
+            padding: 0.5em 0.75em;
+            font: small Helvetica Neue, sans-serif, Droid Sans Fallback;
+            background: #DDDDDD;
+            color: black;
+            border: outset 0.2em;
+        }
+        .dfn-panel:not(.on) { display: none; }
+        .dfn-panel * { margin: 0; padding: 0; text-indent: 0; }
+        .dfn-panel > b { display: block; }
+        .dfn-panel a { color: black; }
+        .dfn-panel a:not(:hover) { text-decoration: none !important; border-bottom: none !important; }
+        .dfn-panel > b + b { margin-top: 0.25em; }
+        .dfn-panel > span { display: list-item; list-style: inside; }
+        .dfn-panel.activated {
+            display: inline-block;
+            position: fixed;
+            left: .5em;
+            bottom: .5em;
+            margin: 0 auto;
+            max-width: calc(100vw - 1.5em - .4em - .5em);
+            max-height: 30vh;
+        }
+
+        .dfn-paneled { cursor: pointer; }
+        </style>
+ <body class="h-entry">
+  <div class="head">
+   <p data-fill-with="logo"><a class="logo" href="https://www.w3.org/"> <img alt="W3C" height="48" src="https://www.w3.org/Icons/w3c_home" width="72"> </a> </p>
+   <h1 class="p-name no-ref" id="title">User Interface Security and the Visibility API</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Editor’s Draft, <time class="dt-updated" datetime="2016-03-09">9 March 2016</time></span></h2>
+   <div data-fill-with="spec-metadata">
+    <dl>
+     <dt>This version:
+     <dd><a class="u-url" href="https://w3c.github.io/webappsec/specs/uisecurity/">https://w3c.github.io/webappsec/specs/uisecurity/</a>
+     <dt>Feedback:
+     <dd><span><a href="mailto:public-webappsec@w3.org?subject=%5BUI Security%5D%20YOUR%20TOPIC%20HERE">public-webappsec@w3.org</a> with subject line “<kbd>[UI Security] <i data-lt="">… message topic …</i></kbd>” (<a href="http://lists.w3.org/Archives/Public/public-webappsec/" rel="discussion">archives</a>)</span>
+     <dt>Issue Tracking:
+     <dd><a href="#issues-index">Inline In Spec</a>
+     <dt class="editor">Editor:
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:hillbrad@fb.com">Brad Hill</a> (<span class="p-org org">Facebook</span>)
+     <dt>Author:
+     <dd><span>Dan Kaminsky, White Ops</span>
+     <dd><span>David Lin-Shung Huang, Carnegie Mellon University</span>
+     <dd><span>Giorgio Maone, Invited Expert</span>
+    </dl>
+   </div>
+   <div data-fill-with="warning"></div>
+   <p class="copyright" data-fill-with="copyright"><a href="https://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> © 2016 <a href="https://www.w3.org/"><abbr title="World Wide Web Consortium">W3C</abbr></a><sup>®</sup> (<a href="http://www.csail.mit.edu/"><abbr title="Massachusetts Institute of Technology">MIT</abbr></a>, <a href="http://www.ercim.eu/"><abbr title="European Research Consortium for Informatics and Mathematics">ERCIM</abbr></a>, <a href="http://www.keio.ac.jp/">Keio</a>, <a href="http://ev.buaa.edu.cn/">Beihang</a>). W3C <a href="https://www.w3.org/Consortium/Legal/ipr-notice#Legal_Disclaimer">liability</a>, <a href="https://www.w3.org/Consortium/Legal/ipr-notice#W3C_Trademarks">trademark</a> and <a href="https://www.w3.org/Consortium/Legal/copyright-documents">document use</a> rules apply. </p>
+   <hr title="Separator for header">
+  </div>
+  <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
+  <div class="p-summary" data-fill-with="abstract">
+   <p>UI Security and the Visibility API defines both a
+
+declarative and imperative means for resources
+displayed in an embedded context to protect
+themselves against having their content obscured,
+moved, or otherwise displayed in a misleading
+manner.</p>
+  </div>
+  <h2 class="no-num no-toc no-ref heading settled" id="status"><span class="content">Status of this document</span></h2>
+  <div data-fill-with="status">
+   <p> This is a public copy of the editors’ draft.
+	It is provided for discussion only and may change at any moment.
+	Its publication here does not imply endorsement of its contents by W3C.
+	Don’t cite this document other than as work in progress. </p>
+   <p> <strong>Changes to this document may be tracked at <a href="https://github.com/w3c/webappsec">https://github.com/w3c/webappsec</a>.</strong> </p>
+   <p> The (<a href="http://lists.w3.org/Archives/Public/public-webappsec/">archived</a>) public mailing list <a href="mailto:public-webappsec@w3.org?Subject=%5BUI Security%5D%20PUT%20SUBJECT%20HERE">public-webappsec@w3.org</a> (see <a href="https://www.w3.org/Mail/Request">instructions</a>)
+	is preferred for discussion of this specification.
+	When sending e-mail,
+	please put the text “UI Security” in the subject,
+	preferably like this:
+	“[UI Security] <em>…summary of comment…</em>” </p>
+   <p> This document was produced by the <a href="https://www.w3.org/2011/webappsec/">Web Application Security Working Group</a>. </p>
+   <p> This document was produced by a group operating under
+	the <a href="https://www.w3.org/Consortium/Patent-Policy-20040205/">5 February 2004 W3C Patent Policy</a>.
+	W3C maintains a <a href="https://www.w3.org/2004/01/pp-impl/49309/status" rel="disclosure">public list of any patent disclosures</a> made in connection with the deliverables of the group;
+	that page also includes instructions for disclosing a patent.
+	An individual who has actual knowledge of a patent which the individual believes contains <a href="https://www.w3.org/Consortium/Patent-Policy-20040205/#def-essential">Essential Claim(s)</a> must disclose the information in accordance with <a href="https://www.w3.org/Consortium/Patent-Policy-20040205/#sec-Disclosure">section 6 of the W3C Patent Policy</a>. </p>
+   <p> This document is governed by the <a href="https://www.w3.org/2015/Process-20150901/" id="w3c_process_revision">1 September 2015 W3C Process Document</a>. </p>
+   <p></p>
+  </div>
+  <div data-fill-with="at-risk"></div>
+  <nav data-fill-with="table-of-contents" id="toc">
+   <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
+   <ol class="toc" role="directory">
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li><a href="#special-conformance"><span class="secno">2</span> <span class="content">Special Conformance Notes</span></a>
+    <li>
+     <a href="#visibility-observer-api"><span class="secno">3</span> <span class="content">VisibilityObserver API</span></a>
+     <ol class="toc">
+      <li><a href="#visibility-observer-callback"><span class="secno">3.1</span> <span class="content">The VisibilityObserverCallback</span></a>
+      <li><a href="#visibility-observer-entry"><span class="secno">3.2</span> <span class="content">The VisibilityObserverEntry interface</span></a>
+      <li><a href="#visibility-observer-interface"><span class="secno">3.3</span> <span class="content">The VisibilityObserver Interface</span></a>
+      <li><a href="#visibility-observer-init"><span class="secno">3.4</span> <span class="content">The VisibilityObserverInit dictionary</span></a>
+     </ol>
+    <li>
+     <a href="#csp-interface"><span class="secno">4</span> <span class="content">Content Security Policy Interface</span></a>
+     <ol class="toc">
+      <li>
+       <a href="#input-protection-interface"><span class="secno">4.1</span> <span class="content">The <span>input-protection Directive</span></span></a>
+       <ol class="toc">
+        <li><a href="#directive-value"><span class="secno">4.1.1</span> <span class="content">Directive Value</span></a>
+       </ol>
+     </ol>
+    <li>
+     <a href="#processing-model"><span class="secno">5</span> <span class="content">Processing Model</span></a>
+     <ol class="toc">
+      <li>
+       <a href="#defines"><span class="secno">5.1</span> <span class="content">Internal Slot Definitions</span></a>
+       <ol class="toc">
+        <li><a href="#browsing-context-slots"><span class="secno">5.1.1</span> <span class="content">Browsing Contexts</span></a>
+        <li><a href="#element-private-slots"><span class="secno">5.1.2</span> <span class="content">Element</span></a>
+        <li><a href="#document-private-slots"><span class="secno">5.1.3</span> <span class="content">Document</span></a>
+        <li><a href="#visibility-observer-private-slots"><span class="secno">5.1.4</span> <span class="content">VisibilityObserver</span></a>
+       </ol>
+      <li>
+       <a href="#algorithms"><span class="secno">5.2</span> <span class="content">Algorithms</span></a>
+       <ol class="toc">
+        <li><a href="#queue-visibility-observer-task-algo"><span class="secno">5.2.1</span> <span class="content">Queue a VisibilityObserver Task</span></a>
+        <li><a href="#notify-visibility-observers-algo"><span class="secno">5.2.2</span> <span class="content">Notify VisibilityObservers</span></a>
+        <li><a href="#queue-visibility-observer-entry-algo"><span class="secno">5.2.3</span> <span class="content">Queue a VisibilityObserverEntry</span></a>
+        <li><a href="#promote-observed-graphicslayers-algo"><span class="secno">5.2.4</span> <span class="content">Promote Observed GraphicsLayers</span></a>
+        <li><a href="#enforce-an-input-protection-directive-algo"><span class="secno">5.2.5</span> <span class="content">Enforce An input-protection Directive</span></a>
+        <li><a href="#handle-a-violation-algo"><span class="secno">5.2.6</span> <span class="content">Handle a Violation</span></a>
+       </ol>
+      <li>
+       <a href="#external-spec-integrations"><span class="secno">5.3</span> <span class="content">External Spec Integrations</span></a>
+       <ol class="toc">
+        <li><a href="#event-loop"><span class="secno">5.3.1</span> <span class="content">HTML Processing Model: Event Loop</span></a>
+        <li><a href="#dispatching-events-algo"><span class="secno">5.3.2</span> <span class="content">DOM: Dispatching Events</span></a>
+        <li><a href="#usafe-attribute"><span class="secno">5.3.3</span> <span class="content">isUnsafe Attribute</span></a>
+       </ol>
+     </ol>
+    <li><a href="#privacy-considerations"><span class="secno">6</span> <span class="content">Privacy Considerations</span></a>
+    <li><a href="#security-considerations"><span class="secno">7</span> <span class="content">Security Considerations</span></a>
+    <li><a href="#accessibility-considerations"><span class="secno">8</span> <span class="content">Accessibility Considerations</span></a>
+    <li>
+     <a href="#conformance"><span class="secno"></span> <span class="content">Conformance</span></a>
+     <ol class="toc">
+      <li><a href="#conventions"><span class="secno"></span> <span class="content">Document conventions</span></a>
+      <li><a href="#conformant-algorithms"><span class="secno"></span> <span class="content">Conformant Algorithms</span></a>
+     </ol>
+    <li>
+     <a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
+     <ol class="toc">
+      <li><a href="#index-defined-here"><span class="secno"></span> <span class="content">Terms defined by this specification</span></a>
+      <li><a href="#index-defined-elsewhere"><span class="secno"></span> <span class="content">Terms defined by reference</span></a>
+     </ol>
+    <li>
+     <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+     <ol class="toc">
+      <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
+     </ol>
+    <li><a href="#idl-index"><span class="secno"></span> <span class="content">IDL Index</span></a>
+    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
+   </ol>
+  </nav>
+  <main>
+   <section>
+    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+    <p><em>This section is not normative.</em></p>
+    <p>Composite or "mash-up" web applications built using iframes
+		are ubiquitous because they allow users to interact seamlessly and
+		simultaneously with content from multiple origins while
+		maintaining isolation boundaries that are essential to
+		security and privacy for both users and applications.</p>
+    <p>However, those boundaries are not absolute.  In particular,
+		the visual and temporal integrity of embedded content is
+		not protected from manipulation by the embedding resource.
+		An embedding resource might constrain the viewport,
+		draw over, transform, reposition, or resize the user’s
+		view of a third-party resource.</p>
+    <p>Collectively known as User Interface Redressing, the goal
+		of such manipulations might be to entice the user to interact
+		with embedded content without knowing its context, (e.g. to 
+		send a payment or share content) commonly known as "clickjacking",
+		or to convince paid content that it is being shown to the user
+		when it is actually obscured, commonly known in the advertising
+		business as "display fraud".</p>
+    <p>Existing anti-clickjacking measures such as frame-busting
+    scripts and headers granting origin-based embedding permissions have 
+		shortcomings which prevent their application to important use-cases.
+    Frame-busting scripts, for example, rely on browser behavior that has not been 
+		engineered to provide a security guarantee and as a consequence,
+		such scripts may be unreliable if loaded inside a sandbox
+    or otherwise disabled. The X-Frame-Options header and the frame-ancestors
+		Content Security Policy directive offer an all-or-none approach to
+		display of embedded content that is not appropriate for content
+		which may be embedded in arbitrary locations, or known locations
+		which might still be adversarial.</p>
+    <p>This document defines mechanisms to allow resources to
+		request to be displayed free of interference by their embedding context and
+		learn if the user agent was able to satisfy such a request, with 
+		sufficient granularity to make decisions that can protect both users
+		and content purveyors from various types of fraud.</p>
+    <p>First, this document defines an imperative API, VisibilityObserver,
+		by which a resource can request that a conforming user agent guarantee
+		unmodified display of its viewport, and report events on the success or
+		failure of meeting such guarantees.  This API should be suitable
+		for e.g. paid content such as advertising to receive trustworthy
+		signals about its viewability from a conforming user agent.</p>
+    <p>Secondly, this specification defines a declarative mechanism
+		(via a Content Security Poicy directive) to request visibility
+		protection and receive notification, via event properties or
+		out-of-band reporting, if certain events are delivered to
+		a resource while it does not meet its requested visibility 
+		contract.</p>
+    <p>The declarative CSP interface does not offer the same fine-granularity control as
+		the JavaScript API.  Its goal is to allow protection to be
+		retrofitted to legacy applications, with no or minimal code changes, as a replacement for
+		X-Frame-Options, or potentially for use with content that is sandboxed and cannot
+		execute JavaScript.</p>
+    <p class="issue" id="issue-b24dcbe0"><a class="self-link" href="#issue-b24dcbe0"></a> Do we need to deal with form submission / navigations that aren’t JS-event-based?</p>
+    <p class="issue" id="issue-b233e40b"><a class="self-link" href="#issue-b233e40b"></a> how to interact with frame-ancestors and XFO?</p>
+    <p>A notable non-goal is pixel-accurate information about what was
+		actually displayed beyond its bounding rectangle, as this information
+		can be quite difficult to obtain in an efficient manner, and is extremely
+		difficult to accomplish without exposing timing side channels which leak
+		information across the Same Origin Policy security boundary.</p>
+    <div class="note" role="note">
+      NOTE:
+		Similar to, and modeled on the <a href="http://rawgit.com/slightlyoff/IntersectionObserver/master/index.html"> Intersection Observer</a> draft, this specification shares a goal of allowing reliable and low-cost
+		calculation of element visibility for, e.g purposes of <a href="http://www.iab.net/iablog/2014/03/viewability-has-arrived-what-you-need-to-know-to-see-through-this-sea-change.html"> reporting ad visibility for monetizing impressions</a>.  The current specification
+		adds the goals of preventing clickjacking and other UI redressing attacks both by enforcing that
+		an iframe which has requested visibility be free of any transforms, movement or re-clipping
+		within a defined time threshold, and by allowing event delivery to be intercepted or
+		annotated when policies are not met. 
+     <p>Distinct from the <em>Intersection Observer</em> proposal, this specification operates internally on entire
+		documents, on a per-iframe basis (although it provides some syntatic sugar for the declarative,
+		event-driven API) rather than observing individual elements, and it affirmatively modifies the final 
+		composited result in the global viewport by promoting the graphics layer of an iframe that has requested visibility.</p>
+    </div>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="2" id="special-conformance"><span class="secno">2. </span><span class="content">Special Conformance Notes</span><a class="self-link" href="#special-conformance"></a></h2>
+    <p><em>This section is not normative.</em></p>
+    <p>UI Redressing attacks rely on fooling the subjective perceptions of
+    human actors to induce them to interact with a web application out of
+    its intended context.  Because of this, the specific mechanisms which
+    may be used in attack and defense may vary greatly with the details of
+    a user agent implementation.  For example, attacks which rely on
+    redressing the cursor may not apply in a touch environment, or entire
+    classes of attack may be impossible on a text-only browser or screen
+    reader.</p>
+    <p>Similarly, the implementation of the policies specified herein is highly
+    dependent on internal architecture and implementation strategies of
+    the user agent; such strategies may vary greatly between user agents
+    or even across versions or platforms for a single user agent.</p>
+    <p>This specification provides a normative means by which a resource
+    owner can communicate to a user agent its desire for additional
+    protective measures, actions to take if violations are detected,
+    and tuning hints which may be useful for certain means of
+    implementation.  A user agent is conformant if it understands
+		these directives and makes a best effort to provide the desired 
+		security properties, which might require no additional implementation
+		steps, e.g. in the case of a screen reader that does not support
+		embedded resources in a manner that is subject to any of the
+		attack classes of concern.</p>
+    <p>While the indeterminacy of the user agent implementation protects
+    applications from needing to constantly update their policies as
+    user agents make internal changes, application authors should
+    understand that even a conformant user agent cannot make
+    perfect security guarantees against UI Redressing.</p>
+    <p>These directives should be used as part of a comprehensive risk
+    mitigation strategy with an appropriate understanding of their
+    limitations.</p>
+   </section>
+   <section>
+    <h2 class="heading settled" data-level="3" id="visibility-observer-api"><span class="secno">3. </span><span class="content">VisibilityObserver API</span><a class="self-link" href="#visibility-observer-api"></a></h2>
+    <p>The VisibilityObserver API provides an imperative API for developers to
+	receive notification of visibility state changes for their document relative to
+	the global viewport.</p>
+    <h3 class="heading settled" data-level="3.1" id="visibility-observer-callback"><span class="secno">3.1. </span><span class="content">The VisibilityObserverCallback</span><a class="self-link" href="#visibility-observer-callback"></a></h3>
+<pre class="idl def">callback <dfn class="dfn-paneled idl-code" data-dfn-type="callback" data-export="" data-lt="VisibilityObserverCallback" id="callbackdef-visibilityobservercallback">VisibilityObserverCallback<span class="dfn-panel" data-deco=""><b><a href="#callbackdef-visibilityobservercallback">#callbackdef-visibilityobservercallback</a></b><b>Referenced in:</b><span><a href="#ref-for-callbackdef-visibilityobservercallback-1">3.2. The VisibilityObserverEntry interface</a></span><span><a href="#ref-for-callbackdef-visibilityobservercallback-2">3.3. The VisibilityObserver Interface</a></span></span></dfn> = void(sequence&lt;<a data-link-type="idl-name" href="#visibilityobserverentry" id="ref-for-visibilityobserverentry-1">VisibilityObserverEntry</a>> <dfn class="idl-code" data-dfn-for="VisibilityObserverCallback" data-dfn-type="argument" data-export="" id="dom-visibilityobservercallback-entries">entries<a class="self-link" href="#dom-visibilityobservercallback-entries"></a></dfn>, <a data-link-type="idl-name" href="#visibilityobserver" id="ref-for-visibilityobserver-1">VisibilityObserver</a> <dfn class="idl-code" data-dfn-for="VisibilityObserverCallback" data-dfn-type="argument" data-export="" id="dom-visibilityobservercallback-observer">observer<a class="self-link" href="#dom-visibilityobservercallback-observer"></a></dfn>)
+</pre>
+    <p>This callback will be invoked when there are changes to the document’s <em>visibility state</em>.</p>
+    <h3 class="heading settled" data-level="3.2" id="visibility-observer-entry"><span class="secno">3.2. </span><span class="content">The VisibilityObserverEntry interface</span><a class="self-link" href="#visibility-observer-entry"></a></h3>
+<pre class="idl def">[<dfn class="idl-code" data-dfn-for="VisibilityObserverEntry" data-dfn-type="constructor" data-export="" data-lt="VisibilityObserverEntry(callback, visibilityObserverEntryInit)|VisibilityObserverEntry(callback)" id="dom-visibilityobserverentry-visibilityobserverentry">Constructor<a class="self-link" href="#dom-visibilityobserverentry-visibilityobserverentry"></a></dfn>(<a data-link-type="idl-name" href="#callbackdef-visibilityobservercallback" id="ref-for-callbackdef-visibilityobservercallback-1">VisibilityObserverCallback</a> callback, optional <a data-link-type="idl-name" href="#dictdef-visibilityobserverentryinit" id="ref-for-dictdef-visibilityobserverentryinit-1">VisibilityObserverEntryInit</a> <dfn class="idl-code" data-dfn-for="VisibilityObserverEntry/VisibilityObserverEntry(callback, visibilityObserverEntryInit)" data-dfn-type="argument" data-export="" id="dom-visibilityobserverentry-visibilityobserverentry-callback-visibilityobserverentryinit-visibilityobserverentryinit">visibilityObserverEntryInit<a class="self-link" href="#dom-visibilityobserverentry-visibilityobserverentry-callback-visibilityobserverentryinit-visibilityobserverentryinit"></a></dfn>), Exposed=Window]
+interface <dfn class="dfn-paneled idl-code" data-dfn-type="interface" data-export="" data-lt="VisibilityObserverEntry" id="visibilityobserverentry">VisibilityObserverEntry<span class="dfn-panel" data-deco=""><b><a href="#visibilityobserverentry">#visibilityobserverentry</a></b><b>Referenced in:</b><span><a href="#ref-for-visibilityobserverentry-1">3.1. The VisibilityObserverCallback</a></span><span><a href="#ref-for-visibilityobserverentry-2">3.3. The VisibilityObserver Interface</a></span><span><a href="#ref-for-visibilityobserverentry-3">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> {
+  readonly attribute <a data-link-type="idl-name" href="https://drafts.fxtf.org/geometry-1/#domrectreadonly">DOMRectReadOnly</a> <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="DOMRectReadOnly " href="#dom-visibilityobserverentry-globalvisiblebounds" id="ref-for-dom-visibilityobserverentry-globalvisiblebounds-1">globalVisibleBounds</a>;
+  readonly attribute <a data-link-type="idl-name" href="https://drafts.fxtf.org/geometry-1/#domrectreadonly">DOMRectReadOnly</a> <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="DOMRectReadOnly " href="#dom-visibilityobserverentry-visiblebounds" id="ref-for-dom-visibilityobserverentry-visiblebounds-1">visibleBounds</a>;
+  readonly attribute <a data-link-type="idl-name" href="https://www.w3.org/TR/hr-time/#domhighrestimestamp">DOMHighResTimeStamp</a> <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="DOMHighResTimeStamp " href="#dom-visibilityobserverentry-time" id="ref-for-dom-visibilityobserverentry-time-1">time</a>;
+ };
+
+dictionary <dfn class="dfn-paneled idl-code" data-dfn-type="dictionary" data-export="" data-lt="VisibilityObserverEntryInit" id="dictdef-visibilityobserverentryinit">VisibilityObserverEntryInit<span class="dfn-panel" data-deco=""><b><a href="#dictdef-visibilityobserverentryinit">#dictdef-visibilityobserverentryinit</a></b><b>Referenced in:</b><span><a href="#ref-for-dictdef-visibilityobserverentryinit-1">3.2. The VisibilityObserverEntry interface</a></span></span></dfn> {
+  required <a data-link-type="idl-name" href="https://drafts.fxtf.org/geometry-1/#dictdef-domrectinit">DOMRectInit</a> <dfn class="idl-code" data-dfn-for="VisibilityObserverEntryInit" data-dfn-type="dict-member" data-export="" data-type="DOMRectInit " id="dom-visibilityobserverentryinit-globalvisiblebounds">globalVisibleBounds<a class="self-link" href="#dom-visibilityobserverentryinit-globalvisiblebounds"></a></dfn>;
+  required <a data-link-type="idl-name" href="https://drafts.fxtf.org/geometry-1/#dictdef-domrectinit">DOMRectInit</a> <dfn class="idl-code" data-dfn-for="VisibilityObserverEntryInit" data-dfn-type="dict-member" data-export="" data-type="DOMRectInit " id="dom-visibilityobserverentryinit-visiblebounds">visibleBounds<a class="self-link" href="#dom-visibilityobserverentryinit-visiblebounds"></a></dfn>;
+  required <a data-link-type="idl-name" href="https://www.w3.org/TR/hr-time/#domhighrestimestamp">DOMHighResTimeStamp</a> <dfn class="idl-code" data-dfn-for="VisibilityObserverEntryInit" data-dfn-type="dict-member" data-export="" data-type="DOMHighResTimeStamp " id="dom-visibilityobserverentryinit-time">time<a class="self-link" href="#dom-visibilityobserverentryinit-time"></a></dfn>;
+};
+</pre>
+    <div>
+      <dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserverEntry" data-dfn-type="attribute" data-export="" data-lt="globalVisibleBounds" id="dom-visibilityobserverentry-globalvisiblebounds">globalVisibleBounds<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserverentry-globalvisiblebounds">#dom-visibilityobserverentry-globalvisiblebounds</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserverentry-globalvisiblebounds-1">3.2. The VisibilityObserverEntry interface</a> <a href="#ref-for-dom-visibilityobserverentry-globalvisiblebounds-2">(2)</a> <a href="#ref-for-dom-visibilityobserverentry-globalvisiblebounds-3">(3)</a></span></span></dfn> The <code class="idl"><a data-link-type="idl" href="https://drafts.fxtf.org/geometry-1/#domrect">DOMRect</a></code> coresponding to the visible dimensions of the 
+				top-level document in the global viewport’s coordinate space. 
+     <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserverEntry" data-dfn-type="attribute" data-export="" data-lt="visibleBounds" id="dom-visibilityobserverentry-visiblebounds">visibleBounds<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserverentry-visiblebounds">#dom-visibilityobserverentry-visiblebounds</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserverentry-visiblebounds-1">3.2. The VisibilityObserverEntry interface</a></span></span></dfn> The <code class="idl"><a data-link-type="idl" href="https://drafts.fxtf.org/geometry-1/#domrect">DOMRect</a></code> corresponding to the document’s <i>boundingClientRect</i>,
+				intersected by each of the document’s ancestor’s clipping rects,
+				intersected with <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserverentry-globalvisiblebounds" id="ref-for-dom-visibilityobserverentry-globalvisiblebounds-2">globalVisibleBounds</a></code>.
+				This value represents the portion of the document actually visible within <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserverentry-globalvisiblebounds" id="ref-for-dom-visibilityobserverentry-globalvisiblebounds-3">globalVisibleBounds</a></code>.</p>
+     <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserverEntry" data-dfn-type="attribute" data-export="" data-lt="time" id="dom-visibilityobserverentry-time">time<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserverentry-time">#dom-visibilityobserverentry-time</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserverentry-time-1">3.2. The VisibilityObserverEntry interface</a></span><span><a href="#ref-for-dom-visibilityobserverentry-time-2">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> A <code class="idl"><a data-link-type="idl" href="https://www.w3.org/TR/hr-time/#domhighrestimestamp">DOMHighResTimeStamp</a></code> that corresponds to the time the visibility
+				state was recorded.</p>
+    </div>
+    <h3 class="heading settled" data-level="3.3" id="visibility-observer-interface"><span class="secno">3.3. </span><span class="content">The VisibilityObserver Interface</span><a class="self-link" href="#visibility-observer-interface"></a></h3>
+     The VisibilityObserver interface can be used to observe changes in the
+		document’s visibility state relative to the global viewport. 
+<pre class="idl def">[<dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="constructor" data-export="" data-lt="VisibilityObserver(callback)" id="dom-visibilityobserver-visibilityobserver">Constructor<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-visibilityobserver">#dom-visibilityobserver-visibilityobserver</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-visibilityobserver-1">5.1.4. VisibilityObserver</a></span></span></dfn>(<a data-link-type="idl-name" href="#callbackdef-visibilityobservercallback" id="ref-for-callbackdef-visibilityobservercallback-2">VisibilityObserverCallback</a> callback), Exposed=Window]
+interface <dfn class="dfn-paneled idl-code" data-dfn-type="interface" data-export="" data-lt="VisibilityObserver" id="visibilityobserver">VisibilityObserver<span class="dfn-panel" data-deco=""><b><a href="#visibilityobserver">#visibilityobserver</a></b><b>Referenced in:</b><span><a href="#ref-for-visibilityobserver-1">3.1. The VisibilityObserverCallback</a></span><span><a href="#ref-for-visibilityobserver-2">3.3. The VisibilityObserver Interface</a></span><span><a href="#ref-for-visibilityobserver-3">5.1.4. VisibilityObserver</a></span><span><a href="#ref-for-visibilityobserver-4">5.2.2. Notify VisibilityObservers</a></span><span><a href="#ref-for-visibilityobserver-5">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> {
+  void <a class="idl-code" data-link-type="method" href="#dom-visibilityobserver-observe" id="ref-for-dom-visibilityobserver-observe-1">observe</a> ();
+  void <a class="idl-code" data-link-type="method" href="#dom-visibilityobserver-unobserve" id="ref-for-dom-visibilityobserver-unobserve-1">unobserve</a> ();
+  sequence&lt;<a data-link-type="idl-name" href="#visibilityobserverentry" id="ref-for-visibilityobserverentry-2">VisibilityObserverEntry</a>> <a class="idl-code" data-link-type="method" href="#dom-visibilityobserver-takerecords" id="ref-for-dom-visibilityobserver-takerecords-1">takeRecords</a> ();
+};
+</pre>
+    <div>
+     <dl>
+      <dt data-md="">
+       <p><dfn class="idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="constructor" data-export="" data-lt="VisibilityObserver(callback, options)" id="dom-visibilityobserver-visibilityobserver-callback-options">new VisibilityObserver(callback, options)<a class="self-link" href="#dom-visibilityobserver-visibilityobserver-callback-options"></a></dfn></p>
+       <dl>
+        <dd data-md="">
+       </dl>
+     </dl>
+     <ol>
+      <li>Let <var>this</var> be a new <code class="idl"><a data-link-type="idl" href="#visibilityobserver" id="ref-for-visibilityobserver-2">VisibilityObserver</a></code> object
+      <li>Set <var>this</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-callback-slot" id="ref-for-dom-visibilityobserver-callback-slot-1">[[callback]]</a></code> slot to <var>callback</var>.
+     </ol>
+     <dl>
+      <dt data-md="">
+       <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="method" data-export="" data-lt="observe()" id="dom-visibilityobserver-observe">observe()<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-observe">#dom-visibilityobserver-observe</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-observe-1">3.3. The VisibilityObserver Interface</a></span></span></dfn></p>
+      <dd data-md="">
+       <ol>
+        <li>Add <var>this</var> to the document’s <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot" id="ref-for-dom-document-registeredvisibilityobservers-slot-1">[[RegisteredVisibilityObservers]]</a></code> list
+       </ol>
+      <dt data-md="">
+       <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="method" data-export="" data-lt="unobserve()" id="dom-visibilityobserver-unobserve">unobserve()<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-unobserve">#dom-visibilityobserver-unobserve</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-unobserve-1">3.3. The VisibilityObserver Interface</a></span></span></dfn></p>
+      <dd data-md="">
+       <ol>
+        <li>Remove <var>this</var> from the document’s <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot" id="ref-for-dom-document-registeredvisibilityobservers-slot-2">[[RegisteredVisibilityObservers]]</a></code> set.
+       </ol>
+      <dt data-md="">
+       <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="method" data-export="" data-lt="takeRecords()" id="dom-visibilityobserver-takerecords">takeRecords()<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-takerecords">#dom-visibilityobserver-takerecords</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-takerecords-1">3.3. The VisibilityObserver Interface</a></span></span></dfn></p>
+      <dd data-md="">
+       <ol>
+        <li>Let <var>queue</var> be a copy of <var>this</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot" id="ref-for-dom-visibilityobserver-queuedentries-slot-1">[[QueuedEntries]]</a></code> slot.
+        <li>Clear <var>this</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot" id="ref-for-dom-visibilityobserver-queuedentries-slot-2">[[QueuedEntries]]</a></code> slot.
+        <li>Return <var>queue</var>.
+       </ol>
+     </dl>
+    </div>
+    <h3 class="heading settled" data-level="3.4" id="visibility-observer-init"><span class="secno">3.4. </span><span class="content">The VisibilityObserverInit dictionary</span><a class="self-link" href="#visibility-observer-init"></a></h3>
+<pre class="idl def">dictionary <dfn class="dfn-paneled idl-code" data-dfn-type="dictionary" data-export="" data-lt="VisibilityObserverInit" id="dictdef-visibilityobserverinit">VisibilityObserverInit<span class="dfn-panel" data-deco=""><b><a href="#dictdef-visibilityobserverinit">#dictdef-visibilityobserverinit</a></b><b>Referenced in:</b><span><a href="#ref-for-dictdef-visibilityobserverinit-1">5.1.4. VisibilityObserver</a></span></span></dfn> {
+  (double or sequence&lt;double>) <a class="idl-code" data-default="0" data-link-type="dict-member" data-type="(double or sequence<double>) " href="#dom-visibilityobserverinit-areathreshold" id="ref-for-dom-visibilityobserverinit-areathreshold-1">areaThreshold</a> = 0;
+ (boolean) <a class="idl-code" data-default="false" data-link-type="dict-member" data-type="(boolean) " href="#dom-visibilityobserverinit-displacementaware" id="ref-for-dom-visibilityobserverinit-displacementaware-1">displacementAware</a> = false;
+ (DOMString) <a class="idl-code" data-default="&quot;0px&quot;" data-link-type="dict-member" data-type="(DOMString) " href="#dom-visibilityobserverinit-visiblemargin" id="ref-for-dom-visibilityobserverinit-visiblemargin-1">visibleMargin</a> = "0px";
+ (<a data-link-type="idl-name" href="https://dom.spec.whatwg.org/#element">Element</a>)? <a class="idl-code" data-link-type="dict-member" data-type="(Element)? " href="#dom-visibilityobserverinit-observedelement" id="ref-for-dom-visibilityobserverinit-observedelement-1">observedElement</a>;
+};
+</pre>
+    <div>
+     <dl>
+      <dt data-md="">
+       <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserverInit" data-dfn-type="dict-member" data-export="" data-lt="areaThreshold" id="dom-visibilityobserverinit-areathreshold">areaThreshold<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserverinit-areathreshold">#dom-visibilityobserverinit-areathreshold</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserverinit-areathreshold-1">3.4. The VisibilityObserverInit dictionary</a></span></span></dfn>, <span> of type <code class="idl-code">(double or sequence&lt;double>)</code>, defaulting to <code>0</code></span></p>
+      <dd data-md="">
+       <p>List of threshold(s) at which to trigger callback.
+callback will be invoked when visibleBounds area changes from
+greater than or equal to any threshold to less than that threshold,
+and vice versa.</p>
+       <p>Threshold values must be in the range of [0, 1.0] and represent a
+percentage of the area as specified by <em>target</em>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>.</p>
+       <p class="note" role="note">Note: 0.0 is effectively "any non-zero number of pixels".</p>
+      <dt data-md="">
+       <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserverInit" data-dfn-type="dict-member" data-export="" data-lt="displacementAware" id="dom-visibilityobserverinit-displacementaware">displacementAware<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserverinit-displacementaware">#dom-visibilityobserverinit-displacementaware</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserverinit-displacementaware-1">3.4. The VisibilityObserverInit dictionary</a></span></span></dfn>, <span> of type <code class="idl-code">(boolean)</code>, defaulting to <code>false</code></span></p>
+      <dd data-md="">
+       <p>If <em>true</em>, this observer should trigger the callback
+when the position of the <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-observedelement-slot" id="ref-for-dom-visibilityobserver-observedelement-slot-1">[[observedElement]]</a></code> changes relative to the
+global viewport.</p>
+      <dt data-md="">
+       <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserverInit" data-dfn-type="dict-member" data-export="" data-lt="visibleMargin" id="dom-visibilityobserverinit-visiblemargin">visibleMargin<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserverinit-visiblemargin">#dom-visibilityobserverinit-visiblemargin</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserverinit-visiblemargin-1">3.4. The VisibilityObserverInit dictionary</a></span><span><a href="#ref-for-dom-visibilityobserverinit-visiblemargin-2">4.1.1. Directive Value</a></span></span></dfn>, <span> of type <code class="idl-code">(DOMString)</code>, defaulting to <code>"0px"</code></span></p>
+      <dd data-md="">
+       <p>Same as <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/css2/box.html#propdef-margin">margin</a>, extends the required visibility rectangle
+	behind the <a data-link-type="dfn" href="#protected-element" id="ref-for-protected-element-1">protected-element</a>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>.
+	Can be 1, 2, 3 or 4 components, possibly negative lengths.</p>
+       <p>If there is only one component value, it applies to all sides.
+	If there are two values, the top and bottom margins are set to
+	the first value and the right and left margins are set to the
+	second. If there are three values, the top is set to the first
+	value, the left and right are set to the second, and the bottom
+	is set to the third. If there are four values, they apply to the
+	top, right, bottom, and left, respectively.e.g.</p>
+<pre class="example" id="example-09cef868"><a class="self-link" href="#example-09cef868"></a><code class="js">
+  "5px"                // all margins set to 5px
+  "5px 10px"           // top &amp; bottom = 5px, right &amp; left = 10px
+  "-10px 5px 8px"      // top = -10px, right &amp; left = 5px, bottom = 8px
+  "-10px -5px 5px 8px" // top = -10px, right = -5px, bottom = 5px, left = 8px
+</code></pre>
+      <dt data-md="">
+       <p><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserverInit" data-dfn-type="dict-member" data-export="" data-lt="observedElement" id="dom-visibilityobserverinit-observedelement">observedElement<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserverinit-observedelement">#dom-visibilityobserverinit-observedelement</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserverinit-observedelement-1">3.4. The VisibilityObserverInit dictionary</a></span></span></dfn>, <span> of type <code class="idl-code">(Element)</code>, nullable</span></p>
+      <dd data-md="">
+       <p>The <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> being observed.  If unset, the internal slot will be
+initialized to the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> element.</p>
+     </dl>
+    </div>
+    <section>
+     <section>
+      <h2 class="heading settled" data-level="4" id="csp-interface"><span class="secno">4. </span><span class="content">Content Security Policy Interface</span><a class="self-link" href="#csp-interface"></a></h2>
+      <p>This section describes the Content Security Policy
+    directive introduced in this specification to provide declarative
+		configuration of protection against input when an element does not meet it’s
+		visibility requirements.</p>
+      <p>The optional directive-value allows configuration of conditions for which violations
+		will be triggered.</p>
+      <h3 class="heading settled" data-level="4.1" id="input-protection-interface"><span class="secno">4.1. </span><span class="content">The <dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="input-protection Directive" data-noexport="" id="input-protection-directive">input-protection Directive<span class="dfn-panel" data-deco=""><b><a href="#input-protection-directive">#input-protection-directive</a></b><b>Referenced in:</b><span><a href="#ref-for-input-protection-directive-1">5.1.4. VisibilityObserver</a></span><span><a href="#ref-for-input-protection-directive-2">5.2.5. Enforce An input-protection Directive</a></span><span><a href="#ref-for-input-protection-directive-3">5.2.6. Handle a Violation</a></span></span></dfn></span><a class="self-link" href="#input-protection-interface"></a></h3>
+<pre>directive-name    = 'input-protection'
+directive-value   = ['area-threshold=' num-val]
+                    ['protected-element=' id-selector]
+                    ['time-threshold=' num-val]
+                    ['visible-margin=' num-val 'px' *3(',' num-val 'px')]
+</pre>
+      <h4 class="heading settled" data-level="4.1.1" id="directive-value"><span class="secno">4.1.1. </span><span class="content">Directive Value</span><a class="self-link" href="#directive-value"></a></h4>
+      <p><dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="area-threshold" data-noexport="" id="area-threshold">area-threshold<span class="dfn-panel" data-deco=""><b><a href="#area-threshold">#area-threshold</a></b><b>Referenced in:</b><span><a href="#ref-for-area-threshold-1">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> A violation will be triggered if an event is delivered to the
+				protected-element or one of its ancestors if the visibility of the
+				protected area is below this threshold.</p>
+      <p>Threshold values must be in the range [0, 1.0] and represent a
+				percentage of the area as specified by <a data-link-type="dfn" href="#protected-element" id="ref-for-protected-element-2">protected-element</a>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>,
+				adjusted by <a data-link-type="dfn" href="#visible-margin" id="ref-for-visible-margin-1">visible-margin</a>.  Unlike the imperative API,
+				only a single value may be specified.</p>
+      <p><dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="protected-element" data-noexport="" id="protected-element">protected-element<span class="dfn-panel" data-deco=""><b><a href="#protected-element">#protected-element</a></b><b>Referenced in:</b><span><a href="#ref-for-protected-element-1">3.4. The VisibilityObserverInit dictionary</a></span><span><a href="#ref-for-protected-element-2">4.1.1. Directive Value</a></span><span><a href="#ref-for-protected-element-3">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> A <code class="idl"><a data-link-type="idl" href="http://heycam.github.io/webidl/#idl-DOMString">DOMString</a></code> used as the argument to <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#dom-nonelementparentnode-getelementbyid">getElementById()</a></code> to resolve the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> to which the policy applies.</p>
+      <p>If unspecified the policy is applied to the resource’s <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> node.</p>
+      <p><dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="time-threshold" data-noexport="" id="time-threshold">time-threshold<span class="dfn-panel" data-deco=""><b><a href="#time-threshold">#time-threshold</a></b><b>Referenced in:</b><span><a href="#ref-for-time-threshold-1">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> A numeric value in the range [0, 10000] that specifies how long,
+				in milliseconds, the screen area containing the protected-element
+				must have unmodified viewiability properties when an event is 
+				delivered to it or one of its ancestors.</p>
+      <p>If not specified, it defaults to 800.  If a value outside of the
+				range stated above is given, it defaults ot the nearest value
+				between the lower and higher bounds.</p>
+      <p><dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="visible-margin" data-noexport="" id="visible-margin">visible-margin<span class="dfn-panel" data-deco=""><b><a href="#visible-margin">#visible-margin</a></b><b>Referenced in:</b><span><a href="#ref-for-visible-margin-1">4.1.1. Directive Value</a></span><span><a href="#ref-for-visible-margin-2">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> Same as <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserverinit-visiblemargin" id="ref-for-dom-visibilityobserverinit-visiblemargin-2">visibleMargin</a></code>.</p>
+      <p>If unspecified, it defaults to "0px".</p>
+     </section>
+     <section>
+      <h2 class="heading settled" data-level="5" id="processing-model"><span class="secno">5. </span><span class="content">Processing Model</span><a class="self-link" href="#processing-model"></a></h2>
+       This section outlines the steps the user agent must take when implementing the
+	VisibilityObserver API. 
+      <h3 class="heading settled" data-level="5.1" id="defines"><span class="secno">5.1. </span><span class="content">Internal Slot Definitions</span><a class="self-link" href="#defines"></a></h3>
+      <h4 class="heading settled" data-level="5.1.1" id="browsing-context-slots"><span class="secno">5.1.1. </span><span class="content">Browsing Contexts</span><a class="self-link" href="#browsing-context-slots"></a></h4>
+       Each <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts">unit of related similar-origin browsing contexts</a> has an <dfn class="dfn-paneled" data-dfn-for="browsing context" data-dfn-type="dfn" data-lt="VisibilityObserverTaskQueued" data-noexport="" id="browsing-context-visibilityobservertaskqueued">VisibilityObserverTaskQueued<span class="dfn-panel" data-deco=""><b><a href="#browsing-context-visibilityobservertaskqueued">#browsing-context-visibilityobservertaskqueued</a></b><b>Referenced in:</b><span><a href="#ref-for-browsing-context-visibilityobservertaskqueued-1">5.2.1. Queue a VisibilityObserver Task</a> <a href="#ref-for-browsing-context-visibilityobservertaskqueued-2">(2)</a></span><span><a href="#ref-for-browsing-context-visibilityobservertaskqueued-3">5.2.2. Notify VisibilityObservers</a></span></span></dfn> flag which
+			is initialized to false. 
+      <h4 class="heading settled" data-level="5.1.2" id="element-private-slots"><span class="secno">5.1.2. </span><span class="content">Element</span><a class="self-link" href="#element-private-slots"></a></h4>
+       <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> objects have an internal <dfn class="dfn-paneled idl-code" data-dfn-for="Element" data-dfn-type="attribute" data-export="" data-lt="[[InputProtectionObservers]]" id="dom-element-inputprotectionobservers-slot">[[InputProtectionObservers]]<span class="dfn-panel" data-deco=""><b><a href="#dom-element-inputprotectionobservers-slot">#dom-element-inputprotectionobservers-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-element-inputprotectionobservers-slot-1">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> list,
+			which is initially empty. 
+      <h4 class="heading settled" data-level="5.1.3" id="document-private-slots"><span class="secno">5.1.3. </span><span class="content">Document</span><a class="self-link" href="#document-private-slots"></a></h4>
+       <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> objects have an internal <dfn class="dfn-paneled idl-code" data-dfn-for="Document" data-dfn-type="attribute" data-export="" data-lt="[[RegisteredVisibilityObservers]]" id="dom-document-registeredvisibilityobservers-slot">[[RegisteredVisibilityObservers]]<span class="dfn-panel" data-deco=""><b><a href="#dom-document-registeredvisibilityobservers-slot">#dom-document-registeredvisibilityobservers-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-document-registeredvisibilityobservers-slot-1">3.3. The VisibilityObserver Interface</a> <a href="#ref-for-dom-document-registeredvisibilityobservers-slot-2">(2)</a></span><span><a href="#ref-for-dom-document-registeredvisibilityobservers-slot-3">5.2.2. Notify VisibilityObservers</a></span><span><a href="#ref-for-dom-document-registeredvisibilityobservers-slot-4">5.2.4. Promote Observed GraphicsLayers</a> <a href="#ref-for-dom-document-registeredvisibilityobservers-slot-5">(2)</a> <a href="#ref-for-dom-document-registeredvisibilityobservers-slot-6">(3)</a> <a href="#ref-for-dom-document-registeredvisibilityobservers-slot-7">(4)</a></span></span></dfn> list,
+			which is initially empty, and an <dfn class="dfn-paneled idl-code" data-dfn-for="Document" data-dfn-type="attribute" data-export="" data-lt="[[InputProtectionRequested]]" id="dom-document-inputprotectionrequested-slot">[[InputProtectionRequested]]<span class="dfn-panel" data-deco=""><b><a href="#dom-document-inputprotectionrequested-slot">#dom-document-inputprotectionrequested-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-document-inputprotectionrequested-slot-1">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> flag which is intitially <i>false</i>. 
+      <h4 class="heading settled" data-level="5.1.4" id="visibility-observer-private-slots"><span class="secno">5.1.4. </span><span class="content">VisibilityObserver</span><a class="self-link" href="#visibility-observer-private-slots"></a></h4>
+       <code class="idl"><a data-link-type="idl" href="#visibilityobserver" id="ref-for-visibilityobserver-3">VisibilityObserver</a></code> objects have the following internal slots: 
+      <ul>
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[QueuedEntries]]" id="dom-visibilityobserver-queuedentries-slot">[[QueuedEntries]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-queuedentries-slot">#dom-visibilityobserver-queuedentries-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-queuedentries-slot-1">3.3. The VisibilityObserver Interface</a> <a href="#ref-for-dom-visibilityobserver-queuedentries-slot-2">(2)</a></span><span><a href="#ref-for-dom-visibilityobserver-queuedentries-slot-3">5.2.2. Notify VisibilityObservers</a> <a href="#ref-for-dom-visibilityobserver-queuedentries-slot-4">(2)</a> <a href="#ref-for-dom-visibilityobserver-queuedentries-slot-5">(3)</a></span><span><a href="#ref-for-dom-visibilityobserver-queuedentries-slot-6">5.2.3. Queue a VisibilityObserverEntry</a></span><span><a href="#ref-for-dom-visibilityobserver-queuedentries-slot-7">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> which is initialized to an empty list
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[previousVisibleRatio]]" id="dom-visibilityobserver-previousvisibleratio-slot">[[previousVisibleRatio]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-previousvisibleratio-slot">#dom-visibilityobserver-previousvisibleratio-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-previousvisibleratio-slot-1">5.2.4. Promote Observed GraphicsLayers</a> <a href="#ref-for-dom-visibilityobserver-previousvisibleratio-slot-2">(2)</a></span><span><a href="#ref-for-dom-visibilityobserver-previousvisibleratio-slot-3">5.2.5. Enforce An input-protection Directive</a> <a href="#ref-for-dom-visibilityobserver-previousvisibleratio-slot-4">(2)</a></span></span></dfn> which is initialized to 0
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[previousGlobalViewportPosition]]" id="dom-visibilityobserver-previousglobalviewportposition-slot">[[previousGlobalViewportPosition]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-previousglobalviewportposition-slot">#dom-visibilityobserver-previousglobalviewportposition-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-previousglobalviewportposition-slot-1">5.2.4. Promote Observed GraphicsLayers</a> <a href="#ref-for-dom-visibilityobserver-previousglobalviewportposition-slot-2">(2)</a></span></span></dfn> 
+      </ul>
+       As well as internal slots initialized by <a data-link-type="functionish" href="#dom-visibilityobserver-visibilityobserver" id="ref-for-dom-visibilityobserver-visibilityobserver-1">VisibilityObserver(callback,options)</a>: 
+      <ul>
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[callback]]" id="dom-visibilityobserver-callback-slot">[[callback]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-callback-slot">#dom-visibilityobserver-callback-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-callback-slot-1">3.3. The VisibilityObserver Interface</a></span><span><a href="#ref-for-dom-visibilityobserver-callback-slot-2">5.2.5. Enforce An input-protection Directive</a></span></span></dfn>
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[areaThreshold]]" id="dom-visibilityobserver-areathreshold-slot">[[areaThreshold]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-areathreshold-slot">#dom-visibilityobserver-areathreshold-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-areathreshold-slot-1">5.2.4. Promote Observed GraphicsLayers</a> <a href="#ref-for-dom-visibilityobserver-areathreshold-slot-2">(2)</a></span><span><a href="#ref-for-dom-visibilityobserver-areathreshold-slot-3">5.2.5. Enforce An input-protection Directive</a> <a href="#ref-for-dom-visibilityobserver-areathreshold-slot-4">(2)</a> <a href="#ref-for-dom-visibilityobserver-areathreshold-slot-5">(3)</a></span></span></dfn>
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[displacementAware]]" id="dom-visibilityobserver-displacementaware-slot">[[displacementAware]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-displacementaware-slot">#dom-visibilityobserver-displacementaware-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-displacementaware-slot-1">5.2.4. Promote Observed GraphicsLayers</a></span><span><a href="#ref-for-dom-visibilityobserver-displacementaware-slot-2">5.2.5. Enforce An input-protection Directive</a></span></span></dfn>
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[visibleMargin]]" id="dom-visibilityobserver-visiblemargin-slot">[[visibleMargin]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-visiblemargin-slot">#dom-visibilityobserver-visiblemargin-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-visiblemargin-slot-1">5.2.4. Promote Observed GraphicsLayers</a></span><span><a href="#ref-for-dom-visibilityobserver-visiblemargin-slot-2">5.2.5. Enforce An input-protection Directive</a></span></span></dfn>
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[observedElement]]" id="dom-visibilityobserver-observedelement-slot">[[observedElement]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-observedelement-slot">#dom-visibilityobserver-observedelement-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-observedelement-slot-1">3.4. The VisibilityObserverInit dictionary</a></span><span><a href="#ref-for-dom-visibilityobserver-observedelement-slot-2">5.2.4. Promote Observed GraphicsLayers</a></span><span><a href="#ref-for-dom-visibilityobserver-observedelement-slot-3">5.2.5. Enforce An input-protection Directive</a></span></span></dfn> which is
+				initialized to the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> Element if not set in the <code class="idl"><a data-link-type="idl" href="#dictdef-visibilityobserverinit" id="ref-for-dictdef-visibilityobserverinit-1">VisibilityObserverInit</a></code> dictionary
+      </ul>
+       The following internal slots will be initialzed to <i>null</i> unless the 
+		 object was constructed to represent an <a data-link-type="dfn" href="#input-protection-directive" id="ref-for-input-protection-directive-1">input-protection directive</a>. 
+      <ul>
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[timeThreshold]]" id="dom-visibilityobserver-timethreshold-slot">[[timeThreshold]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-timethreshold-slot">#dom-visibilityobserver-timethreshold-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-timethreshold-slot-1">5.2.5. Enforce An input-protection Directive</a> <a href="#ref-for-dom-visibilityobserver-timethreshold-slot-2">(2)</a></span></span></dfn>
+       <li><dfn class="dfn-paneled idl-code" data-dfn-for="VisibilityObserver" data-dfn-type="attribute" data-export="" data-lt="[[associatedContentSecurityPolicy]]" id="dom-visibilityobserver-associatedcontentsecuritypolicy-slot">[[associatedContentSecurityPolicy]]<span class="dfn-panel" data-deco=""><b><a href="#dom-visibilityobserver-associatedcontentsecuritypolicy-slot">#dom-visibilityobserver-associatedcontentsecuritypolicy-slot</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-visibilityobserver-associatedcontentsecuritypolicy-slot-1">5.2.5. Enforce An input-protection Directive</a></span><span><a href="#ref-for-dom-visibilityobserver-associatedcontentsecuritypolicy-slot-2">5.2.6. Handle a Violation</a></span></span></dfn>
+      </ul>
+      <h3 class="heading settled" data-level="5.2" id="algorithms"><span class="secno">5.2. </span><span class="content">Algorithms</span><a class="self-link" href="#algorithms"></a></h3>
+      <h4 class="heading settled" data-level="5.2.1" id="queue-visibility-observer-task-algo"><span class="secno">5.2.1. </span><span class="content">Queue a VisibilityObserver Task</span><a class="self-link" href="#queue-visibility-observer-task-algo"></a></h4>
+       To <dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="queue a visibility observer task" data-noexport="" id="queue-a-visibility-observer-task">queue a visibility observer task<span class="dfn-panel" data-deco=""><b><a href="#queue-a-visibility-observer-task">#queue-a-visibility-observer-task</a></b><b>Referenced in:</b><span><a href="#ref-for-queue-a-visibility-observer-task-1">5.2.3. Queue a VisibilityObserverEntry</a></span></span></dfn> for a <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts">unit of related similar-origin browsing contexts</a> <var>unit</var>,
+			run these steps: 
+      <ol>
+       <li>If <var>unit</var>’s <a data-link-type="dfn" href="#browsing-context-visibilityobservertaskqueued" id="ref-for-browsing-context-visibilityobservertaskqueued-1">VisibilityObserverTaskQueued</a> flag is set to
+						true, return.
+       <li>Set <var>unit</var>’s <a data-link-type="dfn" href="#browsing-context-visibilityobservertaskqueued" id="ref-for-browsing-context-visibilityobservertaskqueued-2">VisibilityObserverTaskQueued</a> flag to true.
+       <li>
+        Post a task to <a data-link-type="dfn" href="#notify-visibility-observers" id="ref-for-notify-visibility-observers-1">notify visibility observers</a>, or enqueue a
+						task to <a data-link-type="dfn" href="#notify-visibility-observers" id="ref-for-notify-visibility-observers-2">notify visibility observers</a> in the <a data-link-type="dfn" href="http://w3c.github.io/requestidlecallback/#dfn-list-of-idle-request-callbacks">list of idle request callbacks</a> with an appropriate <var>timeout</var>. 
+        <p class="issue" id="issue-49b6accd"><a class="self-link" href="#issue-49b6accd"></a> Should we define an appropriate <var>timeout</var>?</p>
+      </ol>
+      <h4 class="heading settled" data-level="5.2.2" id="notify-visibility-observers-algo"><span class="secno">5.2.2. </span><span class="content">Notify VisibilityObservers</span><a class="self-link" href="#notify-visibility-observers-algo"></a></h4>
+       To <dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="notify visibility observers" data-noexport="" id="notify-visibility-observers">notify visibility observers<span class="dfn-panel" data-deco=""><b><a href="#notify-visibility-observers">#notify-visibility-observers</a></b><b>Referenced in:</b><span><a href="#ref-for-notify-visibility-observers-1">5.2.1. Queue a VisibilityObserver Task</a> <a href="#ref-for-notify-visibility-observers-2">(2)</a></span></span></dfn> for a <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts">unit of related similar-origin browsing contexts</a> <var>unit</var>,
+			run these steps: 
+      <ol>
+       <li>Set <var>unit</var>’s <a data-link-type="dfn" href="#browsing-context-visibilityobservertaskqueued" id="ref-for-browsing-context-visibilityobservertaskqueued-3">VisibilityObserverTaskQueued</a> flag to false.
+       <li>For each <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> <var>document</var> in <var>unit</var>
+       <ol>
+        <li>Let <var>notify list</var> be a copy of <var>document</var>’s <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot" id="ref-for-dom-document-registeredvisibilityobservers-slot-3">[[RegisteredVisibilityObservers]]</a></code> list.
+        <li>For each <code class="idl"><a data-link-type="idl" href="#visibilityobserver" id="ref-for-visibilityobserver-4">VisibilityObserver</a></code> object <var>observer</var> in <var>notify list</var>, run these steps:
+        <ol>
+         <li>If <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot" id="ref-for-dom-visibilityobserver-queuedentries-slot-3">[[QueuedEntries]]</a></code> slot is
+										empty, continue.
+         <li>Let <var>queue</var> be a copy of <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot" id="ref-for-dom-visibilityobserver-queuedentries-slot-4">[[QueuedEntries]]</a></code> slot.
+         <li>Clear <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot" id="ref-for-dom-visibilityobserver-queuedentries-slot-5">[[QueuedEntries]]</a></code> slot.
+         <li>Invoke <var>callback</var> with <var>queue</var> as the first argument and <var>observer</var> as the second argument and <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#dfn-callback-this-value">callback this value</a>. If this throws an exception, <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#report-the-exception">report the exception</a>.
+        </ol>
+       </ol>
+      </ol>
+      <h4 class="heading settled" data-level="5.2.3" id="queue-visibility-observer-entry-algo"><span class="secno">5.2.3. </span><span class="content">Queue a VisibilityObserverEntry</span><a class="self-link" href="#queue-visibility-observer-entry-algo"></a></h4>
+       To <dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="queue a VisibilityObserverEntry" data-noexport="" id="queue-a-visibilityobserverentry">queue a VisibilityObserverEntry<span class="dfn-panel" data-deco=""><b><a href="#queue-a-visibilityobserverentry">#queue-a-visibilityobserverentry</a></b><b>Referenced in:</b><span><a href="#ref-for-queue-a-visibilityobserverentry-1">5.2.4. Promote Observed GraphicsLayers</a></span></span></dfn> for <var>observer</var>, given a <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts">unit of related similar-origin browsing contexts</a> <var>unit</var>, VisibilityObserver <var>observer</var>, and VisibilityObserverEntry <var>entry</var> run these steps: 
+      <ol>
+       <li>Append <var>entry</var> to <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot" id="ref-for-dom-visibilityobserver-queuedentries-slot-6">[[QueuedEntries]]</a></code> slot.
+       <li><a data-link-type="dfn" href="#queue-a-visibility-observer-task" id="ref-for-queue-a-visibility-observer-task-1">Queue a visibility observer task</a> for <var>unit</var>.
+      </ol>
+      <h4 class="heading settled" data-level="5.2.4" id="promote-observed-graphicslayers-algo"><span class="secno">5.2.4. </span><span class="content">Promote Observed GraphicsLayers</span><a class="self-link" href="#promote-observed-graphicslayers-algo"></a></h4>
+      <p><em>This section is non-normative.</em></p>
+      <div class="note" role="note">
+        NOTE: The full internal details of rendering a document to the pixels 
+				actually displayed to the user is not standardized. UA implementations 
+				may vary widely. 
+       <p>The implementation strategy detailed in this section is not normative. Any
+				strategy which produces correct outcomes for the normative algorithms is 
+				conformant and implementers are encouraged to optimize whenever possible.</p>
+       <p>The possibility of variance among user agent implementations notwithstanding,
+				the normative algorithms of this specification are designed such that a highly performant 
+				implementation should be possible on the most common internal software and hardware
+				architectures that are state-of-the-art for user agents and consumer computing
+				platforms as of the time of writing.</p>
+       <p>In particular, the approach here deliberately avoids auditing the correctness
+				of the representations displayed to users.  In typical architectures, the pixel-level
+				rendering of the global viewport is delgated to a a Graphics Processing Unit (GPU)
+				using higher-level abstractions like surfaces, polygons, and vectors. As a consequence,
+				the main execution context of the user agent does not "know" what pixels actually result
+				without reading them back.  System architectures are optimized for sending data 
+				to a GPU, not returning data from it, therefore, approaches which rely on pixel comparisons
+				are likely to have an unacceptable performance cost.  Instead, the approach detailed 
+				here relies on correctness by design, by manipulating the order in which instructions 
+				are sent to the GPU such that malicious interference is not possible.</p>
+      </div>
+      <p>Generally, at some point in the rendering of a set of documents in nested browsing
+				contexts into the fully composed graphical representation in the global viewport,
+				a user agent will arrive at a set of intermediate representations we will designate 
+				as <dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="GraphicsLayer" data-noexport="" id="graphicslayer">GraphicsLayer<span class="dfn-panel" data-deco=""><b><a href="#graphicslayer">#graphicslayer</a></b><b>Referenced in:</b><span><a href="#ref-for-graphicslayer-1">5.2.4. Promote Observed GraphicsLayers</a> <a href="#ref-for-graphicslayer-2">(2)</a> <a href="#ref-for-graphicslayer-3">(3)</a> <a href="#ref-for-graphicslayer-4">(4)</a> <a href="#ref-for-graphicslayer-5">(5)</a></span></span></dfn>s, each of which represents a graphical surface to be
+				painted / clipped / scrolled.</p>
+      <p>A <a data-link-type="dfn" href="#graphicslayer" id="ref-for-graphicslayer-1">GraphicsLayer</a> representing the contents of a document in an iframe will
+				be arranged in the layer stack such that at a later phase in the rendering 
+				it is automatically clipped and positioned relative to the series of viewports 
+				above it, and also subject to being drawn over or transformed by the layers above it.</p>
+      <p>To prevent potentially malicious composition, the user agent can <dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="promote observed graphicsLayers" data-noexport="" id="promote-observed-graphicslayers">promote observed graphicsLayers<span class="dfn-panel" data-deco=""><b><a href="#promote-observed-graphicslayers">#promote-observed-graphicslayers</a></b><b>Referenced in:</b><span><a href="#ref-for-promote-observed-graphicslayers-1">5.2.4. Promote Observed GraphicsLayers</a></span><span><a href="#ref-for-promote-observed-graphicslayers-2">5.3.1. HTML Processing Model: Event Loop</a></span></span></dfn> by manipulating them such that
+				a document with <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot" id="ref-for-dom-document-registeredvisibilityobservers-slot-4">[[RegisteredVisibilityObservers]]</a></code></p>
+      <ul>
+       <li>Is clipped and positioned as-if-unmodified within the set of viewports of its ancestor 
+							browsing contexts. A promoted document should not be able to occupy more
+							screen real estate than it is given by its embedding contexts.
+       <li>Responds to hit testing and events as-if-unmodified.  Implementation-specific modifications
+							to internal representations of the document should not change the behavior of the DOM.
+       <li>Is not subject to being drawn over or transformed by any other <a data-link-type="dfn" href="#graphicslayer" id="ref-for-graphicslayer-2">GraphicsLayers</a>,
+							except other promoted layers, which should be treated as fully opaque occlusions 
+							when reporting the visibility state of the document.
+      </ul>
+      <p>To <a data-link-type="dfn" href="#promote-observed-graphicslayers" id="ref-for-promote-observed-graphicslayers-1">promote observed graphicsLayers</a>, given a time <var>now</var>, and an initially empty list <var>promotedLayers</var>, run these steps during the rendering
+				loop at the stage where the intermediate representation of a set of <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code>s is a set of <a data-link-type="dfn" href="#graphicslayer" id="ref-for-graphicslayer-3">GraphicsLayer</a>s <var>graphicsLayers</var>.</p>
+      <ol>
+       <li>For each <var>graphicsLayer</var> in <var>graphicsLayers</var>
+       <li>For each <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> <var>document</var> with an intermediate representation in <var>graphicsLayer</var>
+       <ol>
+        <li>If <var>document</var> has an empty list of <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot" id="ref-for-dom-document-registeredvisibilityobservers-slot-5">[[RegisteredVisibilityObservers]]</a></code>, continue.
+        <li>If <var>document</var> has a non-empty list of <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot" id="ref-for-dom-document-registeredvisibilityobservers-slot-6">[[RegisteredVisibilityObservers]]</a></code>
+        <ol>
+         <li>If <var>document</var> is not the only <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> represented  in <var>graphicsLayer</var>, apply
+											whatever implementation-specific steps are necessary to place it in its own layer.
+											(e.g. apply translatez(0) to the documentElement) Let <var>graphicsLayer</var> be that
+											new layer.
+        </ol>
+        <li>Let <var>rectToRaise</var> be the value of <var>document</var>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>.
+        <li>Intersect <var>rectToRaise</var> with <var>document</var>’s viewport clip rect.
+        <li>For every <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#parent-browsing-context">parent browsing context</a> <var>parent</var> between <var>document</var> and the top-level document,
+									intersect <var>rectToRaise</var> with <var>parent</var>’s viewport clip rect,
+									and finally with the global viewport clip rect.
+        <li>Clip <var>graphicsLayer</var> to <var>rectToRaise</var>.  (<var>graphicsLayer</var> may have zero width and height
+									if it is scrolled off screen by an ancestor browsing context)
+        <li>Intersect <var>rectToRaise</var> with any items in the <var>promotedLayers</var> list.
+        <li>Add <var>rectToRaise</var> to the <var>promotedLayers</var> list.
+        <li>Without reordering prior intermediate representations in a manner which would 
+									change event dispatching, hit testing, or the DOM as exposed to JavaScript, reorder
+									the <a data-link-type="dfn" href="#graphicslayer" id="ref-for-graphicslayer-4">GraphicsLayer</a>s such that <var>rectToRaise</var> is on top of the root <a data-link-type="dfn" href="#graphicslayer" id="ref-for-graphicslayer-5">GraphicsLayer</a>. 
+									(e.g. by making it a direct child of the root layer) but beneath any layers in <var>promotedLayers</var> that clipped it.
+        <li>Let <var>protectedRect</var> be the value of <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-observedelement-slot" id="ref-for-dom-visibilityobserver-observedelement-slot-2">[[observedElement]]</a></code>.<code class="idl"><a data-link-type="idl" href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a></code>,
+									adjusted by <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-visiblemargin-slot" id="ref-for-dom-visibilityobserver-visiblemargin-slot-1">[[visibleMargin]]</a></code>.
+        <li>Let <var>visibleRatio</var> be the intersection of <var>protectedRect</var> with <var>rectToRaise</var>, divided by <var>protectedRect</var> if <var>protectedRect</var> is non-zero, and <i>0</i> otherwise.
+        <li>For each of <var>document</var>’s <code class="idl"><a data-link-type="idl" href="#dom-document-registeredvisibilityobservers-slot" id="ref-for-dom-document-registeredvisibilityobservers-slot-7">[[RegisteredVisibilityObservers]]</a></code> <var>observer</var>
+        <ol>
+         <li>Let <var>threshold</var> be the index of the first entry in <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot" id="ref-for-dom-visibilityobserver-areathreshold-slot-1">[[areaThreshold]]</a></code> slot whose value
+                        is greater than or equal to <var>visibleRatio</var>. If <var>visibleRatio</var> is equal to <i>0</i>, let <var>threshold</var> be <i>-1</i>.
+         <li>Let <var>oldVisibleRatio</var> be set to <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousvisibleratio-slot" id="ref-for-dom-visibilityobserver-previousvisibleratio-slot-1">[[previousVisibleRatio]]</a></code> slot.
+         <li>Let <var>oldThreshold</var> be the index of the first entry in <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot" id="ref-for-dom-visibilityobserver-areathreshold-slot-2">[[areaThreshold]]</a></code> slot whose value
+                        is greater than or equal to <var>oldVisibleRatio</var>. If <var>oldVisibleRatio</var> is equal to <i>0</i>, let <var>oldThreshold</var> be <i>-1</i>.
+         <li>Let <var>oldPosition</var> be the value of the <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousglobalviewportposition-slot" id="ref-for-dom-visibilityobserver-previousglobalviewportposition-slot-1">[[previousGlobalViewportPosition]]</a></code>.
+         <li>If <var>threshold</var> does not equal <var>oldThreshold</var>, or if <var>observer</var>’s 
+												internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-displacementaware-slot" id="ref-for-dom-visibilityobserver-displacementaware-slot-1">[[displacementAware]]</a></code> slot is <i>true</i> and <var>oldPosition</var> is not equal to <var>protectedRect</var>,
+         <ul>
+          <li><a data-link-type="dfn" href="#queue-a-visibilityobserverentry" id="ref-for-queue-a-visibilityobserverentry-1">queue a VisibilityObserverEntry</a>
+          <li>Assign <var>visibleRatio</var> to <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousvisibleratio-slot" id="ref-for-dom-visibilityobserver-previousvisibleratio-slot-2">[[previousVisibleRatio]]</a></code> slot.
+          <li>Assign <var>protectedRect</var> to the value of the <var>observer</var>’s internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousglobalviewportposition-slot" id="ref-for-dom-visibilityobserver-previousglobalviewportposition-slot-2">[[previousGlobalViewportPosition]]</a></code> slot.
+         </ul>
+        </ol>
+       </ol>
+      </ol>
+      <p class="issue" id="issue-99e12d30"><a class="self-link" href="#issue-99e12d30"></a> find exact terms to make sure that we have viewport definitions minus scrollbars</p>
+      <p class="issue" id="issue-6397a33f"><a class="self-link" href="#issue-6397a33f"></a> need to also clip to any other layers that were promoted ahead of us!</p>
+      <p class="issue" id="issue-a220b00a"><a class="self-link" href="#issue-a220b00a"></a> if a parent and child layer both request to be promoted, the parent’s clipping window will have a complex geometry with holes in it that is not accounted for by this algorithm.  Likely need to specify that graphics layers be processed by order of depth.</p>
+      <h4 class="heading settled" data-level="5.2.5" id="enforce-an-input-protection-directive-algo"><span class="secno">5.2.5. </span><span class="content">Enforce An input-protection Directive</span><a class="self-link" href="#enforce-an-input-protection-directive-algo"></a></h4>
+       To <dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="enforce an input-protection directive" data-noexport="" id="enforce-an-input-protection-directive">enforce an input-protection directive<span class="dfn-panel" data-deco=""><b><a href="#enforce-an-input-protection-directive">#enforce-an-input-protection-directive</a></b><b>Referenced in:</b><span><a href="#ref-for-enforce-an-input-protection-directive-1">5.3.2. DOM: Dispatching Events</a></span></span></dfn> for a <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#document">Document</a></code> <var>document</var>,
+		run the following steps: 
+      <ol>
+       <li>Parse the policy according to <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a>.
+       <li>If a value is set for <a data-link-type="dfn" href="#protected-element" id="ref-for-protected-element-3">protected-element</a>, let <var>protectedElement</var> be the <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> returned by invoking <var>document</var>.<code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#dom-nonelementparentnode-getelementbyid">getElementById()</a></code> with
+					the value as the input, or <var>document</var> if <i>null</i> or unset.
+       <li>If <var>document</var>’s <code class="idl"><a data-link-type="idl" href="#dom-document-inputprotectionrequested-slot" id="ref-for-dom-document-inputprotectionrequested-slot-1">[[InputProtectionRequested]]</a></code> flag is <i>false</i>, set it
+					to <i>true</i>.
+       <li>Construct a new <code class="idl"><a data-link-type="idl" href="#visibilityobserver" id="ref-for-visibilityobserver-5">VisibilityObserver</a></code> <var>observer</var>, with <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot" id="ref-for-dom-visibilityobserver-areathreshold-slot-3">[[areaThreshold]]</a></code> set to the value of <a data-link-type="dfn" href="#area-threshold" id="ref-for-area-threshold-1">area-threshold</a>, <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-visiblemargin-slot" id="ref-for-dom-visibilityobserver-visiblemargin-slot-2">[[visibleMargin]]</a></code> set to the value of <a data-link-type="dfn" href="#visible-margin" id="ref-for-visible-margin-2">visible-margin</a>, <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-observedelement-slot" id="ref-for-dom-visibilityobserver-observedelement-slot-3">[[observedElement]]</a></code> set to <var>protectedElement</var>, <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-displacementaware-slot" id="ref-for-dom-visibilityobserver-displacementaware-slot-2">[[displacementAware]]</a></code> set to <i>true</i>,
+					and <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-callback-slot" id="ref-for-dom-visibilityobserver-callback-slot-2">[[callback]]</a></code> set to a new function with an empty function body.
+       <li>Set the internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-timethreshold-slot" id="ref-for-dom-visibilityobserver-timethreshold-slot-1">[[timeThreshold]]</a></code> slot of <var>observer</var> to the value of <a data-link-type="dfn" href="#time-threshold" id="ref-for-time-threshold-1">time-threshold</a>
+       <li>Set the internal <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-associatedcontentsecuritypolicy-slot" id="ref-for-dom-visibilityobserver-associatedcontentsecuritypolicy-slot-1">[[associatedContentSecurityPolicy]]</a></code> slot of <var>observer</var> to a reference to the
+					Content Security Policy which the <a data-link-type="dfn" href="#input-protection-directive" id="ref-for-input-protection-directive-2">input-protection directive</a> is associated with.
+       <li>When <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#dispatching-events">dispatching events</a>, when an <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#element">Element</a></code> <var>element</var> will handle an <code class="idl"><a data-link-type="idl" href="https://dom.spec.whatwg.org/#event">Event</a></code> <var>event</var>,
+					if <var>event</var> is of type Mouse Event, Pointer Event, Drag-and-Drop, or Clipboard Event, (TODO:linkify)
+					and if <var>element</var> has <code class="idl"><a data-link-type="idl" href="#dom-element-inputprotectionobservers-slot" id="ref-for-dom-element-inputprotectionobservers-slot-1">[[InputProtectionObservers]]</a></code> <var>observers</var>:
+       <ol>
+        <li>If applicable, check the computed style for the cursor.  If a cursor is typically displayed but
+								has been hidden or changed to a non-standard bitmap, <a data-link-type="dfn" href="#handle-a-violation" id="ref-for-handle-a-violation-1">handle a violation</a> for <var>event</var> and each <var>observer</var> in <var>observers</var>.
+        <li>Otherwise, for each <var>observer</var> in <var>observers</var>:
+        <ol>
+         <li>If <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousvisibleratio-slot" id="ref-for-dom-visibilityobserver-previousvisibleratio-slot-3">[[previousVisibleRatio]]</a></code> is less than <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot" id="ref-for-dom-visibilityobserver-areathreshold-slot-4">[[areaThreshold]]</a></code>, <a data-link-type="dfn" href="#handle-a-violation" id="ref-for-handle-a-violation-2">handle a violation</a> for <var>observer</var>.
+         <li>If <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-previousvisibleratio-slot" id="ref-for-dom-visibilityobserver-previousvisibleratio-slot-4">[[previousVisibleRatio]]</a></code> is greater than <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-areathreshold-slot" id="ref-for-dom-visibilityobserver-areathreshold-slot-5">[[areaThreshold]]</a></code>,
+										get the most recent <code class="idl"><a data-link-type="idl" href="#visibilityobserverentry" id="ref-for-visibilityobserverentry-3">VisibilityObserverEntry</a></code> <var>entry</var> from <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-queuedentries-slot" id="ref-for-dom-visibilityobserver-queuedentries-slot-7">[[QueuedEntries]]</a></code>.  If the difference between <var>entry</var>.<code class="idl"><a data-link-type="idl" href="#dom-visibilityobserverentry-time" id="ref-for-dom-visibilityobserverentry-time-2">time</a></code> and <var>now</var> is less than <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-timethreshold-slot" id="ref-for-dom-visibilityobserver-timethreshold-slot-2">[[timeThreshold]]</a></code>, <a data-link-type="dfn" href="#handle-a-violation" id="ref-for-handle-a-violation-3">handle a violation</a> for <var>observer</var>. 
+        </ol>
+       </ol>
+      </ol>
+      <h4 class="heading settled" data-level="5.2.6" id="handle-a-violation-algo"><span class="secno">5.2.6. </span><span class="content">Handle a Violation</span><a class="self-link" href="#handle-a-violation-algo"></a></h4>
+       To <dfn class="dfn-paneled" data-dfn-type="dfn" data-lt="handle a violation" data-noexport="" id="handle-a-violation">handle a violation<span class="dfn-panel" data-deco=""><b><a href="#handle-a-violation">#handle-a-violation</a></b><b>Referenced in:</b><span><a href="#ref-for-handle-a-violation-1">5.2.5. Enforce An input-protection Directive</a> <a href="#ref-for-handle-a-violation-2">(2)</a> <a href="#ref-for-handle-a-violation-3">(3)</a></span></span></dfn> of an <a data-link-type="dfn" href="#input-protection-directive" id="ref-for-input-protection-directive-3">input-protection directive</a> for <var>observer</var> and <var>event</var>, run the following steps: 
+      <ul>
+       <li>Follow the steps in <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a> to report a violation for <var>observer</var>’s <code class="idl"><a data-link-type="idl" href="#dom-visibilityobserver-associatedcontentsecuritypolicy-slot" id="ref-for-dom-visibilityobserver-associatedcontentsecuritypolicy-slot-2">[[associatedContentSecurityPolicy]]</a></code> <var>policy</var>.
+       <li>Determine if <var>policy</var> is being <i>enforced</i> or <i>monitored</i>. <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a>
+       <li>If <var>policy</var> is being <i>enforced</i>, set <var>event</var>’s <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#cancelled-flag">cancelled flag</a> and <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#stop-propagation-flag">stop propagation flag</a>.
+       <li>If <var>policy</var> is being <i>monitored</i>, set <var>event</var>.<code class="idl"><a data-link-type="idl" href="#dom-event-isunsafe" id="ref-for-dom-event-isunsafe-1">isUnsafe</a></code> to <i>true</i>.
+      </ul>
+      <h3 class="heading settled" data-level="5.3" id="external-spec-integrations"><span class="secno">5.3. </span><span class="content">External Spec Integrations</span><a class="self-link" href="#external-spec-integrations"></a></h3>
+      <h4 class="heading settled" data-level="5.3.1" id="event-loop"><span class="secno">5.3.1. </span><span class="content">HTML Processing Model: Event Loop</span><a class="self-link" href="#event-loop"></a></h4>
+       As part of substep 10 of the <a href="https://html.spec.whatwg.org/multipage/webappapis.html#processing-model-8"> update the rendering</a> event loop in the HTML Processing Model, <a data-link-type="dfn" href="#promote-observed-graphicslayers" id="ref-for-promote-observed-graphicslayers-2">Promote Observed GraphicsLayers</a>, passing in <i>now</i> as the timestamp. 
+      <h4 class="heading settled" data-level="5.3.2" id="dispatching-events-algo"><span class="secno">5.3.2. </span><span class="content">DOM: Dispatching Events</span><a class="self-link" href="#dispatching-events-algo"></a></h4>
+       As part of <a href="https://dom.spec.whatwg.org/#dispatching-events">dispatching events</a> in the DOM Standard, add a substep to step 5, ("For each <i>object</i> in <i>event path</i>..."),
+		invoking step 7 of <a data-link-type="dfn" href="#enforce-an-input-protection-directive" id="ref-for-enforce-an-input-protection-directive-1">enforce an input-protection directive</a> before proceeding to
+		"invoke <i>object</i> with <i>event</i>". 
+      <h4 class="heading settled" data-level="5.3.3" id="usafe-attribute"><span class="secno">5.3.3. </span><span class="content">isUnsafe Attribute</span><a class="self-link" href="#usafe-attribute"></a></h4>
+<pre class="idl def">partial interface <a class="idl-code" data-link-type="interface" href="https://dom.spec.whatwg.org/#event">Event</a> {
+  readonly attribute boolean <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="boolean " href="#dom-event-isunsafe" id="ref-for-dom-event-isunsafe-2">isUnsafe</a>;
+};
+</pre>
+      <dl>
+       <dt><dfn class="dfn-paneled idl-code" data-dfn-for="Event" data-dfn-type="attribute" data-export="" data-lt="isUnsafe" id="dom-event-isunsafe">isUnsafe<span class="dfn-panel" data-deco=""><b><a href="#dom-event-isunsafe">#dom-event-isunsafe</a></b><b>Referenced in:</b><span><a href="#ref-for-dom-event-isunsafe-1">5.2.6. Handle a Violation</a></span><span><a href="#ref-for-dom-event-isunsafe-2">5.3.3. isUnsafe Attribute</a></span></span></dfn>, <span> of type <a data-link-type="idl-name">boolean</a>, readonly</span>
+       <dd> Will be set to true if the event fired when the event did not
+				meet the document’s <em>input-protection</em> requirements. 
+      </dl>
+     </section>
+     <section>
+      <h2 class="heading settled" data-level="6" id="privacy-considerations"><span class="secno">6. </span><span class="content">Privacy Considerations</span><a class="self-link" href="#privacy-considerations"></a></h2>
+      <p><em>This section is non-normative.</em></p>
+      <p>The timing of visibilityEvents may leak some information across Origin boundaries.  An embedded
+	document might have previously been unable to learn that it was obscured, or the timing and
+	nature of repositioning of ancestor frame’s viewports.  In some circumstances, this information
+	leak might have privacy implications, but the granularity and nature of the information is such
+	that it should not be of much value to attackers.  Compared to anti-clickjacking strategies
+	which rely on pixel comparisions, the side channels exposed by comparing rectulangar masks are
+	very low bandwidth. The privacy gains from preventing clickjacking, considered in a holistic
+	system context, may be quite large.</p>
+     </section>
+     <section>
+      <h2 class="heading settled" data-level="7" id="security-considerations"><span class="secno">7. </span><span class="content">Security Considerations</span><a class="self-link" href="#security-considerations"></a></h2>
+      <p><em>This section is non-normative.</em></p>
+      <p>UI Redressing and Clickjacking attacks rely on violating the contextual and temporal
+	integrity of embedded content. Because these attacks target the subjective perception 
+	of the user and not well-defined security boundaries, the heuristic protections 
+	afforded by the input-protection directive can never be 100% effective for every 
+	interface. It provides no protection against certain classes of attacks, such as 
+	displaying content around an embedded resource that appears to extend a trusted 
+	dialog but provides misleading information.</p>
+      <p>When used as a mechanism to report visibility for purposes of monetizing content,
+	operators should be aware that a malicious or modified user agent can always report
+	perfect visibility for content it colludes with.  Determining, through remote measurement,
+	whether an ostensible viewer of monetizable content is using an agent which faithfully
+	implements and reports in conformance with this specification is out of scope for this
+	document.</p>
+     </section>
+     <section>
+      <h2 class="heading settled" data-level="8" id="accessibility-considerations"><span class="secno">8. </span><span class="content">Accessibility Considerations</span><a class="self-link" href="#accessibility-considerations"></a></h2>
+      <p>Users of accessibility tools MUST NOT be prevented from accessing content
+	because of input-protection or VisibilityEvents. If a user agent’s interaction
+	modality is not subject to UI redressing attacks or definitions of "visibility"
+	do not apply, the user agent SHOULD report a VisibilityEvent indicating 100%
+	visibility, and SHOULD never fire a violation for any input-protection policy.</p>
+     </section>
+    </section>
+   </section>
+  </main>
+  <h2 class="no-ref no-num heading settled" id="conformance"><span class="content">Conformance</span><a class="self-link" href="#conformance"></a></h2>
+  <h3 class="no-ref no-num heading settled" id="conventions"><span class="content">Document conventions</span><a class="self-link" href="#conventions"></a></h3>
+  <p>Conformance requirements are expressed with a combination of
+    descriptive assertions and RFC 2119 terminology. The key words “MUST”,
+    “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”,
+    “RECOMMENDED”, “MAY”, and “OPTIONAL” in the normative parts of this
+    document are to be interpreted as described in RFC 2119.
+    However, for readability, these words do not appear in all uppercase
+    letters in this specification. </p>
+  <p>All of the text of this specification is normative except sections
+    explicitly marked as non-normative, examples, and notes. <a data-link-type="biblio" href="#biblio-rfc2119">[RFC2119]</a></p>
+  <p>Examples in this specification are introduced with the words “for example”
+    or are set apart from the normative text with <code>class="example"</code>,
+    like this: </p>
+  <div class="example" id="example-f839f6c8">
+   <a class="self-link" href="#example-f839f6c8"></a> 
+   <p>This is an example of an informative example.</p>
+  </div>
+  <p>Informative notes begin with the word “Note” and are set apart from the
+    normative text with <code>class="note"</code>, like this: </p>
+  <p class="note" role="note">Note, this is an informative note.</p>
+  <h3 class="no-ref no-num heading settled" id="conformant-algorithms"><span class="content">Conformant Algorithms</span><a class="self-link" href="#conformant-algorithms"></a></h3>
+  <p>Requirements phrased in the imperative as part of algorithms (such as
+    "strip any leading space characters" or "return false and abort these
+    steps") are to be interpreted with the meaning of the key word ("must",
+    "should", "may", etc) used in introducing the algorithm.</p>
+  <p>Conformance requirements phrased as algorithms or specific steps can be
+    implemented in any manner, so long as the end result is equivalent. In
+    particular, the algorithms defined in this specification are intended to
+    be easy to understand and are not intended to be performant. Implementers
+    are encouraged to optimize.</p>
+<script src="https://www.w3.org/scripts/TR/2016/fixup.js"></script>
+  <h2 class="no-num no-ref heading settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
+  <h3 class="no-num no-ref heading settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
+  <ul class="index">
+   <li><a href="#dom-visibilityobserver-areathreshold-slot">[[areaThreshold]]</a><span>, in §5.1.4</span>
+   <li><a href="#area-threshold">area-threshold</a><span>, in §4.1.1</span>
+   <li><a href="#dom-visibilityobserverinit-areathreshold">areaThreshold</a><span>, in §3.4</span>
+   <li><a href="#dom-visibilityobserver-associatedcontentsecuritypolicy-slot">[[associatedContentSecurityPolicy]]</a><span>, in §5.1.4</span>
+   <li><a href="#dom-visibilityobserver-callback-slot">[[callback]]</a><span>, in §5.1.4</span>
+   <li><a href="#dom-visibilityobserverinit-displacementaware">displacementAware</a><span>, in §3.4</span>
+   <li><a href="#dom-visibilityobserver-displacementaware-slot">[[displacementAware]]</a><span>, in §5.1.4</span>
+   <li><a href="#enforce-an-input-protection-directive">enforce an input-protection directive</a><span>, in §5.2.5</span>
+   <li>
+    globalVisibleBounds
+    <ul>
+     <li><a href="#dom-visibilityobserverentryinit-globalvisiblebounds">dict-member for VisibilityObserverEntryInit</a><span>, in §3.2</span>
+     <li><a href="#dom-visibilityobserverentry-globalvisiblebounds">attribute for VisibilityObserverEntry</a><span>, in §3.2</span>
+    </ul>
+   <li><a href="#graphicslayer">GraphicsLayer</a><span>, in §5.2.4</span>
+   <li><a href="#handle-a-violation">handle a violation</a><span>, in §5.2.6</span>
+   <li><a href="#input-protection-directive">input-protection Directive</a><span>, in §4.1</span>
+   <li><a href="#dom-element-inputprotectionobservers-slot">[[InputProtectionObservers]]</a><span>, in §5.1.2</span>
+   <li><a href="#dom-document-inputprotectionrequested-slot">[[InputProtectionRequested]]</a><span>, in §5.1.3</span>
+   <li><a href="#dom-event-isunsafe">isUnsafe</a><span>, in §5.3.3</span>
+   <li><a href="#notify-visibility-observers">notify visibility observers</a><span>, in §5.2.2</span>
+   <li><a href="#dom-visibilityobserver-observe">observe()</a><span>, in §3.3</span>
+   <li><a href="#dom-visibilityobserverinit-observedelement">observedElement</a><span>, in §3.4</span>
+   <li><a href="#dom-visibilityobserver-observedelement-slot">[[observedElement]]</a><span>, in §5.1.4</span>
+   <li><a href="#dom-visibilityobserver-previousglobalviewportposition-slot">[[previousGlobalViewportPosition]]</a><span>, in §5.1.4</span>
+   <li><a href="#dom-visibilityobserver-previousvisibleratio-slot">[[previousVisibleRatio]]</a><span>, in §5.1.4</span>
+   <li><a href="#promote-observed-graphicslayers">promote observed graphicsLayers</a><span>, in §5.2.4</span>
+   <li><a href="#protected-element">protected-element</a><span>, in §4.1.1</span>
+   <li><a href="#queue-a-visibilityobserverentry">queue a VisibilityObserverEntry</a><span>, in §5.2.3</span>
+   <li><a href="#queue-a-visibility-observer-task">queue a visibility observer task</a><span>, in §5.2.1</span>
+   <li><a href="#dom-visibilityobserver-queuedentries-slot">[[QueuedEntries]]</a><span>, in §5.1.4</span>
+   <li><a href="#dom-document-registeredvisibilityobservers-slot">[[RegisteredVisibilityObservers]]</a><span>, in §5.1.3</span>
+   <li><a href="#dom-visibilityobserver-takerecords">takeRecords()</a><span>, in §3.3</span>
+   <li>
+    time
+    <ul>
+     <li><a href="#dom-visibilityobserverentryinit-time">dict-member for VisibilityObserverEntryInit</a><span>, in §3.2</span>
+     <li><a href="#dom-visibilityobserverentry-time">attribute for VisibilityObserverEntry</a><span>, in §3.2</span>
+    </ul>
+   <li><a href="#dom-visibilityobserver-timethreshold-slot">[[timeThreshold]]</a><span>, in §5.1.4</span>
+   <li><a href="#time-threshold">time-threshold</a><span>, in §4.1.1</span>
+   <li><a href="#dom-visibilityobserver-unobserve">unobserve()</a><span>, in §3.3</span>
+   <li><a href="#visibilityobserver">VisibilityObserver</a><span>, in §3.3</span>
+   <li><a href="#callbackdef-visibilityobservercallback">VisibilityObserverCallback</a><span>, in §3.1</span>
+   <li><a href="#dom-visibilityobserver-visibilityobserver">VisibilityObserver(callback)</a><span>, in §3.3</span>
+   <li><a href="#dom-visibilityobserver-visibilityobserver-callback-options">VisibilityObserver(callback, options)</a><span>, in §3.3</span>
+   <li><a href="#visibilityobserverentry">VisibilityObserverEntry</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityobserverentry-visibilityobserverentry">VisibilityObserverEntry(callback)</a><span>, in §3.2</span>
+   <li><a href="#dom-visibilityobserverentry-visibilityobserverentry">VisibilityObserverEntry(callback, visibilityObserverEntryInit)</a><span>, in §3.2</span>
+   <li><a href="#dictdef-visibilityobserverentryinit">VisibilityObserverEntryInit</a><span>, in §3.2</span>
+   <li><a href="#dictdef-visibilityobserverinit">VisibilityObserverInit</a><span>, in §3.4</span>
+   <li><a href="#browsing-context-visibilityobservertaskqueued">VisibilityObserverTaskQueued</a><span>, in §5.1.1</span>
+   <li>
+    visibleBounds
+    <ul>
+     <li><a href="#dom-visibilityobserverentryinit-visiblebounds">dict-member for VisibilityObserverEntryInit</a><span>, in §3.2</span>
+     <li><a href="#dom-visibilityobserverentry-visiblebounds">attribute for VisibilityObserverEntry</a><span>, in §3.2</span>
+    </ul>
+   <li><a href="#visible-margin">visible-margin</a><span>, in §4.1.1</span>
+   <li><a href="#dom-visibilityobserver-visiblemargin-slot">[[visibleMargin]]</a><span>, in §5.1.4</span>
+   <li><a href="#dom-visibilityobserverinit-visiblemargin">visibleMargin</a><span>, in §3.4</span>
+  </ul>
+  <h3 class="no-num no-ref heading settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
+  <ul class="index">
+   <li>
+    <a data-link-type="biblio" href="#biblio-css21">[CSS21]</a> defines the following terms:
+    <ul>
+     <li><a href="https://drafts.csswg.org/css2/box.html#propdef-margin">margin</a>
+    </ul>
+   <li>
+    <a data-link-type="biblio" href="#biblio-cssom-view">[cssom-view]</a> defines the following terms:
+    <ul>
+     <li><a href="https://drafts.csswg.org/cssom-view-1/#dom-element-getboundingclientrect">getBoundingClientRect()</a>
+    </ul>
+   <li>
+    <a data-link-type="biblio" href="#biblio-whatwg-dom">[WHATWG-DOM]</a> defines the following terms:
+    <ul>
+     <li><a href="https://dom.spec.whatwg.org/#document">Document</a>
+     <li><a href="https://dom.spec.whatwg.org/#element">Element</a>
+     <li><a href="https://dom.spec.whatwg.org/#event">Event</a>
+     <li><a href="https://dom.spec.whatwg.org/#dom-nonelementparentnode-getelementbyid">getElementById(elementId)</a>
+     <li><a href="https://dom.spec.whatwg.org/#stop-propagation-flag">stop propagation flag</a>
+    </ul>
+   <li>
+    <a data-link-type="biblio" href="#biblio-geometry-1">[geometry-1]</a> defines the following terms:
+    <ul>
+     <li><a href="https://drafts.fxtf.org/geometry-1/#domrect">DOMRect</a>
+     <li><a href="https://drafts.fxtf.org/geometry-1/#dictdef-domrectinit">DOMRectInit</a>
+     <li><a href="https://drafts.fxtf.org/geometry-1/#domrectreadonly">DOMRectReadOnly</a>
+    </ul>
+   <li>
+    <a data-link-type="biblio" href="#biblio-webidl">[WebIDL]</a> defines the following terms:
+    <ul>
+     <li><a href="http://heycam.github.io/webidl/#idl-DOMString">DOMString</a>
+    </ul>
+  </ul>
+  <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+  <h3 class="no-num no-ref heading settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
+  <dl>
+   <dt id="biblio-csp2">[CSP2]
+   <dd>Mike West; Adam Barth; Daniel Veditz. <a href="https://www.w3.org/TR/CSP2/">Content Security Policy Level 2</a>. 21 July 2015. CR. URL: <a href="https://www.w3.org/TR/CSP2/">https://www.w3.org/TR/CSP2/</a>
+   <dt id="biblio-css21">[CSS21]
+   <dd>Bert Bos; et al. <a href="https://www.w3.org/TR/CSS2">Cascading Style Sheets Level 2 Revision 1 (CSS 2.1) Specification</a>. 7 June 2011. REC. URL: <a href="https://www.w3.org/TR/CSS2">https://www.w3.org/TR/CSS2</a>
+   <dt id="biblio-cssom-view">[CSSOM-VIEW]
+   <dd>Simon Pieters; Glenn Adams. <a href="http://dev.w3.org/csswg/cssom-view/">CSSOM View Module</a>. 17 December 2013. WD. URL: <a href="http://dev.w3.org/csswg/cssom-view/">http://dev.w3.org/csswg/cssom-view/</a>
+   <dt id="biblio-geometry-1">[GEOMETRY-1]
+   <dd>Simon Pieters; Dirk Schulze; Rik Cabanier. <a href="http://dev.w3.org/fxtf/geometry/">Geometry Interfaces Module Level 1</a>. 25 November 2014. CR. URL: <a href="http://dev.w3.org/fxtf/geometry/">http://dev.w3.org/fxtf/geometry/</a>
+   <dt id="biblio-rfc2119">[RFC2119]
+   <dd>S. Bradner. <a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>. March 1997. Best Current Practice. URL: <a href="https://tools.ietf.org/html/rfc2119">https://tools.ietf.org/html/rfc2119</a>
+   <dt id="biblio-webidl">[WebIDL]
+   <dd>Cameron McCormack; Boris Zbarsky. <a href="https://heycam.github.io/webidl/">WebIDL Level 1</a>. 8 March 2016. CR. URL: <a href="https://heycam.github.io/webidl/">https://heycam.github.io/webidl/</a>
+   <dt id="biblio-whatwg-dom">[WHATWG-DOM]
+   <dd>Anne van Kesteren. <a href="https://dom.spec.whatwg.org/">DOM Standard</a>. Living Standard. URL: <a href="https://dom.spec.whatwg.org/">https://dom.spec.whatwg.org/</a>
+  </dl>
+  <h2 class="no-num no-ref heading settled" id="idl-index"><span class="content">IDL Index</span><a class="self-link" href="#idl-index"></a></h2>
+<pre class="idl def">callback <a href="#callbackdef-visibilityobservercallback">VisibilityObserverCallback</a> = void(sequence&lt;<a data-link-type="idl-name" href="#visibilityobserverentry">VisibilityObserverEntry</a>> <a href="#dom-visibilityobservercallback-entries">entries</a>, <a data-link-type="idl-name" href="#visibilityobserver">VisibilityObserver</a> <a href="#dom-visibilityobservercallback-observer">observer</a>)
+
+[<a href="#dom-visibilityobserverentry-visibilityobserverentry">Constructor</a>(<a data-link-type="idl-name" href="#callbackdef-visibilityobservercallback">VisibilityObserverCallback</a> callback, optional <a data-link-type="idl-name" href="#dictdef-visibilityobserverentryinit">VisibilityObserverEntryInit</a> <a href="#dom-visibilityobserverentry-visibilityobserverentry-callback-visibilityobserverentryinit-visibilityobserverentryinit">visibilityObserverEntryInit</a>), Exposed=Window]
+interface <a href="#visibilityobserverentry">VisibilityObserverEntry</a> {
+  readonly attribute <a data-link-type="idl-name" href="https://drafts.fxtf.org/geometry-1/#domrectreadonly">DOMRectReadOnly</a> <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="DOMRectReadOnly " href="#dom-visibilityobserverentry-globalvisiblebounds">globalVisibleBounds</a>;
+  readonly attribute <a data-link-type="idl-name" href="https://drafts.fxtf.org/geometry-1/#domrectreadonly">DOMRectReadOnly</a> <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="DOMRectReadOnly " href="#dom-visibilityobserverentry-visiblebounds">visibleBounds</a>;
+  readonly attribute <a data-link-type="idl-name" href="https://www.w3.org/TR/hr-time/#domhighrestimestamp">DOMHighResTimeStamp</a> <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="DOMHighResTimeStamp " href="#dom-visibilityobserverentry-time">time</a>;
+ };
+
+dictionary <a href="#dictdef-visibilityobserverentryinit">VisibilityObserverEntryInit</a> {
+  required <a data-link-type="idl-name" href="https://drafts.fxtf.org/geometry-1/#dictdef-domrectinit">DOMRectInit</a> <a data-type="DOMRectInit " href="#dom-visibilityobserverentryinit-globalvisiblebounds">globalVisibleBounds</a>;
+  required <a data-link-type="idl-name" href="https://drafts.fxtf.org/geometry-1/#dictdef-domrectinit">DOMRectInit</a> <a data-type="DOMRectInit " href="#dom-visibilityobserverentryinit-visiblebounds">visibleBounds</a>;
+  required <a data-link-type="idl-name" href="https://www.w3.org/TR/hr-time/#domhighrestimestamp">DOMHighResTimeStamp</a> <a data-type="DOMHighResTimeStamp " href="#dom-visibilityobserverentryinit-time">time</a>;
+};
+
+[<a href="#dom-visibilityobserver-visibilityobserver">Constructor</a>(<a data-link-type="idl-name" href="#callbackdef-visibilityobservercallback">VisibilityObserverCallback</a> callback), Exposed=Window]
+interface <a href="#visibilityobserver">VisibilityObserver</a> {
+  void <a class="idl-code" data-link-type="method" href="#dom-visibilityobserver-observe">observe</a> ();
+  void <a class="idl-code" data-link-type="method" href="#dom-visibilityobserver-unobserve">unobserve</a> ();
+  sequence&lt;<a data-link-type="idl-name" href="#visibilityobserverentry">VisibilityObserverEntry</a>> <a class="idl-code" data-link-type="method" href="#dom-visibilityobserver-takerecords">takeRecords</a> ();
+};
+
+dictionary <a href="#dictdef-visibilityobserverinit">VisibilityObserverInit</a> {
+  (double or sequence&lt;double>) <a class="idl-code" data-default="0" data-link-type="dict-member" data-type="(double or sequence<double>) " href="#dom-visibilityobserverinit-areathreshold">areaThreshold</a> = 0;
+ (boolean) <a class="idl-code" data-default="false" data-link-type="dict-member" data-type="(boolean) " href="#dom-visibilityobserverinit-displacementaware">displacementAware</a> = false;
+ (DOMString) <a class="idl-code" data-default="&quot;0px&quot;" data-link-type="dict-member" data-type="(DOMString) " href="#dom-visibilityobserverinit-visiblemargin">visibleMargin</a> = "0px";
+ (<a data-link-type="idl-name" href="https://dom.spec.whatwg.org/#element">Element</a>)? <a class="idl-code" data-link-type="dict-member" data-type="(Element)? " href="#dom-visibilityobserverinit-observedelement">observedElement</a>;
+};
+
+partial interface <a class="idl-code" data-link-type="interface" href="https://dom.spec.whatwg.org/#event">Event</a> {
+  readonly attribute boolean <a class="idl-code" data-link-type="attribute" data-readonly="" data-type="boolean " href="#dom-event-isunsafe">isUnsafe</a>;
+};
+
+</pre>
+  <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
+  <div style="counter-reset:issue">
+   <div class="issue"> Do we need to deal with form submission / navigations that aren’t JS-event-based?<a href="#issue-b24dcbe0"> ↵ </a></div>
+   <div class="issue"> how to interact with frame-ancestors and XFO?<a href="#issue-b233e40b"> ↵ </a></div>
+   <div class="issue"> Should we define an appropriate <var>timeout</var>?<a href="#issue-49b6accd"> ↵ </a></div>
+   <div class="issue"> find exact terms to make sure that we have viewport definitions minus scrollbars<a href="#issue-99e12d30"> ↵ </a></div>
+   <div class="issue"> need to also clip to any other layers that were promoted ahead of us!<a href="#issue-6397a33f"> ↵ </a></div>
+   <div class="issue"> if a parent and child layer both request to be promoted, the parent’s clipping window will have a complex geometry with holes in it that is not accounted for by this algorithm.  Likely need to specify that graphics layers be processed by order of depth.<a href="#issue-a220b00a"> ↵ </a></div>
+  </div>
+<script>
+        document.body.addEventListener("click", function(e) {
+            var queryAll = function(sel) { return [].slice.call(document.querySelectorAll(sel)); }
+            // Find the dfn element or panel, if any, that was clicked on.
+            var el = e.target;
+            var target;
+            while(el.parentElement) {
+                if(el.tagName == "DFN") {
+                    target = "dfn";
+                    break;
+                }
+                if(/H\d/.test(el.tagName) && el.getAttribute('data-dfn-type') != null) {
+                    target = "dfn";
+                    break;
+                }
+                if(el.classList.contains("dfn-panel")) {
+                    target = "dfn-panel";
+                    break;
+                }
+                el = el.parentElement;
+            }
+            if(target != "dfn-panel") {
+                // Turn off any currently "on" or "activated" panels.
+                queryAll(".dfn-panel.on, .dfn-panel.activated").forEach(function(el){
+                    el.classList.remove("on");
+                    el.classList.remove("activated");
+                });
+            }
+            if(target == "dfn") {
+                // open the panel
+                var dfnPanel = el.querySelector(".dfn-panel");
+                if(dfnPanel) {
+                    dfnPanel.classList.add("on");
+                }
+            } else if(target == "dfn-panel") {
+                // Switch it to "activated" state, which pins it.
+                el.classList.add("activated");
+            }
+
+        });
+        </script>
