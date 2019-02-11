@@ -4,16 +4,19 @@ Status: ED
 ED: https://w3c.github.io/webappsec/specs/mixedcontent/
 Shortname: mixed-content
 TR: http://www.w3.org/TR/mixed-content/
+Previous Version: http://www.w3.org/TR/2015/CR-mixed-content-20150317/
 Previous Version: http://www.w3.org/TR/2014/WD-mixed-content-20141113/
 Previous Version: http://www.w3.org/TR/2014/WD-mixed-content-20140916/
 Previous Version: http://www.w3.org/TR/2014/WD-mixed-content-20140722/
 Level: 1
 Editor: Mike West 56384, Google Inc., mkwst@google.com
 Group: webappsec
-Abstract: This specification describes how a user agent should handle fetching of content loaded over unencrypted or unauthenticated connections in the context of an encrypted and authenticated document.
+Abstract:
+  This specification describes how a user agent should handle fetching of
+  content over unencrypted or unauthenticated connections in the context of an
+  encrypted and authenticated document.
 Version History: https://github.com/w3c/webappsec/commits/master/specs/mixedcontent/index.src.html
 Indent: 2
-At Risk: The <a>deprecated TLS-protection</a> concept.
 </pre>
 <!--
    ███    ██    ██  ██████  ██     ██  ███████  ████████   ██████ 
@@ -28,6 +31,9 @@ At Risk: The <a>deprecated TLS-protection</a> concept.
     HTML Definitions
 -->
 <pre class="anchors">
+type: dfn
+  urlPrefix: https://tools.ietf.org/html/rfc6797
+    text: mixed security context; url: section-12.4
 type: dfn
   urlPrefix: http://www.w3.org/TR/html5/; spec: HTML5
     urlPrefix: embedded-content-0.html
@@ -52,6 +58,7 @@ type: dfn
       text: incumbent settings object
       text: relevant settings object for a script
       text: responsible document
+      text: global object
   urlPrefix: https://w3c.github.io/webappsec/specs/content-security-policy/; spec: CSP2
     text: enforce
     text: monitor
@@ -63,6 +70,7 @@ type: dfn
     text: request; url: concept-request
     text: response; url: concept-response
     text: network error; url: concept-network-error
+    text: opaque filtered response; url: concept-filtered-response-opaque
     url: concept-request-client
       text: request client
       text: client
@@ -72,9 +80,9 @@ type: dfn
     url: concept-request-context-frame-type
       text: request context frame type
       text: frame type
-    url: concept-response-tls-state
-      text: response tls state;
-      text: tls state
+    url: concept-response-https-state
+      text: response https state;
+      text: https state
   urlPrefix: https://tools.ietf.org/html/rfc6455; spec: RFC6455
     text: fail the websocket connection; url: section-7.1.7
 type: method
@@ -86,6 +94,8 @@ type: interface
   text: XMLHttpRequest; url: http://www.w3.org/TR/XMLHttpRequest/#interface-xmlhttprequest
   text: EventSource; url: http://www.w3.org/TR/eventsource/#the-eventsource-interface
   text: Document; url: http://www.w3.org/TR/html5/dom.html#document
+  text: Window; url: http://www.w3.org/TR/html5/browsers.html#window
+  text: ServiceWorkerGlobalScope; url: http://www.w3.org/TR/service-workers/#service-worker-global-scope
 type: element
   urlPrefix: http://www.w3.org/TR/html5/; spec: HTML5
     urlPrefix: document-metadata.html
@@ -164,9 +174,10 @@ type: element-attr
   communicate in the clear.
 
   Note: Nothing described in this document is really new; everything covered
-  here has appeared in one or more a user agent over the years: Internet
-  Explorer led the way, alerting users to mixed content since at least
-  version 4.
+  here has appeared in one or more user agents over the years: Internet
+  Explorer led the way, alerting users to mixed content since
+  <a href="https://twitter.com/ericlaw/status/469813922908758016">around</a>
+  <a href="https://support2.microsoft.com/default.aspx?scid=kb;EN-US;Q261188">version 4</a>.
 </section>
 
 <!--
@@ -186,16 +197,40 @@ type: element-attr
       <dfn export local-lt="mixed">mixed content</dfn>
     </dt>
     <dd>
-      A resource is said to be <strong>mixed content</strong> if the resource's
+      A resource or <a>request</a> is <strong>mixed content</strong> if its
       <a>origin</a> is <a>insecure</a>, <strong>and</strong> the context
       responsible for loading it restricts mixed content. See
       [[#categorize-settings-object]] for a normative definition of the latter.
 
       <div class="example">
-        The image <code>http://example.com/image.png</code> is <strong>mixed
-        content</strong> when loaded by
-        <code>https://not.example.com/</code>.
+        Inside a context that restricts mixed content
+        (<code>https://secure.example.com/</code>, for example):
+
+        1.  A request for the script <code>http://example.com/script.js</code>
+            is <strong>mixed content</strong>. As script <a>requests</a> are
+            <a>blockable</a>, the user agent will return a network error rather
+            than loading the resource.
+
+        2.  A request for the image <code>http://example.com/image.png</code> is
+            <strong>mixed content</strong>. As image <a>requests</a> are
+            <a>optionally-blockable</a>, the user agent might load the image, in
+            which case the image resource itself would be <strong>mixed
+            content</strong>.
       </div>
+
+      If mixed content is loaded into a context that restricts mixed content
+      (as in #2 above), that context is considered a <a>mixed security
+      context</a> (as defined in [[!RFC6797]]).
+
+      Note: "Mixed content" was originally defined in
+      <a href="http://www.w3.org/TR/wsc-ui/#securepage">section 5.3</a> of
+      [[WSC-UI]]. This document updates that initial definition.
+
+      Note: [[XML]] also defines an unrelated 
+      <a href="http://www.w3.org/TR/2008/REC-xml-20081126/#sec-mixed-content">"mixed content"</a>.
+      concept. This is potentially confusing, but given the term's near
+      ubiquitious usage in a security context across user agents for more than
+      a decade, the practical risk of confusion seems low.
     </dd>
 
     <dt>
@@ -229,9 +264,9 @@ type: element-attr
     </dt>
     <dd>
       Any <a>origin</a> which is not <a>potentially secure</a> is said to
-      be <strong><i lang="la">a priori</i> insecure</strong>. We know, for example, that
-      <code>http://example.com/</code> is insecure just by looking at its scheme
-      component.
+      be <strong><i lang="la">a priori</i> insecure</strong>. We know, for
+      example, that <code>(http, example.com, 80)</code> is insecure just by
+      looking at its scheme component.
 
       A URL whose <a>origin</a> is <i lang="la">a priori</i> insecure is itself
       considered to be <i lang="la">a priori</i> insecure.
@@ -248,36 +283,12 @@ type: element-attr
       </dfn>
     </dt>
     <dd>
-      An resource's origin is said to be <strong>insecure</strong> if it is
+      A resource's origin is said to be <strong>insecure</strong> if it is
       either <a><i lang="la">a priori</i> insecure</a>, or the user agent discovers
-      only after performing a TLS-handshake that the TLS-protection offered
-      is <a>deprecated</a>.
+      only after performing a TLS-handshake that the <a>Response</a>'s <a>HTTPS
+      state</a> is <code>deprecated authentication</code>.
 
       A URL whose <a>origin</a> is insecure is itself considered to be insecure.
-    </dd>
-
-    <dt>
-      <dfn export local-lt="deprecated">
-        deprecated TLS-protection
-      </dfn>
-    </dt>
-    <dd>
-      A resource's TLS-protection is said to be <strong>deprecated</strong> if
-      a user agent refuses to trust the resource's TLS handshake. This
-      determination is vendor-specific.
-
-      For example, a user agent may choose to reject resources for which the
-      server presented a publicly-trusted certificate for an "Internal
-      Name" (e.g. <code>https://intranet/</code>), a certificate with an
-      overly-long validity period, a certificate with a weak cipher suite, a
-      certificate signed with SHA-1, or a certificate which otherwise fails
-      to meet the CA/Browser Forum's Baseline Requirements [[!CAB]].
-
-      Note: We recommend that a user agent return <a>network errors</a> rather
-      than fetching resources whose TLS-protection is deprecated.
-
-      Note: [[WSC-UI]] defines "weakly TLS-protected", which is <i>de facto</i>
-      included in user agents' interpretation of what "deprecated" means.
     </dd>
 
     <dt><dfn export>embedding document</dfn></dt>
@@ -317,8 +328,7 @@ type: element-attr
   <section>
     <h3 id="category-optionally-blockable">Optionally-blockable Content</h3>
 
-    A resource is
-    <dfn local-lt="optionally-blockable">optionally-blockable content</dfn>
+    A resource or <a>request</a> is <dfn>optionally-blockable</dfn>
     when the risk of allowing its usage as <a>mixed content</a> is outweighed by
     the risk of breaking significant portions of the web. This could be because
     mixed usage of the resource type is sufficiently high, and because the
@@ -367,9 +377,8 @@ type: element-attr
   <section>
     <h3 id="category-blockable">Blockable Content</h3>
 
-    Any resource that isn't <a>optionally-blockable</a> is
-    <dfn lt="blockable content" local-lt="blockable">blockable
-    content</dfn>. Typical examples of this kind of content include scripts,
+    Any resource or <a>request</a> that isn't <a>optionally-blockable</a> is
+    <dfn>blockable</dfn>. Typical examples of this kind of content include scripts,
     <a>plugin</a> data, data requested via {{XMLHttpRequest}}, and so on. Every
     <a>request context</a> that is not <a>optionally-blockable</a> is a
     <dfn>blockable request context</dfn>. This explicitly includes any contexts
@@ -530,7 +539,7 @@ type: element-attr
   priori</em> insecure origins</a>.
 
   Note: Hooking into Fetch here ensures that we catch not only the initial
-  request, but all redirects as well. That is certainly the intent.
+  request, but all redirects as well.
 
   Further, Fetch calls the algorithm defined in
   [[#should-block-response]] during
@@ -564,7 +573,7 @@ type: element-attr
 
     <ol>
       <li>
-        If <var>settings</var>' <a>TLS state</a> is not
+        If <var>settings</var>' <a>HTTPS state</a> is not
         <code>unauthenticated</code>, then return <strong>Restricts Mixed
         Content</strong>.
       </li>
@@ -586,7 +595,7 @@ type: element-attr
                 <var>incumbent settings object</var>.
               </li>
               <li>
-                If <var>embedder settings</var>' <a>TLS state</a> is not
+                If <var>embedder settings</var>' <a>HTTPS state</a> is not
                 <code>unauthenticated</code>, then return <strong>Restricts
                 mixed content</strong>.
               </li>
@@ -631,6 +640,53 @@ type: element-attr
         is <a><i lang="la">a priori</i> insecure</a>.
       </div>
     </div>
+  </section>
+
+  <section>
+    <h3 id="is-passthrough">
+      Is <var>request</var> a passthrough request?
+    </h3>
+
+    A <dfn>passthrough request</dfn> is a <a>request</a> (<var>request</var>)
+    which is created in a <a>browsing context</a> (e.g. via an <{img}> tag in a
+    document), but serviced by a Service Worker (e.g. by calling
+    <code>fetch(e.request)</code> from within an <code>onfetch</code> event
+    handler). As described in [[#service-workers]], we special-case these kinds
+    of requests in order to allow web developers to layer service workers on top
+    of an existing site which relies on requesting <a>optionally-blockable</a>
+    mixed content.
+
+    More formally, <var>request</var> is a passthrough request if the following
+    conditions hold:
+
+    <ol>
+      <li>
+        <var>request</var>'s <code>context</code> is <code>fetch</code>
+
+        Note: When a request is copied (as in the <code>fetch(e.response)</code>
+        example above), the original <code>context</code> is lost. Here, we
+        ensure that we're dealing with such a request, but we implicitly rely on
+        [[#should-block-fetch]] preventing <a>blockable</a> requests from
+        entering a Service Worker in the first place.
+      </li>
+      <li>
+        <var>request</var>'s <code>window</code> is an <a>environment settings
+        object</a> (and, therefore, <strong>not</strong> <code>no-window</code>)
+
+        Note: We rely on the <code>window</code> property being properly set by
+        [[FETCH]] to the <a>environment settings object</a> responsible for the
+        request in order to ensure that we can render some sort of warning to
+        the user (as described in [[#requirements-ux]]).
+      </li>
+      <li>
+        <var>request</var>'s <code>client</code>'s <a>global object</a> is a
+        {{ServiceWorkerGlobalScope}} object.
+
+        Note: We rely on the <code>client</code> property to reflect the origin
+        of the request. Importantly, <var>request</var> is only a passthrough
+        request if it originated inside a Service Worker.
+      </li>
+    </ol>
   </section>
 
   <section>
@@ -683,7 +739,20 @@ type: element-attr
             <strong>blocked</strong>.
           </li>
           <li>
-            If <var>context</var> is not an <a>optionally-blockable request
+            If <var>context</var> is <code>fetch</code>:
+
+            <ol>
+              <li>
+                If <var>request</var> is <strong>not</strong> a <a>passthrough
+                request</a>, return <strong>blocked</strong>.
+              </li>
+              <li>
+                If <var>request</var>'s <code>mode</code> is not
+                <code>no-cors</code>, return <strong>blocked</strong>.
+              </li>
+            </ol>
+          <li>
+            Otherwise, if <var>context</var> is a <a>blockable request
             context</a>, return <strong>blocked</strong>.
           </li>
           <li>
@@ -698,10 +767,17 @@ type: element-attr
         </ol>
       </li>
       <li>
-        Otherwise, <var>origin</var> is <a>potentially secure</a>, so
-        return <strong>allowed</strong>.
+        Return <strong>allowed</strong>.
       </li>
     </ol>
+
+    Note: We special-case <code>fetch</code> to allow it as optionally-blockable
+    in the event that a Service Worker is making a <code>no-cors</code> request
+    in response to a Fetch event generated from a Document. In that case, the
+    request's <code>client</code> property will be an <a>environment settings
+    object</a> whose global object is a {{Window}} object (the Service Worker's
+    request's <code>client</code>, on the other hand, will be a
+    <code>WorkerGlobalScope</code> object.
   </section>
 
   <section>
@@ -712,9 +788,11 @@ type: element-attr
 
     Note: <a href="#should-block-fetch">If a request proceeds</a>, we still
     might want to block the response based on the state of the connection
-    that generated the response (e.g. because the response is for <a>blockable
-    content</a>, but the connection is <a>insecure</a>). This algorithm is used
-    to make that determination.
+    that generated the response (e.g. because the request is <a>blockable</a>,
+    but the connection is <a>insecure</a>), and we also need to ensure that
+    Service Worker doesn't accidentally return an <a>insecure</a> response
+    for a <a>blockable</a> request. This algorithm is used to make that
+    determination.
 
     Given a <a>request</a> <var>request</var> and <a>response</a>
     <var>response</var>, the user agent determines what response should be
@@ -736,24 +814,60 @@ type: element-attr
         <var>request</var>.
       </li>
       <li>
-        If <var>context</var> is not an <a>optionally-blockable request
-        context</a>, or the user agent is configured to block
-        <a>optionally-blockable</a> mixed content, or  <var>request</var>'s
-        <a>client</a>'s <a>strict mixed content checking flag</a> is
-        <code>true</code>:
+        If <var>response</var>'s <a>HTTPS state</a> is not
+        <code>authenticated</code>:
 
         <ol>
           <li>
-            If <var>response</var>'s <a>TLS state</a> is not
-            <code>authenticated</code>, return <strong>blocked</strong>.
+            If <var>context</var> is <code>fetch</code>:
 
-            Note: This covers both cases in which unauthenticated resources are
-            requested, as well as cases in which the TLS handshake succeeds,
-            but the user agent chooses to hold it to a higher standard. The
-            definition of <a>deprecated TLS-protection</a> has some examples of
-            these kinds of scenarios.
+            <ol>
+              <li>
+                If <var>request</var> is <strong>not</strong> a <a>passthrough
+                request</a>, return <strong>blocked</strong>.
+              </li>
+              <li>
+                If <var>response</var> is <strong>not</strong> an <a>opaque
+                filtered response</a>, return <strong>blocked</strong>.
+              </li>
+              <li>
+                If the user agent is configured to block
+                <a>optionally-blockable</a> mixed content, return
+                <strong>blocked</strong>.
+              </li>
+              <li>
+                If <var>request</var>'s <a>client</a>'s <a>strict mixed content
+                checking flag</a> is <code>true</code>, return
+                <strong>blocked</strong>.
+              </li>
+            </ol>
+          </li>
+          <li>
+            Otherwise:
+
+            <ol>
+              <li>
+                If <var>context</var> is a <a>blockable request
+                context</a>, return <strong>blocked</strong>.
+              </li>
+              <li>
+                If the user agent is configured to block
+                <a>optionally-blockable</a> mixed content, return
+                <strong>blocked</strong>.
+              </li>
+              <li>
+                If <var>request</var>'s <a>client</a>'s <a>strict mixed content
+                checking flag</a> is <code>true</code>, return
+                <strong>blocked</strong>.
+              </li>
+            </ol>
           </li>
         </ol>
+
+        Note: This covers both cases in which unauthenticated resources are
+        returned (by a Service Worker, for example), as well as cases in
+        which the TLS handshake succeeds, but the user agent chooses to hold
+        it to a higher standard.
       </li>
       <li>Return <strong>allowed</strong>.</li>
     </ol>
@@ -778,12 +892,12 @@ type: element-attr
   <ul>
     <li>
       Remove the current step 2.
-
-
-      <ol>
-      </ol>
     </li>
   </ul>
+
+  Note: This suggestion is filed as
+  <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=28841">bug #28841</a>
+  against [[WEBSOCKETS]].
 
   The <a href="http://tools.ietf.org/html/rfc6455#section-4.1">Establish a
   WebSocket Connection algorithm</a> [[!RFC6455]] is modified as follows:
@@ -810,15 +924,21 @@ type: element-attr
       <ol>
         <li>
           If secure is <strong>true</strong>, and the TLS handshake performed
-          in step 5 results in TLS-protection which is is <a>deprecated</a>,
+          in step 5 results in <code>deprecated authentication</code>,
           then the client MUST <a>fail the WebSocket connection</a> and abort
           the connection [[!RFC6455]].
+
+          ISSUE: This is super hand-wavey.
         </li>
       </ol>
     </li>
   </ul>
 
-  Note: These changes together mean that we'll no longer throw a
+  Note: Filed as
+  <a href="http://www.rfc-editor.org/errata_search.php?rfc=6455&eid=4398">errata #4398</a>
+  against [[RFC6455]].
+
+  These changes together mean that we'll no longer throw a
   <code>SecurityError</code> exception directly upon constructing a WebSocket
   object, but will instead rely upon blocking the connection and triggering the
   <a>fail the WebSocket connection</a> algorithm, which developers can catch by
@@ -840,6 +960,21 @@ type: element-attr
   <h2 id="security-considerations">Security Considerations</h2>
 
   <section>
+    <h3 id="limitations">Limitations</h3>
+
+    Blocking mixed content allows us to ensure that the guarantees discussed
+    in [[#intro]] are upheld. Note, however, that those guarantees <em>only</em>
+    protect developers and users against active network attackers who would
+    otherwise be able to replace critical bits of code or content on the wire
+    as it flows past. They <em>do not</em> protect against a compromised server
+    that itself is coerced into sending corrupted resources.
+
+    Mechanisms such as Subresource Integrity [[SRI]] are designed to deal with
+    this kind of threat, and we recommend that web developers make use of them
+    whenever possible.
+  </section>
+
+  <section>
     <h3 id="requirements-forms">Form Submission</h3>
 
     If [[#categorize-settings-object]] returns <code>Restricts Mixed
@@ -853,7 +988,7 @@ type: element-attr
     image.
 
     Further, a user agent MAY treat form submissions from such a {{Document}}
-    as a request for <a>blockable content</a>, even if the submission occurs in
+    as a <a>blockable</a> request, even if the submission occurs in
     the <a>top-level browsing context</a>.
   </section>
 
@@ -861,18 +996,23 @@ type: element-attr
     <h3 id="requirements-ux">UI Requirements</h3>
 
     If a user agent would normally indicate to the user that the
-    <a>top-level browsing context</a> is secure, then when the user
-    agent services a <a>request</a> for an <a>optionally-blockable</a>
-    resource which is <a>mixed content</a>, then the
-    user agent MUST NOT provide the user with that same indication. The
-    user agent SHOULD instead give an indication that <a>mixed
-    content</a> is present.
+    <a>top-level browsing context</a> is secure, then:
+   
+    *   When the user agent downgrades a context to a <a>mixed security
+        context</a> by returning a resource in response to a <a>mixed
+        content</a> <a>request</a> (either because the <a>request</a> is
+        <a>optionally-blockable</a>, or because the user agent is configured
+        to allow <a>blockable</a> <a>request</a>s), the user agent MUST NOT
+        provide the user with that same indication.
+
+        The user agent SHOULD instead give an indication that <a>mixed
+        content</a> is present.
 
     If a mixed content indication is present, it MUST be made available
     through accessibility APIs for users of assistive technologies.
 
     Note: This requirement holds even in the context of an   
-    <a href="https://cabforum.org/about-ev-ssl/">EV status</a> [[!CAB]]. An EV
+    <a href="https://cabforum.org/about-ev-ssl/">EV status</a> [[CAB]]. An EV
     certificate's indicator does not override the necessity to notify
     users of mixed content violations.
   </section>
@@ -900,6 +1040,37 @@ type: element-attr
 
     Any such controls offered by a user agent MUST also be offered through
     accessibility APIs for users of assistive technologies.
+  </section>
+
+  <section>
+    <h3 id="service-workers">Service Workers</h3>
+
+    The fact that Service Workers sit inbetween a document and the network means
+    that we need to special-case requests made in those contexts. In particular,
+    they should be able to cache the results of insecure requests, provided that
+    those requests were triggered from a document (which, presumably, ensures
+    that they'll be used in an <a>optionally-blockable</a> context). Those
+    insecure results, however, cannot be exposed to the Service Worker, nor
+    should the Service Worker be allowed to launder responses to
+    <a>optionally-blockable</a> requests into responses to <a>blockable</a>
+    requests.
+
+    To that end:
+
+    1.  [[#should-block-fetch]] has some carve-outs for the <code>fetch</code>
+        request context, with the intent of allowing a Service Worker to copy
+        a request as part of its response to a Fetch event (e.g.
+        <code>fetch(event.response)</code> should be executable inside the
+        event handler.
+
+        The <code>fetch</code> request context will continue to be treated as
+        <a>blockable</a> when executed outside the context of a Fetch event,
+        which of course includes document contexts.
+
+    2.  [[#should-block-response]] verifies that the incoming response has the
+        same security characteristics that were allowed for the request. That
+        is, a Service Worker will not be able to replace a request for a secure
+        script with a cached response for an insecure resource.
   </section>
 
   <section>
