@@ -24,6 +24,8 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
     * [CSP Next?](https://github.com/mikewest/csp-next)
     * ...
 * Process Things
+    * [Charter](https://www.w3.org/2019/03/webappsec-2019-charter.html) still reasonable?
+    * [Evergreen standards](https://www.w3.org/wiki/Evergreen_Standards)?
     * Relationship with other groups (TAG, PING, HTTPbis, etc.)
     * Security reviews of upcoming features.
     * Various browsers' launch processes
