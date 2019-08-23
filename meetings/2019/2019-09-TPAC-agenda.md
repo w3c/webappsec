@@ -3,7 +3,6 @@
 Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.hilton.com/en/hotels/japan/hilton-fukuoka-sea-hawk-FUKHIHI/index.html).
 
 ## Topics
-
 * Old Things
     * For the third year in a row, how do we get [Referrer Policy](https://www.w3.org/TR/referrer-policy/), [Secure Contexts](https://www.w3.org/TR/secure-contexts/), [Mixed Content](https://www.w3.org/TR/mixed-content/), and [Upgrade Insecure Requests](https://www.w3.org/TR/upgrade-insecure-requests/) to REC?
     * Ditto for [Clear-Site-Data](https://www.w3.org/TR/clear-site-data/), [Credential Management](https://www.w3.org/TR/credential-management/).
@@ -22,9 +21,12 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
     * Mixed Content 2 ([@estark37](https://github.com/estark37))
     * Login API ([@johnwilander](https://github.com/johnwilander))
     * [CSP Next?](https://github.com/mikewest/csp-next)
+    * Double-keyed (or more) caches
+    * Protecting/sandboxing <iframe> sites (history.length, caches, window[i])
     * ...
 * Process Things
     * [Charter](https://www.w3.org/2019/03/webappsec-2019-charter.html) still reasonable?
+        * Putting privacy more clearly in scope and make browser privacy policies part of the security review process
     * [Evergreen standards](https://www.w3.org/wiki/Evergreen_Standards)?
     * Relationship with other groups (TAG, PING, HTTPbis, etc.)
     * Security reviews of upcoming features.
