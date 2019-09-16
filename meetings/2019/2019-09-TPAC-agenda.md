@@ -2,7 +2,7 @@
 
 Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.hilton.com/en/hotels/japan/hilton-fukuoka-sea-hawk-FUKHIHI/index.html).
 
-## Sept. 17th
+## Sept. 17th ([Sumire, 3F](https://www.w3.org/2019/09/TPAC/schedule.html#map))
 
 * 9:00 - 9:30 - Introductions, problem statements, framing the next day and a half.
 * 9:30 - 10:00 - [Something california-friendly, e.g. `Sec-Origin`]
