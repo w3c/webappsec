@@ -6,7 +6,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
 
 * 9:00 - 9:30 - Introductions, problem statements, framing the next day and a half.
 * 9:30 - 10:00 - [Something california-friendly, e.g. `Sec-Origin`]
-* 10:00 - 10:30 - Continuous specification ([plh@](https://github.com/plh), [wseltzer@](https://github.com/wseltzer))
+* 10:00 - 10:30 - [Continuous specification](https://www.w3.org/wiki/Evergreen_Standards) ([plh@](https://github.com/plh), [wseltzer@](https://github.com/wseltzer))
 * 10:30 - 11:00 - ☕ Coffee
 * 11:00 - 12:00 **CSRF / 👻Spectre👻 / XSLeaks**
   * [Fetch Metadata](https://github.com/w3c/webappsec-fetch-metadata)
