@@ -10,6 +10,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
   * Artur Janc's ["Baby Steps Towards the Precipice"](https://www.arturjanc.com/usenix2019/) is helpful reading.
 * 9:15 - 10:00 - **Secure Transport**
   * [MIX2](https://w3c.github.io/webappsec-mixed-content/level2.html)
+    * FPWD?
   * HSTS fingerprinting: [Apple's mitigations](https://webkit.org/blog/8146/protecting-against-hsts-abuse/), [Strict-Navigation-Security](https://github.com/mikewest/strict-navigation-security)
     * [`SameSite=None;Secure`](https://mikewest.github.io/cookie-incrementalism/draft-west-cookie-incrementalism.html#rfc.section.3.2)
     * ["same site" && schemes](https://github.com/whatwg/url/issues/448)
