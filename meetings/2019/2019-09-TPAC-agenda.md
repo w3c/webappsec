@@ -31,6 +31,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
   * [Origin Policy](https://wicg.github.io/origin-policy/)
 * 15:30 - 16:00 - ☕ Coffee ☕
 * 16:00 - 17:00 - **Injection**
+  * _I somewhat expect overflow from the above to cause us to punt this to Thursday; leaving some slack in the schedule accordingly_
   * [Trusted Types](https://github.com/WICG/trusted-types) ([@koto](https://github.com/koto))
   * [CSP3](https://github.com/w3c/webappsec-csp)
   * [CSP Next](https://github.com/mikewest/csp-next)
