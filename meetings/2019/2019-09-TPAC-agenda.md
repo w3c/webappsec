@@ -2,6 +2,37 @@
 
 Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.hilton.com/en/hotels/japan/hilton-fukuoka-sea-hawk-FUKHIHI/index.html).
 
+## Sept. 17th
+
+* 9:00 - 9:30 - Introductions, problem statements, framing the next day and a half.
+* 9:30 - 10:00 - [Something california-friendly, e.g. `Sec-Origin`]
+* 10:00 - 10:30 - Continuous specification (plh@, wseltzer@)
+* 10:30 - 11:00 - ☕ Coffee
+* 11:00 - 12:00 **CSRF / 👻Spectre👻 / XSLeaks**
+  * [Fetch Metadata](https://github.com/w3c/webappsec-fetch-metadata)
+  * COOP/[CORP](https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header)/[COEP](https://github.com/mikewest/corpp)
+  * Double-keyed (or more) caches
+* 12:00 - 12:30 - Networky things
+  * [MIX2](https://w3c.github.io/webappsec-mixed-content/level2.html)
+  * HSTS: [Apple's mitigations](https://webkit.org/blog/8146/protecting-against-hsts-abuse/), (Strict-Navigation-Security](https://github.com/mikewest/strict-navigation-security)
+  * Intranet / Internet: [CORS-RFC1918](https://wicg.github.io/cors-rfc1918/)
+* 12:30 - 13:30 - 😋 Lunch 😋
+* 13:30 - 14:30 - Authentication
+  * [`IsLoggedIn` API](https://lists.w3.org/Archives/Public/public-webappsec/2019Sep/0004.html) ([@johnwilander](https://github.com/johnwilander))
+  * [HTTPStateTokens](https://github.com/mikewest/http-state-tokens) / Cookies
+* 14:30 - 15:30 - Feature Controls
+  * [Feature/Document/* Policy](https://www.w3.org/TR/feature-policy/) ([@clelland](https://github.com/clelland))
+    * [Cookie Controls](https://github.com/w3c/webappsec-feature-policy/issues/85)
+  * Protecting/sandboxing `<iframe>` sites (history.length, caches, window[i])
+  * [Origin Policy](https://wicg.github.io/origin-policy/)
+* 15:30 - 16:00 - ☕ Coffee ☕
+* 16:00 - 17:00 - Injection
+  * [Trusted Types](https://github.com/WICG/trusted-types)
+  * [CSP3](https://github.com/w3c/webappsec-csp)
+  * [CSP Next](https://github.com/mikewest/csp-next)
+
+---
+
 ## Topics
 
 * Old Things
@@ -36,17 +67,3 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
     * Various browsers' launch processes
     
 Suggestions? https://github.com/w3c/webappsec/issues/555 would be a great place to make them.
-
-## Schedule
-
-| | Tuesday, September 17th |
-|-|-------------------------|
-| 8:30 - 18:00 | *TBD* |
-
-| | Wednesday, September 17th |
-|-|-------------------------|
-| 8:30 - 18:00 | [Unconference Session Ideas](https://www.w3.org/wiki/TPAC/2019/SessionIdeas) |
-
-| | Thursday, September 19th |
-|-|-------------------------|
-| 8:30 - 18:00 | *TBD* |
