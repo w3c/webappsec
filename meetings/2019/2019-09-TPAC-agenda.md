@@ -25,6 +25,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
 * 14:30 - 15:30 - **Feature Controls**
   * [Feature/Document/* Policy](https://www.w3.org/TR/feature-policy/) ([@clelland](https://github.com/clelland))
     * [Cookie Controls](https://github.com/w3c/webappsec-feature-policy/issues/85)
+    * [`<meta>`](https://github.com/w3c/webappsec-feature-policy/issues/55)
   * Protecting/sandboxing `<iframe>` sites (history.length, caches, window[i])
   * [Origin Policy](https://wicg.github.io/origin-policy/)
 * 15:30 - 16:00 - ☕ Coffee ☕
