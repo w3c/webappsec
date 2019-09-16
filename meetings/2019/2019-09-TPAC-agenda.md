@@ -4,7 +4,11 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
 
 [WebEx info](https://www.w3.org/2019/09/webappsec-tpac.html) (Requires W3C member login.  Ask on IRC if you have difficulty.)
 
-## Sept. 17th ([Sumire - 3F](https://www.w3.org/2019/09/TPAC/schedule.html#map), [Minutes](https://cryptpad.w3ctag.org/code/#/2/code/edit/dzuWzpkucqW3VtOzc13CAoMZ/))
+## Minutes
+
+<https://cryptpad.w3ctag.org/code/#/2/code/edit/dzuWzpkucqW3VtOzc13CAoMZ/>
+
+## Sept. 17th ([Sumire - 3F](https://www.w3.org/2019/09/TPAC/schedule.html#map))
 
 * 9:00 - 9:15 - Introductions, problem statements, framing the next day and a half.
   * Artur Janc's ["Baby Steps Towards the Precipice"](https://www.arturjanc.com/usenix2019/) is helpful reading.
