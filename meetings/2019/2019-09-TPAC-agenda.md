@@ -36,9 +36,18 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
 (_We'll fill day 2 will topics that we didn't get through on day 1, as the schedule is optimistic._)
 
 * 12:00 - 13:00 - 😋 Lunch 😋
-* 13:00 - 13:30 - Cleanup
-  * [Referrer Policy](https://www.w3.org/TR/referrer-policy/), [Secure Contexts](https://www.w3.org/TR/secure-contexts/), [Mixed Content](https://www.w3.org/TR/mixed-content/), [Upgrade Insecure Requests](https://www.w3.org/TR/upgrade-insecure-requests/), [Clear-Site-Data](https://www.w3.org/TR/clear-site-data/), [Credential Management](https://www.w3.org/TR/credential-management/), [Embedded Enforcement](https://www.w3.org/TR/csp-embedded-enforcement/)
-  * 13:30 - 14:00 - Process things.
+* 13:00 - 14:00 - Cleanup
+  * Moving CRs to Recommendations: 
+    * [Referrer Policy](https://www.w3.org/TR/referrer-policy/)
+    * [Secure Contexts](https://www.w3.org/TR/secure-contexts/)
+    * [Mixed Content](https://www.w3.org/TR/mixed-content/)
+    * [Upgrade Insecure Requests](https://www.w3.org/TR/upgrade-insecure-requests/)
+  * Getting to CR: 
+    * [Clear-Site-Data](https://www.w3.org/TR/clear-site-data/)
+    * [Credential Management](https://www.w3.org/TR/credential-management/)
+    * [Embedded Enforcement](https://www.w3.org/TR/csp-embedded-enforcement/)
+  * Should we obsolete [UI Security and Visibility API](https://www.w3.org/TR/UISecurity/) in favor of [IntersectionObserver v2](https://w3c.github.io/IntersectionObserver/v2/)
+* 14:00 - 14:30 - Process things.
     * Charter still reasonable?
     * Putting privacy more clearly in scope and make browser privacy policies part of the security review process?
     * Relationship with other groups (TAG, PING, HTTPbis, etc.)
