@@ -48,7 +48,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
     * [Embedded Enforcement](https://www.w3.org/TR/csp-embedded-enforcement/)
   * Should we obsolete [UI Security and Visibility API](https://www.w3.org/TR/UISecurity/) in favor of [IntersectionObserver v2](https://w3c.github.io/IntersectionObserver/v2/)
 * 14:00 - 14:30 - Process things.
-    * Charter still reasonable?
+    * [Charter](https://www.w3.org/2019/03/webappsec-2019-charter.html) still reasonable?
     * Putting privacy more clearly in scope and make browser privacy policies part of the security review process?
     * Relationship with other groups (TAG, PING, HTTPbis, etc.)
     * Security reviews of upcoming features.
