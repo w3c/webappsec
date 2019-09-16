@@ -14,6 +14,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
   * [Fetch Metadata](https://github.com/w3c/webappsec-fetch-metadata)
   * COOP/[CORP](https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header)/[COEP](https://github.com/mikewest/corpp)
   * Double-keyed (or more) caches
+  * Origin-level isolation
 * 12:00 - 12:30 - **Networky things**
   * [MIX2](https://w3c.github.io/webappsec-mixed-content/level2.html)
   * HSTS: [Apple's mitigations](https://webkit.org/blog/8146/protecting-against-hsts-abuse/), [Strict-Navigation-Security](https://github.com/mikewest/strict-navigation-security)
