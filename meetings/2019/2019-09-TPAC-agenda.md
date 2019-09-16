@@ -12,58 +12,43 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
   * [Fetch Metadata](https://github.com/w3c/webappsec-fetch-metadata)
   * COOP/[CORP](https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header)/[COEP](https://github.com/mikewest/corpp)
   * Double-keyed (or more) caches
-* 12:00 - 12:30 - Networky things
+* 12:00 - 12:30 - **Networky things**
   * [MIX2](https://w3c.github.io/webappsec-mixed-content/level2.html)
   * HSTS: [Apple's mitigations](https://webkit.org/blog/8146/protecting-against-hsts-abuse/), [Strict-Navigation-Security](https://github.com/mikewest/strict-navigation-security)
   * Intranet / Internet: [CORS-RFC1918](https://wicg.github.io/cors-rfc1918/)
 * 12:30 - 13:30 - 😋 Lunch 😋
-* 13:30 - 14:30 - Authentication
+* 13:30 - 14:30 - **Authentication**
   * [`IsLoggedIn` API](https://lists.w3.org/Archives/Public/public-webappsec/2019Sep/0004.html) ([@johnwilander](https://github.com/johnwilander))
   * [HTTPStateTokens](https://github.com/mikewest/http-state-tokens) / Cookies
-* 14:30 - 15:30 - Feature Controls
+* 14:30 - 15:30 - **Feature Controls**
   * [Feature/Document/* Policy](https://www.w3.org/TR/feature-policy/) ([@clelland](https://github.com/clelland))
     * [Cookie Controls](https://github.com/w3c/webappsec-feature-policy/issues/85)
   * Protecting/sandboxing `<iframe>` sites (history.length, caches, window[i])
   * [Origin Policy](https://wicg.github.io/origin-policy/)
 * 15:30 - 16:00 - ☕ Coffee ☕
-* 16:00 - 17:00 - Injection
-  * [Trusted Types](https://github.com/WICG/trusted-types)
+* 16:00 - 17:00 - **Injection**
+  * [Trusted Types](https://github.com/WICG/trusted-types) ([@koto](https://github.com/koto))
   * [CSP3](https://github.com/w3c/webappsec-csp)
   * [CSP Next](https://github.com/mikewest/csp-next)
 
----
+## Sept. 19th ([Navis C, 1F](https://www.w3.org/2019/09/TPAC/schedule.html#map)) 
 
-## Topics
+(_We'll fill day 2 will topics that we didn't get through on day 1, as the schedule is optimistic._)
 
-* Old Things
-    * For the third year in a row, how do we get [Referrer Policy](https://www.w3.org/TR/referrer-policy/), [Secure Contexts](https://www.w3.org/TR/secure-contexts/), [Mixed Content](https://www.w3.org/TR/mixed-content/), and [Upgrade Insecure Requests](https://www.w3.org/TR/upgrade-insecure-requests/) to REC?
-    * Ditto for [Clear-Site-Data](https://www.w3.org/TR/clear-site-data/), [Credential Management](https://www.w3.org/TR/credential-management/).
-    * What are we doing with [Content Security Policy](https://www.w3.org/TR/csp/) and [Embedded Enforcement](https://www.w3.org/TR/csp-embedded-enforcement/)
-    * ...
-* Less-old Things
-    * [Fetch Metadata](https://www.w3.org/TR/fetch-metadata/)
-    * [Origin Policy](https://wicg.github.io/origin-policy/)
-    * [CORS-RFC1918](https://wicg.github.io/cors-rfc1918/)
-    * [Feature/Document/* Policy](https://www.w3.org/TR/feature-policy/) (@clelland?)
-        * [Cookie Controls](https://github.com/w3c/webappsec-feature-policy/issues/85)
-    * CORP/COEP/COOP + 👻 Spectre 👻
-    * ...
-* New Things
-    * [Trusted Types](https://github.com/WICG/trusted-types) update. Adopt into the WG? ([@koto](https://github.com/koto))
-    * HTTP State Tokens
-    * Mixed Content 2 ([@estark37](https://github.com/estark37))
-    * [`IsLoggedIn` API](https://lists.w3.org/Archives/Public/public-webappsec/2019Sep/0004.html) ([@johnwilander](https://github.com/johnwilander))
-    * [CSP Next?](https://github.com/mikewest/csp-next)
-    * Double-keyed (or more) caches
-    * Protecting/sandboxing <iframe> sites (history.length, caches, window[i])
-    * `Sec-Origin` (@deian)
-    * ...
-* Process Things
-    * [Charter](https://www.w3.org/2019/03/webappsec-2019-charter.html) still reasonable?
-        * Putting privacy more clearly in scope and make browser privacy policies part of the security review process
-    * [Evergreen standards](https://www.w3.org/wiki/Evergreen_Standards)?
+* 12:00 - 13:00 - 😋 Lunch 😋
+* 13:00 - 13:30 - Cleanup
+  * [Referrer Policy](https://www.w3.org/TR/referrer-policy/), [Secure Contexts](https://www.w3.org/TR/secure-contexts/), [Mixed Content](https://www.w3.org/TR/mixed-content/), [Upgrade Insecure Requests](https://www.w3.org/TR/upgrade-insecure-requests/), [Clear-Site-Data](https://www.w3.org/TR/clear-site-data/), [Credential Management](https://www.w3.org/TR/credential-management/), [Embedded Enforcement](https://www.w3.org/TR/csp-embedded-enforcement/)
+  * 13:30 - 14:00 - Process things.
+    * Charter still reasonable?
+    * Putting privacy more clearly in scope and make browser privacy policies part of the security review process?
     * Relationship with other groups (TAG, PING, HTTPbis, etc.)
     * Security reviews of upcoming features.
     * Various browsers' launch processes
+
+---
+
+## Leftover Topics
+
+* ???
     
 Suggestions? https://github.com/w3c/webappsec/issues/555 would be a great place to make them.
