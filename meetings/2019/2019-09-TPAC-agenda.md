@@ -6,7 +6,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
 
 * 9:00 - 9:30 - Introductions, problem statements, framing the next day and a half.
 * 9:30 - 10:00 - [Something california-friendly, e.g. `Sec-Origin`]
-* 10:00 - 10:30 - Continuous specification (plh@, wseltzer@)
+* 10:00 - 10:30 - Continuous specification ([plh@](https://github.com/plh), [wseltzer@](https://github.com/wseltzer))
 * 10:30 - 11:00 - ☕ Coffee
 * 11:00 - 12:00 **CSRF / 👻Spectre👻 / XSLeaks**
   * [Fetch Metadata](https://github.com/w3c/webappsec-fetch-metadata)
@@ -14,7 +14,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
   * Double-keyed (or more) caches
 * 12:00 - 12:30 - Networky things
   * [MIX2](https://w3c.github.io/webappsec-mixed-content/level2.html)
-  * HSTS: [Apple's mitigations](https://webkit.org/blog/8146/protecting-against-hsts-abuse/), (Strict-Navigation-Security](https://github.com/mikewest/strict-navigation-security)
+  * HSTS: [Apple's mitigations](https://webkit.org/blog/8146/protecting-against-hsts-abuse/), [Strict-Navigation-Security](https://github.com/mikewest/strict-navigation-security)
   * Intranet / Internet: [CORS-RFC1918](https://wicg.github.io/cors-rfc1918/)
 * 12:30 - 13:30 - 😋 Lunch 😋
 * 13:30 - 14:30 - Authentication
