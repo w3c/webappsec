@@ -1,4 +1,3 @@
- 
 WebAppSec @ TPAC 2019
 =====================
 
@@ -6,70 +5,72 @@ WebAppSec @ TPAC 2019
 
 * **Location**: We're in [Sumire - 3F](https://www.w3.org/2019/09/TPAC/schedule.html#map), starting at 9:00. See you there!
 * **WebEx**: [here](https://www.w3.org/2019/09/webappsec-tpac.html)
-* Attendees:
-  * Artur Janc (Google)
-  * Balazs Engedy (Google, observing) 
-  * James MacLean
-  * Ben Kelly (Google)
-  * Boaz Sender (Bocoup)
-  * Brad Lassey (Google)
-  * Carlos Ibarra Lopez (Google)
-  * Christine Runnegar (PING, co-chair, observing)
-  * Christoph Kerschbaumer (Mozilla)
-  * Dan Veditz (Mozilla)
-  * Dave Harbage (DuckDuckGo, observing)
-  * Deian Stefan (UCSD, remote)
-  * Dharani Govindan (Google, observing)
-  * Eric Lawrence (Microsoft)
-  * Hiroki Nakagawa (Google, observing)
-  * Hiroshige Hayashizaki (Google)
-  * Ian Clelland (Google)
-  * J.C. Jones (Mozilla, observing)
-  * James Fishback (Wikimedia, observing) 
-  * Jeff Hodges (Google)
-  * Jia Qiang(China Mobile)
-  * John Wilander (Apple)
-  * Joshua Bell (Google)
-  * Kinuko Yasuda (Google, observing)
-  * Konrad Dzwinel (DuckDuckGo, observing)
-  * Krzysztof Kotowicz (Google)
-  * Laszlo Gombos (Samsung)
-  * Lukas Weichselbaum (Google)
-  * Luu Duy Tung (Canton Consulting)
-  * Mark Nottingham (Fastly, observing)
-  * Matt Falkenhagen (Google)
-  * Melanie Richards (Microsoft, observing)
-  * Michael Kleber (Google, observing)
-  * Mike West (Google)
-  * Nick Mooney (Duo Labs, observing)
-  * Philippe Le Hegaret (W3C/MIT)
-  * Pranjal Jumde (Brave)
-  * RIchard Winterton (Intel)
-  * Ricky Mondello (Apple)
-  * Ryo Kajiwara (lepidum, observing)
-  * Sam Weiler (MIT/W3C)
-  * Scott Low (Microsoft)
-  * Simon Pieters (Bocoup)
-  * Steve Becker (Microsoft)
-  * Steven Soneff (Google)
-  * Takeru Yamada (ACCESS, observing)
-  * Tara Whalen (Google, PING co-chair, observing)
-  * Tom Lowenthal (Brave)
-  * Valerie Young (Bocoup)
-  * W. James MacLean (Google, observing)
-  * Wendy Seltzer (W3C)
-  * Thomas Steiner (Google, observing) 
-  * Jeffrey Yasskin (Google)
-  * Tsuyoshi Horo (Google observing)
-  * Deian Stefan (UCSD, remote)
-  * Michael Smith (UCSD, remote)
-  * Yutaka Hirano (Google, observing)
-  * Dominic Cooney (Facebook)
-  * Rowan Merewood (Google)
+
+Attendees:
+*  Artur Janc (Google)
+*  Balazs Engedy (Google, observing)
+*  James MacLean
+*  Ben Kelly (Google)
+*  Boaz Sender (Bocoup)
+*  Brad Lassey (Google)
+*  Carlos Ibarra Lopez (Google)
+* Christine Runnegar (PING, co-chair, observing)
+*  Christoph Kerschbaumer (Mozilla)
+*  Dan Veditz (Mozilla)
+*  Dave Harbage (DuckDuckGo, observing)
+*  Deian Stefan (UCSD, remote)
+*  Dharani Govindan (Google, observing)
+*  Eric Lawrence (Microsoft)
+*  Hiroki Nakagawa (Google, observing)
+*  Hiroshige Hayashizaki (Google)
+*  Ian Clelland (Google)
+*  J.C. Jones (Mozilla, observing)
+*  James Fishback (Wikimedia, observing)
+*  Jeff Hodges (Google)
+*  Jia Qiang(China Mobile)
+*  John Wilander (Apple)
+*  Joshua Bell (Google)
+*  Kinuko Yasuda (Google, observing)
+*  Konrad Dzwinel (DuckDuckGo, observing)
+*  Krzysztof Kotowicz (Google)
+*  Laszlo Gombos (Samsung)
+*  Lukas Weichselbaum (Google)
+*  Luu Duy Tung (Canton Consulting)
+*  Mark Nottingham (Fastly, observing)
+*  Matt Falkenhagen (Google)
+*  Melanie Richards (Microsoft, observing)
+*  Michael Kleber (Google, observing)
+*  Mike West (Google)
+*  Nick Mooney (Duo Labs, observing)
+*  Philippe Le Hegaret (W3C/MIT)
+*  Pranjal Jumde (Brave)
+*  RIchard Winterton (Intel)
+*  Ricky Mondello (Apple)
+*  Ryo Kajiwara (lepidum, observing)
+*  Sam Weiler (MIT/W3C)
+*  Scott Low (Microsoft)
+*  Simon Pieters (Bocoup)
+*  Steve Becker (Microsoft)
+*  Steven Soneff (Google)
+*  Takeru Yamada (ACCESS, observing)
+*  Tara Whalen (Google, PING co-chair, observing)
+*  Tom Lowenthal (Brave)
+*  Valerie Young (Bocoup)
+*  W. James MacLean (Google, observing)
+*  Wendy Seltzer (W3C)
+*  Thomas Steiner (Google, observing)
+*  Jeffrey Yasskin (Google)
+*  Tsuyoshi Horo (Google observing)
+*  Deian Stefan (UCSD, remote)
+*  Michael Smith (UCSD, remote)
+*  Yutaka Hirano (Google, observing)
+*  Dominic Cooney (Facebook)
+*  Rowan Merewood (Google)
+*  Jeff Jaffe (W3C/MIT)
 
 ## Agenda:
 
-## Tuesday
+## Tuesday, Sept 17th
 
 * 9:00 - 9:15 - Introductions, problem statements, framing the next day and a half.
   * Artur Janc's ["Baby Steps Towards the Precipice"](https://www.arturjanc.com/usenix2019/) is helpful reading.
@@ -103,11 +104,7 @@ WebAppSec @ TPAC 2019
   * [First-Party Sets](https://github.com/krgovind/first-party-sets)
   * [Public Suffix List](https://publicsuffix.org/), and [its problems](https://github.com/sleevi/psl-problems/)
 
-**Overflow**:
-
-* CORS-RFC1918
-
-### Thursday
+## Thursday Sept. 19th ([Navis C, 1F](https://www.w3.org/2019/09/TPAC/schedule.html#map)) 
 
 * 12:00 - 13:00 - 😋 Lunch 😋
 * 13:00 - 14:30 - **CSRF / 👻Spectre👻 / XSLeaks**
@@ -136,6 +133,8 @@ WebAppSec @ TPAC 2019
     * Relationship with other groups (TAG, PING, HTTPbis, etc.)
     * Security reviews of upcoming features.
     * Various browsers' launch processes
+## Overflow
+* CORS-1918
 
 ## Minutes:
 
@@ -144,9 +143,12 @@ WebAppSec @ TPAC 2019
 * Round the room, introductions. (54 people!)
 
 ### Secure Transport
-#### MIX2
+##### MIX2
 
-**Carlos**: Mixed Content is bad. Still quite a lot of it. UX for it is interesting. We downgrade the lock; hard to tell what the actual problem is for users. We're trying to push more sites to move away from mixed content. For low-impact mixed content, we're trying to autoupgrade it to HTTPS. If the upgrade works, great. If it doesn't load, we simply fail. No HTTP fallback. Has the impact of blocking non-upgradeable content. Been doing this on Beta for \~3 months now. Pretty successful for `<video>`, fairly unsuccessful for `<audio>`. \~50% success for images (\~1.5% of navigations contain mixed images). Current plan for Chrome is to ship upgrades for `<audio>` and `<video>` later this year. Put out a proposal for MIX2. 0.02% of navigations affected. So far, just one bug report. Podcast aggregator site. This might be the biggest problem for the proposal. Plan is to add an opt-out.
+**Carlos**: Mixed Content is bad. Still quite a lot of it. UX for it is interesting. We downgrade the lock; hard to tell what the actual problem is for users. We're trying to push more sites to move away from mixed content. For low-impact mixed content, we're trying to autoupgrade it to HTTPS. If the upgrade works, great. If it doesn't load, we simply fail. No HTTP fallback. Has the impact of blocking non-upgradeable content.
+...: Been doing this on Beta for \~3 months now. Pretty successful for `<video>`, fairly unsuccessful for `<audio>`. \~50% success for images (~1.5% of navigations contain mixed images). Current plan for Chrome is to ship upgrades for `<audio>` and `<video>` later this year. Put out a proposal for MIX2.
+...: 0.02% of navigations affected. So far, just one bug report. Podcast aggregator site. This might be the biggest problem for the proposal.
+...: Plan is to add an opt-out.
 
 **John**: Scripts? When we originally discussed this, there was a worry that scripts we were blocking would be loaded.
 
@@ -172,21 +174,23 @@ WebAppSec @ TPAC 2019
 
 **John**: Enterprise? Do we need to talk about that?
 
-**Carlos**: Chrome is shipping an enterprise policy that admins can use to opt-out of the policy. Original plan was to ship an opt-out header, Chrome has shifted to an in-browser opt-out that's user-facing, not developer facing. They have a setting to allow active mixed content, we're now interpreting that as "allow mixed content". Used to be a shield in the address bar, will become a content setting.
+**Carlos**: Chrome is shipping an enterprise policy that admins can use to opt-out of the policy.
+...: Original plan was to ship an opt-out header, Chrome has shifted to an in-browser opt-out that's user-facing, not developer facing. They have a setting to allow active mixed content, we're now interpreting that as "allow mixed content". Used to be a shield in the address bar, will become a content setting.
 
-**Mike**: There are two things we can do for MIX2: adopt [the proposal](https://w3c.github.io/webappsec-mixed-content/level2.html) into this WG. Or we can wait for Carlos's data and see what it says. I would propose we adopt this. Get feedback from the list, let's make the decision offline, but reaction seems positive here.
+**Mike**: There are two things we can do for MIX2: adopt [the proposal](https://w3c.github.io/webappsec-mixed-content/level2.html) into this WG. Or we can wait for Carlos's data and see what it says. I would propose we adopt this.
+Get feedback from the list, let's make the decision offline, but reaction seems positive here.
 
 No objection in the room.
 
 
-#### HSTS fingerprinting
+##### HSTS fingerprinting
 
 **Mike**: one thing HSTS does is solve the problem MIX/MIX2 is trying to solve -- upgrade resources from insecure to secure transport. HSTS is great for preventing SSLStrip-like attacks on navigation (first-party loads), but because of the mixed-content-blocking ordering it does not always work for sub-resources.
 
-**John**: In WebKit, we implemented HSTS in ~2013. Only allowed first-parties to set HSTS. But even so, it was abused for tracking purposes. Links would be changed to take you to their sites and set HSTS pins for various subdomains to produce a tracking ID. ~32 subdomains == 32 bits of entropy. Legible from pages _on any origin_ by making requests and seeing if they fail or are upgraded. Made some changes in 2018 <https://webkit.org/blog/8146/protecting-against-hsts-abuse/>.
+**John**: In WebKit, we implemented HSTS in ~2013. Only allowed first-parties to set HSTS. But even so, it was abused for tracking purposes. Links would be changed to take you to their sites and set HSTS pins for various subdomains to produce a tracking ID. ~32 subdomains == 32 bits of entropy. Legible from pages _on any origin_ by making requests and seeing if they fail or are upgraded.
+...: Made some changes in 2018 <https://webkit.org/blog/8146/protecting-against-hsts-abuse/>.
 
 **Mike**: looking at related proposals, things like MIX2 will reduce the scope of the problems. Another proposal floating around is to do [something with SameSite cookies](https://mikewest.github.io/cookie-incrementalism/draft-west-cookie-incrementalism.html#rfc.section.3.2), such as defaulting to SameSite, and requiring SameSite=none to have the secure flag so they aren't sent over insecure transport.
-
 gjvkgucddfellickjflddknfcghcunih...: in the past it was common to have single-signon...?
 
 https://github.com/whatwg/url/issues/448 "Consider introducing a "same-site" concept that includes scheme"
@@ -208,7 +212,7 @@ https://github.com/whatwg/url/issues/448 "Consider introducing a "same-site" con
 
 **Jeff**: The right people need to know what to pay attention to.
 
-**Mark**: Maybe something in the charter about how to liaise?
+**Mark**: Maybe something in the charter about how to liase?
 
 **John**: We don't need to restart that group?
 
@@ -520,13 +524,213 @@ https://github.com/mikewest/csp-next
 
 **Artur**: like most people here I dislike eval(), but when we ban it we find things like angular reimplementing eval() in javascript. So now we still have eval-like behavior but no way to turn it off globally. Developers will use the thing they want to use.
 
-**Koto**: I think it's impossible to bad eval() now -- 80% of CSP enable it. A lot of the times it's used safely in frameworks or the like. The approach of banning simply won't fly. Giving them a way to call eval() carefully is a better approach. You have to call eval() because you need to, not because you always have.
+**Koto**: I think it's impossible to ban eval() now -- 80% of CSP enable it. A lot of the times it's used safely in frameworks or the like. The approach of banning simply won't fly. Giving developers a way to call eval() carefully is a better approach. You have to call eval() because you need to, not because you always have.
 ...: more approachable from a developers perspective.
 
 [break for lunch]
 
+## Authentication
+
+### `./well-known/change-password`
+
+**Ricky**: We built a feature in Safari that let users know which websites they were reusing passwords on, and where they were using poor passwords. Goal is to get folks off of bad passwords, and we discovered that we'd have a much better feature if we could take folks directly to the place where they could change their password. Proposed a well-known URL at which they could change their password. Put that [proposal up at WICG](https://github.com/WICG/change-password-url) . Websites have been adopting it: CMS's, GitHub, Facebook, Google, Twitter, a bunch of smaller websites. It's going pretty well.
+...: Also thinking about other uses, login page, etc. Happy with the feedback we've gotten so far, and the adoption we've seen.
+
+**Dan**: Supported on non-secure sites?
+
+**Ricky**: Sounds like it's not currently included; please file an issue, happy to take a look? Mitigations in place, taking a user to the right page is arguably the right thing to have something to do.
+
+**John**: Potentially-trustworthy origin is in the spec.
+
+**Dan**: I was looking for "secure".
+
+**Mike**: Yeah...
+
+**Mike**: any objections to adption in WebAppSec for Rec track? Please send us an email
+
+No objections
+
+
+### `IsLoggedIn()`
+
+**John**: `IsLoggedIn()`. I sent out an email a week or so ago. Hope it wasn't garbled on the list. There's a repo now, will put a formatted explainer there.
+
+...: Not a fully-baked, half-implemented thing. Taking it here to chat about an early idea and get feedback.
+
+...: Trying to get to a place where the browser knows when a user is "logged-in" to a website. Then the browser can do some interesting things.
+
+...: We have some existing things:
+
+...: - Expired: basic/digest auth.
+
+...: - Tired: Manual
+
+...: - Wired: password management credential management
+
+...: - Inspired: webauthn
+
+...: The browser only knows, in the best case, that the user went through some transition. Doesn't know expectations around that, expiration, connection to stateful cookies, logout actions.
+
+...: From a state and storage perspective, you're logged-in by default. There's a bunch of state in the browser. Cookies. Can have an expiry, can be session-bound, but these can last a long time. Weird scope.
+
+...: DOM storage. No expiry. Session storage. Tab scoped. Do adhere to the same-origin policy.
+
+...: Caches. Can't give a guarantee about caches. Expiry. Best effort.
+
+...: Other stateful things. HSTS expires. Media keys don't. Service workers don't.
+
+...: If you just go to a website for a fraction of a second, all of these can be set, some will never expire.
+
+...: I hear from developers that there are legal consequences to the lack of expiry.
+
+...: Accidental Logouts
+
+...: Browsers have no way of helping the user stay logged in. Cookie jar overflows. Cookie header truncation. Periodic website data clearage (ITP for example).
+
+...: These things could all be fixed if we had a trustworthy signal that the user is signed into a website. Help them log in, maintain state, and log out when they want.
+
+...: Straw proposal: [read the email](https://lists.w3.org/Archives/Public/public-webappsec/2019Sep/0004.html)
+
+...: If we tie privilege to this signal (if you get "forever storage" for signed-in users), sites will try to abuse it.
+
+...: We'd need to avoid that for the signal to be trustworthy. A few ideas that might avoid abuse:
+
+...: 1. Only allow setting the bit with modern login mechanisms (webauthn, password manager)
+
+...: 2. Accept manual flows (detected via heuristics)
+
+...: 3. Browser UI actively acquiring user intent. (ex. a prompt saying "This site wants to log you in.")
+
+...: 4. Continuous browser UI highlighting the places where you're logged in. ("This site considers you logged in.") Fights abuse of not calling logout.
+
+...: 5. Delayed browser UI. (ex. Seven days after the site claims you're logged in, "Do you want to stay logged into `news.example`?") 
+
+...: 6. Staying logged in could require continious engagement with a site. Browser can hide credentials, let user reactivate session at some point later.
+
+...: Credential tokens
+
+...: We think we may be able to get away with an `__auth-` prefix. "This is the cookie we care about. It's expiry will control the expiry of the login state." Scope of cookie controls scope of sign in.
+
+...: Then we have federated login. If you're using "Log in with Google", "Sign in with Apple", the site doesn't take the user through the login flow. No signal to gate the ability to set the login bit.
+
+...: Perhaps we could facilitate.
+...: On a site A, click "Login with X", you're taken to X. X validates the user intent, and declares its intent to sign the user into A. Now the user's taken back, that site declares its intent to log the user in via X. Need to be logged into the login provider before it can log you into site A.
+
+...: Grandfathering problem: There are already a lot of sites that the user's signed into. How do we allow the sites to set the bit without walking the user through a new process?
+
+...: What's a good value for a cap on sign in length.
+
+...: Set of domains owned by the same organization. First-party sets? Some privacy concerns there, so not baked in, but you could imagine it working.
+
+...: Could envision a full-fledged login API, grabbing tokens, doing the whole process. `IsLoggedIn()` is just a bit right now. There's much more that could be done to facilitate the whole process.
+
+...: That's it!
+
+**Steven**: Hi! PM at Google. Some sites have different levels of login. Bank might have you logged in to do transactions, and then you log out. Has a lower bar for signing you back in later, fraud mitigation, etc.
+
+**Jeff**: Shopping cart.
+
+**John**: We talked about a cap on the storage for a given site. Some sites drop a multi-year cookie. That seems unreasonable. But we don't need to wipe all state upon logout. We could start a timer, and delete if not engaged in some period of time.
+
+**Jeffrey**: Storage folks are talking about expiring boxes of storage. "Box" being a term in the Storage spec, a bit of storage inside an origin.
+
+**Ricky**: Sounds like an abstraction on storage that already exists.
+
+**Jeffrey**: Expiration is a new feature.
+
+**Ian**: Who's in charge of what happens when a user logs out?
+
+**John**: Expiry? Active signout?
+
+**Ian**: Both.
+
+**John**: User can clear website data all the time anyway. So sites need to deal with that.
+
+**Carlos**: Browser UI. Have you thought at all about how to distinguish that from the indicator that you're signed into the browser itself.
+
+**John**: I'm not a UI designer. It's an abstract concept that we're listing for completeness. The lack of call to log out is an abuse case. We want to mitigate.
+
+**Koto**: Multilogin? Multiple user profiles at the same time.
+
+**John**: There's an affordance for that. Multiple user names.
+
+**Artur**: Google does it like this: you might log into multiple accounts and switch between them. Credentials exist for all accounts, applications recognize who you are for that app.
+
+**Ricky**: It sounds like you might need multiple calls for indicating logging in, and indicate dominant/operating account at that time.
+
+**Koto**: Switching accounts.
+
+**John**: If this API would delete tokens, it would need to know who you're logging out, who you're logging in.
+
+**Koto**: Username field doesn't make sense if a site supports lots of users.
+
+**John**: Persistent signal in the browser?
+
+**Koto**: If you want to display that a user is signed in _as_ a user, you need to know which one it is.
+
+**Tom**: Danger of UI indicator. If it's always visible, no one sees. Did you do any research on session length? Banks log you out after 30 seconds. Other sites until 2038. Risk I see is that folks get used to the indicator.
+
+**John**: No, we don't. Multiple use cases, different expectations.
+
+**Mike**: Quick note that we should assume we'll work out the UI. Not going to standardize it anyway.
+
+**Steven**: Autocomplete for SMS might be a useful signal for sign in, especially in markets where phone numbers are prevalent. Recovery flows are also common. Clicking a link sets some state that sets up a session. Hard cases for heuristics. Passwordless login: Medium, Yahoo Japan. Question about overlap with credential management spec. Notifying the browser about these kinds of sign in are similar to previous use cases.
+
+**John**: It's been a while since I read it. Safari didn't implement because of exposing credentials to JavaScript. I put it in here that I'd like it to be a signal, but I don't know the details.
+
+**Ricky**: Open to feedback on where you see those intersection points.
+
+**Dan**: Clear-Site-Data?
+
+**John**: In the explainer we do explore that. If the state goes away, in any way, that is logging out. Also: if the browser knows you're signed in, it can blow away everything except the auth token.
+
+Steven: Why not just require HTTP State Tokens? I like this proposal in general, and it seems like an opportunity to move the web forward.
+
+John: There are pockets in our org that are very interested in that proposal. The reason why we bring in "legacy auth cookies" is thinking about the long tail. If we want to have policies around this, it's hard to change things associated with new HTTP headers. Cookies are established, and need to be supported as a legacy option.
+
+Ricky: Classic tension about pushing things forward v. meeting existing websites and developers where they are today.
+
+Steven: for all the devs who won't implement this (other priorities) what is the result -- their users get logged out more often?
+
+JohnW: we need to establish that. Not at first but maybe after some time we say "after 90 days" and later move it up to 30 days.
+
+Steven: I worry that people will come back and be logged out where that doesn't happen in native apps, and it will make people think native apps are better
+
+JohnW: Brad Hill mentioned that Facebook didn't see a drop-off of their 30-day actives after Safari started expiring unused cookies after 30 days.
+...: we don't want the expiry for "logged in" sites to be _more_ strict than for default sites.
+
+### https://github.com/mikewest/http-state-tokens
+
+Mike: Cookies are not very secure, and they're not private. What if you had a cookie that wasn't called a cookie? Giving it a new name is a chance to reset expectations even if it's basically the same kind of thing if you squint a lot.
+
+...: generate a session ID on the client and give it to the server, associated with the account on the server. the client remains incontrol. There's no personal data embedded in the token. Client control is valuable.
+
+...: the core idea is that the browser is the thing controlling the session. Explicitly random and generated by the client. We can do things like removing access from JavaScript. We don't have to migrate folks to "SameSite", we can just make that the way this works.
+
+...: I would like state management to be simple, and a straightforward transaction. Not everything is good: performance implications. There are times when having the information sent by the client works if you hit a new server without access to the back-end, but people's servers can figure it out.
+
+JohnW: 
+
+Mike: for example your load balanacer isn't talking to your database to know where to send you on a subsequent request. If you end up on a new server then it might need to load all yohur information from the database instead of using cached data.
+
+Jeff: This would require a lot of server-side changes, re-architecting.
+
+Mike: at Google we would use "server-side cookies". Front-end would get your token, look up your "server" cookies and attach them to the requests sent on to other servers. I see this as aspirational. I want cookies to move closer to this proposal, and I want to have a migration path to point people at.
+
+JohnW: similar to the isLoggedIn case: set up a migration
+
+Michael: In my case if I'm not storing data in cookies I'm using localStorage, but you, John, are using "cookies" to refer to all stored state.
+
+Johnw: cookies have particularly bad properties, sending lots of bytes over the wire.
+
+Mike: some information would be sent over the wire, but not with every request. Should lead to net bandwidth
+
+[room-too-hot break]
 
 ## Queue
+
+
+
 
 
 
