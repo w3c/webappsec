@@ -12,6 +12,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
 
 * 9:00 - 9:15 - Introductions, problem statements, framing the next day and a half.
   * Artur Janc's ["Baby Steps Towards the Precipice"](https://www.arturjanc.com/usenix2019/) is helpful reading.
+* [Deian will dial in at some point to discuss [`Sec-Same-Origin`](https://docs.google.com/document/d/1wKWuN61MIY5AZYNeR2JQ1MB6A1Bmj0k3RFJVh1ktufw/edit#)]
 * 9:15 - 10:00 - **Secure Transport**
   * [MIX2](https://w3c.github.io/webappsec-mixed-content/level2.html)
     * FPWD?
