@@ -14,7 +14,7 @@ Attendees:
 *  Boaz Sender (Bocoup)
 *  Brad Lassey (Google)
 *  Carlos Ibarra Lopez (Google)
-* Christine Runnegar (PING, co-chair, observing)
+*  Christine Runnegar (PING, co-chair, observing)
 *  Christoph Kerschbaumer (Mozilla)
 *  Dan Veditz (Mozilla)
 *  Dave Harbage (DuckDuckGo, observing)
@@ -48,7 +48,7 @@ Attendees:
 *  Ricky Mondello (Apple)
 *  Ryo Kajiwara (lepidum, observing)
 *  Sam Weiler (MIT/W3C)
-*  Scott Low (Microsoft)
+*  Scott Low (Microsoft, observing)
 *  Simon Pieters (Bocoup)
 *  Steve Becker (Microsoft)
 *  Steven Soneff (Google)
@@ -134,8 +134,7 @@ Attendees:
     * Security reviews of upcoming features.
     * Various browsers' launch processes
 ## Overflow
-* CORS-1918
-
+* CORS-RFC1918
 ## Minutes:
 
 ### Introductions
@@ -684,24 +683,24 @@ No objections
 
 **John**: In the explainer we do explore that. If the state goes away, in any way, that is logging out. Also: if the browser knows you're signed in, it can blow away everything except the auth token.
 
-Steven: Why not just require HTTP State Tokens? I like this proposal in general, and it seems like an opportunity to move the web forward.
+**Steven**: Why not just require HTTP State Tokens? I like this proposal in general, and it seems like an opportunity to move the web forward.
 
-John: There are pockets in our org that are very interested in that proposal. The reason why we bring in "legacy auth cookies" is thinking about the long tail. If we want to have policies around this, it's hard to change things associated with new HTTP headers. Cookies are established, and need to be supported as a legacy option.
+**John**: There are pockets in our org that are very interested in that proposal. The reason why we bring in "legacy auth cookies" is thinking about the long tail. If we want to have policies around this, it's hard to change things associated with new HTTP headers. Cookies are established, and need to be supported as a legacy option.
 
-Ricky: Classic tension about pushing things forward v. meeting existing websites and developers where they are today.
+**Ricky**: Classic tension about pushing things forward v. meeting existing websites and developers where they are today.
 
-Steven: for all the devs who won't implement this (other priorities) what is the result -- their users get logged out more often?
+**Steven**: for all the devs who won't implement this (other priorities) what is the result -- their users get logged out more often?
 
-JohnW: we need to establish that. Not at first but maybe after some time we say "after 90 days" and later move it up to 30 days.
+**JohnW**: we need to establish that. Not at first but maybe after some time we say "after 90 days" and later move it up to 30 days.
 
-Steven: I worry that people will come back and be logged out where that doesn't happen in native apps, and it will make people think native apps are better
+**Steven**: I worry that people will come back and be logged out where that doesn't happen in native apps, and it will make people think native apps are better
 
-JohnW: Brad Hill mentioned that Facebook didn't see a drop-off of their 30-day actives after Safari started expiring unused cookies after 30 days.
+**JohnW**: Brad Hill mentioned that Facebook didn't see a drop-off of their 30-day actives after Safari started expiring unused cookies after 30 days.
 ...: we don't want the expiry for "logged in" sites to be _more_ strict than for default sites.
 
 ### https://github.com/mikewest/http-state-tokens
 
-Mike: Cookies are not very secure, and they're not private. What if you had a cookie that wasn't called a cookie? Giving it a new name is a chance to reset expectations even if it's basically the same kind of thing if you squint a lot.
+**Mike**: Cookies are not very secure, and they're not private. What if you had a cookie that wasn't called a cookie? Giving it a new name is a chance to reset expectations even if it's basically the same kind of thing if you squint a lot.
 
 ...: generate a session ID on the client and give it to the server, associated with the account on the server. the client remains incontrol. There's no personal data embedded in the token. Client control is valuable.
 
@@ -709,29 +708,127 @@ Mike: Cookies are not very secure, and they're not private. What if you had a co
 
 ...: I would like state management to be simple, and a straightforward transaction. Not everything is good: performance implications. There are times when having the information sent by the client works if you hit a new server without access to the back-end, but people's servers can figure it out.
 
-JohnW: 
+**JohnW**: 
 
-Mike: for example your load balanacer isn't talking to your database to know where to send you on a subsequent request. If you end up on a new server then it might need to load all yohur information from the database instead of using cached data.
+**Mike**: for example your load balanacer isn't talking to your database to know where to send you on a subsequent request. If you end up on a new server then it might need to load all yohur information from the database instead of using cached data.
 
-Jeff: This would require a lot of server-side changes, re-architecting.
+**Jeff**: This would require a lot of server-side changes, re-architecting.
 
-Mike: at Google we would use "server-side cookies". Front-end would get your token, look up your "server" cookies and attach them to the requests sent on to other servers. I see this as aspirational. I want cookies to move closer to this proposal, and I want to have a migration path to point people at.
+**Mike**: at Google we would use "server-side cookies". Front-end would get your token, look up your "server" cookies and attach them to the requests sent on to other servers. I see this as aspirational. I want cookies to move closer to this proposal, and I want to have a migration path to point people at.
 
-JohnW: similar to the isLoggedIn case: set up a migration
+**JohnW**: similar to the isLoggedIn case: set up a migration
 
-Michael: In my case if I'm not storing data in cookies I'm using localStorage, but you, John, are using "cookies" to refer to all stored state.
+**Michael**: In my case if I'm not storing data in cookies I'm using localStorage, but you, John, are using "cookies" to refer to all stored state.
 
-Johnw: cookies have particularly bad properties, sending lots of bytes over the wire.
+**Johnw**: cookies have particularly bad properties, sending lots of bytes over the wire.
 
-Mike: some information would be sent over the wire, but not with every request. Should lead to net bandwidth
+**Mike**: some information would be sent over the wire, but not with every request. Should lead to net bandwidth
 
 [room-too-hot break]
 
+## Feature Control
+
+**Ian**: Feature policy was designed as a generic mechanism for controlling "features" in documents and workers. Where "feature" might be an API, or a particular browser behavior, etc. Control features in a sane, predictable way, where all features are controlled the same way. Shipped in Chrome in 2017; dozens of features. WebKit has a partial implementation. Firefox has an implementation behind a flag.
+
+...: `allow` attribute is widely used. Heavily weighted to allowing things that would be disallowed. `syncxhr` is the big thing there.
+
+...: Heavily tied to permissions. Every permission in the Permission API has a corresponding feature. In Chrome, we've moved to a model wherein permissions are available to the top-level origin, and must be explicitly delegated out of the top-level origin into child frames. When geolocation is requested, for instance, the top-level needs the permission (even if the child would have it in its own top-level context). [Permission delegation](#TODO).
+
+...: Since we launched, we've expanded in a few ways. Reporting violations via Reporting API. Controlling sandbox features via feature policy. New feature types for "performance best practices", for example. Things like size policy that ensures you're not loading images massively larger than their display size. This requires threshold values.
+
+...: We've learned a few things. First, threshold values complicate the syntax, especially in conjunction with origins.
+
+...: Behavior in popups doesn't match behavior in frames for things like permissions.
+
+...: Not every feature has the same security requirements. Permissions turned off in one frame can't be turned on in child frames. Other things like lazy-load might have different characteristics.
+
+...: Splitting this into two specs:
+
+...: "Feature Policy" is a stripped-down variant. Controls things like permissions, and anything that's controlled at top-level and needs to be delegated across an origin boundary.
+
+**Artur**: These cascade by default from a top-level down through child frames, unless explicitly delegated to the child.
+
+**Ian**: I think that's true. We restrict these to boolean values. This set of features is available, everything else needs to be delegated.
+
+...: The other model is "Document Policy". This contains things that may or may not need to be enforced in subframes. Performance charact
+
+...: `Document-Policy` header. Has impact on just the document that sent the header, nothing else by default.
+
+...: `Required` policy on a frame. Similar to CSP's embedded enforcement. Set a policy on the frame, that's the minimum policy everything in the frame needs to meet. If policy not asserted, we treat it as a network error.
+
+...: document policy doesn't affect child documents -- they will need to opt in to that. hard to use sandbox right now because people want to take away features
+
+Explainer: https://github.com/w3c/webappsec-feature-policy/blob/master/document-policy-explainer.md
+
+**koto**: You mentioned that it's similar to CSP. Does the policy flow through `about:blank`?
+
+**Ian**: Yes. Idea is to fit the same model as CSP with regard to inheritence.
+
+**mike**: Should we move to structured headers?
+
+**Ian**: No reason not to use that for document policy. Might not be able to do so for Feature Policy.
+
+**Mike**: Two parsers for FP would be bad.
+
+**Ian**: Also ambigious cases.
+
+**Mike**: How do you decide which to put where?
+
+**Ian**: FP uses the "Powerful features" model. Expectation is that it's a boolean flag. Should be blocked in third-party frames by default.
+
+...: DP is everything else.
+
+**Artur**: Do you intend document policy to be purely restrictive? Or can it also change behavior? This matters for cross-origin interop. If behavior changes, it's weird. Banning something is easier to reason about.
+
+**Ian**: You should be able to set your lazy-load policy, which does change behavior.
+
+**Mike**: Strategy to use FP to deprecate features. Add a feature for a thing you don't like, let folks turn it off.
+
+**Ian**: We've never done that successfully. SyncXHR has a feature, need to explicitly disallow. Don't have a good story about how to change it. If we were doing it again, I'm not sure we'd do it the same way. SyncXHR is the only one that doesn't follow the pattern for powerful features.
+
+**Dan**: Is it used?
+
+**Ian**: AMP uses it. Disables SyncXHR for ad frames. Moving to document policy is an interesting idea. How do we support it in both places?
+
+**Mike**: Do you need to support it in both places?
+
+**Ian**: Maybe not.
+
+**Artur**: Integrated with Reporting API? Report-only mode?
+
+**Ian**: Yes, FP is integrated today, expectation that DP would as well.
+
+**Koto**: I didn't see that in the spec.
+
+**Ian**: I think there's a reporting explainer in the repo explaining the other header.
+
+**Artur**: I would love to see this, and love to see us extend the set of features through more legacy APIs. `javascript:` URLs. Lots of legacy behaviors that surprise developers and cause risk. Would be nice to prevent developers from using them as an opt-in. First step towards switching the default. Google would use.
+
+**John**: Are you suggesting a broad flag like "modern". I'd like a "Will my site work in 5 years?" flag that opts-into the vision of how the web should work.
+
+**Ian**: We've thought about bundling features like that. It would be nice to be able to do that. Must be careful that we don't do the same thing we did with sandbox. Changing the meaning of a word over time is hard to do.
+
+**John**: Sure. `modern2020`, `modern2022`, etc.
+
+**Koto**: For `javascript:` in particular, this is a specific anti-pattern that causes security issues. Lets us target it without all the complexity of CSP. Having that would be pretty cool. Bridges the gap between CSP and CSP Next. Complex things that CSP Next has no interest in addressing might fit better here.
+
+**Mike**: Cookies. We talked about it in FP. We talked about it in CSP. Didn't really fit either.
+
+**Ian**: Kinda like client hints? We have an experiment going wherein FP can control client hints. Perhaps this could fit into DP, using origins as parameters. Not really well for FP, where the allow list is about delegation. Controlling access to `document.cookie` might fit in DP?
+
+**Mike**: Hrm. I thought we shipped that.
+
+**Ian**: No. Implications unclear.
+
+**Dominic**: Can you give some background on that policy? How much is it about performance?
+
+**Ian**: Sync access to cookie store is, in fact, slow. Could replace with the async cookie API. Other folks just want to block access to cookies entirely.
+
+**Artur**: Spectre. Reading cookie brings it into your address space, and makes it available to attackers.
+
+[break]
+
 ## Queue
-
-
-
-
 
 
 
