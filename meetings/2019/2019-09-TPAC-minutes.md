@@ -828,10 +828,112 @@ Explainer: https://github.com/w3c/webappsec-feature-policy/blob/master/document-
 
 [break]
 
+### Origins and Sites and Entities.
+
+* ["same site" && schemes](https://github.com/whatwg/url/issues/448)
+* [First-Party Sets](https://github.com/krgovind/first-party-sets)
+* [Public Suffix List](https://publicsuffix.org/), and [its problems](https://github.com/sleevi/psl-problems/)
+* [DNS Administrative Boundaries Problem Statement](https://tools.ietf.org/html/draft-sullivan-dbound-problem-statement) 
+
+**Mike**: last topic is sites/organizations/origins. we see "origins" as the only real security boundary, but there other weird features like Cookies. And lately we're interested in features where a larger grouping of origins are related as a "site". We've defined a notion of "Site" in the SameSite cookdefinition.
+
+...: cookies need to know the context of 1st and 3rd party, but something on the same "site" are considered 1st party even though not same "origin". Confused and conflicting definitions abound
+
+**Mike**: I'm in favor of using origins as boundaries, and moving away from "sites" toward origins. If we need to keep using "sites", however, I want to lock down a formal definition of it.
+
+**Artur**: I like origin as the boundary. But we need to make affordances when locking things down that have previously been possible, CORP for instance. We can't expect that requests will be same-origin, given history. That's still a valuable concept.
+
+**John**: I wonder if the major problem of the "site" concept is the "e" in "eTLD"? "Real TLD or go home." Would that work as a boundary?
+
+**Jeff**: That will never work. People have lots of reasons and usecases for wanting to denote things as "delegation-centric" domains undeneath the ICANN-managed set of TLDs. The size of the (misnamed!) PSL is an indication of the number of folks who have such use cases. [DNS Administrative Boundaries Problem Statement](https://tools.ietf.org/html/draft-sullivan-dbound-problem-statement) is a worthwhile document to read on this topic. IMO, it needs to be addressed at the DNS level, not HTTP level.
+
+
+**dveditz**: Similar to Jeff; the PSL for all its warts was invented to solve a real problem that we were having. I wouldn't want to expand same-origin DOM access beyond an origin, but there is a desire for conglomerations of entities. PSL might be the wrong mechanism to do so, maybe Affiliated Domains or First-Party Sets would be better? But there's a need for the functionality.
+
+**Mike**: See Ryans document about the problems with PSL and a possible shape of a replacement. [PSL problems](https://github.com/sleevi/psl-problems/)
+
+**Mike**: would like to find a mechanism that is more declarative by origins than the current globally-defined PSL.
+
+**Sam**: We, of course, aren't the only people who think this is an interesting problem. People in the IETF are interested in rebooting DBOUND to try to solve this problem again. One proposal: https://tools.ietf.org/html/draft-brotman-rdbd-02
+
+**John**: Two things: Ryan's document is a good read in this space. Alludes to freezing the PSL. "From here on we're not going to support it?" Second thing: might be abuse of the PSL in the future that we just have to reject. As a comparison, we had to come up with a solution: something on the table was to scrap dynamic HSTS list and only go with preload. If we're in that situation, we might not have time to fix the PSL.
+
+**Michael**: PSL is giving up capabilities you otherwise have. 
+
+**John**: There are places in which it does grant capability.
+
+**Mike**: For instance, Let's Encrypt rate-limiting.
+
+**Brad**: Ryan isn't saying we should freeze the _content_ of the PSL as it is, but that we should not build new features on top of it. Assuming we have another similar mechanism.
+
+**Jeff**: In specs, we wave a vague hand and say "You should treat this pattern differently. For example, the PSL." CA's all have distinct lists. Browsers have their own lists. It's "Good Enough", but no one is spending time to fix it.
+
+**Brad**: That said, freezing the PSL is a good idea.
+
+**Jeff**: There's a proposal floating around that address some issues. Using DNS; run a job periodically as things are populated in the DNS, seed into the PSL via that mechanism. E.g.: https://tools.ietf.org/html/draft-sullivan-domain-policy-authority
+
+**Mike**: If we can move to HTTPStateTokens then the need for the PSL for cookies isn't there. The notion of first and third party would be independent of the PSL because the tokens are origin-bound.
+
+**Artur**: Wanted to bring us back to the non-PSL bits: "same-site" is not really tied to the PSL. We've built it into specs.
+
+**Mike**: Cookies are tied to the PSL. Subdomains are all assumed to be in the same administrative domain.
+
+**Artur**: We need a "site" concept for the kinds of interactions that currently happen today in the "same-site" world that we have today. Many mechanisms that depend on it today.
+
+**Mike**: I agree that we are using and need a mechanism to define sites. Should be opt-in.
+
+**Jeff**: Doing things in the context of the web and stuff is probbaly fine as long as we view it as a near-term solution. Someone needs to work on the long-term solution. Otherwise we have skew between web and other things. DMARC, etc.
+
+**Mike**: there are a variety of proprietary solutions. Google has one internally (for example the password manager). Apple has one. Mozilla has one for their tracking protection (youtube isn't blocked on a google domain, but is in other contexts, for example)
+
+...: I'd like to take the things that are web-facing and specify something that can get browser interoperation.
+
+**Jeffh**: Recognize that it's a transitionary solution. Need a real solution for the broader internet context.
+
+**Mike**: My question is whether this is a topic that we should be doing here, as opposed to elsewhere.
+
+**John**: Static list or dynamic list?
+
+**Mike**: I don't care?
+
+**John**: Dynamic will be gamed. I want to look at what folks have created.
+
+**Mike**: I lied. I care. I'd _like_ a dynamic list. But if we can't get it to have reasonable properties, I'd accept a purely static list.
+
+**Brad**: First-Party Sets would be reasonable to specify as origins and not eTLD+1 if we didn't already have the PSL. Also, one mitigation is to require a certificate to be minted for all the origin in a set.
+
+**Mike**: FPS aiming at WICG? Maybe migrate here? Idunno.
+
+**John**: Some affiliations are fairly well known. Apple/iCloud. Google/YouTube. Folks understand. Others are unknown to practically everyone. Mergers, consortiums, etc. Google/YouTube might be a happy-path view of this. Folks won't know about media conglomerates.
+
+**Mike**: [Said interesting things.]
+
+**Artur**: I tend to think in terms of narrow security features like `X-Frame-Options`. Some other features could have different use cases. Hard to reason about the characteristics of a given affiliation proposal. For example, "same-site" means one thing today. It would be nice if it didn't radically change in the near future, as that changes the security properties of the proposal.
+
+**Brad**: Different amounts of information that can be shared across some entity boundaries. Oauth => { lots, of, things }, which might surprise users. Probably wouldn't wind up as a prevalent tracker.
+
+**Mike**: We'd need to treat all folks in an affiliation together for things like ITP.
+
+**John**: Could have different impacts on things like ITP: Don't count towards being classified as prevalent, don't block cookies to each other, count user interaction on any as counting for all of them. Mixed set of signals about what affiliation would mean.
+
+...: Doesn't have to be "privacy stuff". Could also relax things like preflight. Perhaps you know what you're doing across your own domain names. Socket coalescing. Http cache partitioning.
+
+Artur: I think this all makes sense, but the more functionality we put on top of this, the fuzzier the security story becomes. It might be perfectly ok for `google.com` and `youtube.com` to count together as having user activity, but for CORS we probably don't want that. Different levels of trust within a group.
+
+John: I'm not in favor of redefining the "site" concept to include sets. Should be "origin", "site", and "set" as distinct things.
+
+Michael: That requires killing the PSL.
+
+John: But the PSL solves other things. Like cookies.
+
+Mike: But we shouldn't have cookies.
+
+John: That will take until 2045!
+
+Mike: I'll be alive. They shouldn't be.
+
+
 ## Queue
-
-
-
 
 
 
