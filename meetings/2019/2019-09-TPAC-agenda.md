@@ -6,7 +6,7 @@ Sept. 17th and 19th, 8:30 - 18:00 at the [Hilton Fukuoka Sea Hawk](https://www3.
 
 ## Minutes
 
-<https://cryptpad.w3ctag.org/code/#/2/code/edit/dzuWzpkucqW3VtOzc13CAoMZ/>
+**<https://bit.ly/webappsec-minutes-tpac-2019>**
 
 ## Sept. 17th ([Sumire - 3F](https://www.w3.org/2019/09/TPAC/schedule.html#map))
 
