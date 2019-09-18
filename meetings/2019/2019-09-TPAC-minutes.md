@@ -1,6 +1,23 @@
 WebAppSec @ TPAC 2019
 =====================
 
+## TOC
+
+* [`Sec-Same-Origin`](#sec-same-origin)
+* [Secure Transport](#secure-transport)
+  * [MIX2](#mix2)
+  * [HSTS Fingerprinting](#hsts-fingerprinting)
+* [Continuous Standards Development](#continuous-standards-development)
+* [Injection Attacks](#injection-attacks)
+  * [Trusted Types](#trusted-types)
+  * [CSP](#csp)
+* [Authentication](#authentication)
+  * [`/.well-known/change-password`](#well-knownchange-password)
+  * [`IsLoggedIn()`](#isloggedin)
+  * [HTTP State Tokens](#httpsgithubcommikewesthttp-state-tokens)
+* [Feature Control](#feature-control)
+* [Origins and sites and entities](#origins-and-sites-and-entities)
+
 ## Exciting metadata
 
 * **Location**: We're in [Sumire - 3F](https://www.w3.org/2019/09/TPAC/schedule.html#map), starting at 9:00. See you there!
