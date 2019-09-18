@@ -394,7 +394,7 @@ Back at 11:00.
 #### Trusted Types
 
 https://github.com/WICG/trusted-types/wiki/W3C-TPAC-2019
-**Koto (Krzysztof Kotowicz)**: https://github.com/WICG/trusted-types/wiki/W3C-TPAC-2019: Trusted Types aims to mitigate DOM-based XSS. Around a third of the high-severity vulnerabilities in Google products are XSS. For other kinds of XSS, we think we have good answers (strict CSP, etc). DOM-based XSS is still a threat.
+**Koto (Krzysztof Kotowicz)**: https://github.com/WICG/trusted-types/wiki/W3C-TPAC-2019: Trusted Types aims to mitigate DOM-based XSS. Around a third of the high-severity vulnerabilities in Google products are DOM XSS. For other kinds of XSS, we think we have good answers (strict CSP, etc). DOM-based XSS is still a threat.
 
 ...: TT allows developers to forbid calling specific DOM-based execution sinks with raw strings, instead forcing those strings through a policy that produces a "trusted" type. As long as you can guard the creation of policies, and you review the policy code, you can ensure that no DOM XSS is possible.
 
@@ -404,19 +404,19 @@ https://github.com/WICG/trusted-types/wiki/W3C-TPAC-2019
 
 ...: We started seeing a lot of bugs and anti-patterns that code in our application started using. We implemented a report-only experiment, and found a few places where folks have constructed custom script loaders with strange data. Turns out that developers internally were unintentionally bypassing the restrictions we thought we had in place. We also found folks doing strange things with the compiler that violated our expectations about how frontend development at Google ought to work.
 
-...: TT let us discover this fairly easily via the default policy mechanism. Once those holes are plugged, we can enable enforcement, and break frontend developers who are violating that internal policy. Ended up driving a wider refactoring internally to harden various aspects of frontend developement.
+...: TT let us discover this fairly easily. Once those holes are plugged, we can enable enforcement, and break frontend developers who are violating that internal policy. Ended up driving a wider refactoring internally to harden various aspects of frontend developement.
 
-...: TT is a web API. We've done external outreach. Usage is landing in React, DOM Purify, Lit, etc. Working with libraries to discover patterns of adoption. Preparing documentation for developers about how TT be used in existing applications.
+...: TT is a web API. We've done external outreach. Usage is landing in React, DOM Purify, lit-html, etc. Working with libraries to discover patterns of adoption. Preparing documentation for developers about how TT be used in existing applications.
 
 ...: Made some changes in the implementation over the last few months. We moved to CSP, as it aligns with existing mitigations and solves some delivery problems. Report-only is also a huge win. Defined infrastructure for us, multiple headers, propagation to `about:blank`, etc. Proposed `trusted-script` keyword for `script-src`.
 
-...: Violation reports are incredibly useful. Reports two things: 1. created a disallowed/duplicated policy. 2. String was passed to a sink directly without a default policy. `script-sample` contains data about the violation, which helps us track them down in the codebase.
+...: Violation reports are incredibly useful. Reports for two things: 1. created a disallowed/duplicated policy. 2. String was passed to a sink directly and default policy doesn't exist, or rejects the value. `script-sample` contains data about the violation, which helps us track them down in the codebase.
 
 ...: Since TT is a JavaScript API, you not only have violation reports, but you can set up a debugger statement in a policy to see exactly where the violation occurs and explore the stack. Good workflow for developers, close to their everyday development.
 
 ...: Default policy can implement a report-only mode by deciding whether or not to accept the incoming string.
 
-...: Another big change is that we dropped `TrustedURL`. The vast majority of violations in our applications were `TrustedURL` (used for `<a href>`, `<iframe src>`, etc). We only care about those for `javascript:` (at least insofar as we're targeting DOM XSS). Dropping `javascript:` from various applications requires substantial rework. Put together a mechanism that makes it simpler to migrate to TT, even if the app uses `javascript:`.
+...: Another big change is that we dropped `TrustedURL`. The vast majority of violations in our applications were `TrustedURL` (used for `<a href>`, `<iframe src>`, etc). We only care about those for `javascript:` (at least insofar as we're targeting DOM XSS). Requiring a type for URLs in various applications requires substantial rework, for little benefit, especially if `javascript:` is not used at all. Put together a mechanism that makes it simpler to migrate to TT, even if the app uses `javascript:`.
 
 ...: `javascript:` is blocked unless there's a `default` policy, in which case the script content is sent to that callback and can be validated before execution.
 
@@ -434,7 +434,7 @@ https://github.com/WICG/trusted-types/wiki/W3C-TPAC-2019
 
 ...: TT seems like the right framework for thinking about the DOM and XSS.
 
-...: We have an implementation in Chrome. We have a polyfill. We think the interations with libraries show fesiability. We've gained real value from the internal experiments.
+...: We have an implementation in Chrome. We have a polyfill. We think the interactions with libraries show fesiability. We've gained real value from the internal experiments.
 
 ...: I'd like to migrate this from WICG to WebAppSec.
 
@@ -454,7 +454,7 @@ https://github.com/WICG/trusted-types/wiki/W3C-TPAC-2019
 
 **John**: This sounds like an early-warning system rather than runtime defense for 10 years to come. If things break when you do the wrong thing, you fix things and then don't have to use TT?
 
-**koto**: You get most of the security benefits without support from the browser. If you do the work to support enforcement, the same code running in a different browswr has the same security properties.
+**koto**: You get most of the security benefits without support from the browser. If you do the work to support enforcement, the same code running in a different browser has the same security properties.
 
 **John**: Sounds more like an IDE thing.
 
