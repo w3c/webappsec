@@ -124,16 +124,21 @@ Attendees:
 ## Thursday Sept. 19th ([Navis C, 1F](https://www.w3.org/2019/09/TPAC/schedule.html#map)) 
 
 * 12:00 - 13:00 - 😋 Lunch 😋
-* 13:00 - 14:30 - **CSRF / 👻Spectre👻 / XSLeaks**
+* 13:00 - 14:30 - CSRF / 👻Spectre👻 / XSLeaks
   * [Fetch Metadata](https://github.com/w3c/webappsec-fetch-metadata)
-  * COOP
-  * [CORP](https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header)
-  * [COEP](https://github.com/mikewest/corpp)
-  * Double-keyed (or more) caches
+  * Isolation ([Artur Janc's explainer](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/mobilebasic))
+    * [Cross-Origin-Opener-Policy](https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e)
+    * [Cross-Origin-Resource-Policy](https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header)
+    * [Cross-Origin-Embedding-Policy](https://github.com/mikewest/corpp)
+  * [Double-keyed (or more) caches](https://github.com/whatwg/fetch/issues/904)
   * Origin-level isolation
   * [Origin Policy](https://wicg.github.io/origin-policy/)
+  * Protecting/sandboxing `<iframe>` sites (`history.length`, caches, `window[i]`)
 * 15:00 - 15:30 - ☕ Coffee ☕
-* 15:30 - 16:00 - Cleanup
+* 15:30 - 16:00 - Overflow
+  * [CORS-RFC1918](https://wicg.github.io/cors-rfc1918/)
+  * ...
+* 16:00 - 16:30 - Cleanup
   * Moving CRs to Recommendations: 
     * [Referrer Policy](https://www.w3.org/TR/referrer-policy/)
     * [Secure Contexts](https://www.w3.org/TR/secure-contexts/)
@@ -144,12 +149,13 @@ Attendees:
     * [Credential Management](https://www.w3.org/TR/credential-management/)
     * [Embedded Enforcement](https://www.w3.org/TR/csp-embedded-enforcement/)
   * Should we obsolete [UI Security and Visibility API](https://www.w3.org/TR/UISecurity/) in favor of [IntersectionObserver v2](https://w3c.github.io/IntersectionObserver/v2/)
-* 16:00 - 17:00 - Scoping the group, in light of everything above.
+* 16:30 - 17:00 - Scoping the group, in light of everything above.
     * [Charter](https://www.w3.org/2019/03/webappsec-2019-charter.html) still reasonable?
     * Putting privacy more clearly in scope and make browser privacy policies part of the security review process?
     * Relationship with other groups (TAG, PING, HTTPbis, etc.)
     * Security reviews of upcoming features.
     * Various browsers' launch processes
+
 ## Overflow
 * CORS-RFC1918
 ## Minutes:
