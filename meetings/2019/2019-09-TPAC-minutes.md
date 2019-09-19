@@ -1282,4 +1282,167 @@ You can imagine ways of doing this. Currently, it's a version sstring. You can i
 
 **annevk**: There are some differences too. Maybe you could make the windowproxy object behave differently, but doesn't affect the named getter or indexed getter. Another factor that wasn't mentioned yet is `history.length`. If one of the frames navigates, the other frame can notice. Can influcence by using `.back()`, etc. One idea we want to experiment with is limiting `.length` to 1, 2 or 2+ the number of times `pushState` was executed? Maybe drop the ability to affect global state from frames.
 
+#### ☕ Coffee ☕
+
+**Mike**: next things up are odds and ends. more document.domain, cors-rfc1918, etc
+
+**ericlaw**: I'm curious about samesite=lax by default
+
+**Mike**: Old attack, taking advantage of the user's access to local things that the remote site can't reach directly. for example, reaching in and connecting with your printer using a "private" IP address.
+
+...: the suggestion is to say that "local" addresses require CORS preflight. Do a DNS look-up, evaluate what scope it is. If the site and the destination are both "intranet" then fine, but if not send this CORS-like header to check if the request is OK.
+
+...: things like printers won't understand this new request, so things will fail closed. intent is things that can't update like your printer can't be reached by stuff on the internet.
+
+...: localhost servers won't respond, unless they're updated to be aware of these risks.
+
+...: DNS could return both IPv6 and IPv4 addresses, and they might be in different domains. to do this spec you'd have to wait for the connection to see which one was used. CORS used to be in blink, but that involved lots of roundtripping through chromium modules. It's now in the network module.
+
+...: knowing the IP address is critical. However, knowing the IP address for the pre-flight doesn't guarantee that the follow-up request will use the same IP address! What Chrome is trying to do now is a small piece of the CORS-RFC1918 spec. To know which mode to use you need to know the source of the request, so we're going to restrict access to "internal" and localhost addresses from insecure (http:) contexts. Solves a small piece of the problem.
+
+...: interested in what others think, particularly Microsoft [looks meaninfully at ericlaw]
+
+**ericlaw**: MS is interested. Has had things like this in the browser for a while. Security model used to be based on assigning permissions to "Security Zones". Similar kinds of categorizations. IE3ish timeframe. Internet couldn't navigate to the Intranet. Annoying and weird dialogs. These existed through IE's lifetime, but the barrier was a bit permeable.
+
+...: With Win8, we had process isolation on a per-zone basis. We had app container that could sandbox networking for processes. This would drop requests on the floor when making requests from the internet to the intranet. This was good, as it protected things. It was bad as it was a substantial portion of the bugs filed against IE/Edge. Mixed networks; some in corp, some in prod.
+
+...: Somewhat opaque. No ability to debug. Bad choices for error pages. "Not loaded" isn't enough of an explanation.
+
+...: These mechanisms need an investment in debuggability. Primitives are very interesting. NTLM negotiation might leak sensitive data to a site. Don't want to have those capabiilties on the internet, might want them on the intranet.
+
+...: We think this is interesting. Just noting compatability issues. Ability to do CORS preflight: Web Transport for instance might make that approach difficult. Perhaps there's an advertising mechanism we could use? ALPM?
+
+**johnwilander**: We discussed this in WebAppSec a long time ago. Different reps from Microsoft, worried that the preflight itself would break things. Request would be misinterpreted by servers.
+
+**ericlaw**: Historically, that has been something of a concern. Web Socket handshake design, went to great lengths to avoid breakage, smuggling data around. Might be cases in which an internal device could be poked at in a weird way. Don't have a particularly relevant security concern. Still, just dropping things via the firewall would be safer. But I'm not aware of anything that can be attacked via `OPTIONS`.
+
+**johnwilander**: We see fingerprinting attempts that poke at `localhost` servers. Scanning those servers to build a fingerprint. Do you envision these zones as ordered? If so, we wouldn't have those problems. Intranet could embed internet.
+
+**ericlaw**: Our isolation levels actually partitioned storage across these zones. Intranet sites moved to the internet, requests could then fail.
+
+**johnwilander**: If we find that intranets are a bag of problems, we could do it in two stages: first shut down loopback, not as much breakage for enterprise. Also, we've also moved CORS around to the network process as part of anti-Spectre. Might be easier for us to do that too.
+
+**dave**: I wrote Happy Eyeballs. On the one hand, this is a good thing to look into. That said, dragons. How do you define intranet? In Apple, some of these aren't on reserved addresses. Also, DNS: you're talking to `evil.com`, browsing `evil.com`, swaps out DNS, rebinding attacks. focusing on loopback feels tractable. For the rest, best defense is only allowing it via HTTPS. SNI ensures that if I'm talking to my printer with an SNI of `evil.com`, it would reject.
+
+**ericlaw**: Related to that, the secure context bits are helpful: mixed content protections. One of the other things we could do is check the preflight, make sure it returns the host name we're expecting to receive.
+
+**Mike**: important concerns. I think some of them are addressed in the doc but there might be some that I haven't thought about that we can update based on these suggestions. Need an admin/enterprise ability to define sites in the the inTRAnet zone because large corps often have a bigger idea of what's internal than just the official "private" address space.
+
+...: there's a lot of complexity here, and I discover more ever time I talk about it.
+
+**koto**: How does this work with `data:` URLs?
+
+**Mike**: I think the right thing is to make them inherit as we do with about:blank and so on for CSP and other similar features. We're trying to make data: difficult to navigate to. blob: urls are another similar set of problems. Anne, I think we've talked about reinstantiating the security context associated with blob urls when they were created?
+
+**annevk**: In general with `blob:`, there's some work to be done with navigations. What's the scope of the blob URL store? Very opaque in the spec. 
+
+**Mike**: someone at Google was asking for the ability to create a blob: with an opaque origin. Did we ever file a bug for that?
+
+**koto**: I don't know about filing bugs, but that's the issue that was raised.
+
+**dveditz**: Interested in the problem, probably not going to get to it anytime soon. Maybe loopback? Not on our priority list.
+
+### OLD documents
+
+**Mike**: [ReferrerPolicy](https://w3c.github.io/webappsec-referrer-policy/) there were questions about Mozilla implementing the CSS bit?
+
+**ckerschb**: we fixed those
+
+**Mike**: yay, let's ship it!
+
+...: was being maintained by two folks at Google who either aren't at Google or aren't working on it. Any volunteers to get it over the line?
+
+Mike: Next is [SecureContext](https://w3c.github.io/webappsec-secure-contexts/), not touched in a while. some Failures in Chrome, maybe around shared worker. I think the spec is correct with some bugs in Chrome. Also not being actively maintained.
+
+...: [Mixed-content](https://w3c.github.io/webappsec-mixed-content/) is basically done, and folks are starting a [level-2 specification](https://w3c.github.io/webappsec-mixed-content/level2.html). In the current process we'd want to finish level 1 and start level 2. Wait for "Process2020" and just do an evergreen version?
+
+**johnwilander**: we have already been talking about level 2 for a couple of years now
+
+**Mike**: right, if we went with the new process we wouldn't have to call it "level1" and "level2", we'd just improve it. If the new process is going to take forever to get here we should just publish level 1 and get the IP protections on it. Sam, any idea about timelines?
+
+**Sam**: [shrug]
+
+**Mike**: I would suggest looking at these and see what we want to do with it. [Upgrade Insecure Requests](https://w3c.github.io/webappsec-upgrade-insecure-requests/) -- CR, probably could go to Rec right now. But with some of the proposed upgrade/mixed changes maybe this spec can be thrown out? Still valuable for things we're not yet upgrading (e.g. script) -- we don't have any plans to do upgrades for those.
+
+**Annevk**: I wouldn't want to upgrade blockable content ever,
+
+**Carlos**: We have no plans to upgrade active (blockable) content. The usage is really low and the usage of the shield upgrade is very very tiny. We've already won this battle. So then there wouldn't be a need for UIR in that case either.
+
+**Mike**: featurestatus isn't working again, but I could tell you how much usage there is for UIR. I suspect it's gone down.
+
+...: I will take an action to see how much use there is and whether it's adding value for chrome users. Then again all the browsers support it now so maybe we just leave it. Would be nice to remove stuff instead of adding it.
+
+**ericlaw**: what about same-origin navigation requests? just use https?
+
+**mike**: that's what I suggest
+
+**ian**: looks like 0.3% of upgraded content?
+* UpgradeInsecureRequestsUpgradedRequest: https://www.chromestatus.com/metrics/feature/timeline/popularity/741
+* UpgradeInsecureRequestsEnabled: https://www.chromestatus.com/metrics/feature/timeline/popularity/740
+
+**carlos**: but that includes stuff that the mixed-content upgrading will fix so that will go down.
+
+**Mike**: We should add metrics that separate from blockable and optionally blockable, carlos can you do that?
+
+**carlos**: Yes
+
+**Mike**: those are the docs that haven't moved. In the new process that's fine, but in the current process we don't have IP protections.
+
+...: other stuff not quite as done includes [Clear Site Data](https://w3c.github.io/webappsec-clear-site-data/) in chrome/firefox, Credential management, and Embedded Enforcement (only in Chrome). Service worker folks want to rely on Clear site data, but unfortunately in chrome it's really slow. Github was using it but turned it off, because people were having 20second delays as chrome cleared up all the caches.
+
+...: document is not being maintained, which is not a good state.
+
+**johnwilander**: we think in the case of partitioned storage a first party can change state for 3rd parties and this might be detectable
+
+**mike**: file an issue so we can start that conversation. Anne, any idea how we can write spec language that describes the issue john is talking about?
+
+**anne**: [someone] ......   use the top level origin for storage permission lookup when needed.
+
+**mike**: https://github.com/whatwg/fetch/issues/904 
+
+**anne**: we've raised issue for clear site data as well. the browsing context thing was not implementable. 
+
+**mike**: some sites decided they didn't want to store user data so they sent Clear Site Data with every request and made Chrome unhappy.
+
+**anne**: grouping is not entirely clear and maybe should shift around
+
+**john**: Are credentials covered by clear site data?
+
+**Mike**: Credentials -- cookies, yes, also the authentication cache
+
+...: the spec is in statis, but got to a state where WebAuthn could use it. Everything else is only implemented in Chrome. We had agreed to split the doc in two, but I haven't done that.
+
+**jeffH**: I'll do it. it got partially done, was checking to make sure the changes were palatable, they seem to be. need to go through and review, a number of issues, decide what's "good enough".
+
+**Mike**: credential management dovetails a bit with the isLoggedIn state we talked about the first day, so we should talk about how those can work together.
+
+...: last thing is Content Security Policy. CSP3 is old and not maintained right now. is anyone paying attention to it? unclear. Embedded Enforcement also seemed to be a good idea but no one else implemented it, and not clear if the internal people who wanted to use it ended up using it. I'll get back to y'all with usage data. I'd like that to either move forward or to kill it.
+
+**anne**: we talked about splitting CSP in two. Would embedded enforcement apply to that?
+
+**mike**: I think there's potential there, and I'm surprised the people I thought would use it have not.
+
+...: finally, should we obsolete the UISecurity spec in favor of the InterSection Observer spec (and v2) where it looks like all the important aspects have migrated. I'm happy to see that work going forward, but also seems like it makes UISecurity obsolete. Any objections?
+
+[none]
+
+...: wonderful. like to look back at the conversations over the last couple of days. Is this group talking about the right things? Anne, you were interested in including more privacy work?
+
+**anne**: there's a trend to treat privacy violations with the same severity as security violations. Seems like there's overlap, might make sense.
+
+**mike**: I think I agree. attended a bunch of the PING meetings this week. they're thinking of splitting in two groups: one doing horizontal reviews, and a community group to propose new specifications. WASWG might be a good home to adopt those specifications that don't end up at WHATWG. I suspect many of their ideas will touch HTML and Fetch and would live over there, but we could offer a home for other ideas.
+
+**johnwilander**: will have to check with the lawyers, but for things that have to be done in a "working" group it seems reasonable. there's overlap in our discussions and concerns. for example, private click measurement could be one.
+
+**ericlaw**: I think we would be involved whereever it lived. Seems like webappsec is about giving capabilities to websites to do secure things, but in the privacy space it seems like the website itself is the attacker. But mixed-content is about protecting the user. maybe it's fine.  Some things here seem to be moving very slowly and maybe adding more stuff isn't the right idea.
+
+**sam**: there's a trend for some WG to be scoped to a single spec, and WASWG is not. also seem to be a very busy chair.
+
+**Mike**: I suspect many of the same people would be in both and then you'd have even more time conflicts at TPAC :-) . 
+
+**Tara**: I think it speaks to yhour point that if there is going to be a relationship with a WG the people in this group have been involved already and that would be helpful.
+
+**Mike**: we don't have to have only 2 chairs, 3 is also a number
+
+**brad**: this group seems like the natural place for things like this. Hallway conversations I've had this week have asked "is this privacy or security", and things like partitoned cache are both.
 
