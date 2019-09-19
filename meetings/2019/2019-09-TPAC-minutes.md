@@ -956,7 +956,159 @@ John: That will take until 2045!
 Mike: I'll be alive. They shouldn't be.
 
 
-## Queue
+## Day 2
+
+### CSRF / 👻Spectre👻 / XSLeaks
+
+#### Fetch Metadata
+
+**Artur**: Impetus for much of this are side-channel attacks like Spectre. What mechanisms could we build into the web to protect from these bugs? Seems strange to build web features to compensate for CPU bugs. Wondered if we could build things that worked with the web, and give better isolation guarantees independent from Spectre itself. See also ["How do we stop spilling the beans across origins"](https://www.arturjanc.com/cross-origin-infoleaks.pdf).
+
+**lwe**: I work in a team at Google that deploys all the web platform features WebAppSec is constructing. We have a lot of frameworks in which we can try these mechanisms out, want to share our results.
+
+...: Fetch Metadata allows servers to protect themselves from cross-origin attacks. CSRF, XSSI, timing attacks, clickjacking, spectre, etc.
+
+...: The browser sends information about the request's context in HTTP headers. Server can make security decisions based upon this context.
+
+...: Shipping in Chrome 76. Getting actual user data in our products, we can try a few different policies and see how they behave in practice.
+
+...: Three headers:
+
+...: `Sec-Fetch-Site`: Which website generated the request? `same-origin`, `same-site`, `cross-site`, `none`
+
+...: `Sec-Fetch-Mode`: The request [`mode`](#TODO link to fetch)
+
+...: `Sec-Fetch-User`: Is this request the result of a user gesture?
+
+...: [examples]
+
+...: Resource isolation
+
+...: Isolate your resources on the server by denying requests you don't expect. For example, block all `Sec-Fetch-Site: cross-site` requests. Possible exceptions for cross-site non-state-changing request, or a navigation, or for API endpoints that are explicitly expected to receive cross-site traffic. Prevents attacks based on the attacker forcing the loading of a resource into an attacker-controlled context.
+
+...: [code snippets]
+
+...: It might also be possible to build a navigation policy? Niche use case, as it breaks linkability. Might be interesting for super-sensitive applications: admin portal, etc. Those could simply redirect to the entry page rather than allowing direct navigation to sensitive portions of the application.
+
+...: Google internal pilot:
+
+...: Large scale (400+ services and products) experiment.
+
+...: Rolled this out in report-only mode: the server determines whether it would have blocked a request, and reports to itself internally.
+
+...: Promising results: 70% were compatible with the resource isolation policy without any change. Can deploy without much effort for these simpler applications. No CORS-based cross-site traffic, simple policy.
+
+...: For the remaining 30%, we needed to allow access for legitimate CORS / cross-site traffic.
+
+...: Some policy violations were discovered to be due to browser bugs in Chrome's implementation. Sometimes some headers were set, but others weren't. Extensions were an edge case, for instance. HTTPS -> HTTP -> HTTPS also.
+
+...: With these fixed, violations occurred for < 3% of traffic. Need to do more research to determine if it's a bug in browsers, or legitimate traffic we need to support.
+
+...: Would love to see cross-browser support to protect more users.
+
+...: Web Platform Tests to ensure a complete and consistent implementation.
+
+...: <https://secmetadata.appspot.com/> is a playground you can poke at.
+
+...: Overlap with `Sec-Same-Origin`.
+
+...: Can be used to know when you can deploy `Cross-Origin-Resource-Policy`
+
+...: `Vary` headers on `Sec-Fetch-Site` forces separate cache for same-origin traffic.
+
+**ericlaw**: The spec notes that you should set `Vary.`
+
+...: Is anyone outside Google using this? Could use the `vary` header to determine whether that's happening...
+
+**artur**: Some interest from folks working on middleware. Accidentally broke some banks: detected an unknown header, classified it as malicious, etc. Once they figured out what it was, they fixed the bug, and expressed interest in adopting this for security reasons. Also interest from Facebook at one of the XSLeaks meetups. For FB, `same-site` vs `cross-site` granularity didn't give them enough information about whether cooperating sites were sending requests. `messenger.com` and `facebook.com`. 
+[sec-same-origin](https://github.com/w3c/webappsec/blob/master/meetings/2019/2019-09-TPAC-minutes.md#sec-same-origin) had some thoughts about opting into sending `Origin` more often. Might be worth looking into.
+
+**yoav**: Talking to Takashi earlier about `Purpose: prefetch`. He mentioned that we could in theory add that to Fetch Metadata. That could be possible once we actually spec this as part of Fetch. Should we?
+
+**mike**: it's not the only request header that exists in the platform in isolation (service worker has one for SW scripts). Makes sense to add that to that framework.
+
+**artur**: In the spec, but behind a flag in Chrome is `Sec-Fetch-Dest`. LEts you know whether the request would be used as a script or a style or etc. LEss critical from a security pov, but that might be a good fit for that.
+
+**yoav**: Not a new destination. Just a speculative request. In the process of being added as another flag in Fetch: https://github.com/whatwg/fetch/pull/881
+
+**dom farolino** Perhaps interesting to add a new destination for speculative loads?
+
+**kinuko**: Prefetch destination could be script 
+
+**Mike**: take prefetch discussion offline and go in more depth later?
+
+**yhirano**: Destination. It's the browser responsibility to add the destination? Or the resource owner's responsibility?
+
+**artur**: `Sec-Fetch-Dest`, right? The browser attaches this header, the server could use it in a `vary` header? It would probably be fine not to have the `vary` header. Most useful for `Sec-Fetch-Site` to distinguish cross-site from same-site requests in the cache and serve the one but not the other.
+
+**zcorpan**: playground has Google internal links. Fix that?
+
+**lwe**: Yes. We should.
+
+**mnot**: From a CDN's perspective, we're interested. Concern will be false positives. Will need input from customers about how to handle these headers for each application. Incentive not to break sites, might slow adoption.
+
+**ianclelland**: Concerned about exposing the fetch mode in this way over the network. Will make it difficult to add new modes in the future. If folks are using this and failing closed if something other than `navigate` and `nested-navigate`.
+
+**artur**: This is a great concern. Had a discussion about how to structure the logic of the policy for unknown values. Might want to fail open if no `sec-fetch-mode` header? Fail closed if unknown? Or the other way around? Doesn't address your underlying concern. Have thoughts on how to fix?
+
+**ianclelland**: HTTP has big chunks of codes set aside. Could do the same here with prefixes? `navigate-*`?
+
+**mike**: File a bug. Let's discuss it there!
+
+#### [Cross-Origin-Opener-Policy](https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e)
+
+**lwe**: Cross-Origin-Opener-Policy. We need more isolation on the web. Spectre, other attacks that rely upon cross-origin window handles.
+
+...: COOP is a mechanism that provides developers with the ability to break the opener relationship.
+
+...: If COOP values are the same, and the origins of the documents match, then the documents can interact with each other. Otherwise, they can't.
+
+...: [examples]
+
+...: Only applies to top-level documents, not frames.
+
+...: `unsafe-allow-outgoing`, `unsafe-inherit`. These turned out to be important for deployment in practice. The former allows the page to open a window that has a reference to the opener. The latter allows the page to accept any opener's COOP, which allows the site to be used as a popup (e.g. OAuth sign-in pages).
+
+...: Neither of these can be used in combination with `SharedArrayBuffer`.
+
+...: COOP Case Study:
+
+...: Investigated ~50 Google and external sites by creating an extension that tracked `window.open` and interactions with the opened window. Manually interacted with sites and monitored interactions.
+
+...: Confirmed assumptions with Firefox Nightly, which has COOP implemented.
+
+...: [screenshot of logs]
+
+...: Results:
+
+...: 33 instances where `window.open` was called, but no cross-window interaction. Gmail <-> Hangouts used broadcast channel API, didn't use window reference.
+
+...: 3 same-origin window interactions.
+
+...: 15 cross-origin/same-site window interactions. Can't say up front that they would break with COOP enabled, case-by-case.
+
+...: Sometimes the `window` reference was only used to call `focus()`. Might not actually be breakage if that call failed. Others fail completely.
+
+...: Google Play used PayPal, checks `.closed`, then do validation. COOP shows the window as `.closed`, so this integration breaks.
+
+...: Federated sign in. Implementation specific breakage.
+
+...: Conclusion:
+
+...: Majority of sites could adopt COOP without changes. Most don't communicate cross-window.
+
+...: The rest could enable COOP with refactoring (e.g. broadcast channel), policy adjustments (e.g. `unsafe-inherit`)
+
+...: Most common case was federated sign in. Endpoints should set `unsafe-inherit`.
+
+...: Google Play could set `unsafe-allow-outgoing` to open PayPal.
+
+...: Rollouts need to be coordinated across multiple origins/services. Hard for percent-rollouts, no rollback safety, if only one service rolls back. Recommend to enable COOP `unsafe-inherit` before rolling out enforcement.
+
+...: Hard to find the places where the cross-window communication happens. Requires manual evaluating. Would be lovely to have a reporting feature that allows us to roll it out in reporting mode first so we can find the endpoints that break.
+
+
+
 
 
 
