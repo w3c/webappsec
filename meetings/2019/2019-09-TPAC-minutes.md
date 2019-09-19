@@ -1446,3 +1446,17 @@ Mike: Next is [SecureContext](https://w3c.github.io/webappsec-secure-contexts/),
 
 **brad**: this group seems like the natural place for things like this. Hallway conversations I've had this week have asked "is this privacy or security", and things like partitoned cache are both.
 
+## AOB
+---
+
+**Mike**: anything else before we adjourn?
+
+**Artur**: We're giving devlopers more and more tools, great. Interesting to see if we can push that to developers without their opt-in. We'll have broad implementation of security features next yearish. How can we shift the world so that they're on by default?
+
+...: The more capabilities we build, the more powerful the features become, the easier it should be to convince developers that the protections we offer on the web solve real problems and should be enabled all the time.
+
+...: Maybe we can do something like HSTS preload lists for some security features. Enable for some TLDs, etc. Default origin policy config.
+
+**annevk**: I've thought about this a lot as well. We're adding lots of headers. 11 or 12 policy headers. Always talk of adding more. For large teams this is managable. For a startup, it isn't. Would be nice to make that simpler. Hard problem. Can't have a single boolean that expands to all these headers, hard to add new policies, etc.
+
+**yuri**: Building a new browser called Puma Browser. Working with Coil to bring web monetization to life. Gift bag has a 1 year subscription to Coil, lets you support creators directly. Want fewer ads, less tracking. We can experiment and launch things quickly. Happy to help.
