@@ -1126,7 +1126,105 @@ Mike: I'll be alive. They shouldn't be.
 
 **annevk**: There's an issue discussion. Reporting is easy if we only report non-match. It's hard if we need to report on usage, because no one want to hook into the window proxy object.
 
+**jun**: How would you treat CSP sandbox? `same-origin`? `same-site`? Treats site as null origin, not `same-origin`. Looks like same-origin endpoint until you get the response header. Only know after you parse.
 
+**mike**: Seems like we can define it either way in Fetch.
+
+**anne**: Open a bug against HTML.
+
+#### [Artur Janc's explainer](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/mobilebasic)
+
+**artur**: We started talking about COOP as a mechanism to enable exposing APIs that would otherwise be dangerous. `SharedArrayBuffer`, etc.
+
+...: The doc talks about what we think should work as a mechanism to enable access to these powerful features. SAB is motivating example, but `window.performance.memory` might also fit, and others.
+
+...: The document that gets these capabilities should not be able to load content it doesn't control. Can otherwise access data it shouldn't have access to via Spectre, etc.
+
+...: Need to protect resource loading. Need to ensure you don't share a process with other windows.
+
+...: Need to set `COOP: same-origin`, and promise to the browser (and let the browser enforce) that it doesn't load non-cooperating resources.
+
+...: [Cross-Origin-Embedder-Policy](https://github.com/mikewest/corpp). Implemented behind a flag in Chromium. The implementation has not severed certain communication between realms. We haven't supported shared and service workers.
+
+**anne**: Firefox has COEP behind a flag as well.
+
+**mkwst**: Is this interesting to people? Are you following changes on COOP, discussion on COEP?
+
+**johnwilander**: There are things implemented around COOP, nothing for COEP yet. We're interested in all of this.
+
+**mkwst**: We believe these are both solid. Probably time to move patches to Fetch.
+
+**anne**: Tricky cases around navigate algorithm, browsing context group. Doing refactoring of navigation and agent clusters. 
+
+### Double-keyed caches
+
+**mkwst**: Double-keyed caches. Doing research to understand the performance risk. I personally think we should just accept the risk, but it's not just my decisions.
+
+**anne**: Folks might want to do more than double-key? 
+
+**brad**: We're running experiments with both double-keying and triple-keying. Not seeing much difference between the two. Disables frames from cache-attacking each other. Seems valuable, still evaluating.
+
+**johnwilander**: We've been shipping double-keyed HTTP Cache for 6 years. We measured the hit in 2012, it was ok, and we shipped. It works. We double-key on site, not on origin. If other vendors go with origin, we'll switch as well.
+
+**brad**: We're experimenting with origin.
+
+**kinuko**: I generally like the concept of a partitioned cache. Concerned that the aggregate overhead is fine, but puts a performance penalty on smaller sites.
+
+**annevk**: My main thought is that we don't have an alternative to doing it. XSLeaks attacks are real, and bad.
+
+**kinuko**: Perhaps for very common resources, we could figure out a way to share them across sites? Seems like a good thing to explore.
+
+**annevk**: In principle, sure! We've explored public cahing, but hard to scope it in such a way that it's privacy preserving.
+
+**johnwilander**: Worried about the cache being used for tracking? Or data leakage?
+
+**annevk**: XSLeaks is quite specific. <https://github.com/xsleaks/xsleaks>
+
+**johnwilander**: In 2012, we were mostly concerned about trackers. Now folks are trying to abuse the partitioned cache as well. Revalidating cache entries after 7 days. Wouldn't help against XSLeaks, but does help against tracking.
+
+**annevk**: We don't want A to know that you visit B.
+
+**brad**: XSLeaks is the primary motivator, but also fingerprinting.
+
+**artur**: Thinking about widely-used resources. Any data about the performance loss? I could see a world where 3 resources are loaded on every site, and could exempt them without worry of privacy risk.
+
+**yoav**: How do you determine which resources those would be? How do you not bias against the future 3 resources.
+
+**brad**: Introduces incentives. Insecure version of a library is popular, lose performance by fixing the bug.
+
+**kinuko**: For performance data. Brad's team has loading time performance data. For individual resources, the performance looked different...
+
+**Brad**: 3rd party fonts, ...: Increase in cache miss rate. 30.9 -> 40.3 for fonts. ... for scripts. ... for style. Doesn't result in a statistically-significant change in first-contentful-paint, or other stats we looked at.
+
+#### Origin-level isolation
+
+**james**: Want to do process isolation in Chrome at the origin rather than site level. Performance and security implications.
+
+...: Can't go right there because we'd break cross-origin scripting via things like `document.domain`. That said, we did a pilot in spring, turned on strict origin isolation for a subset of users. Cross-origin scripting isn't as prevalent now as it previously was. Obviously, we can't just turn it on, but there may be individual sites that would want to opt-into this mechanism.
+
+...: How might we set up this opt-in mechanism? We've been thinking about using origin policy to make assertions about the pages on a given origin. "It's totally safe to lock me down to a process for my origin. I'm not going to touch cross-origin pages."
+
+...: Best-effort mechanism delivered via origin policy. Floating that idea, want some feedback generally. Interest in cooperating?
+
+**annevk**: Best-effort for process allocation seems fine, but best-effort for APIs working or not would not be ok.
+
+**james**: Right.
+
+**wanderview**: At a high-level, we'd spec it in terms of user agent cluster, browser could map that to a process.
+
+**artur**: If we could have something in Feature Policy that would guarantee that you're not using `document.domain` via Origin Policy, that might get us there. Would like to be able to make these kinds of declarations for an entire origin.
+
+**annevk**: `document.domain` can't be the thing. SAB still allows sharing cross-site. Need to shift the agent cluster allocation.
+
+**dveditz**: We could totally break things if folks touch `document.domain`. Sites who use document.domain can keep using historical features, but nothing new.
+
+**Mike**: document.domain is used on a lot of sites (like 40%?) but only has an effect on ~3%. Brad Hill has done tremendous work eliminating its use by the Facebook like button which reduced global use by a lot. That dip is all Brad. [graph drops from ~4.5% to ~0.8%]
+
+**johnwilander**: Crazy idea: look at TLS certs. When were they issued? That shows active maintenance?
+
+**yoav**: CDNs are doing the updates.
+
+annevk: I'm wondering about something else: if the goal is to have this, can we do it for SAB? Instead of the shared memory scope being the SAB, we'd do a same-origin check.
 
 
 
