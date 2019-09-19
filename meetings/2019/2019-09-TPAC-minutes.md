@@ -1224,18 +1224,62 @@ Mike: I'll be alive. They shouldn't be.
 
 **yoav**: CDNs are doing the updates.
 
-annevk: I'm wondering about something else: if the goal is to have this, can we do it for SAB? Instead of the shared memory scope being the SAB, we'd do a same-origin check.
+**annevk**: I'm wondering about something else: if the goal is to have this, can we do it for SAB? Instead of the shared memory scope being the SAB, we'd do a same-origin check.
 
+mike: [something]
 
+**wanderview**: I believe Chromium only supports `postMessage` to dedicated workers for SAB. Perhaps there's not large adoption.
 
+**simon**: How could we lock in wins for `document.domain`? Add a console error. Combined with breaking other things, it might be reasonable. Maybe break sync xhr too.
 
+### [Origin Policy](https://wicg.github.io/origin-policy/)
 
+**Mike**: Origin Policy started as a proposal from Mark Nottingham inclusing a set of headers that apply to the entire Origin. Improved that proposal. The current spec is old, but an important mechanism that can improve both security and performance. Could apply CSP and Feature Policy to all your documents, even the ones you forgot.
 
+...: For performance, CORS preflights are a pain, and we can make that declaration ahead of time. A lot of value in having that config for the entire origin. Mozilla?
 
+**ckerschb**: working on an implementation, not yet in the code base. Looking at caching and fetching. A lot of WPTs that they'd upstream. Thinks it's worth our time.
 
+**Mike**: Chrome has an ongoing implementation. Hopeful it will move forward soonish. A couple of pieces in the spec: First request to origin A, A responds with an origin policy, the browser will fetch the policy and apply it before committing the document. The response can then guaranty that the OP is applied. That's critical for e.g. CSP. That's complicated and we need to change it. There are some cases where it's required, but in some cases, it's not. e.g. logo update that shouldn't block the page rendering.
+You can imagine ways of doing this. Currently, it's a version sstring. You can imagine version number. Something along these lines, but you can imagine others.
 
+...: Need to figure out this and integration with Fetch.
 
+...: Otherwise, the version is indicated to the server and can act as a cookie. We need to change that. That may look like the version system from above. Need to do some work.
 
+...: Needs to be keyed along the rest of the storage, as it has the same characteristics of a cookie, as the policies are web exposed. (e.g. can hide uid in CSP eval directives). 
 
+????
+...: For CORS, it means that a server cannot declare itself as speaking CORS for all origins. Maybe that's fine, maybe we need something else.
+
+...: The format needs to change. Currently header-based in structure, and we need something that's more declarative in structure. Probably JSON. Would be easier to developers.
+
+...: A lot of work to be done. Some implementation, some spec. Hoping folks would help design and shape the API. Would love to be involved, but if you want to be an editor, call me. File issues and send PRs.
+
+**sam**: How many of these short headers shold be stuffed into the HTTP service record?
+
+**mnot**: None.
+
+**yoav**: I want that server opt-in to be available in the other direction, as an HTML-based opt-in. Multiple sources note that developers have a hard time flipping on HTTP headers and having one that indicates an origin policy would enable them to just changfe a text file.
+
+**mike**: [Interesting things]
+
+**yoav**: Yeah, that wouldn't work for CSP, but might be ok for others.
+
+**annevk**: Can we figure out why that's the case? It's a problem if developers can't do headers. People should fix it instead.
+
+**yoav**: Regarding the scaling comment, OP allows us to make sure it will scale, so folks can flip on OP and then stick all the meta information there.
+
+**annevk**: Only works for HTML responses. What if folks pull JSON or CSS files?
+
+**Mike**: it's in the spec, and that's where double-keying would come in. Chrome hasn't implemented it, but it's in the spec.
+
+#### Protecting `<iframe>` leaks
+
+**Mike**: ads on same-origin (same ad server) can script each other -- they shouldn't. [other examples]
+
+**ian**: Another use case is something like a sandbox barrier that allows it to host frames that are same-origin wth each other.
+
+**annevk**: There are some differences too. Maybe you could make the windowproxy object behave differently, but doesn't affect the named getter or indexed getter. Another factor that wasn't mentioned yet is `history.length`. If one of the frames navigates, the other frame can notice. Can influcence by using `.back()`, etc. One idea we want to experiment with is limiting `.length` to 1, 2 or 2+ the number of times `pushState` was executed? Maybe drop the ability to affect global state from frames.
 
 
