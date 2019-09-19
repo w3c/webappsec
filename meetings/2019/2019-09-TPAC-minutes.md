@@ -1107,7 +1107,24 @@ Mike: I'll be alive. They shouldn't be.
 
 ...: Hard to find the places where the cross-window communication happens. Requires manual evaluating. Would be lovely to have a reporting feature that allows us to roll it out in reporting mode first so we can find the endpoints that break.
 
+...: Can't be safely tested without enforcing it. Will only discover breakage during rollout. Product team won't let you break them twice, so we need to be very careful. Report-only mode would be very helpful.
 
+...: Discussion:
+
+...: Which form of reporting can we support? Report-only? Report breakage? No reporting?
+
+
+...: [missing]
+
+**annevk**: The match is per-response. A->A -> B -> A it breaks.
+
+...: What to use instead of referecebased cross-window interaction?
+
+**annevk**: whatwg/html -> labels for cross-origin-opener-policy, cross-origin-embedder-policy
+
+**yhirano**: Reporting mode: is there any method for reporting when `window` is called?
+
+**annevk**: There's an issue discussion. Reporting is easy if we only report non-match. It's hard if we need to report on usage, because no one want to hook into the window proxy object.
 
 
 
