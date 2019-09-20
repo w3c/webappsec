@@ -17,6 +17,17 @@ WebAppSec @ TPAC 2019
   * [HTTP State Tokens](#httpsgithubcommikewesthttp-state-tokens)
 * [Feature Control](#feature-control)
 * [Origins and sites and entities](#origins-and-sites-and-entities)
+* [CSRF / 👻Spectre👻 / XSLeaks](#csrf--spectre--xsleaks)
+  * [Fetch Metadata](#fetch-metadata)
+  * [COOP/COEP/CORP Explainer](#coep-coop-corp-explainer)
+* [Double-keyed Caches](#double-keyed-caches)
+* [Origin-level Isolation](#origin-level-isolation)
+* [Origin Policy](#origin-policy)
+* [`<iframe>` leaks](#protecting-iframe-leaks)
+* [CORS-RFC1918](#cors-rfc1918)
+* [Cleaning up oooold documents](#old-documents)
+* [Working Group Scope](#working-group-scope) 
+* [AOB?](#aob)
 
 ## Exciting metadata
 
@@ -85,87 +96,9 @@ Attendees:
 *  Rowan Merewood (Google)
 *  Jeff Jaffe (W3C/MIT)
 
-## Agenda:
-
-## Tuesday, Sept 17th
-
-* 9:00 - 9:15 - Introductions, problem statements, framing the next day and a half.
-  * Artur Janc's ["Baby Steps Towards the Precipice"](https://www.arturjanc.com/usenix2019/) is helpful reading.
-* [Deian will dial in at some point to discuss [`Sec-Same-Origin`](https://docs.google.com/document/d/1wKWuN61MIY5AZYNeR2JQ1MB6A1Bmj0k3RFJVh1ktufw/edit#)]
-* 9:15 - 10:00 - **Secure Transport**
-  * [MIX2](https://w3c.github.io/webappsec-mixed-content/level2.html)
-  * HSTS fingerprinting: [Apple's mitigations](https://webkit.org/blog/8146/protecting-against-hsts-abuse/), [Strict-Navigation-Security](https://github.com/mikewest/strict-navigation-security)
-    * [Requiring `Secure` for `SameSite=None` cookies](https://mikewest.github.io/cookie-incrementalism/draft-west-cookie-incrementalism.html#rfc.section.3.2)
-    * [Should origins with distinct schemes be considered "same site"](https://github.com/whatwg/url/issues/448)
-    * RFC6797bis?
-  * Intranet / Internet: is [CORS-RFC1918](https://wicg.github.io/cors-rfc1918/) the right goal?
-* 10:00 - 10:30 - [Continuous specification](https://www.w3.org/wiki/Evergreen_Standards) ([plh@](https://github.com/plh), [wseltzer@](https://github.com/wseltzer))
-* 10:30 - 11:00 - **☕ Coffee**
-* 11:00 - 12:15 - **Injection**
-  * [Trusted Types](https://github.com/WICG/trusted-types) ([@koto](https://github.com/koto)) - [Summary for TPAC](https://github.com/WICG/trusted-types/wiki/W3C-TPAC-2019)
-  * ["Strict CSP"](https://csp.withgoogle.com/docs/strict-csp.html) && [CSP Next](https://github.com/mikewest/csp-next)  
-* 12:15 - 13:30 - 😋 Lunch 😋
-* 13:30 - 14:45 - **Authentication**
-  * [`/.well-known/change-password`](https://wicg.github.io/change-password-url/index.html)
-  * [`IsLoggedIn` API](https://lists.w3.org/Archives/Public/public-webappsec/2019Sep/0004.html) ([@johnwilander](https://github.com/johnwilander))
-  * [HTTPStateTokens](https://github.com/mikewest/http-state-tokens)
-  * [Credential Management](https://w3c.github.io/webappsec-credential-management/)
-* 14:45 - 15:30 - **Feature Controls**
-  * [Feature/Document/* Policy](https://www.w3.org/TR/feature-policy/) ([@clelland](https://github.com/clelland))
-    * [Cookie Controls](https://github.com/w3c/webappsec-feature-policy/issues/85)
-    * [`<meta>`](https://github.com/w3c/webappsec-feature-policy/issues/55)
-  * Protecting/sandboxing `<iframe>` sites (history.length, caches, window[i])
-* 15:30 - 16:00 - ☕ Coffee ☕
-* 16:00 - 17:00 - **Origins and Sites and Entities, oh my.**
-  * ["same site" && schemes](https://github.com/whatwg/url/issues/448)
-  * [First-Party Sets](https://github.com/krgovind/first-party-sets)
-  * [Public Suffix List](https://publicsuffix.org/), and [its problems](https://github.com/sleevi/psl-problems/)
-
-## Thursday Sept. 19th ([Navis C, 1F](https://www.w3.org/2019/09/TPAC/schedule.html#map)) 
-
-* 12:00 - 13:00 - 😋 Lunch 😋
-* 13:00 - 14:30 - CSRF / 👻Spectre👻 / XSLeaks
-  * [Fetch Metadata](https://github.com/w3c/webappsec-fetch-metadata)
-  * Isolation ([Artur Janc's explainer](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/mobilebasic))
-    * [Cross-Origin-Opener-Policy](https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e)
-    * [Cross-Origin-Resource-Policy](https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header)
-    * [Cross-Origin-Embedding-Policy](https://github.com/mikewest/corpp)
-  * [Double-keyed (or more) caches](https://github.com/whatwg/fetch/issues/904)
-  * Origin-level isolation
-  * [Origin Policy](https://wicg.github.io/origin-policy/)
-  * Protecting/sandboxing `<iframe>` sites (`history.length`, caches, `window[i]`)
-* 15:00 - 15:30 - ☕ Coffee ☕
-* 15:30 - 16:00 - Overflow
-  * [CORS-RFC1918](https://wicg.github.io/cors-rfc1918/)
-  * ...
-* 16:00 - 16:30 - Cleanup
-  * Moving CRs to Recommendations: 
-    * [Referrer Policy](https://www.w3.org/TR/referrer-policy/)
-    * [Secure Contexts](https://www.w3.org/TR/secure-contexts/)
-    * [Mixed Content](https://www.w3.org/TR/mixed-content/)
-    * [Upgrade Insecure Requests](https://www.w3.org/TR/upgrade-insecure-requests/)
-  * Getting to CR: 
-    * [Clear-Site-Data](https://www.w3.org/TR/clear-site-data/)
-    * [Credential Management](https://www.w3.org/TR/credential-management/)
-    * [Embedded Enforcement](https://www.w3.org/TR/csp-embedded-enforcement/)
-  * Should we obsolete [UI Security and Visibility API](https://www.w3.org/TR/UISecurity/) in favor of [IntersectionObserver v2](https://w3c.github.io/IntersectionObserver/v2/)
-* 16:30 - 17:00 - Scoping the group, in light of everything above.
-    * [Charter](https://www.w3.org/2019/03/webappsec-2019-charter.html) still reasonable?
-    * Putting privacy more clearly in scope and make browser privacy policies part of the security review process?
-    * Relationship with other groups (TAG, PING, HTTPbis, etc.)
-    * Security reviews of upcoming features.
-    * Various browsers' launch processes
-
-## Overflow
-* CORS-RFC1918
-## Minutes:
-
-### Introductions
-
-* Round the room, introductions. (54 people!)
-
 ### Secure Transport
-##### MIX2
+
+#### MIX2
 
 **Carlos**: Mixed Content is bad. Still quite a lot of it. UX for it is interesting. We downgrade the lock; hard to tell what the actual problem is for users. We're trying to push more sites to move away from mixed content. For low-impact mixed content, we're trying to autoupgrade it to HTTPS. If the upgrade works, great. If it doesn't load, we simply fail. No HTTP fallback. Has the impact of blocking non-upgradeable content.
 ...: Been doing this on Beta for \~3 months now. Pretty successful for `<video>`, fairly unsuccessful for `<audio>`. \~50% success for images (~1.5% of navigations contain mixed images). Current plan for Chrome is to ship upgrades for `<audio>` and `<video>` later this year. Put out a proposal for MIX2.
@@ -1132,7 +1065,7 @@ Mike: I'll be alive. They shouldn't be.
 
 **anne**: Open a bug against HTML.
 
-#### [Artur Janc's explainer](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/mobilebasic)
+#### [COOP/COEP/CORP explainer](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/mobilebasic)
 
 **artur**: We started talking about COOP as a mechanism to enable exposing APIs that would otherwise be dangerous. `SharedArrayBuffer`, etc.
 
@@ -1282,11 +1215,7 @@ You can imagine ways of doing this. Currently, it's a version sstring. You can i
 
 **annevk**: There are some differences too. Maybe you could make the windowproxy object behave differently, but doesn't affect the named getter or indexed getter. Another factor that wasn't mentioned yet is `history.length`. If one of the frames navigates, the other frame can notice. Can influcence by using `.back()`, etc. One idea we want to experiment with is limiting `.length` to 1, 2 or 2+ the number of times `pushState` was executed? Maybe drop the ability to affect global state from frames.
 
-#### ☕ Coffee ☕
-
-**Mike**: next things up are odds and ends. more document.domain, cors-rfc1918, etc
-
-**ericlaw**: I'm curious about samesite=lax by default
+#### CORS-RFC1918
 
 **Mike**: Old attack, taking advantage of the user's access to local things that the remote site can't reach directly. for example, reaching in and connecting with your printer using a "private" IP address.
 
@@ -1426,7 +1355,9 @@ Mike: Next is [SecureContext](https://w3c.github.io/webappsec-secure-contexts/),
 
 [none]
 
-...: wonderful. like to look back at the conversations over the last couple of days. Is this group talking about the right things? Anne, you were interested in including more privacy work?
+### Working Group Scope
+
+**mike**: wonderful. like to look back at the conversations over the last couple of days. Is this group talking about the right things? Anne, you were interested in including more privacy work?
 
 **anne**: there's a trend to treat privacy violations with the same severity as security violations. Seems like there's overlap, might make sense.
 
