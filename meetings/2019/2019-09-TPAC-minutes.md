@@ -897,6 +897,8 @@ Mike: I'll be alive. They shouldn't be.
 
 **Artur**: Impetus for much of this are side-channel attacks like Spectre. What mechanisms could we build into the web to protect from these bugs? Seems strange to build web features to compensate for CPU bugs. Wondered if we could build things that worked with the web, and give better isolation guarantees independent from Spectre itself. See also ["How do we stop spilling the beans across origins"](https://www.arturjanc.com/cross-origin-infoleaks.pdf).
 
+**[lweichselbaum@](https://github.com/lweichselbaum)'s [Fetch Metadata Slides](https://github.com/w3c/webappsec/blob/master/meetings/2019/2019-09-TPAC-lweichselbaum-fetch-metadata-headers.pdf)**
+
 **lwe**: I work in a team at Google that deploys all the web platform features WebAppSec is constructing. We have a lot of frameworks in which we can try these mechanisms out, want to share our results.
 
 ...: Fetch Metadata allows servers to protect themselves from cross-origin attacks. CSRF, XSSI, timing attacks, clickjacking, spectre, etc.
@@ -989,6 +991,8 @@ Mike: I'll be alive. They shouldn't be.
 **mike**: File a bug. Let's discuss it there!
 
 #### [Cross-Origin-Opener-Policy](https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e)
+
+**[lweichselbaum@](https://github.com/lweichselbaum)'s [`Cross-Origin-Opener-Policy` Slides](https://github.com/w3c/webappsec/blob/master/meetings/2019/2019-09-TPAC-lweichselbaum-coop.pdf)**
 
 **lwe**: Cross-Origin-Opener-Policy. We need more isolation on the web. Spectre, other attacks that rely upon cross-origin window handles.
 
