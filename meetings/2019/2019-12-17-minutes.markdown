@@ -1,0 +1,154 @@
+## WebAppSec WG - 2019-12-17
+Present: mkwst, gmaone, terri, dveditz,
+wseltzer, ArturJanc, estark, jugglinmike, johnwilander, danfoygel, carlosil
+
+
+Agenda: https://github.com/w3c/webappsec/blob/master/meetings/2019/2019-12-17-agenda.md
+
+
+
+### Agenda Bashing?
+
+mkwst: [summarizes the agenda]
+
+#### Fetch Metadata (<https://w3c.github.io/webappsec-fetch-metadata/>)
+    *   Recent changes:
+        *    `nested-navigate` => `navigate` + `Sec-Fetch-Dest` (
+        *    `<embed>`/`<object>` mode => `navigate` (<https://github.com/whatwg/fetch/pull/948>)
+    *   Chrome will ship `Sec-Fetch-Dest` in 80.
+    *   Next steps: FPWD => CR? FPWD => NOTE + Upstreaming everything to Fetch/HTML?
+    
+mkwst: Fetch metadata tells servers a bit more about the request so servers can make security decisions. Chrome has implemented this and based on feedback from the Google web application security folks we've proposed/made some changes to the spec. We have decided to add support for the sec-fetch-dest header.
+
+...: the spec is a bit of a monkeypatch on other specs, telling fetch (in particular) when it needs to do things.
+    
+...: What does this group want to do with this doc? Keep a stand-alone doc, put it into fetch, a hybrid. 
+
+...: my opinion is that the model of CSP that contains a specific topic and explains it in one place works. My opinion for fetch is that this doesn't work as well because there's a lot of jumping back and forth into the fetch spec. I like having the rationale for a feature in a single place, though. option 1) do what CSP did, standalone normative spec, call into it from fetch. option 2) copy all this stuff into fetch() itself, fetch metadata would be published as a note rather than as a normative document.
+
+mike pennisi: I like the second option. has anyone tried to address your concern about documentation of dispersed features? Has anyone tried to annotate fetch with rationale for why parts are there.
+
+mkwst: with CSP it's effectively annotated by referencing sections of CSP as the normative place. Another example is `Cross-Origin-Resource-Policy` header where the rationale for the header is entirely missing. I'm not sure there's a good example. CSP is an example of how this gets really complicated. But trying to describe CSP inside fetch or HTML would be really difficult as well.
+    
+mkwst: I'll take the question to the list. Would be good to get WHATWG input too.
+    
+#### Origin Policy (<https://github.com/WICG/origin-policy>)
+    *   Actively working on the spec again
+    *   Feedback on issues welcome.
+    
+mkwst: there have been updates. Domenic from the Chrome team has been updating the spec with feedback from implementers like our friends at Mozilla and developers trying to use the feature. I think this is a really interesting primitive, and there have been a bunch of recent updates. Now would be a good time for feedback  since it's become active again.
+    
+    
+    
+#### [COOP](https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e) / [COEP](https://mikewest.github.io/corpp/)
+
+mkwst: we has a meeting in Munich a couple of weeks ago with my team and some other interested folks like zcorpan@ from Bocoup and annevk@ from Mozilla.
+
+artur: the main changes we discussed were simplifying the cross-origin opener policy which had 2 different switches. Same origin or same site, and popups. COOP only works at the top level. If a window opens another and COOP is defined as same-origin they can talk if they are same-origin then they can't. If you use same-origin-allow-popups and you open a cross-origin site as a popup you can talk to it, but if someone opens you they can't talk to you. And the third option which is the default but can be explicit, is to allow your windows to be used in a cross-origin way.
+
+...: another area is reporting. how can devs roll out coop and what tools do they need? we settled on using the reporting API, and we will only tell you about potential violations for things your own window is taking. If you open a popup and your communication is blocked by COOP you will get a report, but if that window tries to talk to you and is blocked you will not get a report.
+
+mkwst: annevk has documented his understanding of where we ended up in the gist linked in the minutes.
+
+wilander: Default? The default will be the legacy behavior. Any discussion on changing that down the road? How would we achieve that?
+
+aaj: Yes! That's the reason we wanted to introduce `unsafe-none`. In an ideal world, where all the providers of cross-origin popups opt them out of COOP by setting `unsafe-none`, it will be possible for browsers to shift to a `same-origin` default (or with `same-origin-allow-popups`). Don't want to do it now, as it would break OAuth, etc. But once this is more widely used, it should be possible to change the default, which would be good.
+
+wilander: How do we get them to adopt?
+
+aaj: Google will adopt, as it will make the adoption of stronger COOP/COEP easier for Google's applications. Hoping that there's a small-enough number of these providers that we can plead with them... One other aspect is that they'll need to set this flag to allow the site that uses these popups to deploy COOP. They'll be nudged by the users of their APIs. Hope we'll gather metrics in Chrome as well.
+
+mkwst: Chrome and others intend to lock SAB behind COOP/COEP.
+
+
+
+
+#### Referrer Policy (<https://w3c.github.io/webappsec-referrer-policy/>)
+    *   `unsafe-url` => `no-referrer-when-downgrade` (<https://github.com/w3c/webappsec-referrer-policy/pull/124>)
+    *   Default to `strict-origin-when-cross-origin` (<https://github.com/w3c/webappsec-referrer-policy/pull/125>)
+    *   Non-secure requests? (<https://github.com/w3c/webappsec-referrer-policy/pull/126>)
+    *   [Safari 13.0.4 caps third-party referrers to an origin](https://webkit.org/blog/9661/preventing-tracking-prevention-tracking/)
+
+mkwst: couple changed being proposed. Chrome proposes changing the default from historical `no-referrer-when-downgrade` to `strict-origin-when-cross-origin`. seems to be uncontroversial, at least got support in the github issue. Chrome is going to be doing real-world testing. This is similar to changes Webkit has made
+
+wilander: if you have ITP enabled all cross-site referrer headers will be downgraded to just the origin (unless it's already blank). This overrides whatever policy they explicitly set! The reports we have received have been along the lines of "oh, I guess we won't rely on that header"
+
+mkwst: other questions -- should we get rid of `unsafe-url` entirely, and change to the historical behavior of not sending insecurely. the unsafe behavior was important to avoid penalizing folks during the transition to default secure sites, but doesn't seem to be needed anymore.
+
+...: Some browsers like Brave have interesting ways to forge the referrer header to avoid blockage. we should remove referrer headers from insecure traffic.
+
+wilander: we've been shipping that way in private browsing for more than a year and haven't gotten breakage complaints
+
+
+
+
+#### Mixed Content
+    *   <https://blog.chromium.org/2019/10/no-more-mixed-messages-about-https.html>
+    *   MIX => REC, MIX2 => FPWD? 
+
+
+carlos: I sent a CfC to move MIX2 to a FPWD. Aside from one comment about the plan for `<form>`, there hasn't been movement on the GitHub issue. Biggest change is autoupgrade. Chrome is planning to ship `<audio>` and `<video>` subresource upgrades in 80 (Feb 2020). Hoping to do `<img>` in Chrome ~81 (Marchish).
+
+mkwst: no objections have come to the mail list. Anything preventing us publishing MIX2 as FPWD?
+
+dveditz: Mozilla has some concerns about fallback but shouldn't hold up FPWD -- we can discuss after that
+    
+[RESOLVED: MIX2 => FPWD]
+    
+wseltzer: FPWD is a [simple process](https://www.w3.org/Guide/transitions?profile=FPWD). Will work with you to get it published.
+
+Emily: Want to clarify -- we have no plans to implement a fallback. Looked into it, not feasible and doesn't align with our strategy, we have no plans to do that. I'd like to hear from other browsers.
+
+dveditz: that's good to hear. I apologize I haven't been able to read the latest version of the spec
+
+wilander: My impression from TPAC is that we're going to try without the fallback. That's our desired behavior, for complexity reasons, and out of principle. WebKit isn't working on this right now, but wants to do it, likes the approach. Would prefer not to have a fallback unless there's a terrible reason to do so.
+
+mkwst: I'll work with Wendy and carlos to get that published. Would also like to note that MIX has been accepted as a PR, but there are a couple editorial things I need to get done before that can be published.
+
+#### Permissions
+    *   <https://hacks.mozilla.org/2019/11/upcoming-notification-permission-changes-in-firefox-72/>
+    
+mkwst: Mozilla is going to require a user-gesture or other interaction in order to pop up a permission request. There's a similar kind of change going on in Chrome. There are some flags you can flip to try, plan to ship in m80. The browser tries to figure out if this is a kind of user that always denies permissions or a user to grants them and will give different experiences to them.
+
+...: the point is not those particular changes but that browsers are moving to moderate interactions. Permissions API is kind of in limbo. officially in webappsec, but maybe no one's owkring on it.
+
+...: assertions at TPAC from the editors aside, there doesn't seem to be any commits to the repo. one is september, not many since 201x.
+
+wilander: Twitter conversation around this change. Safari has gated permission on user activation for some time; sites pre-prompt. They run their own prompt-like UI that annoys the user, gathering an interaction, and then popping the native permission prompt. This could be a fit for some of the things we'd be talking about below. Maybe if it's a site you're logged into they can ask for more permissions.
+
+mkwst: I don't know I'd say what Google is doing is better, but it's certainly different. Sites are perfectly capable of gathering a click from a user so it didn't seem like much of a barrier.
+
+Mike Pennisi: we've done some work with Google's Ecosystem Infrastructure team specifying an automation API, and they've implemented WebDriver support for it so features with permissions can be tested: [Add `Set Permission` API to testdriver.js](https://github.com/web-platform-tests/wpt/pull/20461)
+
+
+#### `IsLoggedIn()`
+
+wilander: Yet to be published. Still working through legal questions. That said, we do have the mailing list! Can discuss there.
+
+mkwst: is the explainer still a good match for your thinking/implementation?
+
+wilander: Looking at "managed logins": webauthn, password managers. vs "unmanaged" (everything else, hardware tokens, etc). Grandfathering in sites the user is already signed into when we ship. Haven't had much time to work on federated sign-in. Will want to start working with others early, not spend time in that space on our own.
+
+
+#### Trusted Types
+    * [Default policy questions](https://github.com/w3c/webappsec-trusted-types/issues/248)
+    
+mkwst: See trusted types proposal linked above -- Chrome is pretty confident we're on a path to an implementation we can ship. had some good conversations with annevk from Mozilla. Pay attention to when a policy will be executed against a string -- that's the last blocker. Your feedback will be quite quite welcome!
+
+
+#### [`wasm-unsafe-eval`](https://github.com/WebAssembly/content-security-policy/blob/master/proposals/CSP.md)
+
+mkwst: wasm folks made a proposal to extend the CSP concept of unsafe-eval to carve out a way to allow wasm without allowing general eval(). Haven't put a lot of work into thinking about the proposal but they've put a lot of thought about it and it's worth getting into.
+
+
+
+#### [New WebCrypto algorithm proposals](https://discourse.wicg.io/t/proposal-add-curve-25519-and-cruve-448-to-the-web-cryptography-api/4153): 25519, 448
+
+mkwst: there's a  proposal to extend the spec, and there's no WG alive for this spec anymore. The proposals seem reasonable and I've heard folks at Google want these curves too. They will try to start a spec revision in WICG to add these.
+
+
+#### SRI: https://github.com/w3c/webappsec-subresource-integrity/pull/86
+
+mkwst: Chrome's behavior is odd for inline script blocks (e.g. `<script integrity="...">...</script>`). I have a PR against the spec to do the work we agreed on ~3 years ago at TPAC to actually support inline script/style as well as externalized resources. If this still sounds reasonable to folks, I'll put up patches against HTML as well. Hop on the issue and have opinions!
+
+...: Happy holidays and see you again in January!
