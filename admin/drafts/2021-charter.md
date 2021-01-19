@@ -6,45 +6,38 @@ The **mission** of the [Web Application Security Working Group](http://www.w3.or
 
 ## Scope
 
-Modern Web Applications are composed of many parts and technologies. They may transclude, reference or have information flows between resources at the same, related or different origins. Due to the historically coarse-grained nature of the security boundaries and principals defined for such applications, they can be very difficult to secure.
+Modern web applications are composed of many parts and technologies, creating a complex tapestry of resource and data flows between origins. This complexity, as well as the historically coarse-grained nature of the security boundaries and principals defined for such applications, they can be very difficult to secure. At the same time, securing these applications is ever more critical, as the web becomes more and more critical to users' lives.
 
-In particular, application authors desire uniform policy mechanisms to allow application components to drop privileges and reduce the chance they will be exploited, or that exploits will compromise other content, to isolate themselves from vulnerabilities in content that might otherwise be within the same security boundaries, and to communicate securely across security boundaries. These issues are especially relevant for the many web applications which incorporate other web application resources (mashups). That is, they comprise multiple origins (i.e., security principals).
+This group focuses on the client-side of the problem, designing mechanisms user agents can provide to web developers which mitigate the risk of common web attacks, and reduce the surface area that applications expose to attackers. Areas of scope for this working group include:
 
-Areas of scope for this working group include:
+## Vulnerability Mitigation
 
-### Vulnerability Mitigation
-
-Vulnerabilities are inevitable in sufficiently complex applications. The WG will work on mechanisms to reduce the scope, exploitability and impact of common vulnerabilities and vulnerability classes in web applications, especially script injection / XSS.
+Sufficiently complex applications involve handling input from untrusted sources in ways that can lead to unexpected code execution, data manipulation, or exfiltration. This WG will design mechanisms which reduce the scope, exploitability and impact of common vulnerabilities and vulnerability classes in web applications (e.g. cross-site scripting, clickjacking, and so on).
 
 ### Attack Surface Reduction
 
-The WG will design mechanisms to:
+The WG will design mechanisms which prevent certain categories of threat by reducing the privilege of a given context. This effort will result in tools developers can opt-into which:
 
-* Allow applications to restrict or forbid potentially dangerous features which they do not intend to use
-* Govern information and content flows into and out of an application
-* Allow applications to isolate themselves from other content which may contain unrelated vulnerabilities
-* Sandbox potentially untrusted content and allow it to be interacted with more safely
-* Uniquely identify application content such that unauthorized modifications may be detected and prevented
-* Replace or augment injection-prone APIs in the browser with safer alternatives using strategies such as sanitization, strict contextual autoescaping, and other validation and encoding strategies currently employed by server-side code.
+* Allows applications to restrict or forbid potentially dangerous features which they do not intend to use
+* Governs information and content flows into and out of an application
+* Allows applications to isolate themselves from other origins
+* Reduces the privilege of potentially untrusted content and allow it to be interacted with more safely
+* Ensures that application content modification may be detected and prevented
+* Replaces or augment error-prone APIs in the browser with safer alternatives (e.g. sanitization, strict contextual autoescaping, validation and encoding requirements, and so on)
+* Enforce requirements on content which loads in a given context (e.g. transport security, embedder/embedee constraints, CORS, etc)
 
-### Secure Mashups
-
-Several mechanisms for secure resource sharing and messaging across origins exist or are being specified, but several common and desirable use cases are not covered by existing work, such as:
-
-* Allowing child IFRAMEs to protect themselves from "clickjacking"
-* Providing labeled information flows and confinement properties to enable secure mashups. This is especially relevant for, e.g. applications communicating between security principals with different user-granted permissions (e.g. geolocation)
+To the extent possible, these restrictions may also be imposed by default to uniformly reduce risk at scale, or may be positioned as prerequisites to some capability or set of capabilities applications may wish to exercise.
 
 ### Manageability
 
 Given the ad-hoc nature in which many important security features of the Web have evolved, providing uniformly secure experiences to users is difficult for developers. The WG will document and create uniform experiences for several undefined areas of major utility, including:
 
-* Treatment of Mixed HTTPS/HTTP Content and defining Secure/Authenticated Origins for purposes of user experience, content inclusion/transclusion and other information flows, and for features which require a verifiably secure environment
 * Providing hinting and direct support for credential managers, whether integrated into the user-agent or 3rd-party, to assist users in managing the complexities of secure passwords
 * Application awareness of features which may require explicit user permission to enable.
 
 ### The Web Security Model
 
-The WG may be called on to advise other WGs or the TAG on the fundamental security model of the Web Platform and may produce Recommendations towards the advancement of, or addressing legacy issues with, the model, such as mitigating cross-origin data leaks or side channel attacks.
+The WG may be called on to advise other WGs or the TAG on the fundamental security model of the Web Platform. In doing so, the WG may produce Recommendations for addressing legacy issues with the model (e.g. deprecations and removals), as well as improvements to the baseline it sets (e.g. mitigating cross-origin data leaks or side-channel attacks).
 
 In addition to developing Recommendation Track documents in support of these goals, the Web Application Security Working Group may provide review of specifications from other Working Groups, in particular as these specifications touch on chartered deliverables of this group (in particular CSP), or the Web security model, and may also develop non-normative documents in support of Web security, such as developer and user guides for its normative specifications.
 
