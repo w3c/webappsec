@@ -2,7 +2,7 @@
 
 ## Mission
 
-The **mission** of the [Web Application Security Working Group](http://www.w3.org/2011/webappsec/) is to develop security and policy mechanisms to improve the security of Web Applications, and enable secure cross-origin communication.
+The **mission** of the [Web Application Security Working Group](http://www.w3.org/2011/webappsec/) is to develop mechanisms and best practices which improve the security of Web Applications.
 
 ## Scope
 
