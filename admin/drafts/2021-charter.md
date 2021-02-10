@@ -6,25 +6,25 @@ The **mission** of the [Web Application Security Working Group](http://www.w3.or
 
 ## Scope
 
-Modern web applications are composed of many parts and technologies, creating a complex tapestry of resource and data flows between origins. This complexity, as well as the historically coarse-grained nature of the security boundaries and principals defined for such applications, they can be very difficult to secure. At the same time, securing these applications is ever more critical, as the web becomes more and more critical to users' lives.
+Modern web applications are composed of many parts and technologies, creating a complex tapestry of resource and data flows between origins. This complexity, as well as the historically coarse-grained nature of the security boundaries and principals defined for such applications, makes web applications very difficult to secure. At the same time, securing these applications is ever more critical, as the web becomes more and more critical to users' lives.
 
 This group focuses on the client-side of the problem, designing mechanisms user agents can provide to web developers which mitigate the risk of common web attacks, and reduce the surface area that applications expose to attackers. Areas of scope for this working group include:
 
-## Vulnerability Mitigation
+### Vulnerability Mitigation
 
-Sufficiently complex applications involve handling input from untrusted sources in ways that can lead to unexpected code execution, data manipulation, or exfiltration. This WG will design mechanisms which reduce the scope, exploitability and impact of common vulnerabilities and vulnerability classes in web applications (e.g. cross-site scripting, clickjacking, and so on).
+Sufficiently complex applications involve handling input from untrusted sources in ways that can lead to unexpected code execution, data manipulation, or exfiltration. This WG will design mechanisms which reduce the scope, exploitability, and impact of common vulnerabilities and vulnerability classes in web applications (e.g. cross-site scripting, clickjacking, and so on).
 
 ### Attack Surface Reduction
 
 The WG will design mechanisms which prevent certain categories of threat by reducing the privilege of a given context. This effort will result in tools developers can opt-into which:
 
-* Allows applications to restrict or forbid potentially dangerous features which they do not intend to use
-* Governs information and content flows into and out of an application
-* Allows applications to isolate themselves from other origins
-* Reduces the privilege of potentially untrusted content and allow it to be interacted with more safely
-* Ensures that application content modification may be detected and prevented
-* Replaces or augment error-prone APIs in the browser with safer alternatives (e.g. sanitization, strict contextual autoescaping, validation and encoding requirements, and so on)
-* Enforce requirements on content which loads in a given context (e.g. transport security, embedder/embedee constraints, CORS, etc)
+* Allow applications to restrict or forbid potentially dangerous features which they do not intend to use
+* Govern information and content flows into and out of an application
+* Allow applications to isolate themselves from other origins
+* Reduce the privilege of potentially untrusted content and allow it to be interacted with more safely
+* Ensure that application content modification may be detected and prevented
+* Replace or augment error-prone APIs in the browser with safer alternatives (e.g. sanitization, strict contextual autoescaping, validation and encoding requirements, and so on)
+* Enforce requirements on content which loads in a given context (e.g. transport security, embedder/embedee constraints, CORS, etc.)
 
 To the extent possible, these restrictions may also be imposed by default to uniformly reduce risk at scale, or may be positioned as prerequisites to some capability or set of capabilities applications may wish to exercise.
 
@@ -45,7 +45,7 @@ In addition to developing Recommendation Track documents in support of these goa
 
 To advance to Proposed Recommendation, each specification is expected to have two independent implementations of each feature described in the specification.
 
-Each specification should contain a section detailing all known security and privacy implications for implementers, Web authors, and end users.
+Each specification should contain a section detailing all known security and privacy implications for implementers, Web authors, and end users. [Will be replaced with template text]
 
 For specifications of technologies that directly impact user experience, each specification should contain a section on accessibility that describes the benefits and impacts, including ways specification features can be used to address them, and recommendations for maximising accessibility in implementations.
 
