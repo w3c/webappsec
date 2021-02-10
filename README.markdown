@@ -91,6 +91,16 @@ Web Application Security Working Group
       <td><a href="https://w3c.github.io/webappsec-clear-site-data/">webappsec-clear-site-data</a></td>
       <td><a href="http://w3.org/TR/clear-site-data/" class="fpwd">FPWD: /TR/clear-site-data/</a></td>
     </tr>
+        <tr>
+      <td>A Well-Known URL for Changing Passwords</td>
+      <td><a href="https://w3c.github.io/webappsec-change-password-url/">webappsec-change-password-url</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Detecting the reliability of HTTP status codes</td>
+      <td><a href="https://w3c.github.io/webappsec-change-password-url/response-code-reliability.html">webappsec-change-password-url</a></td>
+      <td></td>
+    </tr>
   </tbody>
     <tbody id="obsolete">
     <tr>
@@ -113,4 +123,5 @@ Web Application Security Working Group
       <td><a href="https://w3c.github.io/webappsec-epr/">webappsec-epr</a></td>
       <td><a href="http://w3.org/TR/epr/" class="fpwd">FPWD: /TR/epr/</a></td>
     </tr>
+  </tbody>
 </table>
