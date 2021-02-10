@@ -91,7 +91,24 @@ Web Application Security Working Group
       <td><a href="https://w3c.github.io/webappsec-clear-site-data/">webappsec-clear-site-data</a></td>
       <td><a href="http://w3.org/TR/clear-site-data/" class="fpwd">FPWD: /TR/clear-site-data/</a></td>
     </tr>
+        <tr>
+      <td>A Well-Known URL for Changing Passwords</td>
+      <td><a href="https://w3c.github.io/webappsec-change-password-url/">webappsec-change-password-url</a></td>
+      <td></td>
+    </tr>
     <tr>
+      <td>Detecting the reliability of HTTP status codes</td>
+      <td><a href="https://w3c.github.io/webappsec-change-password-url/response-code-reliability.html">webappsec-change-password-url</a></td>
+      <td></td>
+    </tr>
+  </tbody>
+    <tbody id="obsolete">
+    <tr>
+      <th>Obsolete or Abandoned</th>
+      <th>ED</th>
+      <th>TR</th>
+    </tr>
+      <tr>
       <td>Confinement with Origin Web Labels</td>
       <td><a href="https://w3c.github.io/webappsec-cowl/">webappsec-cowl</a></td>
       <td><a href="http://w3.org/TR/cowl/" class="fpwd">FPWD: /TR/cowl/</a></td>
@@ -105,16 +122,6 @@ Web Application Security Working Group
       <td>Entry Point Regulation</td>
       <td><a href="https://w3c.github.io/webappsec-epr/">webappsec-epr</a></td>
       <td><a href="http://w3.org/TR/epr/" class="fpwd">FPWD: /TR/epr/</a></td>
-    </tr>
-    <tr>
-      <td>A Well-Known URL for Changing Passwords</td>
-      <td><a href="https://w3c.github.io/webappsec-change-password-url/">webappsec-change-password-url</a></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>Detecting the reliability of HTTP status codes</td>
-      <td><a href="https://w3c.github.io/webappsec-change-password-url/response-code-reliability.html">webappsec-change-password-url</a></td>
-      <td></td>
     </tr>
   </tbody>
 </table>
