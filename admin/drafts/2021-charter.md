@@ -1,5 +1,9 @@
 # WebAppSec Charter 2021 DRAFT
 
+## DO NOT EDIT
+
+Instead make changes in the [HTML version](https://github.com/w3c/webappsec/blob/main/admin/webappsec-charter-2021.html)
+
 ## Mission
 
 The **mission** of the [Web Application Security Working Group](http://www.w3.org/2011/webappsec/) is to develop mechanisms and best practices which improve the security of Web Applications.
