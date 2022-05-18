@@ -2,9 +2,9 @@ Web Application Security Working Group
 ======================================
 
 * Mailing list archive: <http://lists.w3.org/Archives/Public/public-webappsec/>
-* Website: <http://www.w3.org/2011/webappsec/>
+* Website: [http://www.w3.org/2011/webappsec/](https://www.w3.org/groups/wg/webappsec/)
 * Tracker: <http://www.w3.org/2011/webappsec/track/>
-* Bugzilla: <http://www.w3.org/Bugs/Public/describecomponents.cgi?product=WebAppsSec>
+* Bugzilla (deprecated in 2019): <http://www.w3.org/Bugs/Public/describecomponents.cgi?product=WebAppsSec>
 
 ## Table of Specifications
 
