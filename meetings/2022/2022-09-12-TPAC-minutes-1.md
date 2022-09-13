@@ -29,6 +29,7 @@
 * Ben Kelly, Google
 * Bartosz Niemczura, Meta
 * Wendy Seltzer (W3C)
+* Sean Tuner, sn3rd (observer)
 * .. and lots of others
 
 ## Agenda
