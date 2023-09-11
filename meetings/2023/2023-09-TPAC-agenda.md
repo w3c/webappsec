@@ -14,46 +14,34 @@ Agenda
 | Time | Topic | PoC |
 |------|-------|-----|
 | 14:30 | Introductions, agenda bashing. | Mike West & Dan Veditz |
-| 14:45 | 
-| 15:30 |
-| 16:00 |
-| 16:30 | ☕ Break 🍪 | |
-| 17:00 | 
-| 17:30 |
-| 18:00 |
+| 15:00 | ["Unique" Origins](https://github.com/whatwg/html/issues/9623) | Jun Kokatsu |
+| 15:30 | [Private Network Access](https://github.com/wicg/private-network-access/) updates | Camille Lamy, Yifan Lu, Jonathan Hao |
+| 16:00 | Post-third-party storage model ([cross-site cookie semantics](https://github.com/DCtheTall/standardizing-cross-site-cookie-semantics/)) | Johann Hofmann, Dylan Cutler, Artur Janc |
+| 16:30 | ☕ Break 🍪 | * |
+| 17:00 | Deprecations and new defaults (including [`document.domain` updates](https://chromestatus.com/feature/5428079583297536), [injection mitigation requirements](https://github.com/mikewest/securer-contexts), etc) | Camille Lamy
+| 17:40 | [Request OTR](https://datatracker.ietf.org/doc/draft-sahib-httpbis-off-the-record/) | Shivan Kaul Sahib |
+| 18:00 | Web Crypto | |
+| (~10m) | Secure curves draft publication, more modern algorithms | Daniel Huigens |
+| (~20m) | End-to-end Encryption | Marcos Cáceres |
 
 ### [Friday, September 15th (14:30 - 18:00)](https://www.timeanddate.com/worldclock/fixedtime.html?iso=20230915T1230)
 
 | Time | Topic | PoC |
 |------|-------|-----|
 | 14:30 | (Re)Introductions, (More) agenda bashing. | Mike West & Dan Veditz |
-| 14:45 | 
-| 15:30 |
-| 16:00 |
-| 16:30 | ☕ Break 🍪 | |
-| 17:00 | 
-| 17:30 |
-| 18:00 |
-
-
-OWP	
-COI	
-credentialless iframes - policy for default	
-COOP: RP	
-Sanitizer API?	
-Update on PNA	
-SecureContext=Injection	document.domain lessons learned
-	
-Permissions	
-When do permission prompts make sense?	
-
-### Draft Agenda
-
-* [Andy Paicu](https://github.com/andypaicu) will present a [Page Embedded Permission Control](https://github.com/andypaicu/PEPC/blob/main/explainer.md) (following on from [conversations](https://www.w3.org/Privacy/permissions-ws-2022/report#novel-building-blocks-for-capability-control) in the ~recent Permissions Workshop)
-
-* TPAC is coming (next month!): we'll continue to [sketch an agenda](https://github.com/w3c/webappsec/issues/627).
-
-If you would like to add an item to the agenda, please open a PR against [this document](https://github.com/w3c/webappsec/new/main/meetings/2023/2023-08-16-agenda.md)
+| 14:45 | [Source Code Transparency](https://github.com/w3c/webappsec/issues/627#issuecomment-1673637611) proposal, E2EE continued | Daniel Huigens, Marcos Cáceres |
+| 15:15 | **Cross-Origin Isolation** | |
+| | Current status, deployment challenges. | |
+| | [COOP: Restrict Properties](https://github.com/hemeryar/coi-with-popups) | |
+| | `<iframe credentialless>` defaults? | |
+| 16:30 | ☕ Break 🍪 | * |
+| 17:00 | **Permissions** ||
+| (~30m) | [Page Embedded Permission Control](https://github.com/andypaicu/PEPC/blob/main/explainer.md) proposal | Andy Paicu, Balazs Engedy |
+| (~10m) | Permission API: `.query()`'s behavior, w3c/permissions#414 | Jan-Ivar Bruaroey, Balazs Engedy |
+| (~10m) | [Permissions Registry](https://w3c.github.io/permissions-registry/) | Marcos Cáceres, Mike Taylor |
+| (~10m) | Permissions Policy improvements | Jun Kokatsu |
+| (~15m) | Future work: best practices, purpose/context | Mike West |
+| 18:15 | Rechartering. Wrap up. Next steps. | * |
 
 ### Logistics
 
