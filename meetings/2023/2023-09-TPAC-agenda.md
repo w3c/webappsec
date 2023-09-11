@@ -15,7 +15,7 @@ Agenda
 |------|-------|-----|
 | 14:30 | Introductions, agenda bashing. | Mike West & Dan Veditz |
 | 15:00 | ["Unique" Origins](https://github.com/whatwg/html/issues/9623) | Jun Kokatsu |
-| 15:30 | [Private Network Access](https://github.com/wicg/private-network-access/) updates | Camille Lamy, Yifan Lu, Jonathan Hao |
+| 15:30 | [Private Network Access](https://github.com/wicg/private-network-access/) updates | Camille Lamy, Yifan Luo, Jonathan Hao |
 | 16:00 | Post-third-party storage model ([cross-site cookie semantics](https://github.com/DCtheTall/standardizing-cross-site-cookie-semantics/)) | Johann Hofmann, Dylan Cutler, Artur Janc |
 | 16:30 | ☕ Break 🍪 | * |
 | 17:00 | Deprecations and new defaults (including [`document.domain` updates](https://chromestatus.com/feature/5428079583297536), [injection mitigation requirements](https://github.com/mikewest/securer-contexts), etc) | Camille Lamy
