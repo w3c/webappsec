@@ -14,10 +14,10 @@ Agenda
 | Time | Topic | PoC |
 |------|-------|-----|
 | 14:30 | Introductions, agenda bashing. | Mike West & Dan Veditz |
-| 15:00 | ["Unique" Origins](https://github.com/whatwg/html/issues/9623) | Jun Kokatsu |
-| 15:25 | 5m break | * |
-| 15:30 | [Private Network Access](https://github.com/wicg/private-network-access/) updates | Camille Lamy, Yifan Luo, Jonathan Hao |
-| 16:00 | Post-third-party storage model ([cross-site cookie semantics](https://github.com/DCtheTall/standardizing-cross-site-cookie-semantics/)) | Johann Hofmann, Dylan Cutler, Artur Janc |
+| 14:45 | ["Unique" Origins](https://github.com/whatwg/html/issues/9623) | Jun Kokatsu |
+| 15:15 | [Private Network Access](https://github.com/wicg/private-network-access/) updates | Camille Lamy, Yifan Luo, Jonathan Hao |
+| 15:45 | 5m break | * |
+| 15:50 | Post-third-party storage model ([cross-site cookie semantics](https://github.com/DCtheTall/standardizing-cross-site-cookie-semantics/)) | Johann Hofmann, Dylan Cutler, Artur Janc |
 | 16:30 | ☕ 30m break 🍪 | * |
 | 17:00 | Deprecations and new defaults (including [`document.domain` updates](https://chromestatus.com/feature/5428079583297536), [injection mitigation requirements](https://github.com/mikewest/securer-contexts), etc) | Camille Lamy
 | 17:35 | 5m break | * |
@@ -33,18 +33,18 @@ Agenda
 | 14:30 | (Re)Introductions, (More) agenda bashing. | Mike West & Dan Veditz |
 | 14:45 | [Source Code Transparency](https://github.com/w3c/webappsec/issues/627#issuecomment-1673637611) proposal, E2EE continued | Daniel Huigens, Marcos Cáceres |
 | 15:15 | **Cross-Origin Isolation** | |
-| | Current status, deployment challenges. | |
-| | [COOP: Restrict Properties](https://github.com/hemeryar/coi-with-popups) | |
-| | `<iframe credentialless>` defaults? | |
-| | ^ 5m break somewhere in there ^ | |
+| (~15m) | Current status, deployment challenges. | |
+| ~15:30 | 5m break | |
+| (~30m) | [COOP: Restrict Properties](https://github.com/hemeryar/coi-with-popups) | |
+| (~20m) | `<iframe credentialless>`, defaults? | |
 | 16:30 | ☕ Break 🍪 | * |
 | 17:00 | **Permissions** ||
 | (~30m) | [Page Embedded Permission Control](https://github.com/andypaicu/PEPC/blob/main/explainer.md) proposal | Andy Paicu, Balazs Engedy |
+| ~17:30 | 5m break | |
 | (~10m) | Permission API: `.query()`'s behavior, w3c/permissions#414 | Jan-Ivar Bruaroey, Balazs Engedy |
 | (~10m) | [Permissions Registry](https://w3c.github.io/permissions-registry/) | Marcos Cáceres, Mike Taylor |
 | (~10m) | Permissions Policy improvements | Jun Kokatsu |
 | (~15m) | Future work: best practices, purpose/context | Mike West |
-| | ^ 5m break somewhere in there ^ | |
 | 18:15 | Rechartering. Wrap up. Next steps. | * |
 
 ### Logistics
