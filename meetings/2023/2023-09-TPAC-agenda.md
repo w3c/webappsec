@@ -15,10 +15,12 @@ Agenda
 |------|-------|-----|
 | 14:30 | Introductions, agenda bashing. | Mike West & Dan Veditz |
 | 15:00 | ["Unique" Origins](https://github.com/whatwg/html/issues/9623) | Jun Kokatsu |
+| 15:25 | 5m break | * |
 | 15:30 | [Private Network Access](https://github.com/wicg/private-network-access/) updates | Camille Lamy, Yifan Luo, Jonathan Hao |
 | 16:00 | Post-third-party storage model ([cross-site cookie semantics](https://github.com/DCtheTall/standardizing-cross-site-cookie-semantics/)) | Johann Hofmann, Dylan Cutler, Artur Janc |
-| 16:30 | ☕ Break 🍪 | * |
+| 16:30 | ☕ 30m break 🍪 | * |
 | 17:00 | Deprecations and new defaults (including [`document.domain` updates](https://chromestatus.com/feature/5428079583297536), [injection mitigation requirements](https://github.com/mikewest/securer-contexts), etc) | Camille Lamy
+| 17:35 | 5m break | * |
 | 17:40 | [Request OTR](https://datatracker.ietf.org/doc/draft-sahib-httpbis-off-the-record/) | Shivan Kaul Sahib |
 | 18:00 | Web Crypto | |
 | (~10m) | Secure curves draft publication, more modern algorithms | Daniel Huigens |
@@ -34,6 +36,7 @@ Agenda
 | | Current status, deployment challenges. | |
 | | [COOP: Restrict Properties](https://github.com/hemeryar/coi-with-popups) | |
 | | `<iframe credentialless>` defaults? | |
+| | ^ 5m break somewhere in there ^ | |
 | 16:30 | ☕ Break 🍪 | * |
 | 17:00 | **Permissions** ||
 | (~30m) | [Page Embedded Permission Control](https://github.com/andypaicu/PEPC/blob/main/explainer.md) proposal | Andy Paicu, Balazs Engedy |
@@ -41,6 +44,7 @@ Agenda
 | (~10m) | [Permissions Registry](https://w3c.github.io/permissions-registry/) | Marcos Cáceres, Mike Taylor |
 | (~10m) | Permissions Policy improvements | Jun Kokatsu |
 | (~15m) | Future work: best practices, purpose/context | Mike West |
+| | ^ 5m break somewhere in there ^ | |
 | 18:15 | Rechartering. Wrap up. Next steps. | * |
 
 ### Logistics
