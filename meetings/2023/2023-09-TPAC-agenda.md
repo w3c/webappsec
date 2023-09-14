@@ -14,7 +14,8 @@ Agenda
 | Time | Topic | PoC |
 |------|-------|-----|
 | 14:30 | Introductions, agenda bashing. | Mike West & Dan Veditz |
-| 14:45 | ["Unique" Origins](https://github.com/whatwg/html/issues/9623) | Jun Kokatsu |
+| 14:45 | Secure the Web Forward + TAG | Daniel Appelquist |
+| 15:00 | ["Unique" Origins](https://github.com/whatwg/html/issues/9623) | Jun Kokatsu |
 | 15:15 | [Private Network Access](https://github.com/wicg/private-network-access/) updates | Camille Lamy, Yifan Luo, Jonathan Hao |
 | 15:45 | 5m break | * |
 | 15:50 | Post-third-party storage model ([cross-site cookie semantics](https://github.com/DCtheTall/standardizing-cross-site-cookie-semantics/)) | Johann Hofmann, Dylan Cutler, Artur Janc |
@@ -27,6 +28,8 @@ Agenda
 | (~20m) | End-to-end Encryption | Marcos Cáceres |
 
 ### [Friday, September 15th (14:30 - 18:00)](https://www.timeanddate.com/worldclock/fixedtime.html?iso=20230915T1230)
+
+_Note: We might swap cross-origin isolation and source code transparency._
 
 | Time | Topic | PoC |
 |------|-------|-----|
