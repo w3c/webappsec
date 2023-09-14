@@ -524,8 +524,58 @@ Mike: Streaming should be less controversial. There are some things to work out.
 
 #### End-to-End Encryption
 
+[link to slides goes here](#TODO)
+
 Marcos: This is very high level. Ideas of how we could do end to end encrypted email. Goals and requirements. Everyone loves email. It just happens that on the web we can't do the encrypted part. 
 
-...: Goal and Requirements. We need remote key acquisition to get certificates from somewhere. There's key storage
+...: Goal and Requirements. We need remote key acquisition to get certificates from somewhere. There's key storage. There's the cryptographic operations to read, sign, so-on. Then the complex part of encoding and decoding messages. Email being ancient, the various formats are complicated.
 
-[TODO: The rest.]
+...: Remote Key Acquisition. We need a means to request key usage from JS. Never want to expose key content to the web. We have primitives to do this already, as part of Web Crypto (non-exportable CryptoKeys). We will need to get consent to use these keys, they could have legal implications. We have cross-device sync - how do we achieve this?
+
+...: Secure Key Storage. We don't have a secure way to store keys. We need some means for users to control usage of keys - per-origin. A concept of lifetimes as well. In many ways this looks like a "managed credential". If we could store these things, there might be other applications beyond email. For us at least, is email for now. But if we can solve for email it might be possible to do other things.
+
+...: Crypto Operations. Signing, digest, encrpyt, decrypt and authentication for encrypted parts of email.
+
+...: Encoding/Decoding problem. All of the legacy code brings a challenge. Should the OS or browser roll our own? This should work with OpenPGP too. Maybe WebCrypto is sufficient here. We may need a new API, we're not sure. 
+
+...: Let's standardize something? It would be fun. Questions?
+
+Mike: What is the threat model? What does e2ee mean in this context? One meaning would include things like the email is encrypted, when it's sent from someone to me it's encrypted entirely. Me to Apple's server is encrypted, and not stored on the client in a way that's extractable.
+
+Marcos: We don't want the server to be able to read/see it.
+
+Mike: I write text, it's encrypted locally, send to you, decrypted locally.
+
+Dan: I will note that ProtonMail does this. What are they doing?
+
+Marcos: OpenPGP.
+
+Daniel: We use OpenPGP (I work on ProtonMail). We maintain an openpgp.js library that uses Web Crypto when possible. Doesn't have all the algorithms that Open PGP has, but use when possible. keys are generated in the client but accessible to the web application. They are stored/encrypted with a key derived from users password on our servers. This is slightly different from what Marcos is trying to achieve, where webapp doesn't have access to key at all. Devil's advocate: if you have the emails, you have the emails. If webapp is trusted today, but compromised tomorrow there might be some advantage. More generally one thing that's missing from the security model of the web is how to trust JavaScript.
+
+Dan: Thank you.
+
+Mike: I'd also point to Emily Stark's https://emilymstark.com/2023/09/09/e2ee-on-the-web-isolating-plaintext.html. Talking about challenges, suggesting that another portion that is critical is the application itself. Having some understanding of what an application can do. It's not clear to me how non-extractability of keys is. Given that you don't need to extract to get email messages. Also Camille spoke about increasing the risk of XSS. In cases where you want to make guarantees to users, you want to make techincal boundaries. Where you want to make sure email isn't being exfiltrated... I don't know, some kind of packaging. Figuring out what code should be executing and shouldn't is important.
+
+Marcos: Part of the challenge is understanding the limitations in the platform and figure out if we can get there with the assurances we want.
+
+Bartosz: I wonder about going a step further, putting some guarantees around client with respect of extensions. If an extension can access the key, they'd easily compromise e2ee application. I wonder if that should be more scrutinized and we should be putting more restrictions what they could do. 
+
+Mike: I suspect news sites would be interested in encrypted news. Dealing with extensions is hard. Goes outside the set of threats that this group is well-equipped to solve.
+
+Daniel: One small point, I think it might be difficult in the email context like you have features where you have plaintext in a reply as a quote. So the webapp needs to be very integrated - it needs to have lots of access. Making sure we can trust the code.
+
+Nick: It's interesting to explore. What are the gaps that are preventing a web app using WebCrypto from implementing MLS, in order to engage in e2ee interoperable instant messaging (like with WhatsApp or iMessage). should that be an area to explore? 
+
+Marcos: It would be cool to explore in parallel, I don't think anyone would be opposed to that.
+
+*Daniel: ack, I would also be interested in hearing if there are algorithms missing in WebCrypto that are needed to facilitate MLS as well*
+
+Reilly: Point at https://blog.cloudflare.com/cloudflare-verifies-code-whatsapp-web-serves-users/. Extensions can be both friend or foe.
+
+Erik: the extension risks make the non-exportability more important. Would be valuable if the site was exploited. Might not have to reset your key to get back into a good (better?) state.
+
+Marcos: We do have a more low-level proposal with API proposals.
+
+Mike: There is interest. Would suggest when you have a draft, this group would be a great place to present it.
+
+Marcos: I'm happy to share the draft that we have, come speak to me and if there's enough interest we will publish it in the WebKit explainer space.
