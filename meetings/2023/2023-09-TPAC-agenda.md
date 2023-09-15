@@ -29,14 +29,12 @@ Agenda
 
 ### [Friday, September 15th (14:30 - 18:00)](https://www.timeanddate.com/worldclock/fixedtime.html?iso=20230915T1230)
 
-_Note: We might swap cross-origin isolation and source code transparency._
-
 | Time | Topic | PoC |
 |------|-------|-----|
 | 14:30 | (Re)Introductions, (More) agenda bashing. | Mike West & Dan Veditz |
-| 14:45 | [Source Code Transparency](https://github.com/w3c/webappsec/issues/627#issuecomment-1673637611) proposal, E2EE continued | Daniel Huigens, Marcos Cáceres |
-| 15:15 | **Cross-Origin Isolation** | |
-| (~15m) | Current status, deployment challenges. | |
+| 14:40 | [Source Code Transparency](https://github.com/w3c/webappsec/issues/627#issuecomment-1673637611) proposal | Daniel Huigens |
+| 15:10 | **Cross-Origin Isolation** | |
+| (~20m) | Current status, deployment challenges. | |
 | ~15:30 | 5m break | |
 | (~30m) | [COOP: Restrict Properties](https://github.com/hemeryar/coi-with-popups) | |
 | (~20m) | `<iframe credentialless>`, defaults? | |
