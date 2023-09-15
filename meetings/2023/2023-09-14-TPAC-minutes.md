@@ -1,6 +1,6 @@
 ## Web Application Security WG
 
-TPAC, Day 1: [Wednesday, September 14th: 12:30 UTC](https://www.timeanddate.com/worldclock/fixedtime.html?iso=20230914T1230)
+TPAC, Day 1: [Thursday, September 14th: 12:30 UTC](https://www.timeanddate.com/worldclock/fixedtime.html?iso=20230914T1230)
 
 ### Attendees  
 
