@@ -86,7 +86,7 @@ Tim: Absolutely. It's a JSON response with 2 members, enroll, manage. That's it.
 
 #### "Unique" Origins: [Explainer](https://github.com/shhnjk/allow-unique-origin)
 
-Jun: `allow-unique-origin` [link to slides goes here](#TODO(jun)). A proposal for `<iframe>` and `CSP: sandbox`. Creates a new scheme with form `sandbox:["{UUID}", "precursor_origin"]`. Helps distinguish the frame in `postMessage()` or CORS (as today these serialize to `null`). Also allows storage for APIs that are usually blocked in opaque origins. Data is temporary since the unique origin is temporary (tied to the UUID).
+Jun: `allow-unique-origin` [slide](https://docs.google.com/presentation/d/1VyCpjxyRa_XsJPVUXVVLUunHhVGZ_njDgC4ZJkbw8xU/edit?usp=sharing). A proposal for `<iframe>` and `CSP: sandbox`. Creates a new scheme with form `sandbox:["{UUID}", "precursor_origin"]`. Helps distinguish the frame in `postMessage()` or CORS (as today these serialize to `null`). Also allows storage for APIs that are usually blocked in opaque origins. Data is temporary since the unique origin is temporary (tied to the UUID).
 
 ...: Serving `content-security-policy: sandbox allow-unique-origin allow-scripts` would opt the document into this mode.
 
