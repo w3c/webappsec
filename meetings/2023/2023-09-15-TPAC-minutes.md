@@ -424,7 +424,7 @@ Jun: Browser default. Yes, each API goes to `'self'` by default. Would do it API
 
 Mike: Where should we talk about this?
 
-Jun: Issue in Permission Policy repo [link goes here](#TODO)
+Jun: Issue in Permission Policy repo [https://github.com/w3c/webappsec-permissions-policy/issues/532](https://github.com/w3c/webappsec-permissions-policy/issues/532)
 
 ##### Reporting
 
