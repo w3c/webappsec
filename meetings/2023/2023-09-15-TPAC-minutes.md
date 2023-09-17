@@ -398,7 +398,7 @@ Next steps: [update the doc](https://github.com/w3c/permissions-registry/issues/
 
 ##### Permissions Policy
 
-[link to slides goes here](#TODO)
+[Slide](https://docs.google.com/presentation/d/1r-IoO4zATUt4X2KyND16EoDiho5q56KdjqqfR5U7XaY/edit?usp=sharing&resourcekey=0-ybts583CqEUxeJsUUXYpmA)
 
 Jun: Strict CSP. Yay. But, permissions policy defaults to `*`. `<iframe allow="camera">` delegated by default. We think this is a problem, rolled out strict CSP but still have this gap.
 
