@@ -28,7 +28,8 @@ _WIP, still some flexibility based on feedback and availability._
         * [CSP Next](https://github.com/WICG/csp-next)?
     * (~15m) Could we [require injection mitigation](https://mikewest.github.io/injection-mitigated/) for interesting APIs? (@mikewest)
     * (~10m) What's left before putting CSP into "living CR" mode?
-* **12:00 - 12:30**: **Breakout pitch session**. There are a number of breakout sessions ([grid](https://www.w3.org/2024/09/TPAC/breakouts.html#grid), [details](https://www.w3.org/2024/09/TPAC/breakouts.html#intro)) on 25.09.2024 that are relevant to this community. Let's talk about them a bit so folks can plan accordingly.
+* **12:00 - 12:10**: https://github.com/w3c/webappsec-permissions-policy/issues/273 (@sanketj)
+* **12:10 - 12:30**: **Breakout pitch session**. There are a number of breakout sessions ([grid](https://www.w3.org/2024/09/TPAC/breakouts.html#grid), [details](https://www.w3.org/2024/09/TPAC/breakouts.html#intro)) on 25.09.2024 that are relevant to this community. Let's talk about them a bit so folks can plan accordingly.
 
 [26.09.2024, 9:00 - 12:30](https://www.w3.org/events/meetings/5b918f03-a2a6-4b13-9391-252f61bcc09c/): [4 Concourse Level - Laguna](https://www.w3.org/2024/09/TPAC/schedule.html#map)
 ----------------------------------------------------
