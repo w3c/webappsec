@@ -13,7 +13,6 @@ _WIP, still some flexibility based on feedback and availability._
     * Curve 25591
     * Streaming
     * Feature Detection
-  * (~15m) [Remote cryptokeys](https://github.com/WebKit/explainers/tree/main/remote-cryptokeys) (@marcoscaceres, @estark37)
 * **9:45 - 10:30**: Application Integrity/Transparency (@ddworken)
   * (~25m) Extensions to SRI
     * Additional content types
@@ -38,6 +37,7 @@ _WIP, still some flexibility based on feedback and availability._
 * **9:30 - 10:30**: Following up on breakout sessions, and/or topics we didn't get to on Monday
   * [Deprecations](https://github.com/w3c/tpac2024-breakouts/issues/20), [PEPC](https://github.com/WICG/PEPC/blob/main/explainer.md), [DBSC](https://github.com/WICG/dbsc/) all seem like they might benefit from more conversation.
   * We can allocate time in this slot more clearly in the hallways on Wednesday.
+  * 10:00 - [Remote cryptokeys](https://github.com/WebKit/explainers/tree/main/remote-cryptokeys) (@marcoscaceres, @estark37)
 * **10:30 - 11:00**: ☕ & 🍰 @ [Lanai Deck, Fifth Floor](https://www.w3.org/2024/09/TPAC/schedule.html#map)
 * **11:00 - 11:45**: Isolation
   * (~30m) Cross-Origin Isolation
