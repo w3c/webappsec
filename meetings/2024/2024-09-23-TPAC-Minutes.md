@@ -118,7 +118,7 @@ Crypto
 Application Integrity
 ---------------------
 
-* David Dworken: Integrity for the Web [slides link TBD]
+* David Dworken: Integrity for the Web ([slides](https://github.com/w3c/webappsec/blob/main/meetings/2024/2024-09-23-TPAC-Integrity-for-the-Web.pdf))
     * Web vs. Native apps.
         * Native has a single bundle, signatures, potentially strong guarantees of integrity and transparency.
         * Web is more dynamic runtimes. No entire-app integrity, no transparency between users.
