@@ -255,7 +255,7 @@ CSP
     * legacy problem of browser support, this was hard in the past. Not an issue today.
     * Understanding CSP is hard. That's not hard to address. The tricky part is that the underlying application needs to change to become compatible with CSP/Trusted Types. You need to stop using unsafe patterns, that's the biggest blocker for CSP at scale across the internet.
     * Two ways to address:
-        * Subset of CSP that's easy to deploy at scale that gives some of the beenfits (URL hashes added to `script-src`, for instance: aaj@'s proposal that I'll look up later).
+        * Subset of CSP that's easy to deploy at scale that gives some of the beenfits (URL hashes added to `script-src`, for instance: https://github.com/w3c/webappsec-csp/issues/574).
         * Make sure developers don't need to understand CSP by building it into the framework. Did this internally at Google, allowed massive scale.
     * For new applications, this is a tractable problem.
 * Aaron Shim: Additional points. The real answer isn't one or the other, it's both. Unification betwen developers and security professionals. Need to change how folks think about development patterns. In-depth conversations in the SWAG-CG.
