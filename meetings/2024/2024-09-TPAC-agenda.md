@@ -49,7 +49,7 @@ _WIP, still some flexibility based on feedback and availability._
   * (~15m) [Realms Initialization Control](https://github.com/WICG/Realms-Initialization-Control) (@weizman)
 * **11:45 - 12:20**: Cookies
   * (~10m) `sandbox="allow-same-site-none-cookies"` (@aamuley)
-  * (~5m) NOTE for https://github.com/DCtheTall/webappsec-standardizing-security-semantics-of-cross-site-cookies/ (@dcthetall)
+  * (~5m) NOTE for [standardizing cross-site cookie semantics](https://dcthetall.github.io/webappsec-standardizing-security-semantics-of-cross-site-cookies/) (@dcthetall)
   * (~10m) [Cookie Layering](https://github.com/httpwg/http-extensions/issues/2084) / [RFC6265ter](https://johannhof.github.io/draft-annevk-johannhof-httpbis-cookies/draft-annevk-johannhof-httpbis-cookies.html) (@johannhof, @annevk)
   * (~10m) [CHIPS](https://github.com/privacycg/CHIPS) (@johnwilander, @dcthetall)
 * **12:20 - 12:30**: Next steps, followup.
