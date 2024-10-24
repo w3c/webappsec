@@ -45,6 +45,7 @@ Attendees
 * Maxime Guerreiro (Cloudflare)
 * Christian Liebel (Thinktecture)
 * Wendy Seltzer (Tucows)
+* Gal Weizman (ConsenSys)
 
 Agenda
 ------
