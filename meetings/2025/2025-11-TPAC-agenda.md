@@ -2,12 +2,14 @@
 
 ## Monday, November 10th
 
+Location: [5th floor, Room 501](https://www.w3.org/2025/11/TPAC/schedule.html#map)
+
 | Time (JST) | Topic |
 |-----------:|:------|
 |  9:00 -  9:15 | Showing up, saying hello, agenda bashing. |
-|  9:15 - 10:00 | **Integrity (Part I)**: signature-based checks, for [subresources](https://github.com/w3ctag/design-reviews/issues/1041#issuecomment-3467034633) and [inline](https://github.com/mikewest/inline-integrity/) scripts (@mikewest) | 
-| 10:00 - 10:15 | **`:visited` partitioning updates** (@aaj)
-| 10:15 - 10:30 | [**HTTP Link header on subresources**](https://docs.google.com/document/d/1OeqpA9JoCXrgIMpq-ujLuZF1tG9MNF5SA0zTuIFtZis/edit) (@hiroshige-g, @azaika) |
+|  9:15 -  9:30 | [**HTTP Link header on subresources**](https://docs.google.com/document/d/1OeqpA9JoCXrgIMpq-ujLuZF1tG9MNF5SA0zTuIFtZis/edit) (@hiroshige-g, @azaika)
+|  9:30 - 10:15 | **Integrity (Part I)**: signature-based checks, for [subresources](https://github.com/w3ctag/design-reviews/issues/1041#issuecomment-3467034633) and [inline](https://github.com/mikewest/inline-integrity/) scripts (@mikewest) | 
+| 10:15 - 10:30 | **`:visited` partitioning updates** (@aaj)
 | 10:30 - 11:00 | ☕🥐☕🍰☕ |
 | 11:00 - 11:30 | **MLS Protocol** (@Frosne) |
 | 11:30 - 12:00 | **Agentic Browsing** (@johannhof) |
@@ -23,6 +25,8 @@
 | 17:00 - 18:00 | [_Breakout sessions_](https://www.w3.org/2025/11/TPAC/breakouts.html) |
 
 ## Tuesday, November 11th
+
+Location: [4th floor, Room 403](https://www.w3.org/2025/11/TPAC/schedule.html#map)
 
 | Time (JST) | Topic |
 |-----------:|:------|
