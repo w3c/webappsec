@@ -14,10 +14,10 @@ Location: [5th floor, Room 501](https://www.w3.org/2025/11/TPAC/schedule.html#ma
 | 11:00 - 11:30 | [**MLS Protocol**](https://github.com/mozilla/explainers/blob/main/MessagingLayerSecurity.md) (@Frosne) |
 | 11:30 - 12:15 | **Agentic Browsing** (@johannhof) |
 | 12:15 - 12:30 | [**Threat Model for the Web**](https://github.com/w3c/threat-model-web/) (@simoneonofri) |
-| 12:30 - 13:45 | 🥗😋🍜 |
-| 13:45 - 14:00 | **Trusted Types** status (@aaj, et al) |
-| 14:00 - 14:30 | **Admin**: Path to CR, maintenance, guardrails (@simoneonofri, @mikewest) |
-| 14:30 - 15:00 | **Gathering feedback on W3C process** (@torgo) |
+| 12:30 - 14:00 | 🥗😋🍜 |
+| 14:00 - 14:15 | **Trusted Types** status (@aaj, et al) |
+| 14:15 - 14:37 | **Admin**: Path to CR, maintenance, guardrails (@simoneonofri, @mikewest) |
+| 14:37 - 15:00 | **Gathering feedback on W3C process** (@torgo) |
 | 15:00 - 15:30 | ☕🍰☕🥐☕ |
 | 15:30 - 16:15 | **Integrity (Part II)**: [Web Application Integrity, Consistency, and Transparency](https://docs.google.com/document/d/16-cvBkWYrKlZHXkWRFvKGEifdcMthUfv-LxIbg6bx2o/edit?usp=sharing) (@dennisjackson) |
 | 16:15 - 16:45 | **Injection/XSS (Part I)**: CSP and other primitives (@swijckmans) |
