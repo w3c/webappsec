@@ -7,16 +7,16 @@ Location: [5th floor, Room 501](https://www.w3.org/2025/11/TPAC/schedule.html#ma
 | Time (JST) | Topic |
 |-----------:|:------|
 |  9:00 -  9:15 | Showing up, saying hello, agenda bashing. |
-|  9:15 -  9:30 | [**HTTP Link header on subresources**](https://docs.google.com/document/d/1OeqpA9JoCXrgIMpq-ujLuZF1tG9MNF5SA0zTuIFtZis/edit) (@hiroshige-g, @azaika)
-|  9:30 - 10:15 | **Integrity (Part I)**: signature-based checks, for [subresources](https://github.com/w3ctag/design-reviews/issues/1041#issuecomment-3467034633) and [inline](https://github.com/mikewest/inline-integrity/) scripts (@mikewest) | 
+|  9:15 -  9:45 | [**HTTP Link header on subresources**](https://docs.google.com/document/d/1OeqpA9JoCXrgIMpq-ujLuZF1tG9MNF5SA0zTuIFtZis/edit) (@hiroshige-g, @azaika)
+|  9:45 - 10:15 | **Integrity (Part I)**: signature-based checks, for [subresources](https://github.com/w3ctag/design-reviews/issues/1041#issuecomment-3467034633) and [inline](https://github.com/mikewest/inline-integrity/) scripts (@mikewest) | 
 | 10:15 - 10:30 | **`:visited` partitioning updates** (@aaj)
 | 10:30 - 11:00 | ☕🥐☕🍰☕ |
 | 11:00 - 11:30 | [**MLS Protocol**](https://github.com/mozilla/explainers/blob/main/MessagingLayerSecurity.md) (@Frosne) |
-| 11:30 - 12:00 | **Agentic Browsing** (@johannhof) |
-| 12:00 - 12:15 | [**Threat Model for the Web**](https://github.com/w3c/threat-model-web/) (@simoneonofri) |
-| 12:15 - 12:30 | **Trusted Types** status (@aaj, et al) |
+| 11:30 - 12:15 | **Agentic Browsing** (@johannhof) |
+| 12:15 - 12:30 | [**Threat Model for the Web**](https://github.com/w3c/threat-model-web/) (@simoneonofri) |
 | 12:30 - 13:45 | 🥗😋🍜 |
-| 13:45 - 14:30 | **Admin**: Path to CR, maintenance, guardrails (@simoneonofri, @mikewest) |
+| 13:45 - 14:00 | **Trusted Types** status (@aaj, et al) |
+| 14:00 - 14:30 | **Admin**: Path to CR, maintenance, guardrails (@simoneonofri, @mikewest) |
 | 14:30 - 15:00 | **Gathering feedback on W3C process** (@torgo) |
 | 15:00 - 15:30 | ☕🍰☕🥐☕ |
 | 15:30 - 16:15 | **Integrity (Part II)**: [Web Application Integrity, Consistency, and Transparency](https://docs.google.com/document/d/16-cvBkWYrKlZHXkWRFvKGEifdcMthUfv-LxIbg6bx2o/edit?usp=sharing) (@dennisjackson) |
