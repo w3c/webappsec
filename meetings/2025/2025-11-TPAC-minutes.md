@@ -25,16 +25,19 @@
 * Dan Rubery, Google Chrome
 * Mike Taylor, Google Chrome
 * Kouhei Ueno, Google Chrome
+* Andrew Rayskiy, Google Chrome
+* Simon Hangl, Google Chrome
 *  Amir Sharif, W3C Invited Expert
 * Pascoe, Apple
 * John Wilander, Apple
 * Matthew FInkel, Apple WebKit
 * Dominic Farolino, Google Chrome
 * Benjamin VanderSloot, Mozilla
-* MIchael Kleber, Google Chrome
+* Mchael Kleber, Google Chrome
 * Joel Antoci, Shopify
 * Takashi Nakayama, Google Chrome
-* _Your name here!_
+* Ricky Mondello, Apple
+* Dan Appelquist, Samsung / AB (afternoon Session)
 
 Agenda: https://github.com/w3c/webappsec/blob/main/meetings/2025/2025-11-TPAC-agenda.md
 
@@ -356,18 +359,78 @@ Ben Kelly: Tension between specs being descriptive or perscriptive. We're not go
 
 ### Trusted Types status
 
+Artur: Status update on Trusted Types. Lots of work over the last year.
+
+...: Trusted Types are an XSS defense. Still the #1 common weakness Mitre identified in 2024, always up at the top. Cool new threats haven't taken over yet. TT is one way to address DOM-based XSS, which happens when developers use APIs that turn text into script.
+
+...: In a nutshell, TT prevents the use of regular strings in calls to these APIs, requiring instead "trusted" types. These trusted objects are created through special policies, giving you the ability to enforce the use of sanitizers or etc, significantly reducing the attack surface from all the APIs to just your policies.
+
+...: Shipped in Chrome a while ago, landed in stable Safari in September, enabled in Firefox Nightly. Data from Google: used by 40% of Google traffic, slightly over 700 services, enabled by default for all Google-internal web application frameworks.
+
+...: Implementation in WebKit and Gecko has positive effects on the spec and other implementations. Lots of spec cleanups, hundreds of added WPTs. Chrome cleaned up its TT code significantly. Firefox is waiting for Chrome bug fixes to evaluate breakage (targeting stable in Q1).
+
+...: Chrome will unship `fromLiteral`. Was an idea to allow literals in JavaScript become trusted without going through a policy. Would have allowed some interesting things, would like to bring it back in v2.
+
+...: Relevance for AI-assisted coding? Everything has to be about AI these days, and TT is an interesting feature giving applications broad assurance that it won't have specific vulnerabilities. Coding agents will write a lot of web application code, and it would be good to teach models how not to write dangerous scripts. Hard to guarantee that models won't write vulnerable code, and TT acting as a layer of defense seems like a useful thing to promote.
+
 
 ### Admin: [Path to CR](https://docs.google.com/presentation/d/1oZl2bQRilHIqutdXseKNYgngXhJqHci8XGf1xPSHMQY/edit?slide=id.g399047bc435_0_33#slide=id.g399047bc435_0_33), maintenance, guardrails.
+Mike: [...] There is an opportunity to move into the living model, rather than launch CSP-1, CSP-2, CSP-3; we can publish CSP as a living standard, so that we can have different standards for a living model.  We also moved two documents to FPWD. It is important to know the concrete steps. If we take the WHATWG as an example, they can send them for review, but maybe something simpler than HTML. Maybe we can discuss in general. If you want to be part of the group or be in a small group, let me know. If we have a stable doc, it is important to add, for example, new features (e.g., with SRI) in the correct way, and WHATWG has a good way to update these docs. Their working model is reasonable, and we're considering using it for SRI. The editor added a couple of templates for Issues and PRs. The repo is straightforward, with a reasonable bar to support features in line with the spec (e.g., WPT, agreement from browser vendors). This can be good for us, not only for SRI but also for other stable specs. Another example: for DBSC, we need a different bar, as the standard is new. Another case is CSP, regarding implementation and bug fixes. The docs we're moving to CR follow in these cases. Do we need to consider other docs? Which docs are still changing? Two questions: 1) Does this make sense? 2) How do we want to make it practically, e.g., maintenance mode or not maintenance mode?
+
+Simon: How do we agree on this?
+
+Mike: There are documents or features that we can use to figure out the features, others in which we have different implications, understanding the ecosystem at large. We don't know a priori e.g., can we have the documentation on MDN, it is not about the spec being done but being maintained.
+
+Dan: I think it makes a difference depending on the feature. If we reach CR at some point, this direction can be a known thing—trusted Types are still implemented in one browser. DBSC is very new and clearly in a different state.
+
+Mike: My suggestion is that each work item needs to be formalized, and then, just in case, we can make exceptions based on whether it is shippable. Stuff shipped or not. This can be a reasonable guideline. I am going to put a quick proposal for the document we're working on, as Freddy has already done, then ask for a CfC.
+
+Dan: If we take CSP, will this be an addition or experimental? We have different choices for a PR at different stages.
+
+Mike: For specs like CSP, it is reasonable to consider an addition to that spec, small enough to be a PR to progress quickly, or large enough that we need to iterate. In the latter case, we need to work in a separate document, even if it is a monkey patch. But working in a separate document. In which we don't have an ED, but autopublishing CRD, then moving to CRS. If there are larger additions, we should work separately, explaining clearly that this is not ready for CRD or CRS.
+
+Dan: We'll host those as part of the spec in the future, or go to WICG?
+
+Mike: It is good to go in WICG, so w/o rechartering. It seems easier to work with Incubation.
+
+Dan: In this case, we need a "finder" to understand what the incubation work is related to the WebAppSec WG?
+
+Mike: This is similar to the work of MLS, not in this group, but we're talking about it in this group. Another example is to change fetch metadata; maybe we can also create a registry. My feeling is that at the moment, this is not necessarily.
+
+DanA: First of all, this is enormously helpful. I'm taking my own notes, and we'll talk later. I am concerned about the autopublish CRD, as it implies that the WG has reached consensus on something in the CR state. Not about autopublishing, but more related to CRD.
+
+Mike: It is about working on it more and formalizing it in the PR that we have a vendor agreement. I agree that this CRD means something for the spec, similar to the WHATWG, and it is more similar to what the browser does.
 
 
-### Feedback on W3C process
+### Feedback on W3C Process
 
+Daniel: Thank you for having me. I was in the TAG, now co-chairing the AB (one of the three elected gov bodies in W3C), the AB is responsible for the process, and one of the AB's priorities for the next year is W3C Process Refactoring. My objective is to simplify the process and shape it according to how the groups are working. What are your frustrations? Good or bad points? I am here to say that we're working on this and to collect feedback and concerns about the W3C Process. How are you engaging with the W3C Process, and how do you see it?
+
+Mike: I'll say that I engage in the W3C Process as little as possible. The question is: the Process is good at providing a stable framework for working with a group from different organizations to work togheter. The group should perform technical work in a consistent manner with other organizations. I can be ok with different models, the question is what developers need to do to make the work done.
+
+Daniel: You said that the idea of adopting features and new ideas in the working group is bout chartered deliverables, so people are not suing each other and dealing with IPR, as these are the IPR commitments of the organizations. Some people commented that strict chartering is hindering innovation. Does this frustrate you, or don't you care? Would you like to see something different about how new features can be adopted in the WG? 
+
+Mike: It is fine for incubation. This is a good model: easier and faster to sketch out an idea. Some ideas stay in the incubation for a while, but this is good. My suspicion is that it is not a Process problem, but Group dynamics things. It could be good to motivate people to bring here specs related to the problem we're solving, "Security" (e.g., DBSC), I am not sure if there is some Process change that can be useful. Still, I would be interested in having a way to adopt ideas from the incubation. This will be helpful. I am not convinced that having deliverables in the charter is useful; the question is about the scope to be flexible.
+
+Simone: We used the approach of treating this as an attack we would like to protect, and we adopted it as part of our scope.
+
+Daniel: The work that is happening in the Process CG is delegated from the AB, and Brent is working on that. We welcome any input in the Process CG GitHub, or feel free to reach out to me directly. 
+
+
+### SWAG
+
+Daniel: SWAG. It's a group chartered to build guidelines for web developers, partially based on a notion that we're doing great work in W3C on security features, but there seems to be a gap with the developer community wherein folks aren't adopting. Maybe not aware, not documented, etc. Developers need information about how to use these features, and the places developers go to find information don't have enough (MDN). OWASP has a lot of information about a lot of things, somewhat overlapping with what we're talking about here. But no clear directives they can follow about how to implement CSP or TT or etc.
+
+...: SWAG group has been working on concise guide documents. [Guidelines for developing more security web applications](https://github.com/w3c-cg/swag/blob/main/docs/security_guidelines.md) as an example. Combines basic information about how to develop more secure code with things specific to web applications. Security practices on development (use 2FA, etc). Bringing it to y'all's attention; would be great to get your eyes on it. Help us make the recommendations betteer, help developers adopt the features developed here.
+
+...: Other work SWAG does: we review PRs to MDN that open web docs folks are doing. Breakout session later in the week: Tuesday at 8:30, "Security Guidelines for Web Developers".
+
+...: Working with other groups outside W3C. They'll help push out these guidelines using their channels, so we want them to be well-aligned with best practice from your perspective. Feedback welcome!
 
 ### Integrity: [Web Application Integrity, Consistency, and Transparency](https://docs.google.com/document/d/16-cvBkWYrKlZHXkWRFvKGEifdcMthUfv-LxIbg6bx2o/edit?usp=sharing)
 
 
 ### Injection: CSP and other primitives
-
 https://docs.google.com/presentation/d/1RxG-Y2lsa5slYMbP1ALMbHMg09D3z-QcmLvvJtqtSZw/edit?usp=sharing
 
 
