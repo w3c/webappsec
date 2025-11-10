@@ -429,10 +429,131 @@ Daniel: SWAG. It's a group chartered to build guidelines for web developers, par
 
 ### Integrity: [Web Application Integrity, Consistency, and Transparency](https://docs.google.com/document/d/16-cvBkWYrKlZHXkWRFvKGEifdcMthUfv-LxIbg6bx2o/edit?usp=sharing)
 
+[slides](https://docs.google.com/presentation/d/1YASubwzOVk4NUHzdiPT66mTQ7dx3ZoFCg_K65rmvG4U/edit)
+
+Dennis: WAICT. North star is E2EE applications. Not possible in the current threat model, as you trust the server to deliver code to you. App stores provide a slightly stronger set of properties, insofar as there can be a third-party audit of distributed code. Higher bar than the web today.
+
+...: Non-goals are a new packaging model (we want to be _webby_), or restricting what users or websites can do. Opt-in restrictions on servers, not clients. Extensions, etc, continue to work as they do today.
+
+...: Components: two separate aspects. The first takes all the active content on an origin, and boils it down to a manifest of cryptographic hashes. The second is that that manifest is publicly logged somewhere.
+
+...: Transparency is a weak guarantee. It doesn't _prevent_ a bad thing from happening, but it does make it possible for that bad thing to be detected.
+
+...: Integrity: this is built on top of the Subresource Integrity spec. `Integrity-Policy`. Work going on to develop the manifest file.
+
+...: Transparency: Delivering a proof to clients that some third-party has publicly logged this manifest, and that there's public agreement on the set of valid manifests. Consequences are outside the scope of this spec, but the spec can enable strong ecosystem effects. The spec for transparency work is taking shape. We gave a talk at transparency.dev a few weeks ago; the design's moving along, we're starting to prototype code. Boils down to checking a signature at the end of the day.
+
+...: Enforcement: We anticipate sites enrolling via a header or preload list (similar to HSTS). Failure to deliver integrity manifest/transparency proof on future visit will lead to errors. Ability to unenroll quickly via special signal delivered with transparency proof.
+
+...: Continuing to iterate. Mant folks from different orgs are involved and contributing. We're thinking about a home for things that sit outside the SRI spec work.
+
+Mike West: [asked a good question about overlap between inline scripts, xss, etc. and existing mechanisms like CSP and TT?]
+
+Martin Thomson: Hashes cover the HTML and the script that might write to the HTML. For XSS you care about the inline scripts, but here knowing the totality of the application is the most important thing. Different set of properties we're looking for here.
+
+Mike: `eval()` in particular seems like a challenge.
+
+Martin Thomson: Right. Larger class of problem. Load a JSON file, that file might activate things in interesting ways. This is something someone looking at the code would have to be able to determine.
+
 
 ### Injection: CSP and other primitives
-https://docs.google.com/presentation/d/1RxG-Y2lsa5slYMbP1ALMbHMg09D3z-QcmLvvJtqtSZw/edit?usp=sharing
+https://docs.google.com/presentation/d/1RxG-Y2lsa5sYMbP1ALMbHMg09D3z-QcmLvvJtqtSZw/edit?usp=sharing
 
+Simon: Talking about issues with CSP. Not dissing CSP, thanks for working on it! Big step forward!
+
+...: To recap: Client side attacks: cross-site scripting, magecart attacks, malicious data exfiltration, crypto mining, malicious iframe rendering, malicious redirects.
+
+...: Real world examples: fake user identity verification (age, etc), credit card theft, session token theft, crypto mining, PII exfiltration, overriding affiliate cookies.
+
+...: Types of attacks. Hijacking credential: more than one google tag manager on a website. Compromised source. Sources being hijacked. Polyfill.js as an example which harvested data and redirected users; solved by registrar. Expired domains being snapped up. CDNs sometimes mess up: can't just trust them. Ad networks. Server side vulnerabilities. User-generated content on trusted domains. Browser extensions/malicious browsers. These latter two are outside the server's responsibility.
+
+...: Client-side scripts often redirect, and are often dynamic (or at least negotiated based on browser).
+
+...: Anything legitimate can be used for illigitimate purposes. This is a dymanic problem. Any solution needs to be easy and quick to adjust. Needs to be flexible. Static lists of behaviors will not move quickly enough. Any positive blocking model may not be desirable due to dynamicness. Many scripts change every day, unmanagable to maintain as a blocking model.
+
+...: Official things that exist today: SRI => static resources, CSP => can work, can reduce scope of issue, JS.
+
+...: Who pushes for CSP adoption? Governance/Risk/Compliance teams. Security team. Never frontend developers, never marketing teams.
+
+...: CSP adoption is low. Not because no one knows about it, but because it's undesirable.
+
+...: Security teams are risk averse, and often don't touch code themselves. Need to beg for resource from other teams. Low maintenance capacity. Chasing compliance and internal existental risk projects. Security engineers that bring CSP into a business have a hard time.
+
+...: Any solution that blocks the business is destined for failure. Security teams therefore balance towards observability rather than blocking action.
+
+...: Pitchforks if you implement CSP.
+
+...: CSP management is very hard. You don't control the assets you're building rules for. Dynamic assets change, and shipping CSP is slow (2-5 days normally, a few hours for an emergency). Using a proxy can make faster changes, but the fundamental fact is that changing CSP is a code release that goes through a process.
+
+...: What do you put in CSP? Report-only is ugly. "Refuse to load ..." still loads!? Reports are outdated by the time I deploy.
+
+...: CSP is not consistently implemented across browsers. Spec is interpreted broadly.
+
+...: CSP shortcomings: w3c/webappsec-csp#736. Tough to maintain. Can't address compliance frameworks its included in (PCI DSS).
+
+...: Why was it built? Inline scripts.
+
+...: Unofficial workarounds: Remote browser execution with a video feed. Report-only CSP doesn't work, doesn't see payloads so it's hard to figure out what happened. JavaScript.
+
+...: JavaScript works, kinda. Hook into APIs, lock them down, rewrite things, list scripts, report them to an endpoint, hash payloads. We can do almost everything we want to do, but at a cost (which most website owners are willing to pay).
+
+...: We need a few small things with huge impact. First, we need to run first. Can't reliably do our job if we're not first. Frameworks do strange things, proxies do weird things, npm dependencies, etc. HTTP header here would be helpful.
+
+...: Browsers do useful things but don't expose them. Big example: hashing resources at fetch. Please pass on the SRI hash to be accessible to the JS on the page. Security headers on the page (to detect indicators of compromise). Original script source pre-redirect; seeing the initial URL is helpful to track down what was responsible for a malicious script.
+
+...: Not limiting CSP's roadmap. Layering is good, CSP is a good layer. Proposal to come. Looking for feedback.
+
+Artur: I like the way you've proposed simple primitives, that's easier to evaluate. For exposing hashes: historically, we've worried about exposing the hash of a cross-origin script (unless loaded via CORS) to prevent `evil.com` loading a script resource from `victim.com` and receiving its hash (and therefore content).
+
+Simon: This did come up with a concern. To go from a hash to a payload, you'd need the payload.
+
+Artur: Let's say the user's email is included in the content: based on known emails, you can brute force those potential entries if the rest of the script doesn't change. Infoleak.
+
+Simon: Fine to limit exposing the hash to only a highly-trusted script
+
+Artur: In this mode, the script would need to allow its hash to be exposed. Might not work for your purposes, as malicious scripts wouldn't opt-in.
+
+Camille: In Chromium, many security headers are only handled in the browser process, and we don't have any reason to send them to the renderer process. So exposing the headers might be something we need to look into.
+
+Simon: This is some of the fight we'll get into. Differentiating a non-security JavaScript from a security JavaScript is not in the spec at all. Would be ideal to give those scripts access without giving other scripts access.
+
+Camille: In this case, we're worried about memory safety issues wherein the attacker has code execution in the renderer process.
+
+dveditz: Reporting the script source before redirect. I thought this is exactly what we report. https://w3c.github.io/webappsec-csp/#security-violation-reports
+
+Simon: To my knowledge, this isn't universally supported by browsers. We're monitoring what shows up in the network tab.
+
+Mike West: Performance timing APIs. Report-only `script-src 'none'` should also work, can collect via events.
+
+Simon: Console logs are a blocker.
+
+Artur: We could block console logs, should be easy to implement.
+
+Mike West: For headers, would be good to specify which you care about.
+
+Artur: For the script-running-first suggestion, I like the idea. There's some concern about "action at a distance" wherein headers change the behavior that a framework expects. Potentially less a security concern than a behavior and correctness concern.
+
+Simon: I can see that. That's the feature, though, from our perspective. That said, it certainly affects the application development flow.
+
+dveditz: I'm not sure what the development model is, but if you're the page's author, why isn't it in your control to make sure your script is first?
+
+Simon: Lots of infrastructure. Cloudflare injects things, build pipelines make prod different than dev, etc.
+
+dveditz: Why not request a feature of those frameworks? Why is it CSP's problem and not the frameworks' problem?
+
+Simon: I can't fix all the frameworks. And this doesn't really touch CSP. Lots of vendors use JavaScript to address this problem, the only thing we're missing is the ability to run first.
+
+dveditz: If we add a header, people will add middleware to strip the header.
+
+Simon: Is it a problem that people are stripping CSP today?
+
+dveditz: Yes, folks are stripping security headers today.
+
+Simon: That seems like an argument against any header.
+
+dveditz: No, we shifted CSP to a header to get it out of band with the page into which we're worried about injection.
+
+Simon: There's one JavaScript environment. All the scripts can contaminate each other.
 
 
 ## Tuesday, 2025-11-11
