@@ -15,11 +15,11 @@
 * Chris Fredrickson, Google Chrome
 * Joe DeBlasio, Google Chrome (remote)
 * Carlos Ibarra Lopez, Google Chrome
-*Fabio Rocha, Microsoft
-*David Risney, Microsoft
-*Shunya Shishido, Google Chrome
-*Antonio Sartori, Google Chrome
-*Nidhi Jaju, Google Chrome
+* Fabio Rocha, Microsoft
+* David Risney, Microsoft
+* Shunya Shishido, Google Chrome
+* Antonio Sartori, Google Chrome
+* Nidhi Jaju, Google Chrome
 * Ari Chivukula, Google Chrome
 * Anna Weine, Mozilla
 * Dan Rubery, Google Chrome
@@ -27,17 +27,27 @@
 * Kouhei Ueno, Google Chrome
 * Andrew Rayskiy, Google Chrome
 * Simon Hangl, Google Chrome
-*  Amir Sharif, W3C Invited Expert
+* Amir Sharif, W3C Invited Expert
 * Pascoe, Apple
 * John Wilander, Apple
 * Matthew FInkel, Apple WebKit
 * Dominic Farolino, Google Chrome
 * Benjamin VanderSloot, Mozilla
-* Mchael Kleber, Google Chrome
+* Michael Kleber, Google Chrome
 * Joel Antoci, Shopify
 * Takashi Nakayama, Google Chrome
 * Ricky Mondello, Apple
 * Dan Appelquist, Samsung / AB (afternoon Session)
+* Eric Kinnear, Apple
+* Chris Thompson, Google Chrome (LNA session)
+* Philipp Pfeiffenberger (Google Chrome)
+* Bryan Ellis (Apache Software Foundation)
+* Erik Anderson, Microsoft Edge
+* Niklas Merz (Apache Software Foundation)
+* Alan Buxey (UNiDAYS)
+* Serena Chen (Google Chrome)
+* Shivani Sharma (Google Chrome)
+* Kevin Babbitt, Microsoft Edge
 
 Agenda: https://github.com/w3c/webappsec/blob/main/meetings/2025/2025-11-TPAC-agenda.md
 
@@ -560,11 +570,120 @@ Simon: There's one JavaScript environment. All the scripts can contaminate each 
 
 ### [**Local Network Access**](https://github.com/WICG/local-network-access) updates
 
+[Slides](https://docs.google.com/presentation/d/1zmp6fKPE16Xt-PQFTMIXeneLRZryrByUDGB3ZsYpUiI/edit?usp=sharing)
+
+Hubert: Local Network Access aims to prevent unexpected access to local networks. It's a permission-prompt-based mechanis, unlike an earlier approach that was based on preflights.
+
+...: Gates access from public websites to the local network, not local network to local network, or public to public.
+
+...: Tried to ship this in September, pushback from enterprise delayed things until October. Permission prompt. Our implementation does this work after connection establishment given implementation considerations. For Web Transport, however, it was easier to do things before socket connection. Still working on WebRTC and WebSockets. Hoping to get those restrictions out early next year. Haven't yet looked into doing LNA restrictions on local->loopback or from one local device to another.
+
+...: In the future: we have some bugs to fix; websocket, webtransport, webrtc implementation; Web platform tests to ensure consistency, deal with corner cases. Long term: HTTPS requirements on destination (reqires local network HTTPS to be easier); more developer control over when the prompt appears, as yet unclear how to do this; shifting the checks to before the connection. Happy Eyeballs makes this somewhat difficult.
+
+...: Discussing splitting the permission between local and loopback. Thinking about whether that's a good idea. Similarly local->loopback.
+
+...: Launch pain points: shipped ~3 weeks ago. We're answering bugs and requests associated with that. A few categories of concern: many websites losing conection to locally-installed apps; iframe's permission policy was unfamiliar to developers, lots of deployment concerns especially from enterprise; instances of split DNS where a resource might resolve privately or publicly depending on network conditions, exacerbated by cache state.
+
+Chris: Lots of supporting developers through this, explaining our concerns and consent requirements, along with fixing real bugs in our implementation.
+
+Erik: One motivation here was apps enabling pervasive cross-site tracking. What about the single-origin to single-app use case? Any way to avoid the permission prompt for that? On Windows specifically, OneDrive got bit by this and I'd like to find ways to reduce friction.
+
+Chris: There's appetite, but our previous attempts at thinking about how to do this safely while maintaining consent haven't panned out.
+
+Erik: What about this? If we're going to show a permission prompt, check a `.well-known` file on the device that would allow connections to a specific origin?
+
+Chris: We've seen folks being very upset that `dell.com` is connecting to their device in a way that's surprising to them. Default-installed service on their OEM machine.
+
+Erik: Are you trying to break that? Or if they installed the app is it ok for it to be poked at?
+
+Chris: Some kind of signal that a link was established, consent, etc. could be valuable. That said, the security concerns are bigger than the privacy concerns. There's a gradient of pervasive tracking over single-origin integration.
+
+dveditz: Localhost is relatively recent. Local network case is more CSRF against printers and routers.
+
+Chris: loopback has plenty of CSRF potential. DNS rebinding, etc.
+
+dveditz: Local -> Loopback. That's now in "maybe" plans. What about the coffee shop use case in which "local" isn't trusted?
+
+Chris: There's a lot of dependencies for us feeling like it's something we could ship. "What is getting the permission?" in the case of a local network resource. Not guaranteed to be uniquely identifiable, permission model is difficult.
+
+Joe: Not speaking for Chrome, but I can envision worlds in which we make significant changes in how we present the consent to users to be less scary, to provide more context, etc. but I struggle to envision a world in which a service gets a pass on user consent.
+
+dveditz: I also noticed the `dell.com` issues; no prompt for me because it wasn't enabled. It's a good example of a case in which it's legit for dell to do that, and helpful to users, but lots of users are surprised. Prompt gives users control. Raises UX issues, but legit to ask for consent. Meta example shows that.
+
+Eric (Apple): I also struggle with the idea of allowing a free pass. Transparency for users is important. Perhaps we can adjust the prompts to make the explanation easier, but if the user wants Dell to connect to diagnose something, then explain that and ask permission.
+
+Camille: When we talk to users about LNA, the thing that comes up is "Wait, the website can do that?!" Even for other folks here at TPAC, it's surprising. Important to be transparent. That said, Mike had a presentation yesterday about declarative permissions, and presenting prompts in a context in which the user is actively asking for that. Maybe we could find a way to have a declarative element network access. "Connect to another app on this machine", etc. That could contextualize the permission prompt.
+
+Erik (Microsoft): I buy the user expectation story, especially around pervasive tracking. Still wonder whether you could show a less-alarming permission prompt showing that the service wants to talk to one origin only.
+
+Hubert: I'm sure we can do better things with UX. It's a broad permission as implemented, and persistent. If we would split it up, scoping it to a particular origin, then we could have much more context in the prompt. It's challenging. Perhaps specific platforms could provide APIs that could make things simpler, but that causes other support problems.
+
+dveditz: This is why we support the two-permission model, convinced local is different from loopback.
+
+Chris: Interesting to see the different mental models. Some people thing local network is way more risky, I'm more concerned about loopback access given those apps' expectations. 
+
+Marian: One reason why the prompts are annoying: there's no context. Camille's suggestion is good. Encourage sites to create that context in a flow for the user, set up the permission moment, and it's easy to deal with the prompt. Trouble is the randomness of the prompt. Ideal to help the site build that context. Breakout on this kind of thing Wednesday at 16:15. Some research, crawls, discussion.
+
+Erik: Are you looking at allowing sites to constrain what they're asking for? OneDrive would rather not take the risk of enabling script that allowed other services on the network, not really a boolean model. Anything like that that you're considering?
+
+Hubert: Something we'd think about. We're drowning in bugs at the moment. OneDrive was ahead of this, got to us early. Lots of other folks were surprised.
+
+Eric: How do you address what you're talking to? Where we can describe a resource you're accessing, we could present a picker to the user. Doing that on loopback is slightly easier than the rest of the local network. Ways to do that for the duration of the user session. IP addresses can change, which makes scoping difficult. Limiting the duration makes that binding easier. It also might create more prompting, but it's interesting to explore how we'd refer to those particular scopes of what the user's requesting access to.
+
+
 
 ### Exfiltration: [Connection Allowlists](https://github.com/mikewest/anti-exfil)? CSP++?
 
+[Slides](https://github.com/w3c/webappsec/blob/main/meetings/2025/2025-11-11-exfiltration.pdf)
+
+Mike West: people have asked for help stopping exfiltration for a long long time. We should give them a tool focused on addressing that problem (as opposed to the tools we currently have that people try to use for this purpose).
+
+... CSP tries to do many things, gives control over resources that can be loaded and that looks like it will prevent exfil. But it doesn't do a good job. The model is too granular, the syntax is not granular enough, and the coverage is incomplete.
+
+... [shows an example CSP from Facebook] it looks complicated, but it's actually a reasonable policy. It mitigates XSS, but it doesn't stop exfiltration (and wasn't intended by them to do so). You could add a second policy that adds a `default-src` to stop connections to everything else. The syntax we came up with many years ago is very verbose, and doesn't match the structure/syntax of any other kind of web policy feature. Since a new syntax would require a new header, let's just focus on a new thing. [slide showing a `Connection-allowlist:` policy header] This policy only talks about connections using URLPattern syntax. Any and all kinds of connections will be limited by this. 
+
+... think of this a bit like CSP: we will parse this, put it into the "policy container", and it will travel along with other policies.
+
+... Why do this at all? Could we make CSP better instead?  How do we deal with redirects? (disallow is simple :-) but maybe not acceptable) We will need to deal with this.  What inheritance model makes sense? there are security problems letting a policy affect a cross-origin iframe, but maybe we can have an opt-in from the frame content. Maybe there are other options.  URLPattern's syntax seems to be the right thing, but maybe a subset. Compression dictionaries, for example, don't allow regexp but do allow some limited globbing.
+
+(Kevin Babbitt, Microsoft Edge): it's worth doing something like this, CSP is not the right shape to do this (it keeps things out, this proposal wants to keep things in).
+
+Artur: can you expand a little on your threat model? Can we assume the person trying to exfil has script execution in that context? Or can we rule that out.
+
+Mike: yes, we would want this mechanism to protect against an attacker with script access. There's a threat model in the proposal, and the link is in the slide deck. Doesn't try to deal with side-channels, just connections.
+
+Artur: I think this makes sense, but a lot of people who want exfil defenses don't really understand what they want or are asking for. Developers might think they are getting what they want, but they may not understand the cases that aren't covered by this proposal. 
+
+Mike: it's possible developers will expect more than this can provide, and we'd like feedback on that before trying to build it if it's possible.
+
+MattF: There's a lot of criticism of CSP in general, and I'm not sure adding a new header will address that. 
+
+Mike: the mechanism we currently have (CSP) tries to do too many things at once. Let's learn those lessons and build a tool developers want to use rather than sticking with what we've got. It has a clearer story. CSP is more confusing than it needs to be because of the backwards-compatibility requirements.  We were able to make a prototype for the Connection-Allowlist strawman much easier than I expected, seems worth exploring further.
+
+Camille: How does the proposal work with navigations? What about the omnibox?
+
+Mike: yes, it has to deal with navigations originated from the page, but the user manually entering something in the URL bar has to be an escape.
+
+BenVds: (??didn't catch??)
+
+Mike: if we do lock down redirects it will lead to that outcome. not sure it's fatal but we do need to consider it. 
+
+Artur: if we want a mechanism existing websites could enable instead of a bad CSP this seems like a good option. But I worry this model is flawed and unfixable in realistic cases. Is there a different anti-exfiltration primitive we could give a developer, such as a special iframe context that is locked down. Do we think this connection proposal has a shot of working, or should we keep looking for a different model?
+
+Shivani: one usecase we considered is an iframe rendering code that is not trusted to prevent injection, but is generally trusted. The frame can talk to the top level, but you want to lock down that frame for everything else so it can't do anything unexpected.
+
+Mike: this doesn't have to be adopted by a top-level document. You could limit it to constraining parts of your code by putting them in isolated frames. Then you can work on expanding its use to more of the site as you go.
+
+SimonW: Large companies with a large security may happily adopt this, but small companies that have adopted granular CSP through various frameworks will not be able to keep up with this. Their vendors may change domains too much to get around other types of blocking.
+
+Shivani: maybe a credentialless iframe with this kind of policy will make sense for isolation, and in other cases maybe normal iframes.
+
+
+
 
 ### `postMessage()`/[`Origin`](https://mikewest.github.io/origin-api/)
+
+[Slides](https://github.com/w3c/webappsec/blob/main/meetings/2025/2025-11-11-messaging-origins-etc.pdf)
 
 
 ### Injection: Followup discussion on CSP and next steps.
