@@ -35,7 +35,7 @@ Location: [4th floor, Room 403](https://www.w3.org/2025/11/TPAC/schedule.html#ma
 | 10:00 - 10:45 | **Exfiltration**: [Connection Allowlists](https://github.com/mikewest/anti-exfil)? CSP++? (@mikewest) |
 | 10:45 - 11:00 | `postMessage()`/[`Origin`](https://mikewest.github.io/origin-api/) (@mikewest) |
 | 11:00 - 11:30 | ☕🥐☕🍰☕ |
-| 11:30 - 12:15 | **Injection (Part II)**: More CSP++. |
+| 11:30 - 12:15 | **Injection (Part II)**: More CSP++. `script-src` hashes (@aaj) |
 | 12:15 - 12:30 | Declaring powerful capabilities (@antosart) |
 | 12:15 - 13:00 | _Leaving some slack for topics folks want to add._ |
 | 13:00 - 14:15 | 🥗😋🍜 |
