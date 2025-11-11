@@ -1,7 +1,5 @@
 # WebAppSec WG - TPAC 2025-11
 
-## Monday, 2025-11-10
-
 **Participants:**
 
 * Mike West, Google
@@ -48,8 +46,11 @@
 * Serena Chen (Google Chrome)
 * Shivani Sharma (Google Chrome)
 * Kevin Babbitt, Microsoft Edge
+* Yoshisato Yanagisawa, Google Chrome
 
 Agenda: https://github.com/w3c/webappsec/blob/main/meetings/2025/2025-11-TPAC-agenda.md
+
+## Monday, 2025-11-10
 
 ### [HTTP Link header on subresources](https://docs.google.com/document/d/1OeqpA9JoCXrgIMpq-ujLuZF1tG9MNF5SA0zTuIFtZis/edit)
 
@@ -676,26 +677,226 @@ Mike: this doesn't have to be adopted by a top-level document. You could limit i
 
 SimonW: Large companies with a large security may happily adopt this, but small companies that have adopted granular CSP through various frameworks will not be able to keep up with this. Their vendors may change domains too much to get around other types of blocking.
 
+SimonW: There is need for management ability outside of a hard-coded header. As significant portion of the internet leans on solution providers to help manage this through a proxy but if a proxy is needed to adopt thsi feature I believe we need to adjust the spec.
+
 Shivani: maybe a credentialless iframe with this kind of policy will make sense for isolation, and in other cases maybe normal iframes.
-
-
-
-
-### `postMessage()`/[`Origin`](https://mikewest.github.io/origin-api/)
-
-[Slides](https://github.com/w3c/webappsec/blob/main/meetings/2025/2025-11-11-messaging-origins-etc.pdf)
 
 
 ### Injection: Followup discussion on CSP and next steps.
 
+[Explainer](https://github.com/explainers-by-googlers/script-src-v2)
+[Intent to Experiment: Extend CSP script-src (aka script-src-v2)](https://groups.google.com/a/chromium.org/g/blink-dev/c/ftgVb8d091M/m/CIMPlt8IAAAJ)
 
-### TBD: ???
+Artur: Better CSP hashes. Started talking about this ~3 years ago, now there are things to talk about. Since CSP isn't complex enough just yet, we obviously need to add things to it. The idea is to allow hashes to allow exectuion of certain categories of scripts. In short, `unsafe-hashes` will extend to script URLs. Currently they can allow a number of script-like constructs: `<script>foo()</script>`, etc.
+
+...: Why? If we do this, we might be able to allow developers to create policies that fully cover trusted scripts that exist on a given page or application, disallow anything that's not supposed to be allowed, and do so without requiring refactoring of the application. That's been a stumbling block in the past.
+
+...: If we make this change, the hope is that we'll be able to enable developers to roll out strict CSPs that mitigate XSS without requiring other changes to the application. Middleware and other systems might be able to automate this for users, but ideal to build features into CSP that enable those and other systems.
+
+...: The core of the idea is to create a new type of hash: `url-sha256-...`. That permits a given `<script src="...">` to execute. Similarly, `eval-sha256-...` would enable `eval(...)`, much more granular than `unsafe-eval`.
+
+...: Relatedly: if we report hashes of scripts via CSP reporting, that allows developers to collect those hashes through their infrastructure. This creates the potential to seed a page's CSP with the scripts that it actually needs in order to execute.
+
+...: Explainer https://github.com/explainers-by-googlers/script-src-v2. Intent to Experiment in Chrome, PR against CSP.
+
+...: Impressive Demo Goes Here! _Artur shows a page for which it would be difficult to enable CSP, with many legacy uses of unfortunate script execution techniques. Without any changes to the page, he demonstrates how it's possible to constraint it to only those scripts expected to execute. Impressiveness abounds. It also configures (impressive) reporting of hashes._
+
+...: _Artur notes that the policy adds `strict-dynamic-url` as another new mechanism that allows backwards compatibility (we need a new name for that because otherwise the `https:` scheme source would be ignored; it's the least-worst solution). The demo impressively allows execution in a browser that doesn't yet implement these new mechanisms. Of course, the page is unprotected in those browsers, but that's consistent with other backwards compatibility work we've done in CSP._
+
+...: That's it. Yes, it adds cruft to CSP. But that cruft makes it more deployable in a semi-automated fashion.
+
+Matt Finkel: Why are you using a hash for URLs?
+
+Artur: Good question. We already have URLs in CSP. We could just allowlist URLs verbatum rather than their hashes. Several reasons: first, URL parameters aren't allowed in CSP's current syntax. second, we only check the initial URL in order to avoid an information leak; unlike host-source we only check the initial hop. Third, `strict-dynamic` ignores URLs in the policy allowlist; hashes avoid this constraint.
+
+Camille: We really wanted to check the query parameter in the URL, as specific endpoints have dangerous configurations. Also, hashes have fixed size, which is useful because full URLs are often very long.
+
+Pascoe: What does `eval-sha256-...` get you over `sha256-...`?
+
+Carlos: Backwards compatibility. Allows us to deal with `unsafe-eval`.
+
+John: Couldn't you have said `ignore-unsafe-eval`?
+
+Carlos: No strong opinion. We could have done `no-strict-dynamic-hashes` instead.
+
+Michael: Comment mechanism to CSP's syntax?
+
+Artur: Funny you ask. I ran into that when generating the policy.
+
+Simon: This reminds me of the time I had a friend who build an application in CSS. Feels like we're trying to prove that it can work, but it's incomprehensible outside a meeting like this one.
+
+Artur: I agree. Something we've started talking about is CSP as a compilation target. Fundamental security primitive that make sense to us when we think about them very hard. But developers don't care about how things are spelled or the fallbacks. What you care about is the security mechanism. If you have systems that crawl your application and spit out a policy, someone can take care of it for you. Maybe it doesn't need to be understandable with that as background.
+
+Camille: We identified applications in which it was impossible to make CSP work. With this extension, we can make it work. Long term, scripting policy is a better option. Break out the pieces of CSP that matter. Before we do that, we wanted to get to a stage wherein we believe things can work for most websites.
+
+Simon: Red flag: any use of a scanner is, by default, going to be a problem. Will come from a given IP address, will cause differences in behavior. Location, etc. will change the behavior. If the goal is to create an endpoint that a scanner can provide a policy, it will fail.
+
+Artur: Reporting integration means it doesn't require a scanner. Report-only collects hashes from regular users' browsers. Crawling might be useful to bootstrap, but that's not the deployment model we're thinking of. Deploying a report-only policy to collect hashes enables the mechanism.
+
+Camille: Even at the browser level, we scan the scripts before rendering the page, and can process them to emit reports and limit execution. That could still prevent quite a lot of problems if we restricted the page to those things that are currently in the page.
+
+Simon: You're planning on this approach inside a meta tag; problem, as NPM dependencies will inject themselves above it.
+
+Artur: `<meta>` was for the demo. Reporting works from a header, this would be sent in a header.
+
+Simon: Full website proxies will use this, but no one else will.
+
+Artur: That's a large use case.
+
+Simon: we should fight that.
+
+Artur: Why?
+
+Simon: Imagine you're in a team, 500 people working on an app, compliance team asks for CSP. 1-2 engineers will try to push it through as report-only, that will take weeks to get approved, sign-off for a header. That will create console reports (that we'll fix), then there are reporting endpoints. If you're using a vendor, you can do this, but this spec is very difficult to do in a manual fashion.
+
+Artur: The idea here is to tackle the deployment scenarios for CSP that were also difficult. Middleware is easy to scale, anyone can create this infrastructure.
+
+Simon: This is only user-friendly to a proxy. Even if generated through Chrome, you're going to deploy this in Europe and it's going to work differently. Usability concern.
+
+Camille: I don't understand the case you're mentioning. Different behavior in different countries: we're hashing the URLs. Would you build a different page in Europe?
+
+Simon: No, the script itself will make different subresource requests.
+
+Camille: strict-dynamic addresses this.
+
+John: I think you're bringing up some of the original criticism of how CSP has evolved. Not specific to this step. Acknowledged in this group that there's little uptake. Ideas of changes we've talked about. Criticism is valid, goes for shipping CSP too. We already have hashes, they're not new, this is just a new application. I've said many times we should have an effort to make things simpler.
+
+Camille: We're thinking about that with the idea that you're using strict dynamic for deployability. I agree it's hard to deploy without that.
+
+Simon: strict-dynamic: polyfill attacks totally bypass it.
+
+Artur: Sure. Different kind of attack.
+
+Simon: Malicious subresource attacks are a huge vector.
+
+Artur: Different use case. Application integrity is a different problem.
+
+Simon: This allows that attack. If you're using `strict-dynamic`, it will become a target.
+
+Artur: If you allow any script to load, you're saying "My application wants to load that script." Regardless of the allowlisting method, all part of your attack surface. Signature-based SRI might help.
+
+John: strict-dyanmic is already shipping. It's a relaxation of CSP. Has some flaws, but viewed as necessary for real world deployment.
+
+[Mike cuts off conversation rudely and agressively, punting CSP to the hallway.]
+
+### Declaring powerful capabilities
+
+[Slides](https://docs.google.com/presentation/d/1oLEykv-NWd4dh8R0630DZxb6g1yvMAkOd7T7EbiZQHI/edit?usp=sharing)
+
+Antonio: This is a brainstorm, not a concrete plan. These words keep coming up in different sessions, "declarative", "capability". Might need new words.
+
+...: I've been thinking a lot about permission prompts, in particular for notifications. They are very common, relative to other prompts, they're often abused, they're percieved as annoying, and even in "good" use cases the flows are potentially interrupting user flows.
+
+...: Issues: no way for the site to give more context around why, when, how they want to send notifications. No way for the user to make a meaningful decision on the prompt, and no good time to ask for the permission. Reminds me of [purposeful permissions](TBD)
+
+...: A declarative way? `<script type="permissiondeclaration">{ "json-goes-here": "..." }</script>`, or a `.well-known`, or a manifest or whatever. Would be good to create a place where a page can declare that it uses a capability.
+
+...: Gives insight to the browser, which can use that information to give the user different context. Hacked on Chrome's setting briefly to show how the information could be exposed: metadata about why the request is made, configuration for the relevant service worker, could point to settings page, point to privacy policy, etc.
+
+...: Could experiment with getting rid of the prompt. If we know the page supports notification, we can put controls into the browser that could allow us to get rid of the prompt by allowing users to go to a specific place to enable notifications when they want them.
+
+...: This could be useful for other capabilities. My context is notifications, but this could be useful for other capabilities as well, as a generic place to provide context for permission requests. could be for things behind a prompt, but also for things that are not prompted today. Creates more transparency, opportunities for additional controls.
+
+...: Something like this exists on iOS and Android for installed apps. Might make sense for the web as well.
+
+Michael: Glaring risk here: site declared purpose. If there's no mechanism for making sure that the declarations are true, then it's just a mechanism for the site to convince you to click on something they might not otherwise have clicked on. And even if a site uses it as you intend: what if the purpose changes? Reprompt? What if a user decides the site lied?
+
+Antonio: That makes sense. For the second part: reprompting is not going to work, too complicated. Looking at this more as a transparency mechanism. Users could look into that, could change their mind, agree the flow is fragile. For the rest: it depends quite a bit on how the UX is presented. Sites can lie today in the page. It does provide more context to the browser; there's added value in knowing where the context the site provides already lives.
+
+John: Did you envision a single prompt for all of this? Website presents everything it needs in one prompt?
+
+Antonio: Capability by capability. Generic way of declaring usage that creates transparency. Could enable better prompts, or a better control center, "page info" in Chrome. We don't know what the page might want to use, so we can't render the set of capabilities in our UX.
+
+John: Proactively, the browser could help the user understsand that the website will eventually use X or Y or Z?
+
+Antonio: Also things not behind a prompt?
+
+John: If they don't list things here, we block the mechanism?
+
+Antonio: Maybe eventually yes.
+
+John: If this doesn't cause prompting, I can see some value. We usually want prompts right when it makes sense.
+
+Antonio: Notifications break that.
+
+John: We shouldn't have notifications, personally I find them to be a nusiance.
+
+Ben: Notifications are hard, I'll punt on that. But I see two useful directions depending on who's consuming the signal: arbitrary content as Michael said is a bad idea. Messaging vector from the site: "click accept or your computer will explode" is a bad idea. For other powerful features, there's probably a set of things under the feature's capability. could come up with common uses. Could declare which of those they'd like to use as examples. That could be better. Not sure. could also gear this towards companies with lawyers: "I'm going to do X for purpose Y." That goes in a document, could enable public auditing.
+
+Erik: Super nervous about purpose. I like the idea of self-declaring constraints on how I'm going to use something. "Country-level geolocation is fine by me!" would be interesting. Or "I'm going to send you one message when your pizza is done!" Subset of this is interesting.
+
+Michael: I like renouncing capabilites as an honest indicator of how you're going to use things.
+
+Serena: Mock. I like the idea of suppressing prompts. Active subscription is a better model, requires user intentionality. Wouldn't allow sites to pester people. Still socially eningeerable, but harder than "click allow".
+
+John: Declare in this format, then this thing would be available?
+
+Serena: Yes. But I imagine we wouldn't interrupt. I'm not as sold on the site declaring it's own purpose or frequency.
+
+Erik/John: We could enforce it.
+
+John: Structured constraints are good.
 
 
+    
+### `postMessage()`/[`Origin`](https://mikewest.github.io/origin-api/)
 
+[Slides](https://github.com/w3c/webappsec/blob/main/meetings/2025/2025-11-11-messaging-origins-etc.pdf)
 
+Mike: postMessage can be quite difficult. Difficulties include checking whether a message originates from a particular origin, which can be tricky with indexOf. In certain cases we need to use `*`.
 
+...: A couple of changes that we can make. 1) represent Origin as an object. See <url> for how this would look like. Currently many APIs use a serialized version of the origin. Comparing these strings can be complicated, e.g. because all opaque origins serialize to the same string. The proposed mechanism would allow to compare sites/origins in the same way that the browser does; which would cover cases like when the PSL changes.
 
+...: Allow the origin object to be passed as an argument, such that it can be correctly checked.
 
+...: Multitude of message events: e.g. same-site/same-origin event, would only fire when such a message is posted. By doing so, we can separate message that might be more dangerous.
 
+...: Not very granular, so might be reasonable to add a filtered listener, such as a URL pattern.  This gives a lot of clarity of what the listener will have to handle.
 
+Christian: 3rd option seems nice, transferable to web extension context, which have to use a lot of string-comparison logic.
+
+Mike: great point. Extension can do things as pages, might be difficult to distinguish that. Should be something that we can cover.
+
+Ari: Can we extend same-site/cross-site with postMessage this?
+
+Mike: Might be reasonable to have this, although it is already in a better state than mesasge receiving
+
+Yoshisato: How is the migration path to the proposed message events? Especially, for migrating from the legacy event handler to the proposed event handler.
+
+Mike: There needs to be migration effort. We could fire two messages for each message: one for filtered and one the current message event handler. deduplication is the web app's responsibility.
+
+Camille: 
+
+Mike: could be helpful to have a declaration
+
+Ben: another option could be to add an option to addEventListener
+
+Mike: might be easier to deploy, with backwards compatibility
+
+Rohit: is this specific to postMessage, or can be have something for more generic use cases?
+
+Mike: if there are such generic use case, then yes. I was focus on message, but if it's valuable to extend to other use cases, happy to chat about it.
+
+Matt: I like declarative aspect. How often do the same-site checks with string comparison happen?
+
+Mike: People often want to check whether origins are similar/related
+
+Rohit: Is it possible to have something similar for URL pattern comparison?
+
+Mike:
+
+Christian: can we make it more clear to indicate that the check is ephemeral? Because of PSL
+
+Mike: Happy to add a non-normative note.
+
+Erik: I filed https://github.com/mikewest/origin-api/issues/11.
+
+Matt: This could become a new fingerprinting vector.
+
+Mike: Neither Firefox and Chrome update the PSL outside of major releases. 
+
+<discussion on whether this might already be possible today>
+
+Mike: I agree generally, that are side-effects that this could reveal OS and browser version information, and this should be considered
+
+Mike: Thank you all!
