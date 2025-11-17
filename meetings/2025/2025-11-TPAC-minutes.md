@@ -38,6 +38,7 @@
 * Dan Appelquist, Samsung / AB (afternoon Session)
 * Eric Kinnear, Apple
 * Chris Thompson, Google Chrome (LNA session)
+* Hubert Chao, Google Chrome (LNA session)
 * Philipp Pfeiffenberger (Google Chrome)
 * Bryan Ellis (Apache Software Foundation)
 * Erik Anderson, Microsoft Edge
