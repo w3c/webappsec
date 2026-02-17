@@ -97,6 +97,11 @@ Web Application Security Working Group
       <td></td>
     </tr>
     <tr>
+      <td>A Well-Known URL for Relying Party Passkey Endpoints</td>
+      <td><a href="https://w3c.github.io/webappsec-passkey-endpoints/">webappsec-passkey-endpoints</a></td>
+      <td></td>
+    </tr>
+    <tr>
       <td>Detecting the reliability of HTTP status codes</td>
       <td><a href="https://w3c.github.io/webappsec-change-password-url/response-code-reliability.html">webappsec-change-password-url</a></td>
       <td></td>
