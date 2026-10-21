@@ -12,7 +12,7 @@ Location: [Ground Floor - Munster Suite](https://media.claytonhotels.com/dalata-
 | 10:00 - 10:30 | **Permissions API & Permissions Policy** updates (@marcoscaceres, @annevk) |
 | 10:30 - 11:00 | ☕🥐☕🍰☕ |
 | 11:00 - 11:15 | **CSP**: [Sandbox directives in Web Workers (#279)](https://github.com/w3c/webappsec-csp/issues/279) (@azaika, @yoshisatoyanagisawa, @hiroshige-g) |
-| 11:15 - 11:30 | **CSP**: [`speculation-rules-src` and the `Speculation-Rules` header (#808)](https://github.com/w3c/webappsec-csp/pull/808) (@vickiez) |
+| 11:15 - 11:30 | **CSP**: [`speculation-rules-src` and the `Speculation-Rules` header (#808)](https://github.com/w3c/webappsec-csp/pull/808) (@vickiez) (_This needs to be in the afternoon._) |
 | 11:30 - 12:00 | **CSP**: [Expanded `script-src` hashes (`script-src-v2`)](https://github.com/explainers-by-googlers/script-src-v2) (@arturjanc) |
 | 12:00 - 12:30 | **W3C Advisory Board**: [Experimental Process (`w3c/process#1189`)](https://github.com/w3c/process/pull/1189) and [Group Culture](https://www.w3.org/guide/process/coc-incident-resolution-ombuds.html) (@torgo) |
 | 12:30 - 13:45 | 🥗😋🍜 |
