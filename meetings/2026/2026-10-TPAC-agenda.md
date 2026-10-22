@@ -21,7 +21,7 @@ Location: [Ground Floor - Munster Suite](https://media.claytonhotels.com/dalata-
 | 15:00 - 15:30 | ☕🍰☕🥐☕ |
 | 15:30 - 16:00 | [**Local Network Access**](https://github.com/WICG/local-network-access) (@MayyaSunil, @hubertchao, @christhompson) |
 | 16:00 - 16:30 | [**Device Bound Session Credentials (DBSC)**](https://github.com/w3c/webappsec-dbsc): Updates and extensions (cookie-less mode, JS API, per-endpoint deferral opt-out) (@arnar) |
-| 16:30 - 16:45 | _Leaving some slack for overflow / topics folks want to add._ (e.g., [MLS Protocol updates](https://github.com/w3c/webappsec/issues/710#issuecomment-5641356255) w/ @Frosne if attending) |
+| 16:30 - 16:45 | _Leaving some slack for overflow / topics folks want to add._ |
 | 16:45 - 17:00 | 😴 |
 | 17:00 - 18:00 | [_Breakout sessions_](https://www.w3.org/2026/10/TPAC/breakouts.html) |
 
