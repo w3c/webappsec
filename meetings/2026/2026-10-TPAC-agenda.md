@@ -8,12 +8,12 @@ Location: [Ground Floor - Munster Suite](https://media.claytonhotels.com/dalata-
 |-----------:|:------|
 |  9:00 -  9:15 | Showing up, saying hello, agenda bashing. |
 |  9:15 -  9:45 | **Document Isolation Policy** (@annevk, @camillelamy, @arturjanc) |
-|  9:45 - 10:00 | [**Extending Permissions Policy to Workers**](https://github.com/explainers-by-googlers/workers-permissions-policy) (@antosart) |
+|  9:45 - 10:00 | **CSP**: [Sandbox directives in Web Workers (#279)](https://github.com/w3c/webappsec-csp/issues/279) (@azaika, @yoshisatoyanagisawa, @hiroshige-g) |
 | 10:00 - 10:30 | **Permissions API & Permissions Policy** updates (@marcoscaceres, @annevk) |
 | 10:30 - 11:00 | ☕🥐☕🍰☕ |
-| 11:00 - 11:15 | **CSP**: [Sandbox directives in Web Workers (#279)](https://github.com/w3c/webappsec-csp/issues/279) (@azaika, @yoshisatoyanagisawa, @hiroshige-g) |
-| 11:15 - 11:30 | **CSP**: [`speculation-rules-src` and the `Speculation-Rules` header (#808)](https://github.com/w3c/webappsec-csp/pull/808) (@vickiez) (_This needs to be in the afternoon._) |
-| 11:30 - 12:00 | **CSP**: [Expanded `script-src` hashes (`script-src-v2`)](https://github.com/explainers-by-googlers/script-src-v2) (@arturjanc) |
+| 11:00 - 11:15 | [**Extending Permissions Policy to Workers**](https://github.com/explainers-by-googlers/workers-permissions-policy) (@antosart) |
+| 11:15 - 11:45 | **CSP**: [Expanded `script-src` hashes (`script-src-v2`)](https://github.com/explainers-by-googlers/script-src-v2) (@arturjanc) |
+| 11:45 - 12:00 | _Leaving some slack for overflow / topics folks want to add._ |
 | 12:00 - 12:30 | **W3C Advisory Board**: [Experimental Process (`w3c/process#1189`)](https://github.com/w3c/process/pull/1189) and [Group Culture](https://www.w3.org/guide/process/coc-incident-resolution-ombuds.html) (@torgo) |
 | 12:30 - 13:45 | 🥗😋🍜 |
 | 13:45 - 14:15 | [**Sealed form fields** (`sealed-fields` CSP directive + `<sealedinput>`)](https://github.com/madeit-build/koschei/blob/main/docs/specs/explainer.md) ([WICG #307](https://github.com/WICG/proposals/issues/307)) (@decleezy) |
@@ -21,7 +21,7 @@ Location: [Ground Floor - Munster Suite](https://media.claytonhotels.com/dalata-
 | 15:00 - 15:30 | ☕🍰☕🥐☕ |
 | 15:30 - 16:00 | [**Local Network Access**](https://github.com/WICG/local-network-access) (@MayyaSunil, @hubertchao, @christhompson) |
 | 16:00 - 16:30 | [**Device Bound Session Credentials (DBSC)**](https://github.com/w3c/webappsec-dbsc): Updates and extensions (cookie-less mode, JS API, per-endpoint deferral opt-out) (@arnar) |
-| 16:30 - 16:45 | _Leaving some slack for overflow / topics folks want to add._ |
+| 16:30 - 16:45 | **CSP**: [`speculation-rules-src` and the `Speculation-Rules` header (#808)](https://github.com/w3c/webappsec-csp/pull/808) (@vickiez) |
 | 16:45 - 17:00 | 😴 |
 | 17:00 - 18:00 | [_Breakout sessions_](https://www.w3.org/2026/10/TPAC/breakouts.html) |
 
@@ -32,15 +32,16 @@ Location: [Ground Floor - Munster Suite](https://media.claytonhotels.com/dalata-
 
 | Time (GMT) | Topic |
 |-----------:|:------|
-| 10:30 - 11:00 | **Streaming SRI** (@yoavweiss) |
-| 11:00 - 11:15 | **A "CORS all the fetches" `Document-Policy`** (@yoavweiss) |
-| 11:15 - 11:45 | **Agentic Security (Part I)**: General-purpose AI agents running JS with the user's logged-in authority (@johannhof) |
-| 11:45 - 12:00 | **Agentic Security (Part II)**: [Content Trust Markers](https://github.com/explainers-by-googlers/content-trust-markers) (@DCtheTall) |
+| 10:30 - 11:15 | **Trusted Types & Sanitizer**: `createParserOptions` ([w3c/webappsec#710](https://github.com/w3c/webappsec/issues/710#issuecomment-5641356255)) and [`trusted-or-sanitized` explainer](https://github.com/mozilla/explainers/blob/main/trusted-or-sanitized-html.md) (@noamr, @mozfreddyb) |
+| 11:15 - 11:45 | [**Connection Allowlists**](https://github.com/WICG/connection-allowlists): Current status and "embedded enforcement" (iframe attribute) (@noamr, @mikewest) |
+| 11:45 - 12:00 | _Leaving some slack for overflow / topics folks want to add._ |
 | 12:00 - 13:15 | 🥗😋🍜 |
-| 13:15 - 13:45 | **Agentic Security (Part III)**: Shared threat model for the web (for security agents) (@miketaylr, @recvfrom) |
-| 13:45 - 14:15 | [**Connection Allowlists**](https://github.com/WICG/connection-allowlists): Current status and "embedded enforcement" (iframe attribute) (@noamr, @mikewest) |
-| 14:15 - 15:00 | **Trusted Types & Sanitizer**: `createParserOptions` ([w3c/webappsec#710](https://github.com/w3c/webappsec/issues/710#issuecomment-5641356255)) and [`trusted-or-sanitized` explainer](https://github.com/mozilla/explainers/blob/main/trusted-or-sanitized-html.md) (@noamr, @mozfreddyb) |
-| 15:00 - 15:30 | 😴 |
+| 13:15 - 13:45 | **Streaming SRI** (@yoavweiss) |
+| 13:45 - 14:00 | **A "CORS all the fetches" `Document-Policy`** (@yoavweiss) |
+| 14:00 - 14:30 | **Agentic Security (Part I)**: Shared threat model for the web (for security agents) (@miketaylr, @recvfrom) |
+| 14:30 - 15:00 | **Agentic Security (Part II)**: General-purpose AI agents running JS with the user's logged-in authority (@johannhof) |
+| 15:00 - 15:15 | **Agentic Security (Part III)**: [Content Trust Markers](https://github.com/explainers-by-googlers/content-trust-markers) (@DCtheTall) |
+| 15:15 - 15:30 | 😴 |
 | 15:30 - 16:30 | [_Breakout sessions_](https://www.w3.org/2026/10/TPAC/breakouts.html) |
 
 
