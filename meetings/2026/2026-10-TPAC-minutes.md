@@ -36,6 +36,8 @@ Zoom link: https://w3c.zoom.us/j/7907688363?pwd=ht9UJXZucyzNczCN29aKNeXEYG46ab.1
 * Pascoe (Apple)
 * Brandon Maslen (Microsoft)
 * Ari Chivukula (Google)
+* Zak Ridouh (Apple)
+* Hiroshige Hayashizaki (Google)
 
 
 ### Minutes
@@ -529,12 +531,326 @@ torgo: Please feel free to talk to AC rep. Talk to friendly AB person. Talk to a
 
 mkwst: We will recovene at 1:45pm.
 
+#### Web Crypto: Streaming hashing, Modern algorithms (status, Hybrid KEMs, "well-supported" criteria), and crypto.randomUUIDv7() (PR) (@twiss, @hubertchao)
+
+Daniel presenting table at https://github.com/WICG/webcrypto-modern-algos/issues/25 
+
+Daniel: Modern algorithms draft: some things have happened. Chrome proposed the addition of hybrid key encapsulation mechanisms. Previously we defined all the pieces for PQC separately: ML-KEM, ed25519, etc. Most everyone is shipping PQC in a hybrid fashion at the moment: Chrome proposed to ship one algorithm for that. One call to the API, apply both algorithms in a single call. That was added to the spec. Chromium has also shipped the PQC algorithms including hybrid KEMs behind a feature flag, plus ChaChaPoly.
+
+...: We also have a mostly complete implementation of all the algorithms in servo. Partial implementation in Ladybird. Firefox also working on PQC, has implemented ML-KEM.
+
+...: When can we start merging some of these things into the main spec? In the charter that once proposals are well-supported, they can be merged into the WG's draft. We've merged curve 25519 into main web crypto. Then, we waited for everyone to support. What do we want to do here? Wait for Safari? 2 implementations?
+
+Pascoe: We have expressed support for hybrid algorithms in a WebKit standards positions issue.
+
+Daniel: Explicit call for the PQC algorithms?
+
+mkwst: CfC for adoption sounds reasonable to me.
+
+MT: Would be a good to have a process for deciding whether or not each algorithm is blessed or not. I would put Kangaroo12 and Argon2 and OCB... would draw into question (maybe). Would be good to know... do all the implementations support all the things we care about. Some of these are on the fence. Poeple have voted with their feet. Knowing where things are would be great.
+
+Daniel: SLH-DSA can clearly be dropped. There's been discussion about all of these algorithms in WICG. There's benefit to merging them incrementally. There's support for PQC and ChaChaPoly. Let's start with that, but not debate Argon2, etc. Clear use case at Proton, but maybe others don't have a use case for that.
+
+Christian: It's important to split out PQ candidates from this list into their own CfC. It's a ticking clock for a lot of people to get these implemented. Having WebCrypto capability on these ones is more important now vs bikeshedding over other things. There is pressure to implement PQ now.
+
+Daniel: SHAKE is used in hybrid KEM deployments. OpenPGP unfortunately, the construction is different from the rest of IETF landed on. We do need shake to be able to implement hybrid KEMs there. Not necessarily cSHAKE but plain SHAKE at least. I do agree that PQC is the highest priority. 
+
+Christian: Composing primitives. SHAKE isn't particularly constant time concerned as opposed to other ones. SHAKE could be JS, or WASM.
+
+MT: Not sure that's always true. Could be true for some.
+
+Daniel: We do ship JS. But we can always improve upon that.
+
+Daniel: Brief update on streaming. We have an open PR for accepting async iterables to be able to do streaming hashing. We got positive implementer interest from WebKit and Mozilla. We don't have a separate WICG draft, just a PR. And some tests. Perhaps we should have a CfC?
+
+mkwst: These seem reasonable. It's necessary for us to let people not present to object.
+
+Daniel: A proposal randomUUIDv7. It's not from me. I will try to represent it. We have have randomUUID. New addition that has better time locality. There is an experimental implementation in server runtimes (node, deno, bun), but AFAIK, not much in the way of (browser) implementer interest or positions. Unsure what the next steps are.
+
+mkwst: Anne commented on this - noting that it seems reasonable. Similar to my opinion. No objection to supporting well-specified UUID implementations. We already support v4. It would be unfortuante to need a separate UUID API when v8 comes out. Might be reasonble to have a property bag to pass in, vs a different function. It's not clear to me that there's a lot of demand. But, if there is a desire for it from devs - not a huge implementation lift. 
+
+MT: Trivially polyfillable. Random number generator and a clock. Do we have any evidence that people are building this on their own? If not, not strong evidence to put it in the platform. Not a fan of UUIDs. 
+
+mkwst: Fair perspective. If we don't have evidence of demand, implementing doesn't make a lot of sense. But, no objections in the abstract. I agree with Martin, understanding the demand is helpful when doing prioritization. 
+
+Daniel: Node.js has implemented v7. Some npm package as well. 
+
+MT: In respond to demand? Or just sending a PR?
+
+Daniel: Not sure. Would be nice to have someone to drive this proposal. 
+
+mkwst: I will summarize this discussion and comment on the list. We can continue discussion there.
+
+Daniel: That's all. Thanks.
+
+mkwst: You have some CfCs for us to discuss. We will post something for UUID. Then we need to talk about how to move the document along REC track. I will ping Simone and we will figure out the process. Publishing as a living CR seems reasonable. Getting the set of PQC algos adopted - reasonable for us to push along that path.
+
+
 #### Sealed form fields (sealed-fields CSP directive + <sealedinput>) (WICG #307) (@decleezy)
 
-#### Web Crypto: Streaming hashing, Modern algorithms (status, Hybrid KEMs, "well-supported" criteria), and crypto.randomUUIDv7() (PR) (@twiss, @hubertchao)
+<https://github.com/madeit-build/koschei/blob/main/docs/specs/explainer.md>
+
+
+#### Grab-bag
+
+Christian: Hashes v2. Will that close the wasm hole for modules?
+
+aaj: Is there an `unsafe-wasm-eval`?
+
+Christian: Yes.
+
+aaj: Would make sense to have the same thing for wasm that we'll build for eval. Would be conceptually consistent to have the same mechanism here that we have. Better than a blanket opt-out.
+
+mkwst: Injection Mitigation. https://mikewest.github.io/injection-mitigated/ 
+
+Pascoe: "Plugins"? Does that deal with extensions as well?
+
+dveditz: No.
+
+mkwst: Digitial Credentials _is_ concerned about extensions
+
+Pascoe: Right. DC and WebAuthn might be different.
+
+Wilander: Almost 10 years ago, I wrote an email to this group proposing something similar. Single Trust. "Only the 1P is doing something on this page." could signal that to the user.
+
+Johann: Interesting. We have a session in this group tomorrow to talk about things we see in Chrome right now: AI Agents writing code inside pages to help people do things. It's on the users' behalf, but also very risky. Published exploits where agents included third-party script. I'd like to find some kind of safe mode we could enable in which we could execute these scripts on users' behalf.
+
+MT: Model being involved doesn't change anything. Extension doesn't change things either. People make a choice to use these tools, they are part of the user agent. "That sounds super-risky, I'd rather my agent not do that, but that's a choice I'm not going to force on you." Would be best for this group not to decide who's making choices about users' agents.
+
+Johann: Not take features away from a page, but inform browsers about the pages on which it's safe to inject script.
+
+MT: User agent isn't fully in control if the page controls the level of access.
+
+Eric: Generally agree with Martin. I get nervous when people say "Maybe webauthn shouldn't work with extensions." Maybe cleaner extension points, but given the tools, we don't have the context to apply context for the user.
+
+Johann: I agree with that. In the end, users can choose an agent that runs dangerous scripts. But agents can look at signals to determine where script execution is reasonable.
+
+Daniel: `SecureContext`. There's been some discussion in WebCrypto about requiring secure contexts for `randomUUID()`. Trivially polyfillable. Originally shipped as requiring secure contexts. Libraries still ship pollyfills because they're not sure about the contexts into which they'll be loaded. Do we need this reqwuirement for trivial functions?
+
+Wilander: Unfortunate naming. But is there an opportunity to fix that?
+
+Freddy: To Daniel's question: we've generally decided that new APIs should be behind `SecureContext`, but we didn't apply it universally. See e.g., crypto.getRandomValues -- `randomUUID()` is similarly trivial. So, maybe fits into that precedent.
+
+MT: I've come to the view that HTTPS has won, and perhaps the carrot we were hoping to create with `SecureContext` was something of the past. If there's a small reason that removing it here would make things better, that doesn't hurt so much. Carrot might not be necessary anymore.
+
+---
+
+MT: Hashing and integrity: major problem with integrity attributes is that you need the entire thing before hashing. Incrementally verfiiable hash of content would be ideal. Delivery of the bits necessary to get the hash validation incrementally. Need additional hashes along the way. Content-encoding version of this that I'd floated. Nice thing with those encoding is that bytes are delivered to a client that understands the encoding. If there's a hash it can be verified, if not, it can still be used.
+
+[mt] The old thing I worked on was called MICE (https://datatracker.ietf.org/doc/draft-thomson-http-mice/ with Jeffrey); the new version of this is a little more flexible (https://martinthomson.github.io/chic/draft-thomson-httpbis-chic.html).
+
+Simon: More secure contexts. Local networks. Could get rid of the contexts that don't use HTTPS.
+
+mkwst: MT had an approach.
+
+MT: In 2015.  https://docs.google.com/document/d/170rFC91jqvpFrKIqG4K8Vox8AL4LeQXzfikBQXYPmzU/edit?usp=sharing
+
+Simon: Post it.
+
 
 #### Local Network Access (@MayyaSunil, @hubertchao, @christhompson)
 
+Sunil: LNA. Why? Lots of reasons. Local network access creates attack surface. Local routers, etc. LocalMess was a recent, high-profile example. User agents reacted quickly, and mitigate this with LNA.
+
+...: Google proposed this: segregate IP addresses into three spaces: loopback, local, and public. Prompt user for permission to go from public->local->loopback. Deny access to non-secure contexts.
+
+...: Firefox now implements the prompt, as well as a permission model and debugging information in the console.
+
+...: LNA status: Chromium and Firefox, shipping in Chrome since M142. Now shipping in Firefox to EPT users, hopefully by default in the next release. Restricted to subresource loads, top-level naviation is excluded. Restrict public->loopback and public->local. Same for Chrome, right?
+
+Hubert: Correct.
+
+Sunil: Permission Policy: we align on permission names. Collaborating on the granularity. Apply to websocket and web transport, as well as dedicated workers. Service/Shared worker requests are blocked unless the origin already has the permission. Top-level page needs to request on the worker's behalf. WebRTC is in discussion.
+
+...: Mixed content relaxation: Gecko hasn't implemented this yet. We do plan to implement, but not yet. Hubert, do you have plans for other web APIs? WebSocket, etc?
+
+Hubert: I think we had plans for websockets. We haven't finished that yet. Need a new parameter. Web Transport is all secure, so no need.
+
+Sunil: XHR?
+
+Hubert: Need to think about it.
+
+mkwst: IMO, we shouldn't change XHR.
+
+Freddy: Mixed content relaxation?
+
+Sunil: Fetch options addition allows the ability to start the process of connecting to a domain prior to resolution.
+
+Freddy: Enables pages to talk to local in ways that MIX would have blocked?
+
+Sunil: Yes. So, what's next in Firefox? Reports and suggestions from our users that tey need more context and better understanding about the prompt. Enterprise users need options. We'll add a "more info" dropdown in the prompt. We also have this gap for MIX relaxation, we'll add that. Finally, we'd like to block trackewrs and insecure requests from local network access entirely rather than prompting for them. Top-level navigations are in-scope, and we'd like to prompt prior to connection. WebRTC is another gap we'd like to close.
+
+...: Top-level navigation (issue #48). Without this, we're still vulnerable to CSRF/rebinding attacks. We tried to ship this, but found breakage. Google Auth, for instance. Our implementation triggered server-side breakage detection, need another path.
+
+Hubert: Initially broke this by mistake. Okta as well. Now we've addressed it.
+
+Sunil: We could take a standard approach: enable this for local network, gather experience in the local network only, fix breakage, then roll it out more broadly. But ideally, we'd prompt before establishing a connection.
+
+mkwst: Asking about this.
+
+Sunil: OAuth problem with localhost. Public->loopback.
+
+Wilander: This is a common case, right? Claude.
+
+Eric: Spotify. Lots of examples.
+
+Sunil: We want to enforce these restrictions, right?
+
+[crickets of agreement]
+
+Sunil: We'll add usage data, and pursue this approach to see how it works. As implementers of the standard, we should apply the restrictions in a similar manner across applications. Loose agreeent on a timeline could be helpful? When can we enforce.
+
+Hubert:
+
+dveditz: John, what about WebKit?
+
+Wilander: There's a bug against WebKit, around for many years. We wanted to make a clean switch from HTTP to HTTPS. Group decided to open up HTTP first. We stuck with it, which makes our implementation quirky. We're happy to see the progress here. Solves many of the problems discussed in 2016. That's where we're at. We generally don't like prompts, but no one does.
+
+dveditz: CORS approach tried to do it without the prompt. But in practice, no one's updating the things people want to talk to.
+
+Wilander: Some kind of latch mode might be helpful. Maybe easy for the first local port you talk to, harder for the rest. Addresses port-scanning. That's still interesting to us. Could give you one try to prompt, then make it harder.
+
+MT: Not concerned about the tracking potential? One port prevents scanning, but with local apps there for tracking purposes the concern isn't addressed.
+
+Wilander: No, there's still a prompt for the one. We're just not going to give you more tries.
+
+Sunil: Next issue: prompt before connecting (issue #103). Implementations prompt after establishing connections. Bypasses still exist given this hole in existing implementations. URLs can be encoded with tracking IDs, hostname is sent in SNI parameters, so it's enough to create tracking potential. If we restrict to IP connections: your local app might be listening to multiple localhost addresses: last octet is a communication channel. Best defense is that we should prompt before making an actual connection.
+
+...: Challenges: unexpected prompts on local network, because captive portals push folks to local IPs. Content blockers do the same. Also happy eyeballs is a race between multiple connections.
+
+...: Except for happy eyeballs, one possible solution would be to prompt before loopback connections only. Also perhaps integration with happy eyeballs. Also, no specific step for connection establishment.
+
+mkwst: [confusion about happy eyeballs]
+
+MT: [clarity about happy eyeballs]
+
+annevk: Fetch doesn't model happy eyeballs. Maybe it should. It's tricky, Sometimes we only want to resolve and not connect. Could we have a happy eyeballs variant that didn't establish conections?
+    
+Sunil: Happy eyeball integration (issue #7). Possible solution space: 1. classify every resolved endpoint. 2. decide once DNS is final.
+
+...: WebRTC? Open question. What should our plans in this space be.
+
+    
 #### Device Bound Session Credentials (DBSC): Updates and extensions (cookie-less mode, JS API, per-endpoint deferral opt-out) (@arnar)
 
+Slides: https://drive.google.com/file/d/1Q2j7N4S0o4EJdMMhMpKQ8FFu1m2WnGSF/view?usp=sharing
+
+Arnar: Not going to try to explain all of DBSC, but we want enough background to talk about some proposals to get folks' input. Threat model is cookie-exfiltrating malware. Browser needs to produce credentials to authenticate requests. But malware has the same privilege as the browser in most cases. That makes things hard to solve from the platform level. OS needs to take responsibility. But we see very successful attacks at scale with infostealer malware. Installing the malware dumps your profile to an attackers' server: all the abuse happens after the malware is already cleared off your machine. DBSC aims to prevent this exfiltration, and force abuse to happen locally rather than after the fact.
+
+...: Protocol in which the website starts a session, gets a public key from the browser, and then the browser authenticates requests by proving possession of the corresponding private key. It's on the browser to protect that key. Nothing in the spec says there must be a TPM, nothing hardware-bound, no attestation to the site about the nature of the protection the browser offers. Not there to give signals to the website. Shipped in chrome for Windows and macOS, and Edge for Windows. We use this at Google to protect accounts.
+
+...: Design constraints: 1. we can't protect a key from malware and also expect to sign every request. Signatures are expensive. So we want to prove possession of the key periodically, and use something else inbetween, 2. We can't require sites to rewrite their tech stack to deploy this.
+
+...: Many apps have an authentication component as middleware. If a request isn't authenticated: 1. do a full redirect to sign in, 2. serve anonymous results, 3. return an error and let the client handle it (e.g. XHR).
+
+...: None of this can happen frequently. Periodic proof of possession happens on the order of minutes, can't log you out during that period.
+
+...: DBSC sessions require the client to push a cookie with a certain name on all requests. If thst cookie expires, I'll queue all requests to your site, hit a specified endpoint to refresh the cookie via a challenge, and then attach that cookie to the queued and ongoing requests.
+
+...: [Protocol examples.]
+
+...: That's what exists today. Deferral allows middleware to do what it's always done without require rewrites of server-side logic. But it has the side-effect of engangling DBSC browser state with cookie state.
+
+...: Proposal 1 aims to decouple. If we say we can change the authentication component on the server, server provides the browser a challenge, and delivers a signed response to that challenge to all outgoing requests for some period of time. The server can send a new challenge at any time, which restarts the clock. But if the session expires, requests will be queued, and the explicit refresh protocol will execute.
+
+MT: The basics here seem like an improvement. Website can also set a short-term cookie, then magic happens.
+
+annevk: Now there's another header with credential data beyond `Cookie` and `Authorization`. Middleware needs to know about the new thing.
+
+Wilander: Along the same lines: there's something missing for me: since these are short-lived, and as soon as they're dead you refresh, something else needs to carry the notion that you're still logged in.
+
+Arnar: Sessions have a specific scope. you declare that any requests within this given context will carry the session. But server needs to tell the browser that the session is dead.
+
+Wilander: State of being logged in is not managed by the browser.
+
+MT: Existance of the session is distinct from the cookies associated with that session. Expectsation is that the server will tell the client when the session is dead.
+
+Wilander: How does that work?
+
+Arnar: Session can end in two ways: user clears site data, or site tells the browser that it doesn't recognize the session/signals its death. Then the browser deletes the key. Sessions can be logged in state, but they could also be other things: Google has a session for the sign-in flow even for non-signed-in users. State of the session is persistent in the browser, explicitly managed.
+
+MT: And lifetime matches cookies.
+
+dveditz: We have mechanisms to persist cookies across browser restarts. Would need something similar for this challenge.
+
+MT: Similar to indexeddb: created, then there until it's terminated by the user or the server. Session continuity feature.
+
+Wilander: Assumption that the key material is stored in a better way than cookies.
+
+Arnar: Browsers can store private keys in better places. But it's not a tool for websites to see that that happened. Could implement DBSC with a software-stored key, just reduces the risk mitigation.
+
+MT: Could implement for all users in software, and push to hardware for the subset of users with hardware that supports stronger protection.
+
+Freddy: for the user agent to decide?
+
+MT: Yes. Not the site.
+
+Wilander: Malware is a local attack?
+
+Arnar: Malware today exfiltrates cookies. Pushes abuse to active, persistent local malware.
+
+Freddy: This needs constant refreshing, limits the risk of exfiltrated cookie. Also, user agents generally do use TPMs when available.
+
+MT: The malware needs to be active and operational constantly. That makes it more detectable, and means the attack ends when the malware is removed.
+
+Wilander: Still assuming the browser is sandboxed so other processes can't access its files.
+
+Eric: Can work within many models of protection. Can reduce in various ways.
+
+???: Threat model: when we move from cookies to these headers, there's a consideration regarding ???. `SameSite` cookies: need to think through treatment of DBSC sessions in iframes, etc.
+
+MT: Cookies complicate things.
+
+???: yes. But needs to be specced.
+
+Arnar: Proposal 2: Deferred opt-out. Refresh takes time, needs a fresh challenge, slow signing mechanisms (e.g. TPM). However, browsers shouldn't keep refreshing if the user isn't using the site. So it's unavoidable that there's a delay when you come back after a gap in browsing. Possible to deal with this on the server if anonymous results are useful for your server's use casde (e.g. search results). Server could specify that certain paths don't require deferral.
+
+...: Proposal #3 is a JS API. This doesn't need to do anything with cookies or headers. DBSC is asyncronous: can be a pain point for developers who wish to wait for the session to be established before doing things. Issue #299 is a proposal to provide session events so developers csn understand the state of the flow.
+
+...: One more: DBSC-SSO. Allows IDPs and RPs to collaborate.
+
+MT: Turns out to be tricky. From our perspective, anything that require exposing attestations to arbitrary websites is a non-starter. That was a part of the enteprise variant of this, but I don't think it's necessayr. Will continue the conversation. Can be less-intrusive.
+
+
 #### CSP: speculation-rules-src and the Speculation-Rules header (#808) (@vickiez) 
+
+Viktoria: CSP and `speculation-rules`. When dealing with external speculation rules, came across integration with CSP. Developers want to be able to use these, especially in cases where headers can't be applied. Need to decide how CSP applies.
+
+...: For inline speculation rules, the `script-src` directive applies. Open question is what we do with header-delivered speculation rules for external speculation rules. We don't want to make `script-src` more leniant, but want to enable getting these rules: still want to exempt the header from CSP.
+
+...: Options for integration between `speculation-rules-src` and `speculation-rules` header: 1. Full exemption. 2. Explicit-only (only `speculation-rules-src`). 3. Default-fallback: `speculation-rules-sec` -> `default-src`. 4. Script-fallback: `speculation-rules-src` -> `script-src` -> `default-src`.
+
+...: If we apply CSP to the speculation rules header, `CSP: script-src 'none'` would break.
+
+...: Cloudflare would be affected. Other CDNs as well. Office online.
+
+...: In Chromium, there's `inline-speculation-rules` which allows inline speculation rules as part of `script-src`. For new rule, we could support `unsafe-inline`. The `unsafe` prefix could dissuade developers from using this. We also want to support nonces and hashes, could be better than allowing any inline speculation rules.
+
+aaj: Some thoughts: the risk we're worried about is speculation rules that allow querying the DOM in ways that are similar to CSS selectors. Gather information about the DOM, and cause requests to be made to an attacker's site. For the header-delivered rules, the same issue doesn't apply: generally less-likely that injection happens in an HTTP header. But if you could, you could inject the CSP header as well. There's little risk associated with this.
+
+annevk: That's weird. We don't do that for other headers.
+
+Barry: Link is governed by CSP, but depends on the order.
+
+annevk: Headers arrive in an atomic block. Seems like a bug.
+
+aaj: I won't comment on the weirdness. But from a security perspective, it doesn't seem like something we need to be worried about.
+
+annevk: CSP should govern all fetches from a document. Why exclude the headers? Injection into one header doesn't create injection into all headers.
+
+aaj: CSP report-uri? Could be arbitrary external destination.
+
+dveditz: Integrity manifest for WAICT.
+
+annevk: Does it go through Service Workers? If it goes through the same fetch flow, it seems reasonable to apply the policy.
+
+mkwst: What's the client? We don't have a document at this point?
+
+dveditz: What's the use case from Cloudflare?
+
+Barry: Cloudflare was injecting speculation rules to improve performance. They need to modify the CSP in order for that work to happen, and the risk of that is higher than the risk of the speculation rule header in the first place.
+
+Simon: Looked into which Fetches are governed by which CSP. There's a link in irc.w3.org #webappsec chat (https://gist.github.com/zcorpan/3aa2e7127b3330964afd8731109a6962): `refresh` header isn't blocked. NEL and Reporting as well .
+
+annevk: if those are the only exceptions, we're good. Icon is suprising. Any subresource request should go through the same Fetch flow, rules should all be the same.
+
