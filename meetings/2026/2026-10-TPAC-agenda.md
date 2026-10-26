@@ -34,7 +34,7 @@ Location: [Ground Floor - Munster Suite](https://media.claytonhotels.com/dalata-
 |-----------:|:------|
 | 10:30 - 11:15 | **Trusted Types & Sanitizer**: `createParserOptions` ([w3c/webappsec#710](https://github.com/w3c/webappsec/issues/710#issuecomment-5641356255)) and [`trusted-or-sanitized` explainer](https://github.com/mozilla/explainers/blob/main/trusted-or-sanitized-html.md) (@noamr, @mozfreddyb) |
 | 11:15 - 11:45 | [**Connection Allowlists**](https://github.com/WICG/connection-allowlists): Current status and "embedded enforcement" (iframe attribute) (@noamr, @mikewest) |
-| 11:45 - 12:00 | _Leaving some slack for overflow / topics folks want to add._ |
+| 11:45 - 12:00 | Agentic Identification and web monitization (@johnwilander) |
 | 12:00 - 13:15 | 🥗😋🍜 |
 | 13:15 - 13:45 | **Streaming SRI** (@yoavweiss) |
 | 13:45 - 14:00 | **A "CORS all the fetches" `Document-Policy`** (@yoavweiss) |
