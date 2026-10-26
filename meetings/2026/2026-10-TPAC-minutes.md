@@ -34,7 +34,9 @@ Zoom link: https://w3c.zoom.us/j/7907688363?pwd=ht9UJXZucyzNczCN29aKNeXEYG46ab.1
 * Anna Weine (Mozilla)
 * Balazs Engedy (Google)
 * Pascoe (Apple)
+* Brandon Maslen (Microsoft)
 * Ari Chivukula (Google)
+
 
 ### Minutes
 
@@ -268,9 +270,264 @@ Simon: DBSC: Not differential trust. Protecting cookies, not exclusion.
 
 #### Extending Permissions Policy to Workers (@antosart)
 
+Antonio: [Slides].
+
+Antonio: Proposal to extend permissions policy to Workers. Hasn't ever been supported in those contexts. Many issues on the spec and on other API specs pointing to this problem. There's a link to an explainer: github.com/explainers-by-googlers/workers-permissions-policy
+
+Antonio: For child iframes, three components (it's complicated): parent has a permissions policy. parent can specify `allow` attributes to delegate/restrict child. child has it's own permissions-policy header. Combination of the three makes up the permissions policy of the child iframe.
+
+...: Question is how to extend this to workers in a reasonable way. Essential differences between dedicated/shared/service workers. Same mechanism for all three cases is impossible. Proposal differentiates between these cases. For dedicated workers: this is the easy case. Very similar to child frames. Proposal is to do the same thing we do for iframes: combination of creator context permissions policy, specified `allow` parameter in the worker constructor (e.g. `new Worker(url, { allow: "..." });`), and `permissions-policy` header for the Worker script.
+
+...: Shared Workers are more interesting. They're different because they're shared between contexts. Race/consistency issues with applying the same logic. Proposal is to combine the creator context permissions policy, a specified `allow` parameter on the worker constructor (e.g. `new SharedWorker(url, { allow: "..." });`), and a `permissions-policy` header from the shared worker script.
+
+...: For connecting to the shared worker, the `allow` parameter would "key" the shared worker. If some other context tries to connect to the shared worker, it would only allow exact matches for the `allow` parameter. Simplest to fail in any non-matching case, whether stricter or laxer. There could be variants here, but this seems simplest to start with based on feedback thus far.
+
+...: Also: allowed features are empty by default. That's different from same-origin child frame, but same as cross-origin child frame. Also: if the creator context can't delegate a given feature (because it's disallowed to them), then it will fail upon construction or connection. Listed these choices in the explainer.
+
+...: This seems as simple as possible, but still functional.
+
+Freddy: Multiple error modes: one looking to the Worker constructor, one looking to the permission-policy header returned with the worker?
+
+Antonio: `permissions-policy` header can be a further restruction, but doesn't result in an error.
+
+Freddy: So only visible by testing?
+
+Antonio: Yes. I wonder what the actual use case for the header actually is. Not clear that this will be used to restrict capabilities in the document itself. There's an additional reporting angle: I think that's still useful to extend to workers. Easiest way to do that is to have the same reporting header for Workers.
+
+annevk: an error event is a different pattern than what we do for cross-origin iframes. for those, we just ignore and not fail, right?
+
+Antonio: For cross-origin iframes, we ignore them.
+
+annevk: That's my preference. You can restrict the header more, but allow creation? Better for compat, as a header change doesn't break scripts. Also: is the allow attribute canonicalized? Ordering?
+
+Antonio: Yes. We'd parse and construct a map and compare those.
+
+...: If a feature is listed that isn't allowed in the parent... shared workers are shared. Could be connected to A->B and B at top level. Top level can delegate, A->B can't.
+
+annevk: A->B shouldn't be allowed to connect to the same worker as B?
+
+Antonio: In Chrome, this works.
+
+annevk: Not alignment on that. Spec issues as well. I think you can make this point without the embedding question: two top-level Bs can have distinct policies, still creates conflict.
+
+Antonio: True.
+
+annevk: B1 only allows A, B2 only allows B. Why do you want conneciton to be different from iframes?
+
+MT: Depends on which one creates the shared worker, dictates the policy. The policy cascades into the creation of the worker.
+
+dveditz: The allowlist keys the shared worker. But the key should be the actual policy allowed, not the policy specified in the creator.
+
+Antonio: If the policies aren't allowed by the creator, the worker doesn't start. If the worker starts, it matches the policy.
+
+annevk: If there's a race, the creator wins, the other fails.
+
+dveditz: Could just have two shared workers?
+
+annevk: Sure.
+
+MT: Adding another dimension to the key?
+
+dveditz: Other issues crop up: cached worker script, then a different header from the network? Might need to key based on the resulting policy, not the declared policy from the constructor. Also: if creating a worker suddenly breaks because the document's policy changes, that's not friendly either.
+
+Antonio: Either you can use the API controlled by permissions policy or not. Same error thrown.
+
+annevk: You could imagine the Shared Worker library grabbing all the permissions it can. Could imagine that breaking in this model.
+
+dveditz: Especially if we get rid of the feature policy API. then no way to ask.
+
+tom: Thought we were doing that via the `permission.query()` API?
+
+Ben: If someone naively grabbed everything and it now fails, that has positive outcomes?
+
+MT: Web compat.
+
+annevk: Doesn't impact existing libraries, because `allow` is new.
+
+dveditz: No allow list? No permissions
+
+Antonio: Right now, there's no delegation. No API that relies on permissions policy that's available in Shared Workers.
+
+Tom: A list of APIs impacted on workers. Serial?
+
+Antonio: Only dedicated workers in Chromium.
+
+dveditz: Same thing applies to dedicated workers? You said there needed to be explicit allow?
+
+Antonio: We'd follow iframe for dedicated workers. No keying, intersection of features is delegated.
+
+dveditz: Cross-origin dedicated workers?
+
+mkwst: We don't support cross-origin dedicated workers.
+
+annevk: Which APIs motivate this?
+
+Antonio: Explainer lists out a few: Serial, Sensors, etc. In Chromium, there's code dedicating compute pressure API, other AI-related APIs. Things that generally aren't prompted, but require delegation. Seems meaningful to find way to support them.
+
+annevk: There are some things where allowing delegation is hard. Cross-origin isolated. Worker needs its own mechanism.
+
+Antonio: unique case.
+
+mkwst: Delegating potential vs delegating the capability.
+
+annevk: This generally seems reasonable. No strong opinion.
+
+Antonio: In principle, lots of small things where different decisions could be made. But I think the overall idea, considering the constratints, is good.
+
+...: For service workers: `permissions-policy` header for the SW. No delegation from documents at all. Exposing any API to service workers is hard because the run in the background, visibility constraints. Header should constrain them, enable reporting, but should ack that extending APIs like Sensors, etc to Service Workers requires many more considerations than other APIs.
+
+MT: Notifications is a permission in Service Workers. The empty set is not a reasonable default in this case.
+
+Antonio: Notifications aren't covered by Permissions Policy. Can't be delegated to child iframes. Cross-origin child frames can't prompt. And if they have permission, they get sent in background, so the delegation doesn't make sense.
+
+MT: Only true if the notifications permission is the same as the push notification permission. It's a little weird.
+
+Antonio: Certainly.
+
+MT: `allow: "a; b"` vs `allow: ["a", "b"]`?
+
+dveditz/freddy: Same parser as iframe attribute?
+
+annevk: If it's a list of strings, we could just do that. Did you consider that?
+
+MT: Not important.
+
+annevk: Somewhat important.
+
+Antonio: Might be easier to make it a list.
+
+annevk: What about the header? That makes it more complicated. Maybe the header syntax could be simpler?
+
+Tom: Oh no, please.
+
+Simon/MT: LNA permission. Empty set might not fly.
+
+
 #### CSP: Expanded script-src hashes (script-src-v2) (@arturjanc)
 
+aaj: [Slides]. I work at Google for 4 days, then I'm retiring.
+
+[general applause]
+
+aaj: CSP hashes. Talked about this a while ago, always "nice to have but awkward". Never any real urgency to this, and spelling questions, and etc. But things have changed a little bit over the last year or so: in the past, I jumped right into the changes themselves, rather than why it might make sense to make them. Want to rectify that now:
+    
+...: Chromium has an implementation behind a flag. Igalia is working on an implementation in Firefox. Talking with Mozillia folks to see if it makes sense to ship. There are good reasons to ship it if we can figure out how to do so. Agents finding XSS everywhere at scale, will talk through that.
+
+...: Motivation: original spelling of CSP looked at the sources of script, create an allowlist of all the places you trust. That doesn't work: domain-based allowlists are too coarse. Research shows limited security impact. But would be ideal to set policies just by changing a header.
+
+...: Strict CSP: shifted to a model that addresses the security issues we had with allowlist-based CSP. Nonces and hashes are finer-grained policies that allow only specific scripts to execute, rather than all scripts in a given domain. `strict-dynamic`, etc. helped delegate authority from a trusted script.
+
+...: Deployment concerns: need to add `nonce` attributes, generate new nonces which makes content dynamic, need to thread nonces through the templating systems, etc. You can do it, and large developers have proved that, but it's an investment in rearchitecture.
+
+...: We've known for years now that developers don't have the time to invest in rearchitecture. From a Google perspective, even though we've enabled strict CSP by default in all our well-lit paths, we still have thousands of internal applications not built on these paths, which haven't all migrated. Deployability remains a concern.
+
+...: Ideally, we'd like to have the original deployment idea of CSP: look at all the things an application loads, but with security guarantees of CSP3 nonces/hashes. We want safety but also without requiring changes to applications. This would make it possible to adopt CSP in a scalable, automatible way.
+
+...: We might need that in order to... [waiting on zoom]... XSS is important. Still top vulnerability. Agents are good at finding XSS (cf. https://blog.google/security/agentic-hacks-real-proofs-inside-googles-pagebreak-project/) . ~500 internal vulnerabilities in internal Google apps. 80% reflected XSS. A little scary. Similar things externally: HackerOne hackbots. XSS is easy to find and easy to verify: agents are very good at this.
+
+...: We have this legacy attack surface on the web. Don't have on-by-default solutions. We're going to need to continue dealing with this while folks rewrite applications to have safer defaults. We need a scalable way to deploy CSP.
+
+...: Hashes have the shape we want. Hashes let us allowlist a specific script, identified by its digest, without changing the application. We have to set the CSP with a hash, but not more invasive changes.
+
+...: Hashes already work for most of the kinds of scripts we have on the web. They work for inline scripts, inline event handlers, `javascript:` URLs. They don't work for external scripts (SRI pins the content, needs an integrity attribute; doesn't work for dynamic content), and `eval("...")`. `unsafe-eval` is not fine-grained control. 
+
+...: We want to make a small change: apply hashes, or something hash-like to external scripts and `eval(...)`. The proposal (implemented behind a flag in Chromium and Gecko) is to allowlist the specific source of a `src` attribute. `url-sha256-...` and related keyword.
+
+...: `eval-sha256-...` does the same for `eval(...)`.
+
+MT: Why hash the URL? Hashes are long, and CSP is already not short.
+
+aaj: This is core. Let's come back to it in a few slides!
+
+...: If we have this, than any kind of script loaded by a page has a corresponding hash representation. Policy remains backwards compatible in the same way as strict CSP. Could create a policy based on violation reports that would be relatively strict. Could also put hashes of scripts into violation reports.
+
+...: Does the goal even make sense? From my vantage point, there's value in providing a mechanism to allow deployment without changing anything else about an application. So let's talk about syntax and the core proposal of hashing URLs.
+
+...: Three main arguments: 1. Old-style URL-based allowlist is dropped via `'strict-dynamic'`. Dan pointed this out a decade ago, but we did it for backwards compatibility. But, URLs don't have the granularity we want: they ignore the query parameter. JSONP URL and similar: no way to make that safe with the current URL syntax.
+
+annevk: Can you clarify that? Perhaps CSP could preserve the query? Why don't we support this today?
+
+dveditz: Queries more sensitive, page could figure out 
+
+mkwst: ... 
+
+annevk: Why can't we ignore it for existing comparison, then we do it for strict-dyanimic-src case, we don't ignore it.
+
+mkwst: Backcompat is a problem we need to solve. 
+
+aaj: For backcompat reason Mike refers to, we can't change existing behavior. But we can come up w/ a new syntax for expressing URLs in CSP.
+
+annevk: I don't understand the backcompat issue. If you include something w/ query param it gets dropped?
+
+mkwst: ...this means when you use strict-dynamic, we drop all URLs. We tell you to use hashes or nonces... we would need to come up w/ mechanism that preserves that, while also segretating off URLs we want to allow. There are mulitple problems.
+
+mt: Something like this would work.
+
+aaj: A few ideas here. 3 different things we can look at. 1 - current proposal. Do opaque blob hash. Least readible. 2 - could have hash of path and query value attached to the origin. That doesn't tell you exactly what you're allowing, but tells you the origin. 3 - we could have new syntax for URLs, or have URL verbatim. THen it has the full URL.
+
+...: each of them would work.  
+
+freddyb: why hash the URL? It's weird and obscure. Now I think I understand... it's easy for the browser to look at HTML and the policy, compute a hash and compare. For every other tool it's obscure and complicated to figure that out. I would prefer more explicit "url-whatever", so every other tool can figure this out and see what's in the policy and the HTML.
+
+aaj: Your argument is for the 3rd option. 
+
+mt: This works w/ fully qualified URL (https://....). Not clear if this works w/ relative referecnes (i.e., ../foo). Hashing depends on what happens of resolution of foo.
+
+aaj: From deployability perspective. Having the literal value be reflected there is more useful. Otherwise if you canonalize it, you will have diff hash depending on the path of the document that loads it.
+
+annevk: if we have browser URL differences... that seems preferable.
+
+mkwst: We need to see if "?" is acceptable for CSP parser.
+
+annevk: And comma.
+
+mkwst: We can explore this.
+
+annevk: Call it something else if it's an attribute value.
+
+Tom: I'm concerned about base URL usage.
+
+freddby: you want a different keyword for relative or absolute?
+
+annevk: no, only literal values. 
+
+dveditz: eval?
+
+mkwst: eval has to be a hash.
+
+aaj: unsafe hashes only work for attributes and javascript URIs.
+
+annevk: I feel like hashing those as well... it would feel more consistent if we have hashes for all of them. If they're not actual URLs.
+
+dveditz: hopefully Unicode is already answered. It should be consistent (or fixed).
+
+mkwst: This is a good and useful conversation that we should continue at lunch. We should have a thing we can agree on. Freddy makes good points on legibility and non-browser tooling. Many options seem reasonable. We agree on the thing we want to do. Let's figure out how to spell it.
+
+aaj: SGTM
+
 #### W3C Advisory Board: Experimental Process (w3c/process#1189) and Group Culture (@torgo)
+
+torgo: Representing W3C AB here, pulling the conversation from the detailed level to a high-level process discussion. Last year, we talked in Kobe to solicit feedback about our process. We want things to work better for all of our groups. We took that feedback and tried to bring it into issues raised in the Process CS. That group's responsible for revising the process. Want to make things work better and more quickly.
+
+...: Next version of the process document will include an experimentation mechanism. Run this particular WG or spec with an experimental version of the process, removing or enhancing certain requirements. Will see the results of the experimentation and help move our process revisions forward more quickly. Trying to make people's lives easier, but also trying to make W3C a more attractive place to do work.
+
+...: We are doing this experimentation. Link to the process PR in the issue. Take a look at it, help us understand how WGs might use this experimentation mechanism. Are there blockages to the process of publishing technical reports that we could address through experimentation? Would anything in particular be useful for this group.
+
+...: Please come talk to me, and to other members of the AB if you have thoughts about an experiment you'd like to run within the process. Mike, as chair - any ideas?
+
+mkwst: I think the main thing has historically prevented the group from moving documents to REC is less about process and more about cost time benefit analysis. It seems like a lot of boilerplate work to go throught the process. It' ssometimes difficult to see the value in doing that, given that implementations dont' feel constrained on the document status. It's not clear to me that there's a process experiment that would make it simpler. What would be simpler... the steps necessary to go to next stage (CR, REC), the more automation we can put there, the better. From my POV, w/ chair hat off. A lot of that work is simply work that doesn't add additional value to spec or implementation, instead just checking boxes. There is value (i.e., IP protection). But, it requires time and sometimes hard to justify that work. 
+
+...: Why do this work? If we can automate the process so folks don't have to think so much. Instead, we collect things we care about automatically, i.e., point it at WPT vs writing an implementation report. For browser vendors, we're in the process of moving to a model of a "cross-functional review"... in Chromium, you can look to chromestatus.com to see how we launch web platform features. We have a lot of gates to ship a feature. But many can be handled on your own. Answer a questionnaire - and self-certify. e.g., if a feature doesn't touch UX, why ask for a11y review?
+
+torgo: That's very valuable. We talked to a lot of people who had these issues. On horizontal review - we want to make it more async, so people aren't blocked on an a11y review, instead of moving something forwards. In w3c, we see horizontal review as one of the benefits of the organization. This is all very helpful and reflects my impressions already.
+
+...: the other question. On culture within w3c and this WG. The other area that AB is responsible for us culture. We want to make sure that we're not being blind to issues that crop up. That we're paying attention to each WG's culture. We want to learn from you all. Are there culture issues? Are the culture artifacts useful (i.e., code of conduct)? Do they help have a more productive or inclusive culture? If anybody has any feedback on the topic, please talk to the AB on that. Happy to hear it now. We want to encourage w3c culture to be positive, a place where people feel heard. Inclusivity as a core value. Want to make sure that continues to be the case. Happy to address any comments. 
+
+* seagulls chime in *
+
+torgo: Please feel free to talk to AC rep. Talk to friendly AB person. Talk to anybody in the team. Raise issues and let us know how we can help. Thank you.
+
+mkwst: We will recovene at 1:45pm.
 
 #### Sealed form fields (sealed-fields CSP directive + <sealedinput>) (WICG #307) (@decleezy)
 
