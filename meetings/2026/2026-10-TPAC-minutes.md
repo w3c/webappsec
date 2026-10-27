@@ -38,7 +38,8 @@ Zoom link: https://w3c.zoom.us/j/7907688363?pwd=ht9UJXZucyzNczCN29aKNeXEYG46ab.1
 * Ari Chivukula (Google)
 * Zak Ridouh (Apple)
 * Hiroshige Hayashizaki (Google)
-
+* Marcos Caceres (Apple)
+* Nicola Tommasi (Google)
 
 ### Minutes
 
@@ -407,7 +408,7 @@ Simon/MT: LNA permission. Empty set might not fly.
 
 #### CSP: Expanded script-src hashes (script-src-v2) (@arturjanc)
 
-aaj: [Slides]. I work at Google for 4 days, then I'm retiring.
+aaj: [Slides]: https://arturjanc.com/expanded-hashes-tpac-2026.pdf. I work at Google for 4 days, then I'm retiring.
 
 [general applause]
 
@@ -854,3 +855,711 @@ Simon: Looked into which Fetches are governed by which CSP. There's a link in ir
 
 annevk: if those are the only exceptions, we're good. Icon is suprising. Any subresource request should go through the same Fetch flow, rules should all be the same.
 
+## Day 2 - 2026-10-27
+
+**Agenda**: https://github.com/w3c/webappsec/blob/main/meetings/2026/2026-10-TPAC-agenda.md
+
+Zoom link: https://w3c.zoom.us/j/7907688363?pwd=ht9UJXZucyzNczCN29aKNeXEYG46ab.1 
+
+### Attendees
+
+* Mike West (Google)
+* Artur Janc (still Google)
+* Frederik Braun (Mozilla)
+* Daniel Veditz (Mozilla)
+* Tom Schuster (Mozilla)
+* Noam Rosenthal (Google)
+* Niklas Merz (ASF)
+* Nicola Tommasi (Google)
+* Aram Zucker-Scharff (The Washington Post)
+* Daniel Huigens (Proton)
+* Brandon Maslen (Microsoft)
+* Barry Pollard (Google)
+* Mike Taylor (Google)
+* Andrew Williams (Google)
+* Ari Chivikula (Google)
+* Simon Friedberger (Mozilla)
+* Simon Pieters (Mozilla)
+* Takashi Nakayama (Google)
+* (You!)
+
+#### Trusted Types & Sanitizer
+
+Noam: [Slides] at https://github.com/noamr/tpac-2026-presentations/blob/main/trusted-types-sanitizer/index.html
+
+...: Sanitizer in Trusted Types. Something that's shipping in Chromium, but we'd like to discuss the opportunities going forward. We wanted to stream HTML into an element (`response.body.pipeTo(...)`). Sanitizers generally rely on having the content, running it through DOMPurify, etc. Those libraries don't know how to stream, grabbing one chunk after the other. They need the whole string at once, with negative performance implications.
+
+...: But now we have a built-in sanitizer in the platform. Bringing those concepts together would be idea. Allow trusted types to be used for enforcement (no header for the sanitizer itself), and sanitizer to be used as the implementation guaranteeing safety.
+
+...: New `runScripts` flag in the HTML parser (previously implicit in `createContextualFrament`, not explicit).
+
+...: New trusted types mechanism called `createParserOptions(...)`.
+
+Freddy: key change is that the sanitizer moves into the parser, so we can do it via a stream, and not just as an operation on a string.
+
+Noam: Right, more integration into the parser. By default, this works with the new non-sanitizer methods (`parseHTMLUnsafe`, `setHTMLUnsafe`), and fits into the legacy sinks (like `innerHTML`) via the `default` policy Trusted Types defines.
+
+...: So the default policy can enforce a set of sanitizer policies on those legacy sinks.
+
+Freddy: This gives an opportunity to sanitize without rewriting scripts and libraries: default policy can enforce sanitizer everywhere (with temporary exceptions today).
+
+Noam: This works for streaming usage as well. `await response.body.pipeTo(el.streamHTMLUnsafe(opts))`.
+
+...: Precedence & Fallbacks: `createHTML` is still there, still needed for some cases. If `createParserOptions` isn't called, it falls back to `createHTML`. Doesn't work for XML/XHTML. Existing issue with Trusted Types.
+
+...: Future things: `iframe.srcdoc` attribute, `document.write(...)`, `DOMParser.parseFromString(...)`, XML `innerHTML`, XML `DOMParser`.
+
+???: Does this fall back to `createHTML`?
+
+Noam: No.
+
+Freddy: Some do.
+
+Noam: Yes, some of these do.
+
+???: XMLHttpRequest is another.
+
+Noam: Right. Fallback to `createHTML`.
+
+Freddy: Outlook: for future sinks, we can get rid of DOM-based XSS. With a tiny default policy, you can do this for your sites today. But it would be nice if we could remove the necessity to touch code at all by setting default parsing options, baking Trusted Types more deeply into the browser as a migration path for legacy applications.
+
+aaj: Reporting? Is it possible to enable this in a report-only mode?
+
+Noam: Yes. Takes this from TT's reporting mode today.
+
+aaj: Today, we report on errors. We might not want that, but instead get a report about whether the sanitizer actually did something.
+
+Freddy: Would be nice, but it's non-trivial.
+
+aaj: Got it. This is a great idea overall, happy you're working on it.
+
+Aram: Can you define your own sanitizer rules in this flow?
+
+Freddy: Yes. The examples were all default, but you can supply a list of allowed elements, other configuration options.
+
+Aram: Ok. Two things about what's next: 1. Don't make `document.write()` work any better than it does today. Generally, we should fundamentally deprecate the API. Nothing should encourage folks to use it. 2. For `iframe.srcdoc`: that would be highly valuable. Primary methodology for ad serving. Would love to stream and sanitize them. That would solve bad ads.
+
+mkwst: you probably want a Trusted Types integration point. The sanitizer will prevent all script from running for all sanitized code, which won't work for ads / iframes. That will be stricter than you want. Trusted Types allows you to manipulate HTML before it's inserted into a page. 
+
+Aram: This is a useful pattern as ad tech industry is looking at ??? style ad insertion. When you want to refresh an ad... it isn't solved because of this type of problem. You could maybe insert a fragment instead. And then you can sanitize it.
+
+Luke: TT would be the integration point. Available today in all browsers. Also, only the "safe" variants of Sanitizer prevent script execution. The `setHTMLUnsafe` variants would work for you. On you to write a correct sanitizer, but it exists.
+
+Freddy: TT gives you the callback for the frame, then your unsafe configuration can take care of it for you.
+
+Luke: With `srcdoc`: does that end up getting reparsed once you set it? Just an HTML string? We might want a new API surface there to avoid XSS risk in that circumstance.
+
+Noam: HTML starts parsing the string as HTML, we'd apply those rules when doing so. This should just be one parsing operation.
+
+Luke: Possibly some ergonomic changes to avoid parsing into the content document.
+
+Freddy: We had an issue about that, https://github.com/WICG/sanitizer-api/issues/117 
+
+Luke: A blessed trusted types policy makes sense. Backwards compatibility... If we add that, the documentation should explain how to deal with that in all browsers.
+
+Noam: This is the case for any CSP header. Need to make sure that it works across browsers.
+
+Artur: Reporting: it could be good to think about how we'd do reporting that wouldn't send a violation report on _every_ usage. Those usages will be safe most of the time, but we really want information about times at which the sanitizer actually made a change to your page's behavior. I don't have an answer, but seems important to deployability.
+
+...: Also: `*Unsafe` methods are interesting. I think it's worth being aware of that: the list of DOM sinks we've had in the past was relativly static. We've acquired a number of new DOM sinks over the last ~year, and it's important for folks to know about them. We've wired them up to sanitizer and they're architecturally sound, but a simple rule "Don't use `innerHTML`." isn't going to be good enough anymore with all these new methods. It's reasonable to add new methods to the platform, but it's something with an impact on developers and ecosystem.
+
+Luke: Default TT policy: we want to make sure it's one that's just blocking XSS, and not stripping most attributes.
+
+Freddy: Explainer has some variants. See https://github.com/mozilla/explainers/blob/main/trusted-or-sanitized-html.md 
+
+#### Connection-Allowlist
+
+Noam: [Slides] at https://noamr.github.io/tpac-2026-presentations/connection-allowlists/index.html
+
+...: Connection Allowlists: current status and idea, and then embedded enforcement.
+
+
+...: List of origins, WebRTC, redirect configurations, etc.
+
+...: Aims to block outbound connections that don't match the list of origins provided. Covers `fetch`, navigation, DNS, etc. Any exfiltration vector is in scope.
+
+???: Protocols?
+
+Mike: No, it doesn't support distinctions between protocols.
+
+Noam: Different from CSP: doesn't care about usage, only about connection. Key part of the design is this agnostic nature. WebRTC is weird, unfortunately.
+
+Freddy: Well-meaning LLMs as a use case?
+
+Noam: If you run your own LLM, you don't care what it does to the page, but you only want it to have access to it's own page.
+
+Mike: Like a chat bot with a framed agentic code execution.
+
+Aram: Does that include iframes?
+
+Noam: Iframe itself opts into the allowlist. Navigation to the frame is covered. We'll touch on embedded enforcement later.
+
+...: Special cases: redirects and WebRTC. Both are boolean: we either block all redirects or we don't, we either allow WebRTC or we don't (STUN/TURN, etc is complicated).
+
+Artur: Why same-origin redirects?
+
+Mike: Said things... Fetch says we will go through the whole process again.
+
+Anne: I don't think Fetch does that. Poeple are arguing that it should.
+
+Mike: You're probably right and I'm wrong. I remember there are problems in this space. I forget the details.
+
+John: HSTS has challenges with mixed-content and ordering.
+
+Ben: How do you handle the service worker awkwardness. The page has connection allowlist, but has a SW handling multiple pages?
+
+Noam: It's protected twice. The fetch from the client, before the SW, you have to pass thru the document. If you trigger another request through the SW, it has to go thru the connection allowlist of the SW. 
+
+Ben: Is that a redirect if the SW gives another response?
+
+Noam: No. Gets quirky with Service Workers in `openWindow` and etc.
+
+Anne: It's not double checked. It's independently checked.
+
+Mike: You're both right.  It's checked twice. We treat the SW as the server from the page's perspective. Once the request goes to the server, the server does what it wants. We give you an option, but it's a boolean. We don't apply the page's policy to the request made by the SW. In the same way we can't apply to server to server communication.
+
+Ben: Resitration time for SW?
+
+Noam: We check whenever the script of the service worker is fetched during registration.
+
+Ben: Based on history, you could have a SW registered prior to CA's instantiation.
+
+Noam: Right.
+
+Noam: There are a few things we don't block: rule of thumb, if the page could `preventDefault()`, we block it. If it's browser chrome (e.g. right-click menu), we don't. Aiming to prevent the page from doing things, not users. But it's a fine line.
+
+...: Custom schemes that don't go through Fetch. `slack://`. We currently don't block those.
+
+Anne: Those can go through Fetch.
+
+Noam: Currently they're not touched in the spec, open issue as to whether it should be.
+
+Anne: Check is presumably early in Main Fetch. Might need to explicitly allowlist certain schemes. That's before we handle `data:` and `blob:`
+
+Ben: Why not at a lower layer?
+
+Mike: The details are better discussed on GitHub. I'm hoping to get extra feedback, and things may need to shift around.
+
+Noam: Several open issues on the specification. Custom schemes (#40), `client.navigate()` (#27), Context menus (#5), several others.
+
+Branden: Embedded-enforcement: Use cases for iframes, and can't always rely on the iframe choosing to opt-into the policy. LLM, other dynamic content, want to enforce requirements from embedder.
+
+...: Similar to CSP:EE. `<iframe connectionallowlist="...">`. `Sec-Required-Connection-Allowlist` header to advertise the requirement. Then embedded document either responds with the same or a more-restrictive.
+
+Ben: What does more-restrictive mean?
+
+Mike: We don't try to parse the regex. 
+
+Aram: Why does the child have to consent?
+
+Artur: Could break the page in ways that are security-relevant.
+
+Anne: We don't want one origin to be able to alter the control flow of another origin.
+
+Dan Veditz: Even same-origin.
+
+Ben: If I have an iframe embedded in a thousand parents, I can't just copy from all thousand of the.
+
+Anne: There's a request header.
+
+Aram: Could do that on the edge.
+
+Ben: Iframe could publish "these are the domains I expect to connect to."?
+
+Brandon: There's also a CORS-like header that allows acceptance of the delivered policy.
+
+Ben: Just worried about adoption in the ecosystem if there's a tight coupling.
+
+Noam: Not a tight coupling. Just need to make sure the URLs you care about are allowed. 
+
+Anne: If the iframe isn't usable if it can't connect to A, it might want to do something useful. Parsing the incoming header doesn't seem great. Would be nice if you could declare "I need to connect to A." It's potentially expensive to parse that header. But maybe the subset matching is good enough.
+
+Freddy: Use cases?
+
+Aram: I don't think this is something that can be applied to an ads use case. Control is too limited, ads ecosystem is too broad.
+
+Tom: Already CSP:EE. We don't implement it. Haven't gotten any requests. Also not interested.
+
+Aram: Too broad in some case, too linited.
+
+Mike: [somethign about agents and their frames] 
+
+Aram: That use case makes sense. I worry about th
+
+[scribe's network connection died]
+
+Double-iframe sandboxing.
+
+Aram: Safe-frame has failed for reasons. But I guess if agents need it, it's a thing they need.
+
+Ben: 
+    
+Mike: The original reason I wrote CSP:EE was for ads. It never got used. There are limited circumstances where this is useful. That said, there are a pattern of use cases whwere it is helpful for an embedder to have limited control over things that it embeds. The general pattern is where the embedder can offer requirements and the embedee can choose to accept. Focusing only on connection allowlist is only the tip of the spear. Also useful to consider a broader scenario. 
+
+Aram: I agree that iframe controls are not sufficient. This solves a narrow problem. That's fine. The idea of the embedded entity consenting... while it matches the model for this problem. It's not the model for most of the concerns that people have with iframes. Most of the time the thing you are embedding is not trustworthy. And you have no way to trust or monitor it. Not an objection to this. If you want this to be tip of the spear, it should be tip of the spear for iframe controls more broadly. 95% of the use cases - you will not get an agreement between embedder and embedee. Ads are a good use case. But not all of them. Here in Europe, embeds of tiktok or twitter don't work without consent. That's the direction we would want to push iframes. 
+
+Ben: The use case I thought of when I saw this. I am a big company, I have many domains that interact, e.g. Salesforce, Google, etc. They embed each other. They want defense in depth. Is that also a fair statement? Gmail embedding Gchat, etc.?
+
+Mike: I think there are use cases in that direction. Not heard requests there. 
+
+aaj: Let's discuss after.
+    
+Daniel: Another use case beyond chatbots and ads: Proton uses iframes to load emails, and we want to constrain those contexts. Content of the email untrustworthy, but it's loaded by the embedder, with full control over the loading, but wants to enforce certain things (external images, etc). Leak concerns are significant.
+
+...: If loading from `srcdoc`, does the embedded enforcement apply? No headers?
+
+Brandon: `srcdoc` inherits the page policy.
+
+Daniel: Can the srcdoc set its own CA?
+
+Noam: No headers.
+
+???: Could it be hosted on a site, and not the srcdoc?
+
+Daniel: Our domain shouldn't see the content. E2EE protection.
+
+Mike: We adopted a few weeks ago. Will sync w/ Simone to figure it out.
+
+
+#### Agentic Identification and web monetization
+
+Wilander: We had a research seminar in Germany this summer. Professors, industry representatives, etc. Discussed various things related to web security and privacy. Age of AI, so that came up a lot as well. I hope there can be a group within the W3C where we can talk about these things. Not sure it exists today. IETF is doing things in this space, but I wanted to talk about things that came up there, and notes from a breakout session from yesterday.
+
+...: Demo we saw yesterday identified you via an email address as soon as you visited the page. That's not the same as automatic sign in. That's discussed as "identifying". But also the AI agent identifying itself: what's that? The unique instance of the agent you're running? An AI Make and Model?
+
+...: Typically, identification isn't needed. Overreach. Something leaner might be better. Authentication that it's a genuine AI agent, trusted to behave well. Raises questions about running local agents, etc. Questions around representing a user, or part of a cluster? Private Access Tokens, etc.
+
+...: Authorization: is the agent allowed to access the site at all, site owner might say "I only accept these genuine agents." Or is the agent acting on the user's behalf with its own authoriation, or is it impersonating the user.
+
+...: People here generally have an interest in those things.
+
+...: [Slides] from Dagstuhl.
+
+...: [Technical difficulties.]
+
+...: Breakout session on where we're headed if users use agents to browse ad-funded websites. We had some assumptions about how this would play out: sites funded by ads won't offer content to agents without another way of earning money. May play out like ad blockers "Turn off your agent" or "Pay me some other way" before continuing.
+
+...: We htink agents will be forced to present themselves somehow. Captchas, etc. otherwise.
+
+...: Big players in terms of creating agents will be incentivized to behave well. Contract of some sort in the way sites will be funded, big players will play along.
+
+...: Tail of home-grown agents, though. Not sure how that's going to play out.
+
+...: "You're using me with an agent, that's not my usual thing, now I'm turning off the ad-funded model, you need to sign in."
+
+...: Plausible scenarios: user, agent (inside the browser, or driving the browser), website. Product placement: websites will try to smuggle marketing information to the agent to make it show up to the user. Pepsi ads.
+
+...: Ads might target the agent, not the user, to influence the agent to take action on users' behalf.
+
+...: Agents will show their own ads, and will share revenue with websites.
+
+...: Could imagine some agreement where websites say "This is the ad I would have shown the user. Please forward it to the user." requires impression counting, etc.
+
+...: Agent gets material from multiple websites, synthesizes the response: maybe bidding to the agent on which website shows its ad to the user.
+
+...: Micropayments? Finally?
+
+...: Most likely from this group: agents will show ads, with revenue share back to websites.
+
+...: Not a message from Apple: just my notes from the breakout session at Dagstuhl. Lots of smart people, interesting to explore.
+
+
+#### Streaming SRI
+
+Yoav: [Slides]
+
+Yoav: Streaming SRI. Then I heard that it was somewhat discussed yesterday? This is my motivation for why we need this. Backstory: JS Modules are great for authoring content, but less great for delivering content. Long-lived pain point.
+
+...: Previously, I worked on this in the context of Web Bundles to better-deliver JS modules for execution. Web Bundles are no longer among us, but essentialy we have ES Module Declarations that TC39 proposes, which accomplishes more or less the same thing for JS modules.
+
+...: Rough prototype that enables this kind of declaration to get streaming execution, performance benefits: download time is used for execution, roughly subtracted from the overall time.
+
+...: [Slide with bogus syntax]
+
+...: SRI complicates this, as it hashes the whole response, which breaks streaming execution. Multiple options: MICE. Martin mentioned it yesterday.
+
+MT: Can share a newer version of that.  https://martinthomson.github.io/chic/draft-thomson-httpbis-chic.html
+
+Yoav: New content encoding where you have an initial hash, then hashes along the way for the missing pieces. Downsides from my perspective is the new content encoding, might complicate deployment.
+
+MT: Right, can be a problem with things that don't properly deal with content encodings.
+
+Yoav: Right. Otherwise great. Doesn't need to be module aware, seems like a good option if we can deploy it.
+
+...: Or we could make up a new integrity mechanism where the HTML has a hash of hashes, header containing hashes for fixed-sized chunks. Downside: very large header. Limitiations on chunk-size.
+
+...: Or import maps to reference the internal modules to have a large import map with integrity of submodules. Could split into multiple bundles, might be better for perf.
+
+Ben: Large import maps: problem with ordering? Delaying large maps, but needed for streaming execution? Need to know the ordering.
+
+Yoav: you need the maps before the thing you want to stream. Needs to be first. MICE seems like the best option. Deployability is unclear.
+
+MT: Challenge is real. Content coding in theory works. If all the content codings are understood, they're all decoded, and it's fine. Practice hasn't really been tested. People use one encoding, and it's usually compression.
+
+Yoav: Took Brotli a while.
+
+MT: That might have shaken out some of the problems. Thing that concerns me is having two of these involved: compression seems necessary along with the integrity checks. A nice thing, though, is that even without SRI, you can serve the same content for everyone. There's a little overhead, but no difference in what you serve. Though you need to negotiate anyway to see who supports this header.
+
+Yoav: Would be interesting to see what experiements we could run to see whether CDNs handle it correctly. Why MICE, now?
+
+MT: Performance penalty for WAICT is quite large. Need to handle image decoding, etc. Generic, incremental integrity seems necessary for those use cases. Been sitting around for years, this proposal is ~18 months old. May speak to the relative urgency. Not sure we have stats on the performance penalty of SRI. What's the cost of delaying incremental parsing?
+
+Yoav: All the benefits of the prototype are erased without streaming SRI.
+
+Anne: Prototype?
+
+Yoav: Using ES Module Declaration ~clone, delivering modules in reverse order so it can execute when it's downloaded. Requires changes to HTML, probably opt-ins, etc. Prototype.
+
+MT: Our implementation of JS generally treats each file as a single unit, operates on it as a file all at once. Some basic parsing on the whole thing.
+
+Yoav: Modules: you can simulate them being different files.
+
+Anne: Question is: if they're separate files, what the added value?
+
+Yoav: They're not. A single file has a pile of modules in it.
+
+MT: Nice thing about new MICE is that you can align the integrity check boundaries to the edges of those modules. Variable length. You can release when it would be useful to release. Progressively-rendered image could do the same.
+
+Mike: Behavior of integrity violations?
+
+MT/Yoav: Everything that passed would execute. First 5 chunks are valid, and they'd execute. 6th chunk is invalid, and it would die at that point.
+
+Anne: don't you need the whole module graph?
+
+Yoav: Yes. That's why we'd need changes to HTML, opt-ins, etc.
+
+MT: In theory, oyu could build it in a reasonable way.
+
+Anne: Dynamic imports, sure.
+
+MT: Also have this problem with inline JavaScript in HTML. Some will execute before you finish loading the rest. WAICT might introduce integrity for documents.
+
+mkwst: I think there are good use cases for document integrity.
+
+MT: I like the general capability. I think it makes sense. But tricky to ship.
+
+Yoav: Yeah. Maybe we can chat about how we'd run an experiment to determine whether MICE is a viable option.
+
+Anne: Would be interesting to see perf numbers.
+
+Yoav: I can give you those from the prototype.
+
+Anne: Comparing a large JS file with SRI today vs large file with incremental JS.
+
+Yoav: Currently, I don't think it'll matter. But streaming execution of bundles would make a big difference, as execution happens in parallel with download. Larger the download, the more time you're saving.
+
+Anne: Why were decisions made to have things be atomic as they are now. Breaking that might be possible, but need to understand.
+
+Yoav: Opt-in. Not trying to change that by default.
+
+Anne: Either way, would be good to know why. Might be hard to A/B?
+
+Yoav: Could be. But future JavaScript?
+
+Anne: Could do it with CSS? Might be a more fair test.
+
+MT: Particularly with large stylesheets.
+
+[Yoav/MT will get together to think about experimentation.]
+
+???: Could this apply to web extensions as well? 
+
+Yoav: Seems applicable.
+
+#### A "Cors all the fetches" Document-Policy
+
+Yoav: [Slides]
+
+Yoav: No CORS is no good. But developers have no easy way to get CORS on their subresources. CSS used to not have anything, now we have something, but it's still not the default for many different things. Third-parties loading content, or another team on yoyr site, there's a risk of no-CORS resources.
+
+...: I'm interested in this because we're moving things in the measurement space to being CORS-bound. I'd like to enable developers (me) to change the default. `default-cors-mode=anonymous` could help. Could also add `none` as an option if someone wants to downgrade? I don't have a use case...
+
+...: For reporting mode: retries are probably the only way to do it. If a load failed with CORS, it would retry without. Not really report-only, would have production implications. [Syntax flashed on screen].
+
+Simon: If there's a downgrade option, it's not enforced.
+
+Yoav: It's just changing the default. And in practice I don't think anyone would set the downgrade option unless they really have to.
+
+Anne: Use cases? We had use cases for exposing more information about resources, would require CORS, but we still decided to reduce the information collected from those resources.
+
+Yoav: `content-type` in Resource Timing. Restricted to known resource types, but also locked behind CORS. `transfer bytes`, same thing.
+
+Noam: Not only metrics: stylesheet not CORS, no metrics for subresources loaded from the stylesheet at all. Scripts sanitize errors, etc. It's quite a few things.
+
+Yoav: Compression dictionaries.
+
+Anne: Those seem reasonable. The measurement thing tingles spidey senses.
+
+Yoav: This doesn't change anything about measurements, it's just defaults. When running a platform, you don't have control over developers' HTML, and lots of developers are out there, and they'll do unexpected things.
+
+Ben: You could polyfill this with service workers?
+
+Noam: Could polyfill with mutation observers, but not Service Worker.
+
+Ben: Could flip to CORS in the service worker, then pass the response back? Just saying it's an ergonomics question.
+
+Noam: Would get a no-cors request in the SW, make the CORS request for them, then pass along the response and the relevant data. Can't get the outcome in the document, though.
+
+Yoav: You can polyfill this to pay the price of enabling CORS, but without the benefits. Not an exciting proposition.
+
+Ben: Fair.
+
+Noam: Maybe the opt-in doesn't need to be all-encompasing. Maybe URLPatterns, destinations, etc. to avoid breakage?
+
+Yoav: That would make things more complex.
+
+Anne: Feels niche. A boolean seems nicer.
+
+Tom: CSS images: are there other cases where it's impossible to set the CORS flag?
+
+Yoav: `cross-origin=omit` isn't available. But I don't have a use-case for it.
+
+Anne: Right, that's not a thing.
+
+Yoav: I think CSS was the last hold-out. We should have the possibility today.
+
+mkwst: Any concerns about document policy? There are probably other things we could use it for.
+
+[Crickets of approval]
+
+mkwst: Great.
+
+#### Agentic Security (Part I): Shared threat model for the web (for security agents)
+
+Mike Taylor: https://github.com/user-attachments/files/34024787/TPAC.2026.Talk.-.miketaylr.recvfrom.pdf 
+
+...: Less about web platform APIs, more about using agents to look for bugs. In browsers, but also in APIs and specs. Some framing: exponental growth in bug reports and fixes landed. I assume it's the same everywhere.
+
+...: We've been doing a lot of this since March. Scanning the browser, finding many classes of bugs.
+
+...: Extending this to the broader web platform: how can we take what we've done and share it with other interested people. How can we learn from other folks engaged in this work? How can we add this kind of thinking to the web standards process in general? Rules, techniques we can embed in specs? In web platform tests?
+
+Andrew: To make this more concrete: agentic vulnerability discovery. Building a harness to find bugs at scale. Start with researcher agents: tasked with digging through certain areas of code. We feed in ideas about bugs we think could be found, with some curation. You set these agents off, they come up with findings. We want to make sure the findings are validated, not slop. Pass the results to a validator/critic, verifies source locations in code, compares against a threat model. In Chrome, we have a huge FAQ, and also `security.md` files explaining threat models for certain code locations. For further validation, we pass validated findings to an agent that builds a PoC,then we pass the finding and PoC to format a bug report and file the bug.
+
+...: Here, interesting to talk about how we use specs, standards, etc to create inputs into these pipelines. Generating research topics: could avoid doing that. Just give the agent a file and tell it to look for bugs. Or break the file up into pieces and give them to agents. That works. but what we found useful is to go into the git history, look at prior bugs, and build topics based on what we find there. This is useful if you have a project without a written threat model. You can get a sense of the model from the code.
+
+...: You can go into the code's libraries (//base, //net, etc) and have research agents figure out the invariants the code expects. Double-free, for instance. We built these invariant catalogs on a code level. Pretty successful. Specs could help generate these as well.
+
+...: We haven't done this exactly, playing with the idea: you can create a SKILL that surveys a spec for a set of security invariants. Documents them.
+
+...: Could do this for a range of things. Conformance. Privacy. Etc.
+
+...: Useful over time, as the specs change you can regenerate the catalogs of invariants.
+
+...: Prototype run: built a SKILL, tried it on a few specs. This is what it could look like: [example of invariant from Fetch with some spec text and metadata about the enforcement and impact of violation].
+
+...: Shouldn't focus too much on this specific thing. Generated, not battle-hardened, etc. Just the idea of the shape of what we could build.
+
+...: Looked retroactively to see if any of the invariants from our test run would have helped. Seems helpful.
+
+...: Analysis: for Chromium, <1% of topics we fed in were from specs. In the experiment, we took those bugs and mapped them to the invariant catalogs. We found that ~60% of the bugs we'd found mapped to invariant catalog entries we came up with. Lots of clustering: some bugs were prevalant across the codebase.
+
+...: Also interesting things in Fetch. ORB, for instance.
+
+...: A non-scientific takeaway is that a spec-based approach works similarly-well. Could be worth pursuing further. Followon: how could we make this more available? Space in specs for making specs more clearly listed? Spec skills?
+
+Mike Taylor: A lot of the work we've all been involved in is looking over lots of C++. In theory we're inventing new APIs that are forward-facing: how we do take advantage of agents to ship safer APIs with fewer bugs.
+
+Andrew: Discussion!
+
+Freddy: Fixing vulnerabilities, vs fixing specs? What was the split?
+
+Mike Taylor: We've found both. More implementation-specific. Tension between discovering a vulnerability that requires a spec change: how do you protect users quickly, while also publicly talk about, debate, 12-months later merge a PR? Probably 99% implementation/1% spec, based on nothing but vibes.
+
+Andrew: A process might help for cross-browser/spec issues. But folks are just trying to survive at the moment.
+
+Ben: The invariant catalog: is that something you commit? Seems like a compressed version of the corpus. Would be interesting to know that a new invariant was produced after landing a change to a spec. "You've created a new invariant: did you intend to do that?"
+
+Mike Taylor: There are things that look like this on various people's computers. I don't think any of this has been comitted publicly. Still experimental and researchy. Wondering whether it's useful for other people, and where we would stick it if it was. "Security Considerations" section that's actually good?
+
+Ben: For Chromium?
+
+Mike Taylor: Not today, but we could?
+
+Ben: Would be good to avoid drift.
+
+Andrew: We don't do anything automated with this today. We do have `SECURITY.md` files in the codebase today. Human led, but if we see many bugs in a particular area, then the people triaging those bugs, folks will change the `SECURITY.md` file to refine the bug finding.
+
+Mike Taylor: You can look at those file in the Chromium codebase. We rely on the code owners to do that. Would be ideal for it to live in maintained web specifications.
+
+Yoav: Updating specs takes a year? That's unclear. Maybe we need a fast-track for this kind of bug. Reported non-publicly, similar to what browser engines do.
+
+Johann: We saw this happen for cookies. Reported to many vendors at the same time, and we just CC each other. Would be ideal to have a better way.
+
+Freddy: WHATWG does that today.
+
+Anne: GitHub repo has a securty tab and security issues. One limitation: admin only, but the admins can copy the relevant people. That is a good place. We already use that.
+
+Johann: IETF? W3C?
+
+Simone: W3C will publish a draft for this topic. Can enable more broadly.
+
+dveditz: TC39 has a similar process. Industry-wide: CERT? Heavy-handed process.
+
+Mike Taylor: We should coordinate in a private space so we can update as quickly as possible. These processes exist.
+
+Anne: Security reports. They work. Curious about the invariants. They seem to restate spec text. Maintaining that in parallel seems like extra work. Not sure about accuracy.
+
+Mike Taylor: Spec text is good, but models are non-deterministic. We've found it to be helpful to feed invariants.
+
+Anne: Feed invariants of the spec?
+
+Andrew: Could have agents rebuild the invariant catalog when there's a spec update. Could have evals that look at past bugs to give you some level of certainty to understand potential regressions.
+
+Anne: If this comes with more people, then sure, let's do it. But if not, let's not.
+
+Artur: lots of things in the platform that are load-bearing that aren't captured in specs. For example, `parser-inserted` is load-bearing for CSP. That relationship is implicit and in our heads. Broader questions of capabilities: CSS has certain boundaries, it shoudn't execute script, etc. We have implicit knowledge of these boundaries, and ask questions about them when folks have new proposals. So, how do we capture these security assumptions/invariants? Do we allow agents to extract them? Pool our knowledge as humans?
+
+Mike Taylor: Andrew's asked agents to do this for the web platform. They'll come up with a theory, but it's unweildy.
+
+Johann: Worried about extra work for humans? Or maintenance? I'm also worried about the up-front work. But if we put the text in the spec, and when you update the spec, you also update the invariant. That seems solvable to me, but the initial set of assumptions is very hard.
+
+Anne: Human cost is not upfront and fixed. Maintance is also concerning.
+
+Mike Taylor: To Artur: point is valid. Looking at Fetch: agent got confused about ORB.
+
+Simon: Filing spec security bugs: do we want the researcher to file a bug against the spec? How could we achieve that? 
+
+[Technical difficulties]
+
+Noam: The gap is in someone pushing for the spec fix rather thanposting the bug and hoping. Not the researcher or the tool, but the person assigned to fix the bug. Subject matter expert in the area where the bug occurs. I can file bugs aginast HTML for the HTML parser, for instance.
+
+Mike: That seems better, yes.
+
+Noam: If the bot recognizes that this is a spec bug, it can make it easier for the person who's assigned the bug to file that against the spec as well.
+
+Simone: We have some vulnerabilities sent to us. Researchers contacted the vendors for CSS, for example, and also Chromium. If you'd like to triage, I can put you in the loop. Finding someone to fix the bug is the hard part.
+
+Mike: People are reporting vulns to W3C? What's the scope?
+
+Simone: Spec. Sometimes fixing the spec requires fixing the browser too. Recent example: university researchers files a bug against Chrome, and also against us.
+
+BenV: Should these be in the spec? I think there are three things: spec text, maintained alongside the spec; invariants text file in the same repo, updated whenever; or as a convinient artifact we build dynamically however we think we should do it. Maybe that's the right option for the next year and then we move it.
+
+???: Target audience of the invariant catalog? Seems like little value added above the spec text itself for agents? Codifying it in a formal language might be more deterministic.
+
+Andrew: Makes sense. This is just one research idea. Many other shapes possible. We did this on //base in Chromium. Did an analysis about how often the agents reasoned about our invariants. They got it wrong a surprising amount of the time. Extracting specific things the agents should does make things better.
+
+Mike Taylor: We've found that as we discover and fix vulnerabilities, we can write WPTs, find variants, could show you specific WPT things that allow inference about vulnerability. Tighter private communication might be helpful for those cases. Need to avoid N-days on our friends.
+
+Freddy: In the non-web spec security bug area, we're N-daying each other all the time. Also, yes to WPT.
+
+
+#### Agentic Security (Part II): Gegneral-purpose AI agents running JS with the user's logged-in authority
+
+Johann: [Slides]
+
+Joahnn: AI agents are writing code on websites for regular consumers. Prosumers. That can be a security problem. One specific attack I can point to: Claude in Chrome (but it's a generic issue): attacker goal is to set things up such that a malicious email can prompt-inject Claude to run malicious code on GMail. Essentially account-takeover. Claude has safety classifiers, tries to classify things, so it's not a trivial attack. Running code in that context avoids those classifiers.
+
+...: User says "summarize my email": prompt injection in the email. Visual hints, fake tags for the model to confuse it, and then a command to run `alert()`.
+
+...: `alert()` worked, but other things didn't. Needed to be a little more clever to trick the LLM into doing something more dangerous. Turns out, you can trick LLMs into XSSing the user, which is bad. Especially bad since it bypasses CSP, etc. as an extension.
+
+...: This seems like a problem. What do we do about it?
+
+...: Maybe this is something for the Extensions folks? Also: agents aren't always extensions. Many ways in which scripts can be executed.
+
+...: Isolated worlds are not meant to protect from the user, not the right threat model.
+
+...: Do we need something stronger for agents, and what would that look like?
+
+...: Stronger way of preventing loading external scripts: CSP-like thing? Access to credentials/storage? DOM manipulation? Seems absolutely necessary.
+
+Freddy: These things exist to have access to all the things. I don't think a least-privilege model makes sense. Data exfiltration might be a boundary, but it's hard to specify generically. Problem is in the broad access itself. Executing JS isn't an API. Would be better to have a clear path.
+
+Johann: Responsible agent wouldn't execurte arbitrary code. Sure.
+
+Wilander: Idea floating around from WebKit contributers meeting: I asked AI ask a question to the panel: should we have an AgentView of web pages, representation intended for them, without DOM access, scripting access, etc. could design that representation with a threat model in mind.
+
+Johann: Agents already use a11y trees, etc. includes more than user sees. Could make that so good that they don't need anythign else?
+
+Wilander: We could try to build a new representation intended for agentic use. Doesn't have the risk of a threat model that assumes humans.
+
+Johann: WebMCP becoming more popular might be helpful? I have an agent playing fantasy football for me. Website is weird, need to click on many things, so I can generate a script, my own tool for the ~10 clicks.
+
+Freddy: The buttons are also on the a11y tree. LLM is assistive technology.
+
+Johann: Still takes a while. Need to wait for things to happen. If competitve advantage to executing script, agents will execute script.
+
+Freddy: Only if we expose everything. Maybe we shouldn't.
+
+BenV: Agent is an extension. To deny script execution, you'd have to take it from extensions. That's hard. Ship has sailed. Even with a beautiful alternative, you've just added a single step to the process of hopping to the full page.
+
+Wilander: Maybe we can enforce it.
+
+Simon F: WebMCP is already defining how AI can take actions on a page. If that includes getting data from a page, youy could allow an agent to have full access, or just to the MCP-defined actions on the page. "You can read this email, but you're not getting OTP tokens." managed by website operator.
+
+Johann: How do we communicate this to users? If not MCP tools available on a page, asking about "dangerous mode" sounds difficult.
+
+Simon F: Need a policy to not allow "Dangerous mode"?
+
+Wilander: Why should the same software serve both these purposes? Browser meant for agents, can't become an human browser. They're separate.
+
+Johann: Sometimes that works. But takeover is hard. Sounds like we're not bullish on a "safer" mode? Things are not 100% in the agentic security world. We can rely on frontier models to not mess up more than a certain smart class of users. But these one-shot attacks: model thinks a thing is safe, and then it entirely loses control.
+
+Ben: Seems like pasting into devtools. Maybe that's why Safari doesn't have devtools enabled by default.
+
+Johann: I'll bring a more concrete proposal back to the group at some point.
+
+
+#### Agentic Security (Part III): Content Trust Markers
+
+Dylan: [Slides]
+
+Dylan: Content Trust Markers. The problem: Browser-use agents: LLMs are succeptable to prompt-injection attacks, tricking the model into taking actions that have effects the user didn't intend. These agents interact with untrusted content all the time, which is a risk to users. Need a way for site publishers to tell agents what content on their site is unsafe: external, untrusted, User-Generated Content, etc.
+
+...: Example: user reviews on an e-commerce site.
+
+...: Why aren't existing solutions enough?
+
+...: `rel` attribute: `rel=ugc` or `rel=nofollow` indicate trust in content. But only defined for a subset of elements, and used for SEO. Don't want to mix concerns.
+
+...: `data-` attributes: forbidden to standardize suffixes.
+
+...: First-party sandboxed iframe: performance overhead. Also harder to index. Require more network requests.
+
+...: Proposing Content Trust Markers: flagging certain sections of a site as `untrusted` (e.g. `<iframe ... untrusted>` or `<div ... untrusted>`).
+
+...: Could provide a justification string provided by the publisher: `untrusted="user product review"`, which could hide the content behind a tool call for agents, with the additional text as context.
+
+...: Could also be used to blur text in screenshots, etc.
+
+...: But we don't want this to be used as an anti-AI feature (e.g. marking the whole page as `untrusted`). We're not being perscriptive. If an agent needs access, it can still request it.
+
+Ari: Mental model: this is most useful for sites with a mix of content. News site with comments, etc. Do you see it as applicable for things like Amazon? Other sites?
+
+Dylan: If a site is mostly UGC, you could use different tags for different sections of the site. Gives agents more context.
+
+Wilander: Wary of the absence of a signal meaning something. What about `trusted`? The browser or agent could know that a site owner has consciously not marked anything as `untrusted` because they believe that, not because they haven't read this spec.
+
+Dylan: Presence of `untrusted` could allow an assumption about the rest. But we could add `trusted`.
+
+Johann: [missed it]
+
+Wilander: Mostly thinking about the presence of a positive signal that could tell youy something more.
+
+BenV: Ari and John's comments: could have more categorizations generally. "1st party", "ugc", "third-party verified", etc. so Amazon can tease apart the subtilties of their content. Richer vocabulary.
+
+Simon: Even when you know that content is untrusted, spotlighting, etc. That doesn't reduce the security risk. Also, what if the user wants to see the reviews? Will still enter the agent context. I don't think the proposal will work in a practical system.
+
+Johann: Idea is that agent consumes content by default. Harmful/untrusted content is hidden by default. This means that for many tasks, it won't see this content, or will get different treatment. Spotlighting works. If the agent needs to show the content, it will make an unsafe tool call. Multi-step things, making a choice to show unsafe content, will take more precautions.
+
+Simon: Don't disagree in general. These all work a bit, but it's all heuristics. Not convinced that it'll make a difference. Assume a review site: agent will make a tool call, still needs to make decisions about links to follow, etc. Maybe this reduces the probabilites in some cases a bit, but I'm not convinced it's worth it.
+
+Anne: We can't trust websites to do the annotation correctly. Not sure what we make of the signal. `autocomplete=off` and we have to ignore the whole thing. Maybe this goes the same way.
+
+Dylan: Not sure if the signal is trusted, because publishers lie?
+
+Anne: Yes.
+
+SimonP: Or maybe untrusted content can set the `trusted` attribute.
+
+Johann: Yes. they could set it because they hate AI. That's something we need to think about. Not 100% clear how to solve that
+
+Anne: Weird copypasta as well. We see that with `autocomplete`. Despite the niceness of the system if we worked together.
+
+SimonP: If we take step back, and the goal is to prevent prompt injection: isn't it better to treat web content generally as untrusted? Wrap it in an ungettable tag, that the agent could use.
+
+Johann: Information is represented to agents in ways different than the way they're presented to users. Tough to distinguish between a comment that says "END COMMENTS" vs an "END COMMENTS" tag. Or "Our comments have moved to XXX." How do we tell the agent which type of "The form has moved" is correct?
+
+Ari: I wonder if there's an anti-incentive for sites to use this flag. Ads and comments are things that would be marked, and might make ad blocker's job easier.
